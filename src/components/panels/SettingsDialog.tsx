@@ -87,7 +87,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
                       className={`settings-nav-item ${activeGroup === item.id ? 'active' : ''}`}
                       onClick={() => handleNavClick(item.id)}
                     >
-                      <span className="remix nav-item-icon">{getNavIcon(item.id)}</span>
+                      <span className={`remix nav-item-icon ${getNavIcon(item.id)}`}></span>
                       <span>{item.label}</span>
                     </div>
                   ))}
@@ -174,7 +174,7 @@ function renderGeneralSection() {
               className={`segmented-btn ${theme === m ? 'active' : ''}`}
               onClick={() => updateSetting('theme', m)}
             >
-              <span className="remix" style={{ fontSize: 15 }}>{m === 'light' ? 'ri-sun-fill' : m === 'dark' ? 'ri-moon-fill' : 'ri-information-fill'}</span>
+              <span className={`remix ${m === 'light' ? 'ri-sun-fill' : m === 'dark' ? 'ri-moon-fill' : 'ri-laptop-fill'}`} style={{ fontSize: 15 }}></span>
               <span>{m === 'light' ? '浅色' : m === 'dark' ? '深色' : '跟随系统'}</span>
             </button>
           ))}
@@ -576,7 +576,7 @@ function renderSyncSection() {
             onClick={() => updateSetting('syncProvider', p.id)}
           >
             <div className="sync-provider-icon">
-              {p.id === 'git' ? 'ri-git-branch-fill' : p.id === 'dropbox' ? 'ri-dropbox-fill' : p.id === 'google' ? 'ri-google-fill' : 'ri-webcam-fill'}
+              <span className={`remix ${p.id === 'git' ? 'ri-git-branch-fill' : p.id === 'dropbox' ? 'ri-dropbox-fill' : p.id === 'google' ? 'ri-google-fill' : 'ri-webcam-fill'}`}></span>
             </div>
             <div className="sync-provider-info">
               <div className="sync-provider-name">{p.name}</div>
@@ -701,7 +701,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = (
 const ToggleRow: React.FC<{ icon: string; title: string; desc: string; checked: boolean; onChange: (v: boolean) => void }> = ({ icon, title, desc, checked, onChange }) => (
   <div className="toggle-row">
     <div className="toggle-row-left">
-      <span className="remix toggle-icon" style={{ fontSize: 16 }}>{icon}</span>
+      <span className={`remix toggle-icon ${icon}`} style={{ fontSize: 16 }}></span>
       <div className="toggle-text">
         <span className="toggle-title">{title}</span>
         <span className="toggle-desc">{desc}</span>

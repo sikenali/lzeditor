@@ -152,7 +152,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
 const ToggleOption: React.FC<{ icon: string; label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }> = ({ icon, label, desc, checked, onChange }) => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span className="remix" style={{ fontSize: 16, color: 'var(--green-accent-soft)' }}>{icon}</span>
+      <span className={`remix ${icon}`} style={{ fontSize: 16, color: 'var(--green-accent-soft)' }}></span>
       <div>
         <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</div>
         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{desc}</div>
