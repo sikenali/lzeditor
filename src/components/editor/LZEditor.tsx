@@ -53,8 +53,8 @@ export const LZEditor = () => {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      TaskList.configure({ nested: true }),
-      TaskItem.configure({ nested: true }),
+      TaskList,
+      TaskItem,
     ],
     content: DEFAULT_CONTENT,
     onUpdate: ({ editor }: any) => {
@@ -124,15 +124,20 @@ export const LZEditor = () => {
   }, [editor])
 
   useEffect(() => {
-    const contentDom = editor?.view?.dom
-    if (contentDom) {
-      contentDom.addEventListener('paste', handlePaste as any)
-      contentDom.addEventListener('drop', handleDrop as any)
-    }
+    // Wait for editor to mount before accessing view.dom
+    const timer = setTimeout(() => {
+      const dom = editor?.view?.dom as HTMLDivElement | undefined
+      if (dom) {
+        dom.addEventListener('paste', handlePaste as any)
+        dom.addEventListener('drop', handleDrop as any)
+      }
+    }, 50)
     return () => {
-      if (contentDom) {
-        contentDom.removeEventListener('paste', handlePaste as any)
-        contentDom.removeEventListener('drop', handleDrop as any)
+      clearTimeout(timer)
+      const dom = editor?.view?.dom as HTMLDivElement | undefined
+      if (dom) {
+        dom.removeEventListener('paste', handlePaste as any)
+        dom.removeEventListener('drop', handleDrop as any)
       }
     }
   }, [editor, handlePaste, handleDrop])
