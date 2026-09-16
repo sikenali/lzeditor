@@ -186,14 +186,28 @@
   --bg-overlay:    var(--background-card);
   --bg-hover:      var(--background-hover);
   --bg-input:      var(--background-input);
+  --bg-quote:      var(--background-quote);
   --text-primary:  var(--foreground);
   --text-secondary: var(--foreground-secondary);
   --text-muted:    var(--foreground-muted);
   --text-heading:  var(--foreground-heading);
   --text-heading-2: var(--foreground-heading-2);
-  --accent-a70:    rgba(13,140,95,0.7);
-  --bg-quote:      var(--background-quote);
   --text-on-accent: var(--accent-foreground);
+  --accent-primary: var(--accent);
+  --accent-a3:     rgba(13,140,95,0.03);
+  --accent-a5:     rgba(13,140,95,0.05);
+  --accent-a8:     rgba(13,140,95,0.08);
+  --accent-a10:    rgba(13,140,95,0.10);
+  --accent-a15:    rgba(13,140,95,0.15);
+  --accent-a20:    rgba(13,140,95,0.20);
+  --accent-a30:    rgba(13,140,95,0.30);
+  --accent-a40:    rgba(13,140,95,0.40);
+  --accent-a60:    rgba(13,140,95,0.60);
+  --accent-a70:    rgba(13,140,95,0.70);
+  --green-accent-soft: #28a546;
+  --red-border-soft: rgba(200,55,45,0.25);
+  --accent-tint-bg: rgba(232,248,240,1);
+  --danger-text:    rgba(230,217,160,1);
 }
 
 /* ── Accent color presets ── */
