@@ -1,5 +1,3 @@
-import type { ExportOptions } from '../shared/types'
-
 export interface ExportOptions {
   title: string
   author?: string
