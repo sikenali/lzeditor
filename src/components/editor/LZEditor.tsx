@@ -72,7 +72,7 @@ export const LZEditor = () => {
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editor])
 
   const handleToolbarAction = useCallback((action: AIAction) => {
     const selectedText = editor ? editor.state.doc.textContent.slice(editor.state.selection.from, editor.state.selection.to) : ''

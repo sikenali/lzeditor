@@ -310,7 +310,7 @@ export const Toolbar: React.FC = () => {
         <span className="toolbar-label">{label}</span>
         <span className={`toolbar-dd-arrow ${menuOpen === key ? 'open' : ''}`}>▼</span>
       </button>
-      <SubMenu key={key} key={key} items={items} onAction={onAction} />
+      <SubMenu key={key} items={items} onAction={onAction} />
     </div>
   )
 
