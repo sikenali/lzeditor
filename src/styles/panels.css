@@ -147,7 +147,7 @@
   background: var(--bg-overlay);
   border: 1px solid var(--border-default);
   border-radius: 16px;
-  width: 520px; max-height: 80vh;
+  width: 720px; max-height: 80vh;
   display: flex; flex-direction: column;
   box-shadow: 0 20px 60px var(--shadow-strong);
   overflow: hidden;
@@ -157,6 +157,8 @@
   padding: 20px 24px; border-bottom: 1px solid var(--border-subtle);
 }
 .history-title { display: flex; align-items: center; gap: 12px; }
+.history-title-text { font-size: 16px; font-weight: 600; color: var(--text-heading); }
+.history-title-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .history-body  { display: flex; flex: 1; overflow: hidden; }
 
 .history-list {
@@ -181,26 +183,65 @@
 .history-item-time    { font-size: 11px; color: var(--text-muted); }
 .history-item-author  { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
-.history-diff { flex: 1; padding: 16px; overflow-y: auto; }
-.diff-header {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 500; color: var(--text-primary);
-  margin-bottom: 12px; padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.diff-content { font-family: var(--font-mono); font-size: 12px; }
-.diff-line    { display: flex; align-items: flex-start; gap: 8px; padding: 3px 0; line-height: 1.5; }
-.diff-marker  { width: 16px; flex-shrink: 0; font-weight: 600; }
+.history-diff { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; }
 
+.history-version-bar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 0; border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 8px;
+}
+.history-version-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.history-version-id   { color: var(--amber); font-weight: 600; }
+.history-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all 0.12s;
+}
+.history-btn-secondary { background: var(--bg-code); color: var(--text-secondary); border: 1px solid var(--border-default); }
+.history-btn-secondary:hover { border-color: var(--accent-border); color: var(--text-heading-2); }
+.history-btn-primary { background: var(--accent-primary); color: var(--text-on-accent); }
+.history-btn-primary:hover { opacity: 0.85; }
+
+/* Snapshot histogram */
+.history-histogram {
+  display: flex; align-items: flex-end; gap: 2px;
+  height: 56px; padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 8px;
+}
+.histogram-bar-wrapper { flex: 1; display: flex; align-items: flex-end; }
+.histogram-bar {
+  width: 100%; border-radius: 2px 2px 0 0;
+  background: var(--bg-hover); min-height: 2px;
+  transition: background 0.12s;
+}
+.histogram-bar:hover { opacity: 0.8; }
+.histogram-bar.active { background: var(--accent-primary) !important; }
+
+/* Legend */
+.history-legend {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 0; margin-bottom: 8px; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* Diff content */
+.diff-content {
+  flex: 1; overflow-y: auto;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+}
+.diff-line { display: flex; align-items: flex-start; gap: 8px; padding: 2px 0; }
+.diff-marker { width: 16px; flex-shrink: 0; font-weight: 600; font-size: 12px; }
 .diff-added .diff-marker  { color: var(--accent-primary); }
-.diff-added               { background: var(--green-soft); padding: 3px 6px; border-radius: 5px; }
+.diff-added               { background: var(--green-soft); padding: 2px 6px; border-radius: 3px; margin: 0 -6px; }
 .diff-removed .diff-marker { color: var(--red-text); }
-.diff-removed              { background: var(--red-soft); padding: 3px 6px; border-radius: 5px; }
-.diff-neutral              { color: var(--text-secondary); padding: 3px 6px; }
+.diff-removed              { background: var(--red-soft); padding: 2px 6px; border-radius: 3px; margin: 0 -6px; }
+.diff-neutral { color: var(--text-secondary); padding: 2px 6px; }
 
 .history-footer {
-  display: flex; justify-content: flex-end; gap: 10px;
-  padding: 14px 20px; border-top: 1px solid var(--border-subtle);
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-top: 1px solid var(--border-subtle);
 }
 
 /* ── Preview Panel ── */

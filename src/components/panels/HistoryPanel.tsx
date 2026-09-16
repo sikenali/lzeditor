@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 
 const SAMPLE_VERSIONS = [
-  { id: 'v16', time: '2026-09-16 14:32', desc: '完善了欢迎页内容', author: '我', changes: 48 },
-  { id: 'v15', time: '2026-09-15 09:15', desc: '接入 Calicat 设计稿', author: '我', changes: 32 },
-  { id: 'v14', time: '2026-09-14 22:08', desc: '重构颜色系统', author: '我', changes: 64 },
-  { id: 'v13', time: '2026-09-13 18:30', desc: '添加 AI 面板', author: '我', changes: 24 },
-  { id: 'v12', time: '2026-09-12 15:20', desc: '导出功能开发', author: '我', changes: 56 },
-  { id: 'v11', time: '2026-09-11 11:45', desc: '主题系统重构', author: '我', changes: 40 },
-  { id: 'v10', time: '2026-09-10 09:00', desc: '初始提交', author: '我', changes: 48 },
+  { id: 'v16', time: '14:32', date: '2026-09-16', desc: '完善了欢迎页内容', author: '我', changes: 48 },
+  { id: 'v15', time: '09:15', date: '2026-09-15', desc: '接入 Calicat 设计稿', author: '我', changes: 32 },
+  { id: 'v14', time: '22:08', date: '2026-09-14', desc: '重构颜色系统', author: '我', changes: 64 },
+  { id: 'v13', time: '18:30', date: '2026-09-13', desc: '添加 AI 面板', author: '我', changes: 24 },
+  { id: 'v12', time: '15:20', date: '2026-09-12', desc: '导出功能开发', author: '我', changes: 56 },
+  { id: 'v11', time: '11:45', date: '2026-09-11', desc: '主题系统重构', author: '我', changes: 40 },
+  { id: 'v10', time: '09:00', date: '2026-09-10', desc: '初始提交', author: '我', changes: 48 },
 ]
 
 const DIFF_LINES = [
@@ -16,7 +16,7 @@ const DIFF_LINES = [
   { type: 'added', text: '- **Markdown 编辑** — 实时预览，所见即所得，支持双人协作' },
   { type: 'neutral', text: '' },
   { type: 'neutral', text: '### 核心功能' },
-  { type: 'removed', text: '- ~~vestibulum~~ eros.' },
+  { type: 'removed', text: '- vestibulum eros.' },
   { type: 'added', text: '- 新增 **vehicula** sapien 特性' },
   { type: 'neutral', text: '' },
   { type: 'neutral', text: '```bash' },
@@ -29,7 +29,6 @@ const HISTOGRAM_DATA = [32, 48, 24, 56, 40, 48, 32, 64, 48, 32, 56, 48, 24, 40, 
 
 export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedVersion, setSelectedVersion] = useState('v16')
-
   const selected = SAMPLE_VERSIONS.find(v => v.id === selectedVersion)!
 
   return (
@@ -64,7 +63,7 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   <div className="history-item-desc">{v.desc}</div>
                 </div>
                 <div className="history-item-right">
-                  <div className="history-item-time">{v.time.split(' ')[1]}</div>
+                  <div className="history-item-time">{v.time}</div>
                   <div className="history-item-author">{v.author}</div>
                 </div>
               </div>
@@ -78,11 +77,11 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               <div className="history-version-item">
                 <span className="remix ri-ball-pen-fill"></span>
                 <span>版本:</span>
-                <span style={{ color: 'var(--amber)', fontWeight: 600 }}>{selected.id}</span>
+                <span className="history-version-id">{selected.id}</span>
               </div>
               <div className="history-version-item">
                 <span className="remix ri-calendar-event-fill"></span>
-                <span>{selected.time}</span>
+                <span>{selected.date} {selected.time}</span>
               </div>
               <div style={{ flex: 1 }} />
               <button className="history-btn history-btn-secondary">
@@ -111,19 +110,18 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             <div className="history-legend">
               <div className="legend-item">
                 <span className="legend-dot" style={{ background: 'var(--green-soft)', border: '1px solid var(--accent-a30)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>新增内容</span>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>新增字符数</span>
               </div>
               <div className="legend-item">
                 <span className="legend-dot" style={{ background: 'var(--amber)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>当前快照</span>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>保留字符数</span>
               </div>
               <div className="legend-item">
                 <span className="legend-dot" style={{ background: 'var(--bg-hover)', border: '1px solid var(--border-default)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>保留内容</span>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>删除字符数</span>
               </div>
-              <div className="legend-item">
-                <span className="legend-dot" style={{ background: 'var(--red-soft)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>删除内容</span>
+              <div style={{ flex: 1, textAlign: 'right', fontSize: 11, color: 'var(--text-muted)' }}>
+                当前查看（快照 {selectedVersion.replace('v','')}）
               </div>
             </div>
 
@@ -142,8 +140,12 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         </div>
 
         <div className="history-footer">
-          <button className="settings-cancel-btn" onClick={onClose}>取消</button>
-          <button className="settings-save-btn">下载快照</button>
+          <span className="remix ri-bookmark-fill" style={{ fontSize: 14, color: 'var(--amber)' }}></span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>共 {SAMPLE_VERSIONS.length} 个快照 · 最新快照 {selected.time}</span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="settings-cancel-btn" onClick={onClose}>取消</button>
+            <button className="settings-save-btn">下载快照</button>
+          </div>
         </div>
       </div>
     </div>
