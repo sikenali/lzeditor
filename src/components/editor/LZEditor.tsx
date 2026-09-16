@@ -164,7 +164,7 @@ export const LZEditor = () => {
 
   return (
     <div className="lz-editor" ref={editorRef}>
-      <div className={`lz-editor-content${showPreview ? ' has-preview' : ''}`}>
+      <div className="lz-editor-content">
         <EditorContent editor={editor} />
       </div>
       <FloatingToolbar

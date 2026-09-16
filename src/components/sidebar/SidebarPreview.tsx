@@ -11,20 +11,16 @@ export const SidebarPreview: React.FC = () => {
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
   const previewRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
 
   useEffect(() => {
     if (!editorRef || !previewRef.current) return
-
     const sync = () => {
       previewRef.current!.innerHTML = editorRef.innerHTML
     }
     sync()
-
     const observer = new MutationObserver(() => requestAnimationFrame(sync))
     observer.observe(editorRef, { childList: true, subtree: true, characterData: true })
-
     return () => observer.disconnect()
   }, [editorRef])
 
@@ -34,19 +30,16 @@ export const SidebarPreview: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!dragging || !containerRef.current) return
-
+    if (!dragging) return
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = containerRef.current!.getBoundingClientRect()
+      const wrapper = (document.querySelector('.sidebar-preview-wrapper') as HTMLElement | null)
+      if (!wrapper) return
+      const rect = wrapper.getBoundingClientRect()
       const newWidth = rect.right - e.clientX
       const clamped = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth))
       setPreviewWidth(clamped)
     }
-
-    const handleMouseUp = () => {
-      setDragging(false)
-    }
-
+    const handleMouseUp = () => setDragging(false)
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
     return () => {
@@ -56,8 +49,8 @@ export const SidebarPreview: React.FC = () => {
   }, [dragging, setPreviewWidth])
 
   return (
-    <div ref={containerRef} className="sidebar-preview-wrapper">
-      <div className="sidebar-preview" style={{ width: previewWidth }}>
+    <div className="sidebar-preview-wrapper" style={{ width: previewWidth }}>
+      <div className="sidebar-preview">
         <div className="sidebar-header">
           <span className="remix sidebar-header-icon ri-eye-2-fill"></span>
           <span className="sidebar-header-title">预览</span>

@@ -53,9 +53,6 @@
 }
 
 /* Dynamic padding when preview sidebar is shown */
-.lz-editor-content.has-preview {
-  padding-right: 220px;
-}
 
 .lz-editor-content h1 {
   font-size: 28px;

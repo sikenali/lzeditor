@@ -543,34 +543,14 @@ function renderExportSection() {
         <span>导出</span>
         <span className="settings-section-desc">默认导出格式与选项</span>
       </div>
-      <div className="setting-row">
-        <div className="setting-label"><span>默认格式</span></div>
-        <LFSSelect
-          value={state.exportFormat || 'markdown'}
-          onChange={(v) => updateSetting('exportFormat', v)}
-          options={[
-            { value: 'markdown', label: 'Markdown' },
-            { value: 'pdf', label: 'PDF' },
-            { value: 'html', label: 'HTML' },
-            { value: 'docx', label: 'Word' },
-          ]}
-          style={{ minWidth: 160 }}
-        />
-      </div>
-      <div className="setting-row">
-        <div className="setting-label"><span>样式集</span></div>
-        <LFSSelect
-          value={state.styleSet || 'ocean'}
-          onChange={(v) => updateSetting('styleSet', v)}
-          options={[
-            { value: 'ocean', label: 'Ocean' },
-            { value: 'dark', label: 'Dark' },
-            { value: 'minimal', label: 'Minimal' },
-            { value: 'candy', label: 'Candy' },
-          ]}
-          style={{ minWidth: 160 }}
-        />
-      </div>
+      <ToggleRow
+        icon="ri-palette-fill"
+        title="样式集"
+        desc="使用 Ocean 主题排版"
+        checked={state.styleSet !== 'minimal' && state.styleSet !== 'candy'}
+        onChange={(v) => updateSetting('styleSet', v ? 'ocean' : 'minimal')}
+      />
+      <div className="setting-divider" />
       <ToggleRow
         icon="ri-bookmark-fill"
         title="导出时包含目录"
