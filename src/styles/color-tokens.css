@@ -29,15 +29,15 @@
   --accent-foreground:   #ffffff;
 
   /* Accent alpha variants */
-  --accent-a3:  --accent-a91,140,90,0.03, transparent);
-  --accent-a5:  --accent-a91,140,90,0.05, transparent);
-  --accent-a8:  --accent-a91,140,90,0.08, transparent);
-  --accent-a10: --accent-a91,140,90,0.10, transparent);
-  --accent-a15: --accent-a91,140,90,0.15, transparent);
-  --accent-a20: --accent-a91,140,90,0.20, transparent);
-  --accent-a30: --accent-a91,140,90,0.30, transparent);
-  --accent-a40: --accent-a91,140,90,0.40, transparent);
-  --accent-a60: --accent-a91,140,90,0.60, transparent);
+  --accent-a3: rgba(91,140,90,0.03);
+  --accent-a5: rgba(91,140,90,0.05);
+  --accent-a8: rgba(91,140,90,0.08);
+  --accent-a10: rgba(91,140,90,0.10);
+  --accent-a15: rgba(91,140,90,0.15);
+  --accent-a20: rgba(91,140,90,0.20);
+  --accent-a30: rgba(91,140,90,0.30);
+  --accent-a40: rgba(91,140,90,0.40);
+  --accent-a60: rgba(91,140,90,0.60);
 
   /* Back-compat alias for existing --accent-primary references */
   --accent-primary: var(--accent);
@@ -108,16 +108,16 @@
   --text-heading-2:   var(--foreground-heading-2);
   --text-on-accent:   var(--accent-foreground);
   --accent-primary:   var(--accent);
-  --accent-a3:        --accent-a91,140,90,0.03, transparent);
-  --accent-a5:        --accent-a91,140,90,0.05, transparent);
-  --accent-a8:        --accent-a91,140,90,0.08, transparent);
-  --accent-a10:       --accent-a91,140,90,0.10, transparent);
-  --accent-a15:       --accent-a91,140,90,0.15, transparent);
-  --accent-a20:       --accent-a91,140,90,0.20, transparent);
-  --accent-a30:       --accent-a91,140,90,0.30, transparent);
-  --accent-a40:       --accent-a91,140,90,0.40, transparent);
-  --accent-a60:       --accent-a91,140,90,0.60, transparent);
-  --accent-a70:       --accent-a91,140,90,0.70, transparent);
+  --accent-a3: rgba(91,140,90,0.03);
+  --accent-a5: rgba(91,140,90,0.05);
+  --accent-a8: rgba(91,140,90,0.08);
+  --accent-a10: rgba(91,140,90,0.10);
+  --accent-a15: rgba(91,140,90,0.15);
+  --accent-a20: rgba(91,140,90,0.20);
+  --accent-a30: rgba(91,140,90,0.30);
+  --accent-a40: rgba(91,140,90,0.40);
+  --accent-a60: rgba(91,140,90,0.60);
+  --accent-a70: rgba(91,140,90,0.70);
   --green-accent-soft: #8fb090;
   --red-border-soft:  rgba(212,70,56,0.20);
   --accent-tint-bg:   rgba(30,52,34,1);
@@ -145,15 +145,15 @@
   --accent-foreground:   #ffffff;
   --accent-primary:      var(--accent);
 
-  --accent-a3:  --accent-a91,140,90,0.03, transparent);
-  --accent-a5:  --accent-a91,140,90,0.05, transparent);
-  --accent-a8:  --accent-a91,140,90,0.08, transparent);
-  --accent-a10: --accent-a91,140,90,0.10, transparent);
-  --accent-a15: --accent-a91,140,90,0.15, transparent);
-  --accent-a20: --accent-a91,140,90,0.20, transparent);
-  --accent-a30: --accent-a91,140,90,0.30, transparent);
-  --accent-a40: --accent-a91,140,90,0.40, transparent);
-  --accent-a60: --accent-a91,140,90,0.60, transparent);
+  --accent-a3: rgba(91,140,90,0.03);
+  --accent-a5: rgba(91,140,90,0.05);
+  --accent-a8: rgba(91,140,90,0.08);
+  --accent-a10: rgba(91,140,90,0.10);
+  --accent-a15: rgba(91,140,90,0.15);
+  --accent-a20: rgba(91,140,90,0.20);
+  --accent-a30: rgba(91,140,90,0.30);
+  --accent-a40: rgba(91,140,90,0.40);
+  --accent-a60: rgba(91,140,90,0.60);
 
   --border:        #e8dfd2;
   --border-subtle: #ede4d6;
@@ -211,16 +211,16 @@
   --text-heading-2:   var(--foreground-heading-2);
   --text-on-accent:   var(--accent-foreground);
   --accent-primary:   var(--accent);
-  --accent-a3:        --accent-a91,140,90,0.03, transparent);
-  --accent-a5:        --accent-a91,140,90,0.05, transparent);
-  --accent-a8:        --accent-a91,140,90,0.08, transparent);
-  --accent-a10:       --accent-a91,140,90,0.10, transparent);
-  --accent-a15:       --accent-a91,140,90,0.15, transparent);
-  --accent-a20:       --accent-a91,140,90,0.20, transparent);
-  --accent-a30:       --accent-a91,140,90,0.30, transparent);
-  --accent-a40:       --accent-a91,140,90,0.40, transparent);
-  --accent-a60:       --accent-a91,140,90,0.60, transparent);
-  --accent-a70:       --accent-a91,140,90,0.70, transparent);
+  --accent-a3: rgba(91,140,90,0.03);
+  --accent-a5: rgba(91,140,90,0.05);
+  --accent-a8: rgba(91,140,90,0.08);
+  --accent-a10: rgba(91,140,90,0.10);
+  --accent-a15: rgba(91,140,90,0.15);
+  --accent-a20: rgba(91,140,90,0.20);
+  --accent-a30: rgba(91,140,90,0.30);
+  --accent-a40: rgba(91,140,90,0.40);
+  --accent-a60: rgba(91,140,90,0.60);
+  --accent-a70: rgba(91,140,90,0.70);
   --green-accent-soft: #6b9b6a;
   --red-border-soft:  rgba(196,61,61,0.25);
   --accent-tint-bg:   rgba(232,248,240,1);

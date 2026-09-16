@@ -53,7 +53,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [fontSize])
 
   return (
-    <div className="read-mode-overlay">
+    <div className="read-mode-overlay" onClick={onClose}>
       <div className="read-mode-container" onClick={e => e.stopPropagation()}>
         {/* Top bar */}
         <div className="read-mode-topbar">

@@ -44,6 +44,14 @@ export const LZEditor = () => {
       TableCell,
     ],
     content: remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
+    onCreate: ({ editor }: any) => {
+      const html = editor.getHTML()
+      const text = editor.getText()
+      setDocHTML(html)
+      setMdContent(htmlToMarkdown(html))
+      setWordCount(text.split(/\s+/).filter(Boolean).length)
+      setCharCount(text.length)
+    },
     onUpdate: ({ editor }: any) => {
       const text = editor.getText()
       const html = editor.getHTML()
@@ -62,18 +70,6 @@ export const LZEditor = () => {
     editable: true,
   })
 
-  // Set initial content immediately so ReadMode/Preview have data on first open
-  React.useEffect(() => {
-    if (editor) {
-      const html = editor.getHTML()
-      const text = editor.getText()
-      setDocHTML(html)
-      setMdContent(htmlToMarkdown(html))
-      setWordCount(text.split(/\s+/).filter(Boolean).length)
-      setCharCount(text.length)
-    }
-  }, [editor])
-
   const handleToolbarAction = useCallback((action: AIAction) => {
     const selectedText = editor ? editor.state.doc.textContent.slice(editor.state.selection.from, editor.state.selection.to) : ''
     const pos = toolbar.position
@@ -82,47 +78,6 @@ export const LZEditor = () => {
 
   useEffect(() => {
     return () => { editor?.destroy() }
-  }, [editor])
-
-  // Handle image paste/drop
-  const handlePaste = useCallback((e: ClipboardEvent) => {
-    const items = e.clipboardData?.items
-    if (!items) return
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.startsWith('image/')) {
-        e.preventDefault()
-        const file = items[i].getAsFile()
-        if (file && editor) {
-          const reader = new FileReader()
-          reader.onload = (ev) => {
-            const img = ev.target?.result as string
-            editor.commands.insertContent({
-              type: 'image',
-              attrs: { src: img, alt: file.name },
-            })
-          }
-          reader.readAsDataURL(file)
-        }
-      }
-    }
-  }, [editor])
-
-  const handleDrop = useCallback((e: DragEvent) => {
-    const files = e.dataTransfer?.files
-    if (!files) return
-    Array.from(files).forEach(file => {
-      if (file.type.startsWith('image/') && editor) {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          const img = ev.target?.result as string
-          editor.commands.insertContent({
-            type: 'image',
-            attrs: { src: img, alt: file.name },
-          })
-        }
-        reader.readAsDataURL(file)
-      }
-    })
   }, [editor])
 
   // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom

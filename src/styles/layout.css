@@ -78,6 +78,36 @@
 .toolbar-dropdown-item:hover .remix { color: var(--accent-primary); }
 .toolbar-dropdown-sep { height: 1px; background: var(--border-subtle); margin: 4px 0; }
 
+/* ── Dropdown wrapper: needs relative positioning for absolute submenu ── */
+.toolbar-menu-btn { position: relative; display: inline-flex; align-items: center; }
+
+/* ── Submenu (inline dropdown) ── */
+.toolbar-submenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 500;
+  min-width: 160px; max-width: 220px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px var(--shadow-strong);
+  padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  animation: dd-in 0.12s ease-out;
+}
+.toolbar-submenu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border: none; background: none;
+  border-radius: 6px; cursor: pointer;
+  font-size: 13px; color: var(--text-secondary);
+  transition: all 0.1s; width: 100%; text-align: left;
+}
+.toolbar-submenu-item:hover { background: var(--toolbar-hover); color: var(--text-primary); }
+.toolbar-submenu-item .remix { font-size: 17px; color: var(--text-muted); line-height: 1; flex-shrink: 0; }
+.toolbar-submenu-item:hover .remix { color: var(--accent-primary); }
+.toolbar-submenu-sep { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
 /* ── Dropdown arrow: inside button, right of icon ── */
 .toolbar-dd-arrow {
   font-size: 10px; color: var(--text-muted); line-height: 1;

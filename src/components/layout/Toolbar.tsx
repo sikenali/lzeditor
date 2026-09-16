@@ -274,7 +274,7 @@ export const Toolbar: React.FC = () => {
     setMenuOpen(null)
     switch (action) {
       case 'instant':
-        setShowPreview(v => !v)
+        setShowPreview((v: boolean) => !v)
         break
       case 'full':
         setOpenPanel(openPanel === 'preview' ? 'none' : 'preview')
@@ -293,7 +293,7 @@ export const Toolbar: React.FC = () => {
         {items.map((item, i) =>
           item.sep
             ? <div key={i} className="toolbar-submenu-sep" />
-            : <button key={i} className="toolbar-submenu-item" onClick={() => onAction(item.action)}>
+            : <button key={i} className="toolbar-submenu-item" onClick={() => onAction(item.action!)}>
                 {item.icon && <span className={`remix ${item.icon}`}></span>}
                 <span>{item.label}</span>
               </button>
@@ -340,7 +340,7 @@ export const Toolbar: React.FC = () => {
             {menuOpen === 'preview' && (
               <div className="toolbar-submenu" ref={menuRef}>
                 {PREVIEW_ITEMS.map((item, i) =>
-                  <button key={i} className="toolbar-submenu-item" onClick={() => handlePreviewAction(item.action)}>
+                  <button key={i} className="toolbar-submenu-item" onClick={() => handlePreviewAction(item.action!)}>
                     <span>{item.label}</span>
                   </button>
                 )}
@@ -358,7 +358,7 @@ export const Toolbar: React.FC = () => {
           <button className="toolbar-btn" onClick={() => {
             const sel = window.getSelection()
             if (sel?.rangeCount) { const r = sel.getRangeAt(0); const s = document.createElement('span'); s.style.cssText='background:var(--accent-a40);padding:0 2px;border-radius:2px'; r.surroundContents(s) }
-          }} title="高亮"><span className="remix toolbar-icon ri-highlight"></span><span className="toolbar-label">高亮</span></button>
+          }} title="高亮"><span className="remix toolbar-icon ri-mark-pen-fill"></span><span className="toolbar-label">高亮</span></button>
 
           <div className="toolbar-menu-btn">
             <button className="toolbar-btn" onClick={(e) => { e.stopPropagation(); toggleMenu('format') }} title="格式">
@@ -371,7 +371,7 @@ export const Toolbar: React.FC = () => {
                 {FORMAT_ITEMS.map((item, i) =>
                   item.sep
                     ? <div key={i} className="toolbar-submenu-sep" />
-                    : <button key={i} className="toolbar-submenu-item" onClick={() => handleFormatAction(item.action)}>
+                    : <button key={i} className="toolbar-submenu-item" onClick={() => handleFormatAction(item.action!)}>
                         <span>{item.label}</span>
                       </button>
                 )}
@@ -391,7 +391,7 @@ export const Toolbar: React.FC = () => {
             {menuOpen === 'supsub' && (
               <div className="toolbar-submenu" ref={menuRef}>
                 {SUPSUB_ITEMS.map((item, i) =>
-                  <button key={i} className="toolbar-submenu-item" onClick={() => { handleFormatAction(item.action); toggleMenu(null) }}>
+                  <button key={i} className="toolbar-submenu-item" onClick={() => { handleFormatAction(item.action!); toggleMenu(null) }}>
                     <span>{item.label}</span>
                   </button>
                 )}
@@ -410,7 +410,7 @@ export const Toolbar: React.FC = () => {
                 {TABLE_ITEMS.map((item, i) =>
                   item.sep
                     ? <div key={i} className="toolbar-submenu-sep" />
-                    : <button key={i} className="toolbar-submenu-item" onClick={() => handleTableAction(item.action)}>
+                    : <button key={i} className="toolbar-submenu-item" onClick={() => handleTableAction(item.action!)}>
                         <span>{item.label}</span>
                       </button>
                 )}
@@ -429,7 +429,7 @@ export const Toolbar: React.FC = () => {
                 {INSERT_ITEMS.map((item, i) =>
                   item.sep
                     ? <div key={i} className="toolbar-submenu-sep" />
-                    : <button key={i} className="toolbar-submenu-item" onClick={() => handleInsertAction(item.action)}>
+                    : <button key={i} className="toolbar-submenu-item" onClick={() => handleInsertAction(item.action!)}>
                         {item.icon && <span className={`remix ${item.icon}`}></span>}
                         <span>{item.label}</span>
                       </button>

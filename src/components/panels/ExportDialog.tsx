@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { exportDocument } from '../../services/exportService'
+import { LFSCombo } from '../../components/ui/LFSCombo'
 
 const EXPORT_FORMATS = [
   { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
@@ -86,15 +87,21 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             <div className="export-row">
               <div className="export-field">
                 <label className="export-label">纸张大小</label>
-                <select className="lfs-select" value={paperSize} onChange={e => setPaperSize(e.target.value)} style={{ minWidth: 120 }}>
-                  {PAPER_SIZES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-                </select>
+                <LFSCombo
+                  value={paperSize}
+                  onChange={setPaperSize}
+                  options={PAPER_SIZES.map(p => ({ value: p.id, label: p.label }))}
+                  style={{ minWidth: 120 }}
+                />
               </div>
               <div className="export-field">
                 <label className="export-label">方向</label>
-                <select className="lfs-select" value={orientation} onChange={e => setOrientation(e.target.value)} style={{ minWidth: 120 }}>
-                  {ORIENTATIONS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                </select>
+                <LFSCombo
+                  value={orientation}
+                  onChange={setOrientation}
+                  options={ORIENTATIONS.map(o => ({ value: o.id, label: o.label }))}
+                  style={{ minWidth: 120 }}
+                />
               </div>
             </div>
           </div>
