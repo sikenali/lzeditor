@@ -13,13 +13,21 @@ export const SidebarPreview: React.FC = () => {
   const previewRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
 
-  useEffect(() => {
+  const syncContent = () => {
     if (!editorRef || !previewRef.current) return
-    const sync = () => {
-      previewRef.current!.innerHTML = editorRef.innerHTML
+    // Strip wrapper divs - only copy the ProseMirror content directly
+    const pm = editorRef.querySelector('.ProseMirror')
+    if (pm) {
+      previewRef.current.innerHTML = pm.innerHTML
+    } else {
+      previewRef.current.innerHTML = editorRef.innerHTML
     }
-    sync()
-    const observer = new MutationObserver(() => requestAnimationFrame(sync))
+  }
+
+  useEffect(() => {
+    syncContent()
+    if (!editorRef) return
+    const observer = new MutationObserver(() => requestAnimationFrame(syncContent))
     observer.observe(editorRef, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
   }, [editorRef])

@@ -28,7 +28,6 @@ export const LZEditor = () => {
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
-  const showPreview = useEditorStore((s: any) => s.showPreview)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
