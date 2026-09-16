@@ -34,7 +34,7 @@ export const TitleBar: React.FC = () => {
       </div>
       <div className="titlebar-drag-region">
         <div className="titlebar-title">
-          <span className="remix titlebar-logo" style={{ fontSize: 15 }}>\uED6A</span>
+          <span className="remix titlebar-logo" style={{ fontSize: 15 }}>\uEA8D</span>
           <span>{docTitle}</span>
         </div>
         <div className="titlebar-actions">
@@ -45,7 +45,7 @@ export const TitleBar: React.FC = () => {
             </span>
           </div>
           <button className="titlebar-btn-icon" title="更多">
-            <span className="remix" style={{ fontSize: 17, color: 'rgba(92,106,120,1)' }}></span>
+            <span className="remix" style={{ fontSize: 17, color: 'rgba(92,106,120,1)' }}>\uEF3B</span>
           </button>
         </div>
       </div>

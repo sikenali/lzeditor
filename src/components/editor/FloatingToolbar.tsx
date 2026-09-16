@@ -16,12 +16,12 @@ const ICONS = {
 } as const
 
 const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
-  { action: 'rewrite', icon: ICONS.pen, label: '改写' },
-  { action: 'polish', icon: ICONS.sparkle, label: '润色' },
-  { action: 'continue', icon: ICONS.add, label: '续写' },
-  { action: 'summarize', icon: ICONS.file_text, label: '摘要' },
-  { action: 'translate', icon: ICONS.translate, label: '翻译' },
-  { action: 'question', icon: ICONS.question, label: '提问' },
+  { action: 'rewrite', icon: '\uEA8D', label: '改写' },
+  { action: 'polish', icon: '\uEC7F', label: '润色' },
+  { action: 'continue', icon: '\uEA59', label: '续写' },
+  { action: 'summarize', icon: '\uEA7D', label: '摘要' },
+  { action: 'translate', icon: '\uF226', label: '翻译' },
+  { action: 'question', icon: '\uF044', label: '提问' },
 ]
 
 interface FloatingToolbarProps {

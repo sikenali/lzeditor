@@ -25,7 +25,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
     <div className="modal-overlay" onClick={onClose}>
       <div className="language-selector" onClick={e => e.stopPropagation()}>
         <div className="lang-header">
-          <span className="remix lang-icon" style={{ fontSize: 18, color: 'var(--accent-primary)' }}>\uE9B2</span>
+          <span className="remix lang-icon" style={{ fontSize: 18, color: 'var(--accent-primary)' }}>\uF226</span>
           <div>
             <div className="lang-title">选择目标语言</div>
             <div className="lang-subtitle">翻译为以下语言</div>
@@ -36,7 +36,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
         </div>
 
         <div className="lang-search">
-          <span className="remix lang-search-icon">\uE71C</span>
+          <span className="remix lang-search-icon">\uEB59</span>
           <input
             type="text"
             placeholder="搜索语言..."
@@ -55,12 +55,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
             >
               <span className="lang-item-name">{lang.name}</span>
               <span className="lang-item-native">{lang.native}</span>
-              {targetLang === lang.code && <span className="remix lang-check" style={{ fontSize: 14 }}>{'\uEAF7'}</span>}
+              {targetLang === lang.code && <span className="remix lang-check" style={{ fontSize: 14 }}>{'\uEB7B'}</span>}
             </button>
           ))}
           {filtered.length === 0 && (
             <div className="lang-empty">
-              <span className="remix" style={{ fontSize: 24, color: 'var(--text-muted)' }}>\uE71C</span>
+              <span className="remix" style={{ fontSize: 24, color: 'var(--text-muted)' }}>\uEB59</span>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>未找到匹配的语言</span>
             </div>
           )}

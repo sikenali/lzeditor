@@ -14,7 +14,7 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
       <div className="history-panel" onClick={e => e.stopPropagation()}>
         <div className="history-header">
           <div className="history-title">
-            <span className="remix" style={{ fontSize: 18, color: 'var(--accent-primary)' }}>\uE617</span>
+            <span className="remix" style={{ fontSize: 18, color: 'var(--accent-primary)' }}>\uEE16</span>
             <div>
               <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>版本历史</div>
               <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>3 个快照</div>
@@ -29,12 +29,12 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           {/* Version info bar */}
           <div className="history-version-bar">
             <div className="history-version-item">
-              <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uE896</span>
+              <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uEA8D</span>
               <span style={{ fontSize: 13, color: 'rgba(125,139,153,1)' }}>版本:</span>
               <span style={{ fontSize: 13, color: 'rgba(255,228,92,1)' }}>v3</span>
             </div>
             <div className="history-version-item">
-              <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uE8B5</span>
+              <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uEB24</span>
               <span style={{ fontSize: 13, color: 'rgba(139,152,165,1)' }}>2024-05-20 14:32</span>
             </div>
             <button className="history-btn history-btn-secondary">

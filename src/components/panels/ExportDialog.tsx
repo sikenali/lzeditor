@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 
 const EXPORT_FORMATS = [
-  { id: 'pdf', name: 'PDF', icon: '\uE883', desc: '适合打印和分享', selected: true },
-  { id: 'html', name: 'HTML', icon: '\uE9C5', desc: '网页格式', selected: false },
-  { id: 'docx', name: 'Word', icon: '\uF12C', desc: 'Office 文档', selected: false },
-  { id: 'md', name: 'Markdown', icon: '\uF033', desc: '纯文本源码', selected: false },
+  { id: 'pdf', name: 'PDF', icon: '\uECFC', desc: '适合打印和分享', selected: true },
+  { id: 'html', name: 'HTML', icon: '\uEE40', desc: '网页格式', selected: false },
+  { id: 'docx', name: 'Word', icon: '\uED1A', desc: 'Office 文档', selected: false },
+  { id: 'md', name: 'Markdown', icon: '\uEF1D', desc: '纯文本源码', selected: false },
 ]
 
 export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -21,7 +21,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <div className="export-header">
           <div className="export-title">
             <div className="export-icon">
-              <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uE454</span>
+              <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uEC54</span>
             </div>
             <div>
               <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>导出文档</div>
@@ -120,7 +120,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         {/* Footer */}
         <div className="export-footer">
           <div className="export-footer-hint">
-            <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uE659</span>
+            <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uEE58</span>
             <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>导出不会修改原文档</span>
           </div>
           <div className="export-footer-actions">
