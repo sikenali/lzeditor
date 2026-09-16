@@ -11,6 +11,27 @@ import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
 
+const DEFAULT_CONTENT = `# 技术笔记
+
+> 本文档基于 Calicat 设计稿构建，包含所有 mock 数据用于功能测试。
+
+---
+
+## 项目规划
+
+### 核心功能
+
+- Markdown 编辑与实时预览
+- AI 写作助手（改写/润色/续写/摘要/翻译）
+- 版本历史与回滚
+- 暗夜霓虹主题
+
+### 技术栈
+
+\`\`\`bash
+npm run dev
+\`\`\`
+
 > 选中这段文字可以体验 AI 浮动工具栏 —— 点击图标即可唤起 AI 辅助。
 
 ### 下一步
