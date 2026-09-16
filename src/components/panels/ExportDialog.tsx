@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { exportDocument } from '../../services/exportService'
 
 const EXPORT_FORMATS = [
   { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
