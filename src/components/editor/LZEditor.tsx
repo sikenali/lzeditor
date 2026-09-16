@@ -21,6 +21,7 @@ export const LZEditor = () => {
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
+  const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
@@ -35,8 +36,10 @@ export const LZEditor = () => {
     content: remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
     onUpdate: ({ editor }: any) => {
       const text = editor.getText()
+      const html = editor.getHTML()
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
+      setDocHTML(html)
     },
     onSelectionUpdate: ({ editor }: any) => {
       const pos = editor.state.selection

@@ -40,6 +40,7 @@ export interface ApplyRecord {
 export interface EditorStoreState {
   docTitle: string
   docPath: string
+  docHTML: string
   wordCount: number
   charCount: number
   cursorPosition: { line: number; column: number }
@@ -49,16 +50,21 @@ export interface EditorStoreState {
   openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export'
   showOutline: boolean
   showPreview: boolean
+  readProgress: number
+  fontSize: number
   setTitle: (title: string) => void
   setWordCount: (count: number) => void
   setCharCount: (count: number) => void
   setCursorPosition: (pos: { line: number; column: number }) => void
+  setDocHTML: (html: string) => void
   setPreview: (isPreview: boolean) => void
   setReadMode: (isReadMode: boolean) => void
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
   setShowOutline: (showOutline: boolean) => void
   setShowPreview: (showPreview: boolean) => void
+  setReadProgress: (progress: number) => void
+  setFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
 }

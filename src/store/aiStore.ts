@@ -13,6 +13,8 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   openPanel: 'none',
   showOutline: false,
   showPreview: false,
+  readProgress: 0,
+  fontSize: 17,
   editorRef: null,
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
   setTitle: (title: string) => set({ docTitle: title }),
@@ -25,6 +27,8 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => set({ openPanel: panel }),
   setShowOutline: (showOutline: boolean) => set({ showOutline }),
   setShowPreview: (showPreview: boolean) => set({ showPreview }),
+  setReadProgress: (readProgress: number) => set({ readProgress }),
+  setFontSize: (fontSize: number) => set({ fontSize }),
 
   panelVisible: false,
   panelAction: null,
