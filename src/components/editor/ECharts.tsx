@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import * as echarts from 'echarts'
+declare const echarts: any
 
 interface EChartsComponentProps {
   option: any
@@ -9,7 +9,7 @@ interface EChartsComponentProps {
 
 export const EChartsComponent: React.FC<EChartsComponentProps> = ({ option, height = 400, width = '100%' }) => {
   const chartRef = useRef<HTMLDivElement>(null)
-  const chartInstance = useRef<echarts.ECharts | null>(null)
+  const chartInstance = useRef<any>(null)
 
   useEffect(() => {
     if (chartRef.current && !chartInstance.current) {
