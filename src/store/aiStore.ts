@@ -33,8 +33,6 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
-  previewWidth: 400,
-  setPreviewWidth: (width: number) => set({ previewWidth: width }),
 
   panelVisible: false,
   panelAction: null,

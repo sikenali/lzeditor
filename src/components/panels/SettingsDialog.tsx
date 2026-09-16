@@ -3,6 +3,7 @@ import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
 import { LANGUAGES } from '../../shared/languages'
+import { THEMES, applyTheme } from '../../styles/themes'
 import { LFSSelect, LFSInput } from '../../components/ui/LFInput'
 
 const NAV_GROUPS: { id: SettingsGroup; label: string; group: string }[] = [
@@ -165,8 +166,33 @@ function renderGeneralSection() {
     <>
       <div className="settings-section">
         <div className="settings-section-title">
-          <span>主题模式</span>
-          <span className="settings-section-desc">选择界面的明暗风格</span>
+          <span>主题</span>
+          <span className="settings-section-desc">选择界面风格</span>
+        </div>
+        <div className="theme-grid">
+          {THEMES.map(theme => (
+            <button
+              key={theme.id}
+              className={`theme-card ${useSettingsStore.getState().accentColor === theme.colors.accentPrimary ? 'active' : ''}`}
+              onClick={() => {
+                applyTheme(theme.id)
+                useSettingsStore.getState().updateSetting('accentColor', theme.colors.accentPrimary)
+              }}
+            >
+              <div className="theme-preview" style={{ background: theme.colors.bgPrimary, border: '1px solid ' + theme.colors.borderDefault }}>
+                <div style={{ width: '100%', height: 8, background: theme.colors.accentPrimary, borderRadius: 2, marginBottom: 4 }} />
+                <div style={{ width: '60%', height: 4, background: theme.colors.textMuted, borderRadius: 2 }} />
+              </div>
+              <span className="theme-name">{theme.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">
+          <span>深色模式</span>
+          <span className="settings-section-desc">切换明暗主题</span>
         </div>
         <div className="segmented-control">
           {(['light', 'dark', 'system'] as const).map(m => (
