@@ -1,0 +1,12 @@
+node_modules/
+dist/
+release/
+.electron-builder/
+*.log
+.env
+.env.local
+.DS_Store
+coverage/
+.idea/
+.vscode/
+*.db

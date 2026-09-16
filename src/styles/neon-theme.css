@@ -1,0 +1,99 @@
+:root {
+  --bg-primary: rgba(10, 14, 19, 1);
+  --bg-secondary: rgba(18, 24, 31, 1);
+  --bg-tertiary: rgba(13, 19, 25, 1);
+  --bg-code: rgba(15, 22, 32, 1);
+  --bg-elevated: rgba(22, 29, 38, 1);
+
+  --text-primary: rgba(220, 230, 240, 1);
+  --text-secondary: rgba(125, 139, 153, 1);
+  --text-muted: rgba(95, 110, 125, 1);
+  --text-accent: rgba(57, 255, 158, 1);
+
+  --accent-primary: rgba(57, 255, 158, 1);
+  --accent-soft: rgba(57, 255, 158, 0.15);
+  --accent-border: rgba(57, 255, 158, 0.2);
+  --accent-glow: 0 0 12px rgba(57, 255, 158, 0.2);
+
+  --ai-panel-bg: rgba(13, 19, 25, 0.97);
+  --ai-panel-border: rgba(57, 255, 158, 0.3);
+  --ai-panel-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(57, 255, 158, 0.1);
+  --ai-loading-dot: rgba(57, 255, 158, 0.6);
+
+  --border-default: rgba(51, 64, 76, 1);
+  --border-subtle: rgba(29, 39, 49, 1);
+
+  --toolbar-bg: rgba(13, 19, 25, 1);
+  --toolbar-hover: rgba(57, 255, 158, 0.08);
+  --toolbar-active: rgba(57, 255, 158, 0.15);
+
+  --statusbar-bg: rgba(18, 24, 31, 1);
+
+  --amber: rgba(255, 228, 92, 1);
+  --amber-soft: rgba(255, 228, 92, 0.15);
+  --red-soft: rgba(58, 26, 29, 1);
+  --green-soft: rgba(18, 51, 38, 1);
+
+  --font-sans: "Source Han Sans", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  background: var(--bg-code);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent-primary);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

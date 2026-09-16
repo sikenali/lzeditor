@@ -1,0 +1,307 @@
+/* Layout Styles */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Electron drag region - allows window dragging */
+.titlebar-drag-region {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  -webkit-app-region: drag;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 0;
+  width: 120px;
+  z-index: 10;
+  -webkit-app-region: no-drag;
+  margin-right: 12px;
+}
+
+.titlebar-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  border: none;
+  outline: none;
+  position: relative;
+}
+
+/* Traffic light button sizes for macOS */
+.titlebar-btn.close {
+  background: rgba(255, 95, 87, 1);
+  margin-right: 0;
+}
+.titlebar-btn.min {
+  background: rgba(254, 188, 46, 1);
+}
+.titlebar-btn.max {
+  background: rgba(40, 200, 64, 1);
+}
+
+/* Hover states with icon overlays */
+.titlebar-btn.close:hover::after {
+  content: '\u2715';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: rgba(0,0,0,0.6);
+}
+.titlebar-btn.min:hover::after {
+  content: '\u2212';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: rgba(0,0,0,0.6);
+}
+.titlebar-btn.max:hover::after {
+  content: '\u25AF';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: rgba(0,0,0,0.6);
+}
+
+.titlebar-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(139, 152, 165, 1);
+  pointer-events: auto;
+}
+
+.titlebar-logo {
+  color: var(--accent-primary);
+}
+
+.titlebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100px;
+  justify-content: flex-end;
+  z-index: 10;
+  -webkit-app-region: no-drag;
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sync-dot {
+  width: 8px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+
+.sync-status.saving .sync-dot {
+  background: var(--amber);
+  animation: pulse 1s infinite;
+}
+
+.sync-status.error .sync-dot {
+  background: rgba(255, 95, 87, 1);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  height: 68px;
+  padding: 0 32px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 36px;
+  flex-shrink: 0;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  min-width: 70px;
+  transition: all 0.12s;
+}
+
+.toolbar-btn:hover {
+  background: var(--toolbar-hover);
+}
+
+.toolbar-btn.active {
+  background: var(--toolbar-active);
+}
+
+.toolbar-icon {
+  font-size: 20px;
+  color: rgba(127, 191, 162, 1);
+  line-height: 1;
+}
+
+.toolbar-label {
+  font-size: 12px;
+  color: rgba(125, 139, 153, 1);
+}
+
+.document-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-item.path {
+  background: var(--bg-code);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.meta-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-default);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.badge-markdown {
+  background: rgba(42, 36, 16, 1);
+  color: var(--amber);
+  border: 0.7px solid rgba(92, 82, 32, 1);
+}
+
+.badge-synced {
+  background: rgba(16, 40, 31, 1);
+  color: var(--accent-primary);
+  border: 0.7px solid rgba(44, 74, 60, 1);
+}
+
+.badge-saving {
+  background: rgba(42, 36, 16, 1);
+  color: var(--amber);
+}
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 32px;
+  background: var(--statusbar-bg);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  gap: 24px;
+}
+
+.statusbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 360px;
+  flex-shrink: 0;
+}
+
+.statusbar-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: center;
+}
+
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 360px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  color: var(--accent-primary);
+}
+
+.statusbar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusbar-divider {
+  width: 4px;
+  height: 3px;
+  background: var(--border-default);
+  border-radius: 2px;
+}
+
+.statusbar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(15, 22, 32, 1);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--amber);
+}

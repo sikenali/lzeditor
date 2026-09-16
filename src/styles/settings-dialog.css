@@ -1,0 +1,248 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.settings-dialog {
+  background: rgba(16, 23, 32, 1);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  width: 820px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.settings-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.settings-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-reset-btn {
+  font-size: 12px;
+  color: rgba(111, 125, 138, 1);
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-default);
+  transition: all 0.12s;
+}
+
+.settings-reset-btn:hover {
+  color: rgba(234, 243, 248, 1);
+  border-color: var(--accent-border);
+}
+
+.settings-close-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: all 0.12s;
+}
+
+.settings-close-btn:hover {
+  background: var(--toolbar-hover);
+  color: rgba(234, 243, 248, 1);
+}
+
+.settings-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.settings-sidebar {
+  width: 212px;
+  padding: 20px 16px;
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.settings-nav-group {
+  margin-bottom: 16px;
+}
+
+.settings-nav-label {
+  font-size: 11px;
+  color: rgba(78, 90, 102, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  margin-bottom: 2px;
+}
+
+.settings-nav-item {
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: rgba(155, 169, 182, 1);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.settings-nav-item:hover {
+  background: var(--toolbar-hover);
+  color: rgba(234, 243, 248, 1);
+}
+
+.settings-nav-item.active {
+  background: rgba(18, 36, 28, 1);
+  color: var(--accent-primary);
+}
+
+.settings-nav-bottom {
+  margin-top: auto;
+  padding: 20px 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-version {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-version-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+
+.settings-content {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.settings-section {
+  margin-bottom: 28px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(234, 243, 248, 1);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.setting-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.segmented-control {
+  display: flex;
+  background: rgba(13, 20, 28, 1);
+  border-radius: 4px;
+  padding: 8px 0;
+  gap: 8px;
+}
+
+.segmented-btn {
+  padding: 8px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+  border: 1px solid transparent;
+}
+
+.segmented-btn:hover {
+  color: rgba(234, 243, 248, 1);
+}
+
+.segmented-btn.active {
+  background: rgba(18, 36, 28, 1);
+  color: var(--accent-primary);
+  border-color: transparent;
+}
+
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.settings-cancel-btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  transition: all 0.12s;
+}
+
+.settings-cancel-btn:hover {
+  border-color: var(--accent-border);
+  color: rgba(234, 243, 248, 1);
+}
+
+.settings-save-btn {
+  padding: 7px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--accent-primary);
+  color: rgba(6, 36, 23, 1);
+  transition: opacity 0.12s;
+}
+
+.settings-save-btn:hover {
+  opacity: 0.85;
+}
