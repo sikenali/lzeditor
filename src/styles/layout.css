@@ -1,58 +1,7 @@
 /* Layout Styles — LZMail warm Oriental design */
 
-.titlebar {
-  display: flex; align-items: center;
-  height: 48px; padding: 0 20px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-subtle);
-  user-select: none; flex-shrink: 0; position: relative;
-}
 
-.titlebar-drag-region {
-  display: flex; align-items: center; width: 100%;
-  -webkit-app-region: drag; position: absolute; inset: 0; pointer-events: none;
-}
-.titlebar-controls {
-  display: flex; gap: 0; width: 120px;
-  z-index: 10; -webkit-app-region: no-drag; margin-right: 12px;
-}
-.titlebar-btn {
-  width: 12px; height: 12px; border-radius: 50%;
-  cursor: pointer; transition: opacity 0.15s;
-  border: none; outline: none; position: relative;
-}
-.titlebar-btn.close { background: var(--red); }
-.titlebar-btn.min   { background: var(--yellow); }
-.titlebar-btn.max   { background: var(--green); }
 
-.titlebar-btn.close:hover::after {
-  content: '\u2715'; position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 8px; color: rgba(0,0,0,0.65);
-}
-.titlebar-btn.min:hover::after {
-  content: '\u2212'; position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; color: rgba(0,0,0,0.65);
-}
-.titlebar-btn.max:hover::after {
-  content: '\u25AF'; position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 7px; color: rgba(0,0,0,0.65);
-}
-
-.titlebar-title {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  gap: 8px; font-size: 13px; color: var(--text-secondary);
-  pointer-events: auto;
-  font-family: "Noto Serif SC", serif;
-}
-.titlebar-logo { color: var(--accent-primary); }
-.titlebar-actions {
-  display: flex; align-items: center; gap: 12px;
-  width: 100px; justify-content: flex-end;
-  z-index: 10; -webkit-app-region: no-drag;
-}
 
 .sync-status { display: flex; align-items: center; gap: 6px; }
 .sync-dot {
