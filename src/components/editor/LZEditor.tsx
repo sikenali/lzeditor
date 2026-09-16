@@ -62,6 +62,18 @@ export const LZEditor = () => {
     editable: true,
   })
 
+  // Set initial content immediately so ReadMode/Preview have data on first open
+  React.useEffect(() => {
+    if (editor) {
+      const html = editor.getHTML()
+      const text = editor.getText()
+      setDocHTML(html)
+      setMdContent(htmlToMarkdown(html))
+      setWordCount(text.split(/\s+/).filter(Boolean).length)
+      setCharCount(text.length)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleToolbarAction = useCallback((action: AIAction) => {
     const selectedText = editor ? editor.state.doc.textContent.slice(editor.state.selection.from, editor.state.selection.to) : ''
     const pos = toolbar.position
