@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from 'react'
-import { Viz } from 'viz.js'
-import { textToSVG } from 'viz.js'
 
 interface GraphvizProps {
   code: string
@@ -12,18 +10,28 @@ export const Graphviz: React.FC<GraphvizProps> = ({ code, width = 600, height = 
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Use Viz.js CDN
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/viz.js@2.1.2/prebuilt/viz.full.js'
+    script.onload = () => {
+      renderGraph()
+    }
+    document.head.appendChild(script)
+
     const renderGraph = async () => {
       try {
-        const viz = new Viz()
-        const svg = await viz.renderString(code, {
-          formats: ['svg'],
-        })
-        if (containerRef.current) {
-          containerRef.current.innerHTML = svg
-          const svgElement = containerRef.current.querySelector('svg')
-          if (svgElement) {
-            svgElement.style.width = '100%'
-            svgElement.style.height = 'auto'
+        if (typeof (window as any).Viz !== 'undefined') {
+          const viz = new (window as any).Viz()
+          const svg = await viz.renderString(code, {
+            formats: ['svg'],
+          })
+          if (containerRef.current) {
+            containerRef.current.innerHTML = svg
+            const svgElement = containerRef.current.querySelector('svg')
+            if (svgElement) {
+              svgElement.style.width = '100%'
+              svgElement.style.height = 'auto'
+            }
           }
         }
       } catch (error) {
@@ -33,7 +41,10 @@ export const Graphviz: React.FC<GraphvizProps> = ({ code, width = 600, height = 
         }
       }
     }
-    renderGraph()
+
+    return () => {
+      document.head.removeChild(script)
+    }
   }, [code])
 
   return (

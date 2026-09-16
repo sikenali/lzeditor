@@ -1,5 +1,6 @@
-import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
+// @ts-ignore
+import * as JSZip from 'jszip'
+// saveAs imported from file-saver
 
 export interface EpubOptions {
   title: string
