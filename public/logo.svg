@@ -1,8 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#4F46E5"/>
-  <path d="M20 44V22C20 20.8954 20.8954 20 22 20H38" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <path d="M24 28L40 44" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <path d="M28 20V16M28 16L25 19M28 16L31 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="34" y="38" width="10" height="2" rx="1" fill="white" fill-opacity="0.5"/>
-  <rect x="34" y="43" width="7" height="2" rx="1" fill="white" fill-opacity="0.3"/>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <g transform="translate(32,16)">
+    <path d="M0,28 C0,28 -10,8 -10,-6 C-10,-14 -4,-18 0,-24 C4,-18 10,-14 10,-6 C10,8 0,28 0,28Z" fill="white" opacity="0.95"/>
+    <line x1="0" y1="-24" x2="0" y2="28" stroke="#4F46E5" stroke-width="1.2" opacity="0.4"/>
+    <ellipse cx="0" cy="-4" rx="2.5" ry="5" fill="#4F46E5" opacity="0.25"/>
+  </g>
 </svg>
