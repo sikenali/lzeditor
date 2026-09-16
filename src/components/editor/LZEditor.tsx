@@ -83,7 +83,7 @@ export const LZEditor = () => {
       </div>
       <FloatingToolbar
         position={toolbar.position}
-        selectedText={toolbar.selectedText}
+        
         visible={toolbar.visible}
         onAction={handleToolbarAction}
       />
