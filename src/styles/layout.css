@@ -15,19 +15,20 @@
 /* ── Toolbar ── */
 .toolbar {
   display: flex; align-items: center;
-  height: 52px; padding: 0 16px;
+  height: 64px; padding: 0 28px;
   background: var(--toolbar-bg);
   border-bottom: 1px solid var(--border-subtle);
-  gap: 20px; flex-shrink: 0;
+  gap: 32px; flex-shrink: 0;
 }
 .toolbar-group { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
 .toolbar-group--middle { flex: 1; justify-content: center; }
+.toolbar-group--middle .toolbar-btn { min-width: 44px; padding: 4px 6px; }
 
 .toolbar-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; padding: 4px 8px;
-  min-width: 48px; transition: color 0.12s; cursor: pointer;
-  border-radius: 6px; border: none; background: transparent; position: relative;
+  gap: 2px; padding: 6px 10px;
+  min-width: 70px; transition: color 0.12s; cursor: pointer;
+  border-radius: 0; border: none; background: transparent; position: relative;
 }
 .toolbar-btn:hover   { background: var(--toolbar-hover); }
 .toolbar-btn:hover .toolbar-icon { color: var(--text-primary); }

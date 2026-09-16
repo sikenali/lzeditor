@@ -1,4 +1,5 @@
 // @ts-ignore
+// @ts-ignore
 import * as JSZip from 'jszip'
 // saveAs imported from file-saver
 
