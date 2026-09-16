@@ -13,8 +13,10 @@ import { FilePanel } from './components/panels/FilePanel'
 import { OutlinePanel } from './components/panels/OutlinePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
 import { useEditorStore } from './store/editorStore'
+import { useTheme } from './hooks/useTheme'
 
 function App() {
+  useTheme()
   const openPanel = useEditorStore(s => s.openPanel)
   const isReadMode = useEditorStore(s => s.isReadMode)
 

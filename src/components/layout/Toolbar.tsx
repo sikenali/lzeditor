@@ -28,7 +28,6 @@ export const Toolbar: React.FC = () => {
   const openPanel = useEditorStore((s: any) => s.openPanel)
   const isReadMode = useEditorStore((s: any) => s.isReadMode)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
-  const setPreview = useEditorStore((s: any) => s.setPreview)
   const setReadMode = useEditorStore((s: any) => s.setReadMode)
   const editorRef = useEditorStore((s: any) => s.editorRef)
 
@@ -44,7 +43,7 @@ export const Toolbar: React.FC = () => {
         setOpenPanel(openPanel === 'outline' ? 'none' : 'outline')
         break
       case 'preview':
-        setPreview((v: boolean) => !v)
+        setOpenPanel(openPanel === 'preview' ? 'none' : 'preview')
         break
       case 'image': {
         const input = document.createElement('input')
@@ -124,7 +123,7 @@ export const Toolbar: React.FC = () => {
               const tr = document.createElement('tr')
               for (let j = 0; j < c; j++) {
                 const td = document.createElement('td')
-                td.style.cssText = 'border:1px solid var(--border-color);padding:8px 12px;min-width:60px;'
+                td.style.cssText = 'border:1px solid var(--border-default);padding:8px 12px;min-width:60px;'
                 td.textContent = i === 0 ? '标题' : ''
                 tr.appendChild(td)
               }
