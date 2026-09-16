@@ -17,7 +17,7 @@ echo "Building version: $VERSION"
 cat > "$SCRIPT_DIR/package.yml" <<PKGEOF
 package: cloud.lazycat.app.lazycateditor
 version: ${VERSION}
-name: 懒猫编辑器
+name: LZEditor
 description: 轻文档markdown编辑器，AI 辅助写作
 author: sikenali
 license: MIT
@@ -27,10 +27,10 @@ unsupported_platforms:
   - ios
 locales:
   zh-CN:
-    name: 懒猫编辑器
+    name: LZEditor
     description: 轻文档markdown编辑器，AI 辅助写作
   en:
-    name: LazyCat Editor
+    name: LZEditor
     description: Lightweight markdown document editor with AI assistance
 permissions:
   required:
