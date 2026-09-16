@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
-import { generateEPUB } from '../../services/epubGenerator'
 import { useEditorStore } from '../../store/editorStore'
-import { LFSCombo } from '../../components/ui/LFSCombo'
 
 const EXPORT_FORMATS = [
   { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
@@ -33,7 +31,6 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
 
   const handleExport = () => {
-    // TODO: implement actual export
     const blob = new Blob([docHTML || '<h1>Empty</h1>'], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -88,21 +85,15 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             <div className="export-row">
               <div className="export-field">
                 <label className="export-label">纸张大小</label>
-                <LFSCombo
-                  value={paperSize}
-                  onChange={setPaperSize}
-                  options={PAPER_SIZES.map(p => ({ value: p.id, label: p.label }))}
-                  style={{ minWidth: 120 }}
-                />
+                <select className="lfs-select" value={paperSize} onChange={e => setPaperSize(e.target.value)} style={{ minWidth: 120 }}>
+                  {PAPER_SIZES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
               </div>
               <div className="export-field">
                 <label className="export-label">方向</label>
-                <LFSCombo
-                  value={orientation}
-                  onChange={setOrientation}
-                  options={ORIENTATIONS.map(o => ({ value: o.id, label: o.label }))}
-                  style={{ minWidth: 120 }}
-                />
+                <select className="lfs-select" value={orientation} onChange={e => setOrientation(e.target.value)} style={{ minWidth: 120 }}>
+                  {ORIENTATIONS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                </select>
               </div>
             </div>
           </div>
@@ -111,14 +102,19 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           <div className="export-section">
             <div className="export-section-header">
               <span className="export-section-label">预览</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{paperSize.toUpperCase()} · {orientation === 'portrait' ? '纵向' : '横向'}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                {paperSize.toUpperCase()} · {orientation === 'portrait' ? '纵向' : '横向'}
+              </span>
             </div>
             <div className="export-preview-area">
-              <div className="export-preview-page" style={{ aspectRatio: orientation === 'portrait' ? '210/297' : '297/210' }}>
+              <div
+                className="export-preview-page"
+                style={{ aspectRatio: orientation === 'portrait' ? '210/297' : '297/210' }}
+              >
                 <div className="export-preview-content">
                   <div className="remix ri-file-text-line export-preview-icon"></div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>{selected.name} 格式</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{docTitle}.md</div>
+                  <div style={{ fontSize: 13, color: '#333', marginTop: 8 }}>{selected.name} 格式</div>
+                  <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>{docTitle}.md</div>
                 </div>
               </div>
             </div>

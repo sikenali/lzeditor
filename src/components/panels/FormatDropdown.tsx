@@ -40,8 +40,7 @@ export const FormatDropdown: React.FC<FormatDropdownProps> = ({ open, onToggle }
         const tag = action as `h${1|2|3|4|5}`
         const el = document.createElement(tag)
         el.textContent = sel?.toString() || `标题 ${action[1]}`
-        range?.deleteContents()
-        range?.insertNode(el)
+        range?.deleteContents(); range?.insertNode(el)
         break
       }
       case 'clear': {
@@ -73,7 +72,7 @@ export const FormatDropdown: React.FC<FormatDropdownProps> = ({ open, onToggle }
         const input = document.createElement('input')
         input.type = 'file'; input.accept = 'image/*'
         input.onchange = (e: any) => {
-          const file = e.target.files[0]
+          const file = e.target.files?.[0]
           if (file && range) {
             const reader = new FileReader()
             reader.onload = (ev) => {
@@ -114,12 +113,16 @@ export const FormatDropdown: React.FC<FormatDropdownProps> = ({ open, onToggle }
   }
 
   return (
-    <div style={{ position: 'relative', display: 'inline-flex' }}>
+    <div className="toolbar-dd-wrap">
       <button className="toolbar-btn" onClick={() => onToggle(!open)} title="格式">
         <span className="remix toolbar-icon ri-text-wrap"></span>
         <span className="toolbar-label">格式</span>
-        <span className={`remix toolbar-arrow ${open ? 'open' : ''}`}>▼</span>
       </button>
+      <span
+        className={`remix toolbar-dd-arrow ${open ? 'open' : ''}`}
+        onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
+        style={{ cursor: 'pointer' }}
+      >▶</span>
       {open && (
         <div className="toolbar-dropdown">
           {FORMAT_ITEMS.map((item, i) =>
