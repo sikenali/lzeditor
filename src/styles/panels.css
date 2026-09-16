@@ -198,6 +198,7 @@
   justify-content: space-between;
   padding: 20px 24px;
   border-top: 1px solid var(--border-subtle);
+  gap: 12px;
 }
 
 .export-footer-hint {

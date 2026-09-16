@@ -17,6 +17,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="export-dialog" onClick={e => e.stopPropagation()}>
+        {/* Header */}
         <div className="export-header">
           <div className="export-title">
             <div className="export-icon">
@@ -32,14 +33,16 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           </button>
         </div>
 
+        {/* Body */}
         <div className="export-body">
+          {/* Format selection */}
           <div className="export-section">
             <div className="export-section-header">
               <div className="export-section-dot" />
               <span className="export-section-title">导出格式</span>
             </div>
             <div className="format-grid">
-              <div className="format-card-row">
+              <div className="format-row">
                 {EXPORT_FORMATS.slice(0, 2).map(fmt => (
                   <button
                     key={fmt.id}
@@ -55,7 +58,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   </button>
                 ))}
               </div>
-              <div className="format-card-row">
+              <div className="format-row">
                 {EXPORT_FORMATS.slice(2).map(fmt => (
                   <button
                     key={fmt.id}
@@ -74,6 +77,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             </div>
           </div>
 
+          {/* Options */}
           <div className="export-section">
             <div className="option-row">
               <div className="option-label">
@@ -113,6 +117,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           </div>
         </div>
 
+        {/* Footer */}
         <div className="export-footer">
           <div className="export-footer-hint">
             <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uE659</span>

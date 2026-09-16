@@ -57,7 +57,10 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
               accentColor: '#39FF9E',
               shortcut: 'Ctrl+/',
             })}>恢复默认</button>
-            <button className="settings-close-btn" onClick={onClose}>
+            <button className="settings-close-btn" onClick={onClose} style={{
+              width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 6, color: 'rgba(92,106,120,1)', transition: 'all 0.12s'
+            }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(57,255,158,0.08)' }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}>
               <span className="remix">\uE61C</span>
             </button>
           </div>

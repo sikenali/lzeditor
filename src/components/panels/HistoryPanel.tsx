@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 
 const SAMPLE_VERSIONS = [
-  { id: 'v3', time: '2024-05-20 14:32', desc: '添加了 AI 写作助手功能', author: '我' },
-  { id: 'v2', time: '2024-05-19 09:15', desc: '优化了编辑器性能', author: '我' },
-  { id: 'v1', time: '2024-05-18 22:08', desc: '初始版本，暗夜霓虹主题', author: '我' },
+  { id: 'v3', time: '2024-05-20 14:32', desc: '添加了 AI 写作助手功能', author: '我', height: 48 },
+  { id: 'v2', time: '2024-05-19 09:15', desc: '优化了编辑器性能', author: '我', height: 32 },
+  { id: 'v1', time: '2024-05-18 22:08', desc: '初始版本，暗夜霓虹主题', author: '我', height: 64 },
 ]
 
 export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -16,8 +16,8 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           <div className="history-title">
             <span className="remix" style={{ fontSize: 18, color: 'var(--accent-primary)' }}>\uE617</span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>版本历史</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{SAMPLE_VERSIONS.length} 个快照</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>版本历史</div>
+              <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>3 个快照</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
@@ -26,51 +26,62 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         </div>
 
         <div className="history-body">
-          <div className="history-list">
-            {SAMPLE_VERSIONS.map((v, i) => (
-              <div
-                key={v.id}
-                className={`history-item ${selectedVersion === v.id ? 'active' : ''}`}
-                onClick={() => setSelectedVersion(v.id)}
-              >
-                <div className="history-item-left">
-                  <div className="history-item-dot" />
-                  <div>
-                    <div className="history-item-version">v{i + 1}</div>
-                    <div className="history-item-desc">{v.desc}</div>
-                  </div>
-                </div>
-                <div className="history-item-right">
-                  <div className="history-item-time">{v.time}</div>
-                  <div className="history-item-author">{v.author}</div>
-                </div>
+          {/* Version info bar */}
+          <div className="history-version-bar">
+            <div className="history-version-item">
+              <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uE896</span>
+              <span style={{ fontSize: 13, color: 'rgba(125,139,153,1)' }}>版本:</span>
+              <span style={{ fontSize: 13, color: 'rgba(255,228,92,1)' }}>v3</span>
+            </div>
+            <div className="history-version-item">
+              <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uE8B5</span>
+              <span style={{ fontSize: 13, color: 'rgba(139,152,165,1)' }}>2024-05-20 14:32</span>
+            </div>
+            <button className="history-btn history-btn-secondary">
+              <span className="remix" style={{ fontSize: 14 }}>\uE847</span>
+              <span>回滚</span>
+            </button>
+            <button className="history-btn history-btn-primary">
+              <span className="remix" style={{ fontSize: 14 }}>\uE613</span>
+              <span>重放</span>
+            </button>
+          </div>
+
+          {/* Snapshot histogram */}
+          <div className="history-histogram">
+            {[48, 32, 64, 24, 56, 40, 48, 32, 64, 48, 32, 56].map((h, i) => (
+              <div key={i} className="histogram-bar-wrapper">
+                <div
+                  className={`histogram-bar ${i === 2 ? 'active' : ''}`}
+                  style={{ height: `${h}px`, backgroundColor: i === 2 ? 'rgba(57,255,158,1)' : 'rgba(38,49,60,1)' }}
+                />
               </div>
             ))}
           </div>
 
-          <div className="history-diff">
-            <div className="diff-header">
-              <span className="remix" style={{ fontSize: 14, color: 'var(--accent-primary)' }}>\uE8E9</span>
-              <span style={{ fontSize: 13, fontWeight: 500 }}>版本差异</span>
+          {/* Legend */}
+          <div className="history-legend">
+            <div className="legend-item">
+              <span className="legend-dot" style={{ background: 'rgba(18,51,38,1)', border: '1px solid rgba(57,255,158,0.3)' }} />
+              <span style={{ fontSize: 11, color: 'rgba(125,139,153,1)' }}>新增内容</span>
             </div>
-            <div className="diff-content">
-              <div className="diff-line diff-added">
-                <span className="diff-marker">+</span>
-                <span>Sed hendrerit ligula in tempus</span>
-              </div>
-              <div className="diff-line diff-removed">
-                <span className="diff-marker">-</span>
-                <span>mollis vestibulum eros</span>
-              </div>
-              <div className="diff-line diff-neutral">
-                <span>eros. Aliquam pellentesque vehicula.</span>
-              </div>
+            <div className="legend-item">
+              <span className="legend-dot" style={{ background: 'rgba(255,228,92,1)' }} />
+              <span style={{ fontSize: 11, color: 'rgba(125,139,153,1)' }}>当前快照</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot" style={{ background: 'rgba(38,49,60,1)', border: '1px solid rgba(51,64,76,1)' }} />
+              <span style={{ fontSize: 11, color: 'rgba(125,139,153,1)' }}>保留内容</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot" style={{ background: 'rgba(255,138,138,1)' }} />
+              <span style={{ fontSize: 11, color: 'rgba(125,139,153,1)' }}>删除内容</span>
             </div>
           </div>
         </div>
 
         <div className="history-footer">
-          <button className="settings-cancel-btn">还原此版本</button>
+          <button className="settings-cancel-btn">取消</button>
           <button className="settings-save-btn">下载快照</button>
         </div>
       </div>
