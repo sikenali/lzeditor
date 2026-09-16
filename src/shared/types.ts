@@ -95,6 +95,7 @@ export interface SettingsState {
   styleSet?: string
   includeTOC?: boolean
   includeLineNumbers?: boolean
+  includePageNumbers?: boolean
   syncProvider?: string
   backupInterval?: string
   backupKeep?: number

@@ -586,6 +586,14 @@ function renderExportSection() {
         checked={state.includeLineNumbers || false}
         onChange={(v) => updateSetting('includeLineNumbers', v)}
       />
+      <div className="setting-divider" />
+      <ToggleRow
+        icon="ri-file-text-fill"
+        title="导出时包含页码"
+        desc="在底部显示当前页 / 总页数"
+        checked={state.includePageNumbers || false}
+        onChange={(v) => updateSetting('includePageNumbers', v)}
+      />
     </div>
   )
 }
