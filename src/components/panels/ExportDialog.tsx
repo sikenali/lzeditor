@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { generateEPUB } from '../../services/epubGenerator'
 import { useEditorStore } from '../../store/editorStore'
 
 const EXPORT_FORMATS = [

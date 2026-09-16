@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",
+    "@hpcc-js/wasm": "^2.35.2",
     "@tiptap/core": "^3.31.3",
     "@tiptap/extension-code-block-lowlight": "^3.31.3",
     "@tiptap/extension-highlight": "^3.31.3",
@@ -33,11 +34,14 @@
     "echarts": "^6.1.0",
     "echarts-for-react": "^3.0.6",
     "express": "^4.21.0",
+    "file-saver": "^2.0.5",
     "highlight.js": "^11.12.0",
+    "jszip": "^3.10.2",
     "katex": "^0.18.7",
     "lowlight": "^3.3.0",
     "mermaid": "^12.0.0",
     "openai": "^4.52.0",
+    "plantuml-encoder": "^1.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
@@ -45,6 +49,7 @@
     "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "remixicon-react": "^1.0.0",
+    "viz.js": "^2.1.2",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
