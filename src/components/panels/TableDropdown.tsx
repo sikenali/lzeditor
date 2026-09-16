@@ -26,10 +26,10 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
       <span className="toolbar-label">表格</span>
     </button>
     <span
-      className={`remix toolbar-dd-arrow ${open ? 'open' : ''}`}
+      className={`toolbar-dd-arrow ${open ? 'open' : ''}`}
       onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
       style={{ cursor: 'pointer' }}
-    >▶</span>
+    >{open ? '▶' : '▼'}</span>
     {open && (
       <div className="toolbar-dropdown">
         {TABLE_OPS.map((op, i) =>

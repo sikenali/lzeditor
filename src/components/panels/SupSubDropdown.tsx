@@ -14,10 +14,10 @@ export const SupSubDropdown: React.FC<SupSubDropdownProps> = ({ open, onToggle, 
       <span className="toolbar-label">角标</span>
     </button>
     <span
-      className={`remix toolbar-dd-arrow ${open ? 'open' : ''}`}
+      className={`toolbar-dd-arrow ${open ? 'open' : ''}`}
       onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
       style={{ cursor: 'pointer' }}
-    >▶</span>
+    >{open ? '▶' : '▼'}</span>
     {open && (
       <div className="toolbar-dropdown">
         <button className="toolbar-dropdown-item" onClick={() => { onSup(); onToggle(false) }}>

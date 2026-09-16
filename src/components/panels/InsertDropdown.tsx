@@ -98,10 +98,10 @@ export const InsertDropdown: React.FC<InsertDropdownProps> = ({ open, onToggle }
         <span className="toolbar-label">插入</span>
       </button>
       <span
-        className={`remix toolbar-dd-arrow ${open ? 'open' : ''}`}
+        className={`toolbar-dd-arrow ${open ? 'open' : ''}`}
         onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
         style={{ cursor: 'pointer' }}
-      >▶</span>
+      >{open ? '▶' : '▼'}</span>
       {open && (
         <div className="toolbar-dropdown">
           {INSERT_ITEMS.map((item, i) =>
