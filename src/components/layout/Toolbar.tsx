@@ -26,10 +26,13 @@ const RIGHT_TOOLS = TOOLS.slice(8)
 
 export const Toolbar: React.FC = () => {
   const openPanel = useEditorStore((s: any) => s.openPanel)
-  const isReadMode = useEditorStore((s: any) => s.isReadMode)
-  const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
+  const showOutline = useEditorStore((s: any) => s.showOutline)
+  const showPreview = useEditorStore((s: any) => s.showPreview)
+  const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
+  const setShowPreview = useEditorStore((s: any) => s.setShowPreview)
   const setReadMode = useEditorStore((s: any) => s.setReadMode)
   const editorRef = useEditorStore((s: any) => s.editorRef)
+  const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
 
   const handleClick = (action: string) => {
     switch (action) {
@@ -40,10 +43,12 @@ export const Toolbar: React.FC = () => {
         setOpenPanel(openPanel === 'file' ? 'none' : 'file')
         break
       case 'outline':
-        setOpenPanel(openPanel === 'outline' ? 'none' : 'outline')
+        setShowOutline(!showOutline)
+        if (showOutline) setOpenPanel('none')
         break
       case 'preview':
-        setOpenPanel(openPanel === 'preview' ? 'none' : 'preview')
+        setShowPreview(!showPreview)
+        if (showPreview) setOpenPanel('none')
         break
       case 'image': {
         const input = document.createElement('input')
@@ -55,7 +60,6 @@ export const Toolbar: React.FC = () => {
             const reader = new FileReader()
             reader.onload = (ev) => {
               const img = ev.target?.result as string
-              // Insert image at current cursor position
               const sel = window.getSelection()
               if (sel?.rangeCount) {
                 const range = sel.getRangeAt(0)
@@ -162,7 +166,7 @@ export const Toolbar: React.FC = () => {
       {tools.map(t => (
         <button
           key={t.action}
-          className={`toolbar-btn ${openPanel === t.action ? 'active' : ''}`}
+          className={`toolbar-btn ${openPanel === t.action ? 'active' : ''} ${t.action === 'outline' && showOutline ? 'active' : ''} ${t.action === 'preview' && showPreview ? 'active' : ''}`}
           onClick={() => handleClick(t.action)}
           title={t.label}
         >

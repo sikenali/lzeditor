@@ -11,6 +11,8 @@ import { LibraryPanel } from './components/panels/LibraryPanel'
 import { FilePanel } from './components/panels/FilePanel'
 import { OutlinePanel } from './components/panels/OutlinePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
+import { SidebarOutline } from './components/sidebar/SidebarOutline'
+import { SidebarPreview } from './components/sidebar/SidebarPreview'
 import { useEditorStore } from './store/editorStore'
 import { useTheme } from './hooks/useTheme'
 
@@ -18,6 +20,8 @@ function App() {
   useTheme()
   const openPanel = useEditorStore(s => s.openPanel)
   const isReadMode = useEditorStore(s => s.isReadMode)
+  const showOutline = useEditorStore(s => s.showOutline)
+  const showPreview = useEditorStore(s => s.showPreview)
 
   const closePanel = () => useEditorStore.getState().setOpenPanel('none')
 
@@ -26,7 +30,11 @@ function App() {
       <Toolbar />
       <DocumentMetaBar />
       <div className="app-main">
-        <LZEditor />
+        <div className="app-layout">
+          {showOutline && <SidebarOutline />}
+          <LZEditor />
+          {showPreview && <SidebarPreview />}
+        </div>
       </div>
       <StatusBar />
 

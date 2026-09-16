@@ -48,7 +48,7 @@ export const SidebarOutline: React.FC = () => {
     updateItems()
 
     if (window.IntersectionObserver) {
-      const obs = new IntersectionObserver(
+      const io = new IntersectionObserver(
         (entries) => {
           const visible = entries.filter(e => e.isIntersecting)
           if (visible.length > 0) {
@@ -58,13 +58,13 @@ export const SidebarOutline: React.FC = () => {
         },
         { root: editorRef, threshold: 0.3 }
       )
-      sections.forEach(el => obs.observe(el))
-      observerRef.current = obs
+      sections.forEach(el => io.observe(el))
+      observerRef.current = io
     }
 
     return () => {
       observer.disconnect()
-      obs?.disconnect()
+      observerRef.current?.disconnect()
     }
   }, [editorRef, updateItems, items.length])
 
