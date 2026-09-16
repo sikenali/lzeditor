@@ -67,7 +67,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
         </div>
 
         <div className="lang-footer">
-          <span style={{ fontSize: 11, color: 'rgba(111,125,138,1)' }}>共 {LANGUAGES.length} 种语言</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>共 {LANGUAGES.length} 种语言</span>
         </div>
       </div>
     </div>
