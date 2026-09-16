@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-
 import { LANGUAGES } from '../../shared/languages'
 import type { LanguageCode } from '../../shared/languages'
+import { LFSInput } from '../ui/LFInput'
 
 // Re-export for convenience
 export type { LanguageCode }
@@ -37,11 +37,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
 
         <div className="lang-search">
           <span className="remix lang-search-icon ri-search-line"></span>
-          <input
-            type="text"
+          <LFSInput
             placeholder="搜索语言..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={setSearch}
             autoFocus
           />
         </div>

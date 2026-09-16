@@ -3,6 +3,7 @@ import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
 import { LANGUAGES } from '../../shared/languages'
+import { LFSSelect, LFSInput } from '../../components/ui/LFInput'
 
 const NAV_GROUPS: { id: SettingsGroup; label: string; group: string }[] = [
   { id: 'general', label: '通用', group: '基础' },
@@ -291,24 +292,29 @@ function renderAppearanceSection() {
           <span>界面语言</span>
           <span className="setting-hint">当前仅支持中文</span>
         </div>
-        <select value="zh-CN" disabled style={{ minWidth: 160, opacity: 0.5 }}>
-          <option>简体中文</option>
-        </select>
+        <LFSSelect
+          value="zh-CN"
+          onChange={() => {}}
+          options={[{ value: 'zh-CN', label: '简体中文' }]}
+          disabled
+          style={{ minWidth: 160, opacity: 0.5 }}
+        />
       </div>
       <div className="setting-row">
         <div className="setting-label">
           <span>编辑器字体</span>
           <span className="setting-hint">代码与正文使用的字体</span>
         </div>
-        <select
+        <LFSSelect
           value={editorFont || 'source-han'}
-          onChange={(e) => updateSetting('editorFont', e.target.value)}
+          onChange={(v) => updateSetting('editorFont', v)}
+          options={[
+            { value: 'source-han', label: 'Source Han Sans' },
+            { value: 'jetbrains', label: 'JetBrains Mono' },
+            { value: 'fira', label: 'Fira Code' },
+          ]}
           style={{ minWidth: 160 }}
-        >
-          <option value="source-han">Source Han Sans</option>
-          <option value="jetbrains">JetBrains Mono</option>
-          <option value="fira">Fira Code</option>
-        </select>
+        />
       </div>
     </div>
   )
@@ -331,13 +337,12 @@ function renderAISection(models: AIModel[], apiKeyVisible: boolean, setApiKeyVis
           <span>AI 提供商</span>
           <span className="setting-hint">切换默认使用的模型</span>
         </div>
-        <select
+        <LFSSelect
           value={state.provider}
-          onChange={(e) => updateSetting('provider', e.target.value)}
+          onChange={(v) => updateSetting('provider', v)}
+          options={PROVIDERS.map(p => ({ value: p.id, label: p.name }))}
           style={{ minWidth: 160 }}
-        >
-          {PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
+        />
       </div>
 
       <div className="setting-row">
@@ -345,13 +350,12 @@ function renderAISection(models: AIModel[], apiKeyVisible: boolean, setApiKeyVis
           <span>模型</span>
           <span className="setting-hint">{currentProvider?.defaultModel}</span>
         </div>
-        <select
+        <LFSSelect
           value={state.model}
-          onChange={(e) => updateSetting('model', e.target.value)}
+          onChange={(v) => updateSetting('model', v)}
+          options={models.map(m => ({ value: m.id, label: m.name }))}
           style={{ minWidth: 160 }}
-        >
-          {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-        </select>
+        />
       </div>
 
       <div className="setting-row">
@@ -360,10 +364,10 @@ function renderAISection(models: AIModel[], apiKeyVisible: boolean, setApiKeyVis
           <span className="setting-hint">本地加密存储，不上传服务器</span>
         </div>
         <div style={{ display: 'flex', gap: 8, flex: 1 }}>
-          <input
+          <LFSInput
             type={apiKeyVisible ? 'text' : 'password'}
             value={state.apiKey}
-            onChange={(e) => updateSetting('apiKey', e.target.value)}
+            onChange={(v) => updateSetting('apiKey', v)}
             placeholder="sk-..."
             style={{ flex: 1, fontFamily: 'var(--font-mono)' }}
           />
@@ -378,13 +382,13 @@ function renderAISection(models: AIModel[], apiKeyVisible: boolean, setApiKeyVis
           <span>自定义 API 地址</span>
           <span className="setting-hint">OpenAI 兼容格式</span>
         </div>
-        <input
-          type="text"
-          value={state.customBaseUrl}
-          onChange={(e) => updateSetting('customBaseUrl', e.target.value)}
-          placeholder="留空使用官方地址"
-          style={{ flex: 1 }}
-        />
+        <LFSInput
+           type="text"
+           value={state.customBaseUrl}
+           onChange={(v) => updateSetting('customBaseUrl', v)}
+           placeholder="留空使用官方地址"
+           style={{ flex: 1 }}
+         />
       </div>
 
       <div className="setting-row">
@@ -408,22 +412,23 @@ function renderAISection(models: AIModel[], apiKeyVisible: boolean, setApiKeyVis
 
       <div className="setting-row">
         <div className="setting-label"><span>最大 Token</span></div>
-        <input
-          type="number"
-          value={state.maxTokens}
-          onChange={(e) => updateSetting('maxTokens', parseInt(e.target.value) || 1024)}
-          style={{ width: 100 }}
-        />
+        <LFSInput
+           type="number"
+           value={state.maxTokens}
+           onChange={(v) => updateSetting('maxTokens', parseInt(v) || 1024)}
+           style={{ width: 100 }}
+         />
       </div>
 
       <div className="setting-row">
         <div className="setting-label"><span>全局快捷键</span></div>
-        <input
-          type="text"
-          value={state.shortcut}
-          readOnly
-          style={{ width: 120, opacity: 0.6, cursor: 'default' }}
-        />
+        <LFSInput
+           type="text"
+           value={state.shortcut}
+           readOnly
+           onChange={() => {}}
+           style={{ width: 120, opacity: 0.6, cursor: 'default' }}
+         />
       </div>
     </div>
   )
@@ -514,29 +519,31 @@ function renderExportSection() {
       </div>
       <div className="setting-row">
         <div className="setting-label"><span>默认格式</span></div>
-        <select
+        <LFSSelect
           value={state.exportFormat || 'markdown'}
-          onChange={(e) => updateSetting('exportFormat', e.target.value)}
+          onChange={(v) => updateSetting('exportFormat', v)}
+          options={[
+            { value: 'markdown', label: 'Markdown' },
+            { value: 'pdf', label: 'PDF' },
+            { value: 'html', label: 'HTML' },
+            { value: 'docx', label: 'Word' },
+          ]}
           style={{ minWidth: 160 }}
-        >
-          <option value="markdown">Markdown</option>
-          <option value="pdf">PDF</option>
-          <option value="html">HTML</option>
-          <option value="docx">Word</option>
-        </select>
+        />
       </div>
       <div className="setting-row">
         <div className="setting-label"><span>样式集</span></div>
-        <select
+        <LFSSelect
           value={state.styleSet || 'ocean'}
-          onChange={(e) => updateSetting('styleSet', e.target.value)}
+          onChange={(v) => updateSetting('styleSet', v)}
+          options={[
+            { value: 'ocean', label: 'Ocean' },
+            { value: 'dark', label: 'Dark' },
+            { value: 'minimal', label: 'Minimal' },
+            { value: 'candy', label: 'Candy' },
+          ]}
           style={{ minWidth: 160 }}
-        >
-          <option value="ocean">Ocean</option>
-          <option value="dark">Dark</option>
-          <option value="minimal">Minimal</option>
-          <option value="candy">Candy</option>
-        </select>
+        />
       </div>
       <ToggleRow
         icon="ri-bookmark-fill"
@@ -594,28 +601,29 @@ function renderSyncSection() {
           <span>自动备份间隔</span>
           <span className="setting-hint">每隔多久自动保存快照</span>
         </div>
-        <select
+        <LFSSelect
           value={state.backupInterval || '30s'}
-          onChange={(e) => updateSetting('backupInterval', e.target.value)}
+          onChange={(v) => updateSetting('backupInterval', v)}
+          options={[
+            { value: '30s', label: '30 秒' },
+            { value: '1m', label: '1 分钟' },
+            { value: '5m', label: '5 分钟' },
+            { value: '10m', label: '10 分钟' },
+          ]}
           style={{ minWidth: 120 }}
-        >
-          <option value="30s">30 秒</option>
-          <option value="1m">1 分钟</option>
-          <option value="5m">5 分钟</option>
-          <option value="10m">10 分钟</option>
-        </select>
+        />
       </div>
       <div className="setting-row">
         <div className="setting-label">
           <span>备份保留数量</span>
           <span className="setting-hint">最多保留的历史快照数</span>
         </div>
-        <input
-          type="number"
-          value={state.backupKeep || 50}
-          onChange={(e) => updateSetting('backupKeep', parseInt(e.target.value) || 50)}
-          style={{ width: 80 }}
-        />
+        <LFSInput
+           type="number"
+           value={state.backupKeep || 50}
+           onChange={(v) => updateSetting('backupKeep', parseInt(v) || 50)}
+           style={{ width: 80 }}
+         />
       </div>
     </div>
   )
@@ -649,16 +657,17 @@ function renderAdvancedSection() {
       <div className="setting-divider" />
       <div className="setting-row">
         <div className="setting-label"><span>日志级别</span></div>
-        <select
+        <LFSSelect
           value={state.logLevel || 'info'}
-          onChange={(e) => updateSetting('logLevel', e.target.value)}
+          onChange={(v) => updateSetting('logLevel', v)}
+          options={[
+            { value: 'info', label: 'INFO' },
+            { value: 'debug', label: 'DEBUG' },
+            { value: 'warn', label: 'WARN' },
+            { value: 'error', label: 'ERROR' },
+          ]}
           style={{ minWidth: 120 }}
-        >
-          <option value="info">INFO</option>
-          <option value="debug">DEBUG</option>
-          <option value="warn">WARN</option>
-          <option value="error">ERROR</option>
-        </select>
+        />
       </div>
     </div>
   )

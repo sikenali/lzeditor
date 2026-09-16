@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { LFSInput } from '../ui/LFInput'
 
 const FILE_TEMPLATES = [
   { id: 'blank', name: '空白文档', desc: '从头开始' },
@@ -67,22 +68,12 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
         <div className="settings-body">
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: 8 }}>
-            <input
-              type="text"
-              placeholder="搜索模板..."
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              style={{
-                flex: 1,
-                background: 'var(--bg-input)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 6,
-                padding: '6px 12px',
-                color: 'var(--text-primary)',
-                fontSize: 13,
-                outline: 'none',
-              }}
-            />
+            <LFSInput
+               type="text"
+               placeholder="搜索模板..."
+               value={searchText}
+               onChange={setSearchText}
+             />
             <button className="settings-save-btn" onClick={handleOpen} style={{ whiteSpace: 'nowrap' }}>
               <span className="remix ri-open-arm-line"></span>打开
             </button>
