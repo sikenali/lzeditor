@@ -1,6 +1,6 @@
 package: cloud.lazycat.app.lazycateditor
 version: 0.1.0
-name: 懒猫编辑器
+name: LZEditor
 description: 轻文档markdown编辑器，AI 辅助写作
 author: sikenali
 license: MIT
