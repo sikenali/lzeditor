@@ -148,7 +148,7 @@ function getNavIcon(group: SettingsGroup): string {
     advanced: 'ri-rocket-fill',
     about: 'ri-information-fill',
   }
-  return icons[group] || '\uF0E5'
+  return icons[group] || 'ri-settings-3-fill'
 }
 
 function renderGeneralSection() {
@@ -174,7 +174,7 @@ function renderGeneralSection() {
               className={`segmented-btn ${theme === m ? 'active' : ''}`}
               onClick={() => updateSetting('theme', m)}
             >
-              <span className="remix" style={{ fontSize: 15 }}>{m === 'light' ? '\uF1BC' : m === 'dark' ? '\uEF72' : 'ri-information-fill'}</span>
+              <span className="remix" style={{ fontSize: 15 }}>{m === 'light' ? 'ri-sun-fill' : m === 'dark' ? 'ri-moon-fill' : 'ri-information-fill'}</span>
               <span>{m === 'light' ? '浅色' : m === 'dark' ? '深色' : '跟随系统'}</span>
             </button>
           ))}
@@ -576,7 +576,7 @@ function renderSyncSection() {
             onClick={() => updateSetting('syncProvider', p.id)}
           >
             <div className="sync-provider-icon">
-              {p.id === 'git' ? '\uEDBC' : p.id === 'dropbox' ? '\uEC6B' : p.id === 'google' ? '\uEDD4' : 'ri-webcam-fill'}
+              {p.id === 'git' ? 'ri-git-branch-fill' : p.id === 'dropbox' ? 'ri-dropbox-fill' : p.id === 'google' ? 'ri-google-fill' : 'ri-webcam-fill'}
             </div>
             <div className="sync-provider-info">
               <div className="sync-provider-name">{p.name}</div>
