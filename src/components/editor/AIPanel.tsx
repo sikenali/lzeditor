@@ -4,12 +4,12 @@ import { useAI } from '../../hooks/useAI'
 import type { AIAction } from '../../shared/types'
 
 const ACTION_LABELS: Record<string, string> = {
-  rewrite: '\uEB41 改写',
-  polish: '\uE8D9 润色',
-  continue: '\uF44A 续写',
-  summarize: '\uE83A 摘要',
-  translate: '\uE9B2 翻译',
-  question: '\uF371 提问',
+  rewrite: '改写',
+  polish: '润色',
+  continue: '续写',
+  summarize: '摘要',
+  translate: '翻译',
+  question: '提问',
 }
 
 const ACTION_PLACEHOLDERS: Record<string, string> = {
