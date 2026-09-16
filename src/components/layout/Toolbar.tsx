@@ -3,21 +3,21 @@ import { useEditorStore } from '../../store/editorStore'
 import { useAIStore } from '../../store/aiStore'
 
 const TOOLS = [
-  { icon: '\uE8AA', label: '文库', action: 'library' },
-  { icon: '\uE8EB', label: '文件', action: 'file' },
-  { icon: '\uEA3E', label: '大纲', action: 'outline' },
-  { icon: '\uEA4D', label: '预览', action: 'preview' },
+  { icon: '\uED6A', label: '文库', action: 'library' },
+  { icon: '\uECEB', label: '文件', action: 'file' },
+  { icon: '\uEEBE', label: '大纲', action: 'outline' },
+  { icon: '\uEE8D', label: '预览', action: 'preview' },
   // --- gap 36px ---
-  { icon: '\uE64B', label: '图片', action: 'image' },
-  { icon: '\uEA72', label: '链接', action: 'link' },
+  { icon: '\uEE4B', label: '图片', action: 'image' },
+  { icon: '\uEEB2', label: '链接', action: 'link' },
   { icon: '\uEBAD', label: '代码', action: 'code' },
-  { icon: '\uFE5E', label: '表格', action: 'table' },
+  { icon: '\uF1DE', label: '表格', action: 'table' },
   // --- gap 36px ---
   { icon: '\uF47B', label: 'AI', action: 'ai' },
-  { icon: '\uEAF1', label: '阅读', action: 'read' },
-  { icon: '\uE617', label: '历史', action: 'history' },
-  { icon: '\uE454', label: '导出', action: 'export' },
-  { icon: '\uF068', label: '设置', action: 'settings' },
+  { icon: '\uEADB', label: '阅读', action: 'read' },
+  { icon: '\uEE17', label: '历史', action: 'history' },
+  { icon: '\uEC54', label: '导出', action: 'export' },
+  { icon: '\uF0E8', label: '设置', action: 'settings' },
 ]
 
 const LEFT_TOOLS = TOOLS.slice(0, 4)

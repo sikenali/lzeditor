@@ -34,7 +34,7 @@ export const TitleBar: React.FC = () => {
       </div>
       <div className="titlebar-drag-region">
         <div className="titlebar-title">
-          <span className="remix titlebar-logo" style={{ fontSize: 15 }}></span>
+          <span className="remix titlebar-logo" style={{ fontSize: 15 }}>\uED6A</span>
           <span>{docTitle}</span>
         </div>
         <div className="titlebar-actions">
