@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useCallback } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
 import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
 import { FloatingToolbar } from './FloatingToolbar'
@@ -49,7 +51,11 @@ export const LZEditor = () => {
   }, [])
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      TaskList.configure({ nested: true }),
+      TaskItem.configure({ nested: true }),
+    ],
     content: DEFAULT_CONTENT,
     onUpdate: ({ editor }: any) => {
       const text = editor.getText()
@@ -75,6 +81,61 @@ export const LZEditor = () => {
   useEffect(() => {
     return () => { editor?.destroy() }
   }, [editor])
+
+  // Handle image paste/drop
+  const handlePaste = useCallback((e: ClipboardEvent) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        e.preventDefault()
+        const file = items[i].getAsFile()
+        if (file && editor) {
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            const img = ev.target?.result as string
+            editor.commands.insertContent({
+              type: 'image',
+              attrs: { src: img, alt: file.name },
+            })
+          }
+          reader.readAsDataURL(file)
+        }
+      }
+    }
+  }, [editor])
+
+  const handleDrop = useCallback((e: DragEvent) => {
+    const files = e.dataTransfer?.files
+    if (!files) return
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/') && editor) {
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          const img = ev.target?.result as string
+          editor.commands.insertContent({
+            type: 'image',
+            attrs: { src: img, alt: file.name },
+          })
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+  }, [editor])
+
+  useEffect(() => {
+    const contentDom = editor?.view?.dom
+    if (contentDom) {
+      contentDom.addEventListener('paste', handlePaste as any)
+      contentDom.addEventListener('drop', handleDrop as any)
+    }
+    return () => {
+      if (contentDom) {
+        contentDom.removeEventListener('paste', handlePaste as any)
+        contentDom.removeEventListener('drop', handleDrop as any)
+      }
+    }
+  }, [editor, handlePaste, handleDrop])
 
   return (
     <div className="lz-editor" ref={editorRef}>
