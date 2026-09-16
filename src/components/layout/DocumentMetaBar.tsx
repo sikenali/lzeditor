@@ -9,7 +9,7 @@ export const DocumentMetaBar: React.FC = () => {
     <div className="document-meta-bar">
       <div className="meta-item path">
         <span className="remix ri-map-pin-fill"></span>
-        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{docPath || '~/Documents/technical-notes.md'}</span>
+        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{docPath || 'test.md'}</span>
       </div>
       <div className="meta-divider" />
       <div className="meta-item badge badge-markdown">
