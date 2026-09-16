@@ -9,6 +9,7 @@ import { FloatingToolbar } from './FloatingToolbar'
 import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
+import { DEFAULT_CONTENT } from './constants'
 
 const DEFAULT_CONTENT = `# Welcome to LZEditor
 
