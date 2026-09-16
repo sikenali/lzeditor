@@ -1,33 +1,76 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 
 export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [fontSize, setFontSize] = useState(17)
-  const readProgress = 34
+  const docTitle = useEditorStore((s) => s.docTitle)
+  const docPath = useEditorStore((s) => s.docPath)
+  const docHTML = useEditorStore((s) => s.docHTML)
+  const wordCount = useEditorStore((s) => s.wordCount)
+  const fontSize = useEditorStore((s) => s.fontSize)
+  const setFontSize = useEditorStore((s) => s.setFontSize)
+  const setReadProgress = useEditorStore((s) => s.setReadProgress)
+
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const prevHTMLRef = useRef(docHTML)
+
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200))
+
+  const handleScroll = useCallback(() => {
+    const el = bodyRef.current
+    if (!el) return
+    const scrollTop = el.scrollTop
+    const scrollHeight = el.scrollHeight - el.clientHeight
+    const progress = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0
+    setReadProgress(Math.min(100, Math.max(0, progress)))
+  }, [setReadProgress])
+
+  // Sync HTML if editor changed
+  useEffect(() => {
+    if (docHTML !== prevHTMLRef.current) {
+      prevHTMLRef.current = docHTML
+    }
+  }, [docHTML])
+
+  const handleFontSizeChange = (delta: number) => {
+    setFontSize(Math.min(24, Math.max(13, fontSize + delta)))
+  }
+
+  const scrollToTop = () => {
+    bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    setReadProgress(0)
+  }
 
   return (
-    <div className="read-mode-overlay" onClick={onClose}>
+    <div className="read-mode-overlay">
       <div className="read-mode-container" onClick={e => e.stopPropagation()}>
+        {/* Top bar */}
         <div className="read-mode-topbar">
           <div className="read-mode-left">
             <span className="remix ri-book-open-fill"></span>
             <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>阅读模式 · Read Mode</span>
           </div>
           <div className="read-mode-center">
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>technical-notes.md</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{docPath || docTitle || 'untitled.md'}</span>
             <span className="read-divider" />
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>预计阅读 6 分钟</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>预计阅读 {readingTime} 分钟</span>
             <span className="read-divider" />
-            <span style={{ fontSize: 12, color: 'var(--amber)' }}>已读 34%</span>
+            <span style={{ fontSize: 12, color: 'var(--amber)' }}>已读 {Math.max(1, wordCount)} 词</span>
           </div>
           <div className="read-mode-right">
             <div className="font-size-control">
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>A</span>
-              <div className="font-slider">
-                <span className="font-slider-fill" style={{ width: `${Math.max(0, (fontSize - 14) * 5.65)}px` }} />
-                <span className="font-slider-dot" style={{ left: `${Math.max(0, (fontSize - 14) * 5.65 + 2)}px` }} />
+              <span className="remix ri-subtract" style={{ fontSize: 12, cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => handleFontSizeChange(-1)} />
+              <div className="font-slider" onClick={(e) => e.stopPropagation()}>
+                <span
+                  className="font-slider-fill"
+                  style={{ width: `${Math.max(0, Math.min(54, (fontSize - 13) / (24 - 13) * 54))}px` }}
+                />
+                <span
+                  className="font-slider-dot"
+                  style={{ left: `${Math.max(0, Math.min(54, (fontSize - 13) / (24 - 13) * 54))}px` }}
+                />
               </div>
-              <span style={{ fontSize: 16, color: 'var(--text-secondary)' }}>A</span>
+              <span className="remix ri-add" style={{ fontSize: 14, cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => handleFontSizeChange(1)} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 24, textAlign: 'center' }}>{fontSize}px</span>
             </div>
             <button className="read-exit-btn" onClick={onClose}>
               <span className="remix ri-close-line"></span>
@@ -36,109 +79,53 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
         </div>
 
+        {/* Progress bar */}
         <div className="read-progress-bar">
-          <div className="read-progress-fill" style={{ width: `${readProgress}%` }} />
+          <div className="read-progress-fill" style={{ width: `${document.documentElement.style.getPropertyValue('--read-progress') || '0%'}` }} />
         </div>
 
-        <div className="read-mode-body" onClick={onClose}>
+        {/* Article body */}
+        <div
+          ref={bodyRef}
+          className="read-mode-body"
+          onScroll={handleScroll}
+          style={{ '--read-font-size': `${fontSize}px` } as React.CSSProperties}
+        >
           <div className="read-article">
             <div className="read-article-header">
-              <div className="read-tags">
-                <span className="read-tag read-tag-tech">技术笔记</span>
-                <span className="read-tag read-tag-system">系统</span>
-              </div>
-              <h1 style={{ fontSize: 34, fontWeight: 700, color: 'var(--text-heading)', marginTop: 20 }}>
-                Praesent varius diam
-              </h1>
+              <h1 className="read-article-title">{docTitle}</h1>
               <div className="read-meta">
                 <div className="read-avatar" />
                 <div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Ivar Pratt</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>2024-05-18 · 更新于 3 天前</div>
+                  <div className="read-author">LZEditor</div>
+                  <div className="read-date">{new Date().toLocaleDateString('zh-CN')}</div>
                 </div>
                 <div className="read-divider-v" />
                 <div className="read-views">
-                  <span className="remix ri-eye-line"></span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>1,204 次阅读</span>
+                  <span className="remix ri-time-line"></span>
+                  <span>{readingTime} 分钟阅读</span>
                 </div>
               </div>
             </div>
 
-            <div className="read-article-body" style={{ fontSize }}>
-              <p>Mauris ultrices ac erat quis gravida. Mauris non dictum mauris. Quisque rhoncus, nisi et condimentum cursus, felis orci lacinia ante, eget venenatis ligula quam at quam.</p>
+            <div className="read-article-body" dangerouslySetInnerHTML={{ __html: docHTML }} />
 
-              <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-heading-2)', marginTop: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
-                Praesent varius diam
-                <span style={{ width: 31, height: 3, background: 'var(--accent-primary)', borderRadius: 2, flexShrink: 0 }} />
-              </h2>
-
-              <p>Nam id imperdiet turpis. Fusce dignissim vel eros sit amet auctor. Donec quis lorem egestas, placerat odio vel, pulvinar tellus.</p>
-
-              <div className="read-tip-card">
-                <div className="read-tip-header">
-                  <span className="remix ri-lightbulb-line"></span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--amber)' }}>本节要点</span>
-                </div>
-                <div className="read-tip-list">
-                  {[
-                    '保持 Markdown 标记可见，写作时无需在源码与预览之间来回切换。',
-                    '每次自动保存都会生成快照，可在历史面板中对比与回滚。',
-                    '样式集决定导出观感，切换到 Ocean 后表格与标题会统一为冷色调。',
-                  ].map((text, i) => (
-                    <div key={i} className="read-tip-item">
-                      <span className="read-tip-num">{i + 1}</span>
-                      <span style={{ fontSize: 15, color: 'var(--text-secondary)' }}>{text}</span>
-                    </div>
-                  ))}
-                </div>
+            <div className="read-footer">
+              <div className="read-tags-footer">
+                <span className="remix ri-price-tag-3-line"></span>
+                <span className="read-tag-sm">markdown</span>
+                <span className="read-tag-sm">writing</span>
+                <span className="read-tag-sm">editor</span>
               </div>
-
-              <div className="read-quote">
-                <span className="remix ri-double-quotes-l"></span>
-                <span>"Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."</span>
-              </div>
-
-              <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-heading-2)', marginTop: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
-                Libero finibus facilisis ac a lacus
-                <span style={{ width: 31, height: 3, background: 'var(--accent-primary)', borderRadius: 2, flexShrink: 0 }} />
-              </h2>
-
-              <p>Integer tincidunt nunc quis tortor tristique, ut egestas metus volutpat. In sit amet dolor leo, dictum in odio eu vulputate.</p>
-
-              <div className="read-code-block">
-                <div className="read-code-header">
-                  <div className="read-code-lang">
-                    <span className="remix ri-terminal-box-line"></span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>bash</span>
-                  </div>
-                  <button style={{ fontSize: 11, color: 'var(--text-secondary)', padding: '2px 8px', border: '1px solid var(--border-default)', borderRadius: 4 }}>
-                    <span className="remix ri-file-copy-line"></span>复制
-                  </button>
-                </div>
-                <pre style={{ margin: '12px 0', padding: '12px 16px', background: 'var(--bg-code)', borderRadius: 6, fontFamily: 'monospace', fontSize: 14 }}>
-                  <div><span style={{ color: 'var(--accent-primary)' }}>$</span> cat /proc/cpuinfo | grep "model name" | head -n 3</div>
-                  <div style={{ marginTop: 8, color: 'var(--text-secondary)' }}>model name : Apple M3 Pro</div>
-                  <div style={{ marginTop: 4, color: 'var(--text-secondary)' }}>cpu cores : 12</div>
-                </pre>
-              </div>
-
-              <div className="read-footer">
-                <div className="read-tags-footer">
-                  <span className="remix ri-price-tag-3-line"></span>
-                  <span className="read-tag-sm">markdown</span>
-                  <span className="read-tag-sm">writing</span>
-                  <span className="read-tag-sm">workflow</span>
-                </div>
-                <div className="read-footer-actions">
-                  <button className="read-back-top-btn">
-                    <span className="remix ri-arrow-up-line"></span>
-                    <span>回到顶部</span>
-                  </button>
-                  <button className="read-edit-btn" onClick={onClose}>
-                    <span className="remix ri-edit-line"></span>
-                    <span>继续编辑</span>
-                  </button>
-                </div>
+              <div className="read-footer-actions">
+                <button className="read-back-top-btn" onClick={scrollToTop}>
+                  <span className="remix ri-arrow-up-line"></span>
+                  <span>回到顶部</span>
+                </button>
+                <button className="read-edit-btn" onClick={onClose}>
+                  <span className="remix ri-edit-line"></span>
+                  <span>继续编辑</span>
+                </button>
               </div>
             </div>
           </div>

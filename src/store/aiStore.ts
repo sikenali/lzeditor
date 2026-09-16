@@ -4,6 +4,7 @@ import type { AIStoreState, AIAction, ApplyRecord, ChatMessage } from '../shared
 export const useAIStore = create<AIStoreState>((set, get) => ({
   docTitle: 'untitled.md',
   docPath: '',
+  docHTML: '',
   wordCount: 0,
   charCount: 0,
   cursorPosition: { line: 1, column: 1 },
@@ -20,6 +21,7 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setTitle: (title: string) => set({ docTitle: title }),
   setWordCount: (count: number) => set({ wordCount: count }),
   setCharCount: (count: number) => set({ charCount: count }),
+  setDocHTML: (html: string) => set({ docHTML: html }),
   setCursorPosition: (pos: { line: number; column: number }) => set({ cursorPosition: pos }),
   setPreview: (isPreview: boolean) => set({ isPreview }),
   setReadMode: (isReadMode: boolean) => set({ isReadMode }),
