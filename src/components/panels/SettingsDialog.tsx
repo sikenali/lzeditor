@@ -69,7 +69,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
               <span>恢复默认</span>
             </button>
             <button className="settings-close-btn" onClick={onClose}>
-              <span className="remix">\uEB98</span>
+              <span className="remix">\uEB99</span>
             </button>
           </div>
         </div>
@@ -140,14 +140,14 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 function getNavIcon(group: SettingsGroup): string {
   const icons: Record<SettingsGroup, string> = {
     general: '\uEE58',
-    editor: '\uE8C1',
-    appearance: '\uF0E5',
-    ai: '\uF47B',
-    shortcut: '\uE9B5',
-    export: '\uE454',
-    sync: '\uE61D',
-    advanced: '\uE82D',
-    about: '\uE61A',
+    editor: '\uEC7F',
+    appearance: '\uEFC4',
+    ai: '\uF34A',
+    shortcut: '\uEE74',
+    export: '\uEC53',
+    sync: '\uF063',
+    advanced: '\uF095',
+    about: '\uEE58',
   }
   return icons[group] || '\uF0E5'
 }
@@ -226,7 +226,7 @@ function renderGeneralSection() {
       <div className="settings-section">
         <div className="settings-section-title"><span>显示选项</span></div>
         <ToggleRow
-          icon="\uEDED"
+          icon="\uEB82"
           title="Markdown 标记常显"
           desc="始终显示 ### 与列表符号"
           checked={showMarkdownMarkers !== false}
@@ -234,7 +234,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="\uE629"
+          icon="\uEB82"
           title="快照差异高亮"
           desc="红底为删除、绿底为新增"
           checked={showDiffHighlight !== false}
@@ -242,7 +242,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="\uE0CA"
+          icon="\uEB82"
           title="打字机模式"
           desc="光标始终居中垂直位置"
           checked={typewriterMode || false}
@@ -250,7 +250,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="\uE6CC"
+          icon="\uEB82"
           title="专注模式"
           desc="仅高亮当前段落，其余淡化"
           checked={focusMode || false}
@@ -579,7 +579,7 @@ function renderSyncSection() {
             onClick={() => updateSetting('syncProvider', p.id)}
           >
             <div className="sync-provider-icon">
-              {p.id === 'git' ? '\uE8A6' : p.id === 'dropbox' ? '\uF103' : p.id === 'google' ? '\uF157' : '\uF305'}
+              {p.id === 'git' ? '\uEDBC' : p.id === 'dropbox' ? '\uEC6B' : p.id === 'google' ? '\uEDD4' : '\uF305'}
             </div>
             <div className="sync-provider-info">
               <div className="sync-provider-name">{p.name}</div>

@@ -31,7 +31,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
             <div className="lang-subtitle">翻译为以下语言</div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix">\uE61C</span>
+            <span className="remix">\uEB99</span>
           </button>
         </div>
 

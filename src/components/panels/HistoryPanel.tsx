@@ -21,7 +21,7 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix">\uE61C</span>
+            <span className="remix">\uEB99</span>
           </button>
         </div>
 
@@ -38,11 +38,11 @@ export const HistoryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               <span style={{ fontSize: 13, color: 'rgba(139,152,165,1)' }}>2024-05-20 14:32</span>
             </div>
             <button className="history-btn history-btn-secondary">
-              <span className="remix" style={{ fontSize: 14 }}>\uE847</span>
+              <span className="remix" style={{ fontSize: 14 }}>\uF064</span>
               <span>回滚</span>
             </button>
             <button className="history-btn history-btn-primary">
-              <span className="remix" style={{ fontSize: 14 }}>\uE613</span>
+              <span className="remix" style={{ fontSize: 14 }}>\uEB99</span>
               <span>重放</span>
             </button>
           </div>
