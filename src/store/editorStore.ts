@@ -11,6 +11,7 @@ export const useEditorStore = create<EditorStoreState>((set: any) => ({
   isReadMode: false,
   syncStatus: 'synced',
   openPanel: 'none',
+  editorRef: null,
 
   setTitle: (title: string) => set({ docTitle: title }),
   setWordCount: (count: number) => set({ wordCount: count }),
@@ -19,5 +20,6 @@ export const useEditorStore = create<EditorStoreState>((set: any) => ({
   setPreview: (isPreview: boolean) => set({ isPreview }),
   setReadMode: (isReadMode: boolean) => set({ isReadMode }),
   setSyncStatus: (status: EditorStoreState['syncStatus']) => set({ syncStatus: status }),
-  setOpenPanel: (panel: 'none' | 'styles' | 'history' | 'settings' | 'export') => set({ openPanel: panel }),
+  setOpenPanel: (panel: EditorStoreState['openPanel']) => set({ openPanel: panel }),
+  setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
 }))
