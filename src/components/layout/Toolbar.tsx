@@ -92,18 +92,14 @@ export const Toolbar: React.FC = () => {
           {/* 预览 with dropdown */}
           <div className="toolbar-dd-wrap">
             <button
-              className={`toolbar-btn ${showPreview ? 'active' : ''}`}
+              className={`toolbar-btn ${showPreview ? 'active' : ''} toolbar-btn--dd`}
               onClick={() => { setShowPreview(!showPreview); setPreviewOpen(false) }}
               title="预览"
             >
               <span className="remix toolbar-icon ri-eye-2-fill"></span>
+              <span className={`toolbar-dd-arrow ${previewOpen ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); setPreviewOpen(!previewOpen) }} style={{ cursor: 'pointer' }}>▼</span>
               <span className="toolbar-label">预览</span>
             </button>
-            <span
-              className={`toolbar-dd-arrow ${previewOpen ? 'open' : ''}`}
-              onClick={(e) => { e.stopPropagation(); setPreviewOpen(!previewOpen) }}
-              style={{ cursor: 'pointer' }}
-            >{previewOpen ? '▶' : '▼'}</span>
             {previewOpen && (
               <div className="toolbar-dropdown">
                 <button className="toolbar-dropdown-item" onClick={() => { setShowPreview(true); setPreviewOpen(false) }}>

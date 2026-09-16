@@ -93,16 +93,12 @@ export const InsertDropdown: React.FC<InsertDropdownProps> = ({ open, onToggle }
 
   return (
     <div className="toolbar-dd-wrap">
-      <button className="toolbar-btn" onClick={() => onToggle(!open)} title="插入">
-        <span className="remix toolbar-icon ri-add-circle-line"></span>
-        <span className="toolbar-label">插入</span>
-      </button>
-      <span
-        className={`toolbar-dd-arrow ${open ? 'open' : ''}`}
-        onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
-        style={{ cursor: 'pointer' }}
-      >{open ? '▶' : '▼'}</span>
-      {open && (
+    <button className={`toolbar-btn ${open ? 'active' : ''} toolbar-btn--dd`} onClick={() => onToggle(!open)} title="插入">
+      <span className="remix toolbar-icon ri-add-circle-line"></span>
+      <span className={`toolbar-dd-arrow ${open ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(!open) }} style={{ cursor: 'pointer' }}>▼</span>
+      <span className="toolbar-label">插入</span>
+    </button>
+    {open && (
         <div className="toolbar-dropdown">
           {INSERT_ITEMS.map((item, i) =>
             item.sep

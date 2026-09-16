@@ -21,15 +21,11 @@ const TABLE_OPS = [
 
 export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, onInsert }) => (
   <div className="toolbar-dd-wrap">
-    <button className="toolbar-btn" onClick={() => onToggle(!open)} title="表格">
+    <button className={`toolbar-btn ${open ? 'active' : ''} toolbar-btn--dd`} onClick={() => onToggle(!open)} title="表格">
       <span className="remix toolbar-icon ri-table-2"></span>
+      <span className={`toolbar-dd-arrow ${open ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(!open) }} style={{ cursor: 'pointer' }}>▼</span>
       <span className="toolbar-label">表格</span>
     </button>
-    <span
-      className={`toolbar-dd-arrow ${open ? 'open' : ''}`}
-      onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
-      style={{ cursor: 'pointer' }}
-    >{open ? '▶' : '▼'}</span>
     {open && (
       <div className="toolbar-dropdown">
         {TABLE_OPS.map((op, i) =>

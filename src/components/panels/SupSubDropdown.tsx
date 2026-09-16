@@ -9,15 +9,11 @@ interface SupSubDropdownProps {
 
 export const SupSubDropdown: React.FC<SupSubDropdownProps> = ({ open, onToggle, onSup, onSub }) => (
   <div className="toolbar-dd-wrap">
-    <button className="toolbar-btn" onClick={() => onToggle(!open)} title="角标">
+    <button className={`toolbar-btn ${open ? 'active' : ''} toolbar-btn--dd`} onClick={() => onToggle(!open)} title="角标">
       <span className="remix toolbar-icon ri-superscript"></span>
+      <span className={`toolbar-dd-arrow ${open ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(!open) }} style={{ cursor: 'pointer' }}>▼</span>
       <span className="toolbar-label">角标</span>
     </button>
-    <span
-      className={`toolbar-dd-arrow ${open ? 'open' : ''}`}
-      onClick={(e) => { e.stopPropagation(); onToggle(!open) }}
-      style={{ cursor: 'pointer' }}
-    >{open ? '▶' : '▼'}</span>
     {open && (
       <div className="toolbar-dropdown">
         <button className="toolbar-dropdown-item" onClick={() => { onSup(); onToggle(false) }}>
