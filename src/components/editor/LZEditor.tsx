@@ -26,6 +26,7 @@ export const LZEditor = () => {
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
+  const showPreview = useEditorStore((s: any) => s.showPreview)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
@@ -160,7 +161,7 @@ export const LZEditor = () => {
 
   return (
     <div className="lz-editor" ref={editorRef}>
-      <div className="lz-editor-content">
+      <div className={`lz-editor-content${showPreview ? ' has-preview' : ''}`}>
         <EditorContent editor={editor} />
       </div>
       <FloatingToolbar
