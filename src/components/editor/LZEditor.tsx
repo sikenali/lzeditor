@@ -3,6 +3,10 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
+import Table from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
 import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
 import { FloatingToolbar } from './FloatingToolbar'
@@ -32,6 +36,10 @@ export const LZEditor = () => {
       StarterKit,
       TaskList,
       TaskItem,
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content: remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
     onUpdate: ({ editor }: any) => {

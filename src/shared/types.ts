@@ -50,6 +50,7 @@ export interface EditorStoreState {
   openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export'
   showOutline: boolean
   showPreview: boolean
+  previewWidth: number
   readProgress: number
   fontSize: number
   setTitle: (title: string) => void
@@ -63,6 +64,7 @@ export interface EditorStoreState {
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
   setShowOutline: (showOutline: boolean) => void
   setShowPreview: (showPreview: boolean) => void
+  setPreviewWidth: (width: number) => void
   setReadProgress: (progress: number) => void
   setFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void

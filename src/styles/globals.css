@@ -209,21 +209,28 @@
   border-collapse: collapse;
   margin: 12px 0;
   font-size: 13px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .lz-editor-content th {
-  background: var(--background-card);
-  color: var(--foreground);
+  background: var(--bg-overlay);
+  color: var(--text-primary);
   font-weight: 600;
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-input);
   text-align: left;
 }
 
 .lz-editor-content td {
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  color: var(--foreground-secondary);
+  padding: 8px 12px;
+  border: 1px solid var(--border-input);
+  color: var(--text-secondary);
+}
+
+.lz-editor-content tr:hover td {
+  background: var(--accent-a5);
 }
 
 .lz-editor-content .selected-text {
