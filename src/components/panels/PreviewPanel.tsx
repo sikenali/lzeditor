@@ -4,8 +4,7 @@ import { useEditorStore } from '../../store/editorStore'
 export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const docTitle = useEditorStore((s: any) => s.docTitle)
-  const isCodeMode = useEditorStore((s: any) => s.isCodeMode)
-  const setIsCodeMode = useEditorStore((s: any) => s.setIsCodeMode)
+  const [isCodeMode, setIsCodeMode] = useState(false)
 
   return (
     <div className="modal-overlay" onClick={onClose}>

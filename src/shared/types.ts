@@ -52,10 +52,10 @@ export interface EditorStoreState {
   showPreview: boolean
   previewWidth: number
   mdContent: string
-  isCodeMode: boolean
   readProgress: number
   fontSize: number
   setTitle: (title: string) => void
+  setDocPath: (path: string) => void
   setWordCount: (count: number) => void
   setCharCount: (count: number) => void
   setCursorPosition: (pos: { line: number; column: number }) => void
@@ -68,7 +68,6 @@ export interface EditorStoreState {
   setShowPreview: (showPreview: boolean) => void
   setPreviewWidth: (width: number) => void
   setMdContent: (md: string) => void
-  setIsCodeMode: (v: boolean) => void
   setReadProgress: (progress: number) => void
   setFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
@@ -114,7 +113,7 @@ export interface ThemeState {
   accentColor: string
 }
 
-export interface AIStoreState extends EditorStoreState {
+export interface AIStoreState {
   panelVisible: boolean
   panelAction: AIAction
   panelSelectedText: string

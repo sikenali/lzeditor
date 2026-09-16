@@ -2,44 +2,6 @@ import { create } from 'zustand'
 import type { AIStoreState, AIAction, ApplyRecord, ChatMessage } from '../shared/types'
 
 export const useAIStore = create<AIStoreState>((set, get) => ({
-  // Editor state
-  docTitle: 'untitled.md',
-  docPath: '',
-  wordCount: 0,
-  charCount: 0,
-  cursorPosition: { line: 1, column: 1 },
-  isPreview: false,
-  isReadMode: false,
-  syncStatus: 'synced',
-  openPanel: 'none',
-  editorRef: null,
-  showOutline: false,
-  showPreview: false,
-  previewWidth: 500,
-  mdContent: '',
-  isCodeMode: false,
-  readProgress: 0,
-  fontSize: 16,
-  docHTML: '',
-
-  setTitle: (title: string) => set({ docTitle: title }),
-  setWordCount: (count: number) => set({ wordCount: count }),
-  setCharCount: (count: number) => set({ charCount: count }),
-  setCursorPosition: (pos: { line: number; column: number }) => set({ cursorPosition: pos }),
-  setPreview: (isPreview: boolean) => set({ isPreview }),
-  setReadMode: (isReadMode: boolean) => set({ isReadMode }),
-  setSyncStatus: (status: 'synced' | 'saving' | 'error') => set({ syncStatus: status }),
-  setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => set({ openPanel: panel }),
-  setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
-  setShowOutline: (showOutline: boolean) => set({ showOutline }),
-  setShowPreview: (showPreview: boolean) => set({ showPreview }),
-  setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
-  setMdContent: (mdContent: string) => set({ mdContent }),
-  setIsCodeMode: (isCodeMode: boolean) => set({ isCodeMode }),
-  setReadProgress: (readProgress: number) => set({ readProgress }),
-  setFontSize: (fontSize: number) => set({ fontSize }),
-  setDocHTML: (docHTML: string) => set({ docHTML }),
-
   // AI Panel state
   panelVisible: false,
   panelAction: null,
@@ -81,12 +43,12 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setPanelError: (error: string | null) => set({ panelError: error }),
 
   appendConversation: (message: ChatMessage) =>
-    set((state) => ({
+    set((state: AIStoreState) => ({
       conversationMessages: [...state.conversationMessages, message],
     })),
 
   recordApply: (record: Omit<ApplyRecord, 'id' | 'timestamp'>) =>
-    set((state) => ({
+    set((state: AIStoreState) => ({
       applyHistory: [
         {
           ...record,
@@ -98,7 +60,7 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
     })),
 
   undoLastApply: () =>
-    set((state) => ({
+    set((state: AIStoreState) => ({
       applyHistory: state.applyHistory.slice(1),
     })),
 

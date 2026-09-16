@@ -7,25 +7,25 @@ import { ImageDialog } from '../panels/ImageDialog'
 type MenuKey = 'format' | 'table' | 'insert' | 'supsub' | 'preview' | null
 
 const FORMAT_ITEMS = [
-  { label: '标题 1', action: 'h1' },
-  { label: '标题 2', action: 'h2' },
-  { label: '标题 3', action: 'h3' },
-  { label: '标题 4', action: 'h4' },
-  { label: '标题 5', action: 'h5' },
+  { icon: 'ri-h-1', label: '标题 1', action: 'h1' },
+  { icon: 'ri-h-2', label: '标题 2', action: 'h2' },
+  { icon: 'ri-h-3', label: '标题 3', action: 'h3' },
+  { icon: 'ri-h-4', label: '标题 4', action: 'h4' },
+  { icon: 'ri-h-5', label: '标题 5', action: 'h5' },
   { sep: true },
-  { label: '清除格式', action: 'clear' },
+  { icon: 'ri-eraser-fill', label: '清除格式', action: 'clear' },
   { sep: true },
-  { label: '分割线', action: 'hr' },
-  { label: '链接', action: 'link' },
-  { label: '图片', action: 'image' },
+  { icon: 'ri-separator', label: '分割线', action: 'hr' },
+  { icon: 'ri-link', label: '链接', action: 'link' },
+  { icon: 'ri-image-line', label: '图片', action: 'image' },
   { sep: true },
-  { label: '有序列表', action: 'ol' },
-  { label: '无序列表', action: 'ul' },
-  { label: '任务列表', action: 'task' },
+  { icon: 'ri-list-ordered', label: '有序列表', action: 'ol' },
+  { icon: 'ri-list-unordered', label: '无序列表', action: 'ul' },
+  { icon: 'ri-task', label: '任务列表', action: 'task' },
 ]
 
 const INSERT_ITEMS = [
-  { icon: 'ri-toc', label: '目录', action: 'toc' },
+  { icon: 'ri-menu-line', label: '目录', action: 'toc' },
   { icon: 'ri-quotation-text', label: '引言', action: 'quote' },
   { icon: 'ri-footprint', label: '脚注', action: 'footnote' },
   { sep: true },
@@ -36,23 +36,28 @@ const INSERT_ITEMS = [
 ]
 
 const TABLE_ITEMS = [
-  { label: '插入表格', action: 'insert' },
+  { icon: 'ri-table-2', label: '插入表格', action: 'insert' },
   { sep: true },
-  { label: '插入列', action: 'col' },
-  { label: '插入行', action: 'row' },
+  { icon: 'ri-arrow-left-line', label: '向左移动列', action: 'moveL' },
+  { icon: 'ri-arrow-right-line', label: '向右移动列', action: 'moveR' },
+  { icon: 'ri-insert-column-left', label: '插入列', action: 'col' },
+  { icon: 'ri-insert-row-bottom', label: '插入行', action: 'row' },
+  { icon: 'ri-delete-column', label: '删除列', action: 'delCol' },
+  { icon: 'ri-delete-row', label: '删除行', action: 'delRow' },
   { sep: true },
-  { label: '删除表格', action: 'delete' },
+  { icon: 'ri-delete-bin-line', label: '删除表格', action: 'delete' },
+  { icon: 'ri-expand-left-right-line', label: '自动调整列宽', action: 'autoW' },
 ]
 
 const SUPSUB_ITEMS = [
-  { label: '上角标', action: 'sup' },
-  { label: '下角标', action: 'sub' },
+  { icon: 'ri-superscript', label: '上角标', action: 'sup' },
+  { icon: 'ri-subscript', label: '下角标', action: 'sub' },
 ]
 
 const PREVIEW_ITEMS = [
-  { label: '即时预览', action: 'instant' },
-  { label: '预览 · 样式集', action: 'full' },
-  { label: '预览 · 源码', action: 'code' },
+  { icon: 'ri-eye-line', label: '即时预览', action: 'instant' },
+  { icon: 'ri-file-code-line', label: '预览 · 样式集', action: 'full' },
+  { icon: 'ri-code-s-line', label: '预览 · 源码', action: 'code' },
 ]
 
 export const Toolbar: React.FC = () => {
@@ -98,7 +103,7 @@ export const Toolbar: React.FC = () => {
     setWordCount(text.split(/\s+/).filter(Boolean).length)
   }
 
-  const handleNewFile = () => setTitle(`untitled-${Date.now()}.md`)
+  const handleNewFile = () => { setTitle(`untitled-${Date.now()}.md`); useEditorStore.getState().setDocPath('') }
 
   const insertImageFromUrl = (url: string, alt: string) => {
     if (!editorRef) return

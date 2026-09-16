@@ -52,6 +52,31 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     el.style.fontSize = `${fontSize}px`
   }, [fontSize])
 
+  // Inject copy buttons into code blocks
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    const preprocess = el.querySelectorAll('pre')
+    preprocess.forEach(pre => {
+      if (pre.querySelector('.read-copy-btn')) return
+      const lang = pre.querySelector('code')?.className?.match(/language-(\w+)/)?.[1] || 'code'
+      const header = document.createElement('div')
+      header.className = 'read-code-lang-label'
+      header.innerHTML = `<span>${lang}</span><button class="read-copy-btn" type="button">复制</button>`
+      const btn = header.querySelector('.read-copy-btn') as HTMLButtonElement
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          navigator.clipboard.writeText(pre.textContent || '')
+          const orig = btn.textContent
+          btn.textContent = '已复制!'
+          setTimeout(() => { btn.textContent = orig }, 1500)
+        })
+      }
+      pre.insertBefore(header, pre.firstChild)
+    })
+  }, [docHTML])
+
   return (
     <div className="read-mode-overlay" onClick={onClose}>
       <div className="read-mode-container" onClick={e => e.stopPropagation()}>
