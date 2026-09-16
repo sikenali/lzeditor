@@ -10,6 +10,7 @@ import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
+import remarkHtml from 'remark-html'
 
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -29,7 +30,7 @@ export const LZEditor = () => {
       TaskList,
       TaskItem,
     ],
-    content: DEFAULT_CONTENT,
+    content: remark().use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
     onUpdate: ({ editor }: any) => {
       const text = editor.getText()
       setWordCount(text.split(/\s+/).filter(Boolean).length)
