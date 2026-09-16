@@ -1,19 +1,10 @@
 import React, { useState } from 'react'
 
-const LANGUAGES = [
-  { code: 'zh', name: '简体中文', native: '中文' },
-  { code: 'en', name: 'English', native: 'English' },
-  { code: 'ja', name: '日本語', native: '日本語' },
-  { code: 'ko', name: '한국어', native: '한국어' },
-  { code: 'fr', name: 'Français', native: 'Français' },
-  { code: 'de', name: 'Deutsch', native: 'Deutsch' },
-  { code: 'es', name: 'Español', native: 'Español' },
-  { code: 'ru', name: 'Русский', native: 'Русский' },
-  { code: 'ar', name: 'العربية', native: 'العربية' },
-  { code: 'pt', name: 'Português', native: 'Português' },
-  { code: 'it', name: 'Italiano', native: 'Italiano' },
-  { code: 'hi', name: 'हिन्दी', native: 'हिन्दी' },
-]
+import { LANGUAGES } from '../../shared/languages'
+import type { LanguageCode } from '../../shared/languages'
+
+// Re-export for convenience
+export type { LanguageCode }
 
 interface LanguageSelectorProps {
   targetLang: string

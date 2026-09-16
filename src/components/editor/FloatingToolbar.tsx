@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAIStore } from '../../store/aiStore'
 import { LanguageSelector } from '../ai/LanguageSelector'
+import { LANGUAGES } from '../../shared/languages'
 import type { AIAction } from '../../shared/types'
 
 const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
@@ -10,21 +11,6 @@ const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
   { action: 'summarize', icon: '\uE83A', label: '摘要' },
   { action: 'translate', icon: '\uE9B2', label: '翻译' },
   { action: 'question', icon: '\uF371', label: '提问' },
-]
-
-const LANGUAGES = [
-  { code: 'zh', name: '简体中文' },
-  { code: 'en', name: 'English' },
-  { code: 'ja', name: '日本語' },
-  { code: 'ko', name: '한국어' },
-  { code: 'fr', name: 'Français' },
-  { code: 'de', name: 'Deutsch' },
-  { code: 'es', name: 'Español' },
-  { code: 'ru', name: 'Русский' },
-  { code: 'ar', name: 'العربية' },
-  { code: 'pt', name: 'Português' },
-  { code: 'it', name: 'Italiano' },
-  { code: 'hi', name: 'हिन्दी' },
 ]
 
 interface FloatingToolbarProps {

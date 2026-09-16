@@ -70,6 +70,24 @@ export interface SettingsState {
   accentColor: string
   shortcut: string
   activeGroup: SettingsGroup
+  fontSize?: number
+  lineHeight?: number
+  contentWidth?: number
+  exportFormat?: string
+  styleSet?: string
+  includeTOC?: boolean
+  includeLineNumbers?: boolean
+  syncProvider?: string
+  backupInterval?: string
+  backupKeep?: number
+  devTools?: boolean
+  hardwareAccel?: boolean
+  logLevel?: string
+  editorFont?: string
+  showMarkdownMarkers?: boolean
+  showDiffHighlight?: boolean
+  typewriterMode?: boolean
+  focusMode?: boolean
 }
 
 export interface ThemeState {
