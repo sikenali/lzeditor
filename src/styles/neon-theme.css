@@ -64,10 +64,10 @@ button {
   color: inherit;
 }
 
-input, textarea, select {
+input, textarea {
   font-family: inherit;
-  background: var(--bg-code);
-  color: var(--text-primary);
+  background: var(--background-code);
+  color: var(--foreground);
   border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 6px 10px;
@@ -76,8 +76,8 @@ input, textarea, select {
   transition: border-color 0.15s;
 }
 
-input:focus, textarea:focus, select:focus {
-  border-color: var(--accent-primary);
+input:focus, textarea:focus {
+  border-color: var(--accent);
 }
 
 ::-webkit-scrollbar {

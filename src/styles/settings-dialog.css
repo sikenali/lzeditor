@@ -252,3 +252,51 @@
 .about-link:hover { text-decoration: underline; }
 .about-sep     { font-size: 12px; color: var(--text-muted); }
 .about-copy    { font-size: 11px; color: var(--text-muted); }
+
+/* ── Unified Select/Dropdown Styles ── */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--background-code);
+  color: var(--foreground);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  padding: 6px 32px 6px 10px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237d8b9a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+}
+
+select:hover {
+  border-color: var(--accent);
+  background-color: var(--background-hover);
+}
+
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-a20);
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+select option {
+  background: var(--background-card);
+  color: var(--foreground);
+  padding: 8px;
+}
+
+/* Dark overlay for select dropdown */
+select:focus option:checked {
+  background: var(--accent-a15);
+  color: var(--accent);
+}
