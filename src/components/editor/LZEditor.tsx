@@ -11,24 +11,7 @@ import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
 
-const DEFAULT_CONTENT = `# Welcome to LZEditor
-
-> 轻文档协作编辑器，AI 辅助写作 · 暗夜霓虹主题
-
----
-
-## 快速开始
-
-### 核心功能
-
-- **Markdown 编辑** — 实时预览，所见即所得
-- **AI 写作助手** — 改写、润色、续写、摘要、翻译
-- **版本历史** — 自动保存快照，随时回滚
-- **多端同步** — Git / Dropbox / WebDAV
-
-### 技术栈
-
-\`\`\`bash
+\`\`bash
 # 开发环境
 npm run dev
 

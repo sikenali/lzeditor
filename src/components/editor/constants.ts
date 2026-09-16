@@ -1,4 +1,5 @@
-export const DEFAULT_CONTENT = `# Welcome to LZEditor
+export const DEFAULT_CONTENT = `
+# Welcome to LZEditor
 
 > 轻文档协作编辑器，AI 辅助写作 · 暗夜霓虹主题
 
@@ -15,7 +16,7 @@ export const DEFAULT_CONTENT = `# Welcome to LZEditor
 
 ### 技术栈
 
-\`\`\`bash
+```bash
 # 开发环境
 npm run dev
 
@@ -24,7 +25,7 @@ npm run electron:build
 
 # 打包 LPK 云应用
 cd lzc && bash package.sh
-\`\`\`
+```
 
 > 选中这段文字可以体验 AI 浮动工具栏 —— 点击图标即可唤起 AI 辅助。
 
@@ -34,12 +35,12 @@ cd lzc && bash package.sh
 
 ### 差异对比
 
-Lorem ipsum dolor sit \`amet\`, consectetur adipiscing **elit**.
+Lorem ipsum dolor sit `amet`, consectetur adipiscing **elit**.
 
 - ~~vestibulum~~ eros. Aliquam pellentesque **vehicula** sapien,
 - ~~Sed hendrerit ligula in tempus.~~
-- \`Sed sit amet elit ornare\`, vehicula elit vel, imperdiet leo.
-- \`neque venenatis gravida\` [quam suscipit](https://example.com) a eget mi.
+- `Sed sit amet elit ornare`, vehicula elit vel, imperdiet leo.
+- `neque venenatis gravida` [quam suscipit](https://example.com) a eget mi.
 - Curabitur placerat viverra libero.
 
 ### 任务列表
@@ -59,15 +60,15 @@ Lorem ipsum dolor sit \`amet\`, consectetur adipiscing **elit**.
 
 ### 终端命令
 
-\`\`\`bash
+```bash
 $ cat /proc/cpuinfo | grep "model name" | head -n 3
 model name : Apple M3 Pro
 cpu cores  : 12
-\`\`\`
+```
 
 ### JavaScript 示例
 
-\`\`\`javascript
+```javascript
 const editor = createEditor({
   extensions: [StarterKit, TaskList, AIAssistant],
   content: DEFAULT_CONTENT,
@@ -75,7 +76,7 @@ const editor = createEditor({
     saveSnapshot(editor.getHTML())
   }
 })
-\`\`\`
+```
 
 ---
 
@@ -92,9 +93,10 @@ const editor = createEditor({
 
 ## 标签
 
-\`markdown\` \`writing\` \`workflow\` \`ai\` \`editor\` \`electron\`
+`markdown` `writing` `workflow` `ai` `editor` `electron`
 
 ---
 
 *END OF DOCUMENT*
+
 `
