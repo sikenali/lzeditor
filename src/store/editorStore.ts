@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { EditorStoreState } from '../shared/types'
 
 export const useEditorStore = create<EditorStoreState>((set: any) => ({
-  docTitle: 'untitled.md',
+  docTitle: 'Welcome to LZEditor',
   docPath: '',
   wordCount: 0,
   charCount: 0,
