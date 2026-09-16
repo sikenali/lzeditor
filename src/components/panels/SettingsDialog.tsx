@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { useSettingsStore, saveSettingsToStorage } from '../../store/settingsStore'
-import { DEFAULT_SETTINGS } from '../../store/settingsStore'
+import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor } from '../../store/settingsStore'
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
 import { LANGUAGES } from '../../shared/languages'
@@ -53,8 +52,8 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
               <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uF0E5</span>
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>设置</div>
-              <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>Preferences • {NAV_GROUPS.find(g => g.id === activeGroup)?.label || ''}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>设置</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Preferences • {NAV_GROUPS.find(g => g.id === activeGroup)?.label || ''}</div>
             </div>
           </div>
           <div className="settings-header-actions">
@@ -98,7 +97,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
             <div className="settings-nav-bottom">
               <div className="settings-version">
                 <div className="settings-version-dot" />
-                <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>Yu Writer</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Yu Writer</span>
                 <span style={{ fontSize: 13, color: 'var(--amber)' }}>v0.9.8 alpha</span>
               </div>
             </div>
@@ -121,7 +120,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         {/* Footer */}
         <div className="settings-footer">
           <div className="settings-footer-left">
-            <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}>\uF34A</span>
+            <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>\uF34A</span>
             <span>修改将在点击"完成"后生效</span>
           </div>
           <div className="settings-footer-right">
@@ -188,22 +187,15 @@ function renderGeneralSection() {
           <span className="settings-section-desc">用于选中态、主按钮与新增内容高亮</span>
         </div>
         <div className="color-picker-row">
-          {[
-            { color: '#39FF9E', label: 'Neon Green' },
-            { color: '#FFE45C', label: '亮黄' },
-            { color: '#4FC3F7', label: '青蓝' },
-            { color: '#FF5FA2', label: '品红' },
-            { color: '#FF9F45', label: '橙' },
-            { color: '#B98CFF', label: '紫' },
-          ].map((c, i) => (
+          {ACCENT_PRESETS.map(p => (
             <button
-              key={i}
-              className={`color-swatch ${accentColor === c.color ? 'active' : ''}`}
-              onClick={() => updateSetting('accentColor', c.color)}
-              title={c.label}
+              key={p.id}
+              className={`color-swatch ${accentColor === p.id ? 'active' : ''}`}
+              onClick={() => updateSetting('accentColor', p.id)}
+              title={p.name}
             >
-              <span className="color-swatch-bg" style={{ background: c.color }} />
-              {accentColor === c.color && <span className="remix color-swatch-check" style={{ fontSize: 14 }}>{'\uEB7B'}</span>}
+              <span className="color-swatch-bg" style={{ background: p.color }} />
+              {accentColor === p.id && <span className="remix color-swatch-check" style={{ fontSize: 14 }}>{'\uEB7B'}</span>}
             </button>
           ))}
           <button
@@ -211,7 +203,10 @@ function renderGeneralSection() {
             title="自定义颜色"
             onClick={() => {
               const c = prompt('输入颜色值 (如 #FF0000):')
-              if (c) updateSetting('accentColor', c.startsWith('#') ? c : '#' + c)
+              if (c) {
+                const hex = c.startsWith('#') ? c : '#' + c
+                updateSetting('accentColor', hex)
+              }
             }}
           >
             <span className="remix" style={{ fontSize: 16 }}>{'\uF226'}</span>
@@ -219,7 +214,9 @@ function renderGeneralSection() {
         </div>
         <div className="color-current-value">
           <span className="color-current-label">当前</span>
-          <span className="color-current-hex" style={{ color: accentColor }}>{accentColor} · Neon Green</span>
+          <span className="color-current-hex" style={{ color: getAccentColor(accentColor) || accentColor }}>
+            {ACCENT_PRESETS.find(p => p.id === accentColor)?.name || accentColor}
+          </span>
         </div>
       </div>
 
@@ -717,16 +714,16 @@ const ToggleRow: React.FC<{ icon: string; title: string; desc: string; checked: 
 const SliderRow: React.FC<{ label: string; desc: string; min: number; max: number; step: number; value: number; displayValue: string; onChange?: (v: number) => void }> = ({ label, desc, min, max, step, value, displayValue, onChange }) => (
   <div className="setting-row" style={{ marginBottom: 20 }}>
     <div className="setting-label">
-      <span style={{ color: 'rgba(199,211,222,1)' }}>{label}</span>
+      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
       <span className="setting-hint">{desc}</span>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-      <span style={{ fontSize: 11, color: 'rgba(111,125,138,1)', minWidth: 20 }}>{min}</span>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 20 }}>{min}</span>
       <div className="slider-track">
         <div className="slider-fill" style={{ width: `${((value - min) / (max - min)) * 100}%` }} />
         <div className="slider-thumb" style={{ left: `${((value - min) / (max - min)) * 100}%` }} />
       </div>
-      <span style={{ fontSize: 11, color: 'rgba(111,125,138,1)', minWidth: 20 }}>{max}</span>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 20 }}>{max}</span>
       <div className="slider-current-value"><span style={{ fontSize: 11, color: 'var(--amber)' }}>{displayValue}</span></div>
       {onChange && (
         <input
