@@ -2808,3 +2808,8 @@
 .ri-twitter-x-line:before { content: "\f3e7"; }
 .ri-verified-badge-fill:before { content: "\f3e8"; }
 .ri-verified-badge-line:before { content: "\f3e9"; }
+
+/* KaTeX Math Styles */
+.katex { color: rgba(57, 255, 158, 1); }
+.katex-display { margin: 16px 0; padding: 16px; background: rgba(15, 22, 32, 1); border-radius: 8px; overflow-x: auto; }
+.math-block { margin: 16px 0; padding: 16px; background: rgba(15, 22, 32, 1); border-radius: 8px; overflow-x: auto; }

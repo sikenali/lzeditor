@@ -36,7 +36,7 @@
 .toolbar-btn.active .toolbar-icon,
 .toolbar-btn.active .toolbar-label { color: var(--accent-primary); }
 
-.toolbar-icon { font-size: 20px; color: var(--green-accent-soft); line-height: 1; transition: color 0.12s; }
+.toolbar-icon { font-size: 20px; color: var(--text-secondary); line-height: 1; transition: color 0.12s; }
 .toolbar-label { font-size: 12px; color: var(--text-secondary); transition: color 0.12s; white-space: nowrap; }
 
 /* ── Document Meta Bar ── */
