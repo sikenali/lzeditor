@@ -11,8 +11,6 @@ import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
 
-const DEFAULT_CONTENT = `# 技术笔记
-
 > 本文档基于 Calicat 设计稿构建，包含所有 mock 数据用于功能测试。
 
 ---
