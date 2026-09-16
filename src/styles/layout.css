@@ -80,6 +80,16 @@
 .toolbar-dropdown-item:hover .remix { color: var(--accent-primary); }
 .toolbar-dropdown-sep { height: 1px; background: var(--border-subtle); margin: 4px 0; }
 
+/* ── Dropdown arrow: right side of icon, vertically centered ── */
+.toolbar-dd-arrow {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  right: -6px;
+  font-size: 9px; color: var(--text-muted); line-height: 1;
+  transition: transform 0.15s; pointer-events: auto; cursor: pointer;
+}
+.toolbar-dd-arrow.open { transform: translateY(-50%) rotate(90deg); }
+
 /* ── Document Meta Bar ── */
 .document-meta-bar {
   display: flex; align-items: center; gap: 12px;
