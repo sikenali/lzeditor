@@ -11,6 +11,7 @@ import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
 import { remark } from 'remark'
+import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 
 export const LZEditor = () => {
@@ -31,7 +32,7 @@ export const LZEditor = () => {
       TaskList,
       TaskItem,
     ],
-    content: remark().use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
+    content: remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
     onUpdate: ({ editor }: any) => {
       const text = editor.getText()
       setWordCount(text.split(/\s+/).filter(Boolean).length)

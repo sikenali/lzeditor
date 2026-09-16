@@ -77,12 +77,13 @@
 
 .toolbar-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; padding: 6px 12px; border-radius: 8px;
-  min-width: 70px; transition: background 0.12s, color 0.12s; cursor: pointer;
+  gap: 4px; padding: 6px 10px;
+  min-width: 70px; transition: color 0.12s; cursor: pointer;
+  border-radius: 0; border: none; background: transparent;
 }
-.toolbar-btn:hover   { background: var(--toolbar-hover); }
+.toolbar-btn:hover   { background: transparent; }
 .toolbar-btn:hover .toolbar-icon { color: var(--text-primary); }
-.toolbar-btn.active  { background: var(--toolbar-active); }
+.toolbar-btn.active  { background: transparent; }
 .toolbar-btn.active .toolbar-icon,
 .toolbar-btn.active .toolbar-label { color: var(--accent-primary); }
 

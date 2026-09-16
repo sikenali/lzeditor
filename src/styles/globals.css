@@ -48,6 +48,8 @@
 .lz-editor-content.ProseMirror {
   outline: none;
   min-height: 100%;
+  border: none;
+  box-shadow: none;
 }
 
 .lz-editor-content h1 {
