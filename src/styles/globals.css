@@ -12,6 +12,9 @@
   font-family: 'RemixIcon' !important;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  line-height: 1;
 }
 
 /* TipTap editor styles */
