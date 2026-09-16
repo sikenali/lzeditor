@@ -83,3 +83,7 @@
   border-radius: 5px; font-size: 11px; color: var(--amber);
   border: 1px solid var(--border-subtle);
 }
+
+/* ── Toolbar dropdown trigger ── */
+.toolbar-dropdown-trigger { padding: 6px 4px !important; min-width: 28px; }
+.toolbar-dropdown-trigger:hover { background: transparent !important; }

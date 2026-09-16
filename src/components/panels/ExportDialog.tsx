@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useEditorStore } from '../../store/editorStore'
 
 const EXPORT_FORMATS = [
   { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
@@ -7,20 +8,39 @@ const EXPORT_FORMATS = [
   { id: 'md', name: 'Markdown', icon: 'ri-markdown-fill', desc: '纯文本源码' },
 ]
 
-const STYLE_SETS = ['Ocean', 'Dark', 'Minimal', 'Candy']
+const PAPER_SIZES = [
+  { id: 'a4', label: 'A4' },
+  { id: 'a3', label: 'A3' },
+  { id: 'a5', label: 'A5' },
+  { id: 'letter', label: 'Letter' },
+  { id: 'legal', label: 'Legal' },
+]
 
-interface ExportDialogProps {
-  onClose: () => void
-}
+const ORIENTATIONS = [
+  { id: 'portrait', label: '纵向' },
+  { id: 'landscape', label: '横向' },
+]
 
-export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
-  const [selectedFormat, setSelectedFormat] = useState('pdf')
-  const [includeTOC, setIncludeTOC] = useState(true)
-  const [showMarkdownMarkers, setShowMarkdownMarkers] = useState(false)
-  const [includePageNumbers, setIncludePageNumbers] = useState(true)
-  const [styleSet, setStyleSet] = useState('Ocean')
+export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const docTitle = useEditorStore((s: any) => s.docTitle)
+  const docHTML = useEditorStore((s: any) => s.docHTML)
+  const [format, setFormat] = useState('pdf')
+  const [paperSize, setPaperSize] = useState('a4')
+  const [orientation, setOrientation] = useState('portrait')
 
-  const selected = EXPORT_FORMATS.find(f => f.id === selectedFormat)!
+  const selected = EXPORT_FORMATS.find(f => f.id === format)!
+
+  const handleExport = () => {
+    // TODO: implement actual export
+    const blob = new Blob([docHTML || '<h1>Empty</h1>'], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${docTitle || 'document'}.${format === 'md' ? 'md' : 'html'}`
+    a.click()
+    URL.revokeObjectURL(url)
+    onClose()
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -28,12 +48,10 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
-            <div className="export-icon">
-              <span className="remix ri-download-2-line"></span>
-            </div>
+            <span className="remix export-icon ri-download-2-line"></span>
             <div>
               <div className="export-title-text">导出文档</div>
-              <div className="export-title-desc">选择格式和选项</div>
+              <div className="export-title-desc">{docTitle}</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
@@ -41,118 +59,58 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Body */}
         <div className="export-body">
-          {/* Format selection */}
+          {/* Format selector */}
           <div className="export-section">
-            <div className="export-section-header">
-              <span className="export-section-label">导出格式</span>
-              <span className="export-recommend-badge">
-                <span className="remix ri-bookmark-fill"></span>
-                <span>推荐 PDF</span>
-              </span>
-            </div>
-            <div className="format-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+            <div className="export-section-label">导出格式</div>
+            <div className="format-grid">
               {EXPORT_FORMATS.map(fmt => (
                 <button
                   key={fmt.id}
-                  className={`format-card ${selectedFormat === fmt.id ? 'active' : ''}`}
-                  onClick={() => setSelectedFormat(fmt.id)}
+                  className={`format-card ${format === fmt.id ? 'active' : ''}`}
+                  onClick={() => setFormat(fmt.id)}
                 >
                   <span className={`remix format-icon ${fmt.icon}`}></span>
-                  <div>
+                  <div className="format-info">
                     <div className="format-name">{fmt.name}</div>
                     <div className="format-desc">{fmt.desc}</div>
                   </div>
-                  <div className={`format-radio ${selectedFormat === fmt.id ? 'checked' : ''}`} />
+                  <div className={`format-radio ${format === fmt.id ? 'checked' : ''}`} />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Style set selector */}
+          {/* Paper size & orientation */}
           <div className="export-section">
-            <div className="export-section-header">
-              <span className="export-section-label">样式集</span>
-            </div>
-            <div className="style-set-row">
-              {STYLE_SETS.map(s => (
-                <button
-                  key={s}
-                  className={`style-set-btn ${styleSet === s ? 'active' : ''}`}
-                  onClick={() => setStyleSet(s)}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Export options */}
-          <div className="export-section">
-            <div className="export-section-header">
-              <span className="export-section-label">导出选项</span>
-            </div>
-            <ToggleOption
-              icon="ri-archive-fill"
-              title="套用样式集"
-              desc="使用当前 Ocean 主题排版"
-              checked={true}
-              onChange={() => {}}
-              disabled
-            />
-            <div className="export-divider" />
-            <ToggleOption
-              icon="ri-bookmark-fill"
-              title="生成目录"
-              desc="根据标题层级自动抽取"
-              checked={includeTOC}
-              onChange={setIncludeTOC}
-            />
-            <div className="export-divider" />
-            <ToggleOption
-              icon="ri-list-ordered-2"
-              title="显示 Markdown 标记"
-              desc="保留 ### 与列表符号"
-              checked={showMarkdownMarkers}
-              onChange={setShowMarkdownMarkers}
-            />
-            <div className="export-divider" />
-            <ToggleOption
-              icon="ri-file-text-fill"
-              title="插入页码"
-              desc="右下角显示 当前页 / 总页数"
-              checked={includePageNumbers}
-              onChange={setIncludePageNumbers}
-            />
-          </div>
-
-          {/* Save location */}
-          <div className="export-section">
-            <div className="export-section-header">
-              <span className="export-section-label">保存位置</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-              <span className="remix ri-file-text-line"></span>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1 }}>~/Documents/technical-notes.md</span>
-              <button style={{ fontSize: 11, color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>浏览...</button>
+            <div className="export-row">
+              <div className="export-field">
+                <label className="export-label">纸张大小</label>
+                <select className="lfs-select" value={paperSize} onChange={e => setPaperSize(e.target.value)} style={{ minWidth: 120 }}>
+                  {PAPER_SIZES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
+              </div>
+              <div className="export-field">
+                <label className="export-label">方向</label>
+                <select className="lfs-select" value={orientation} onChange={e => setOrientation(e.target.value)} style={{ minWidth: 120 }}>
+                  {ORIENTATIONS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Preview */}
-          <div className="export-preview">
+          <div className="export-section">
             <div className="export-section-header">
-              <span className="export-section-label">预览 · 第 1 页 / 共 4 页</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>A4 · 纵向 · 页边距 24mm · 样式集 {styleSet}</span>
+              <span className="export-section-label">预览</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{paperSize.toUpperCase()} · {orientation === 'portrait' ? '纵向' : '横向'}</span>
             </div>
-            <div style={{ display: 'flex', gap: 12, marginTop: 8, alignItems: 'flex-start' }}>
-              <div className="export-preview-thumb">
-                <span className={`remix ${selected.icon}`}></span>
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-heading)' }}>{selected.name} 格式</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                  technical-notes.md · 1399 词
+            <div className="export-preview-area">
+              <div className="export-preview-page" style={{ aspectRatio: orientation === 'portrait' ? '210/297' : '297/210' }}>
+                <div className="export-preview-content">
+                  <div className="remix ri-file-text-line export-preview-icon"></div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>{selected.name} 格式</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{docTitle}.md</div>
                 </div>
               </div>
             </div>
@@ -161,13 +119,13 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
 
         {/* Footer */}
         <div className="export-footer">
-          <div className="export-footer-hint">
+          <div className="export-hint">
             <span className="remix ri-information-line"></span>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>导出不会修改原文档</span>
           </div>
-          <div className="export-footer-actions">
-            <button className="settings-cancel-btn" onClick={onClose}>取消</button>
-            <button className="settings-save-btn">
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+            <button className="settings-save-btn" onClick={handleExport}>
               <span className="remix ri-download-2-line"></span>
               导出 {selected.name}
             </button>
@@ -177,25 +135,3 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
     </div>
   )
 }
-
-const ToggleOption: React.FC<{
-  icon: string; title: string; desc: string;
-  checked: boolean; onChange: (v: boolean) => void; disabled?: boolean
-}> = ({ icon, title, desc, checked, onChange, disabled }) => (
-  <div className="toggle-option-row">
-    <div className="toggle-option-left">
-      <span className={`remix toggle-option-icon ${icon}`}></span>
-      <div>
-        <div className="toggle-option-title">{title}</div>
-        <div className="toggle-option-desc">{desc}</div>
-      </div>
-    </div>
-    {disabled ? (
-      <span className="toggle-disabled-label">已启用</span>
-    ) : (
-      <button className={`toggle-btn ${checked ? 'active' : ''}`} onClick={() => onChange(!checked)}>
-        <span className="toggle-knob" />
-      </button>
-    )}
-  </div>
-)
