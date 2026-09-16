@@ -46,7 +46,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
             <div className="export-section-header">
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>导出格式</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--note-bg)', borderRadius: 4, padding: '2px 8px' }}>
-                <span className="remix ri-bookmark-fill"></span>
+                <span className="remix ri-information-line"></span>
                 <span style={{ fontSize: 11, color: 'var(--amber)' }}>推荐 PDF</span>
               </div>
             </div>
@@ -133,7 +133,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
         {/* Footer */}
         <div className="export-footer">
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span className="remix ri-bookmark-fill"></span>
+            <span className="remix ri-information-line"></span>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>导出不会修改原文档</span>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>

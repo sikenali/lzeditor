@@ -64,7 +64,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 setActiveGroup('general')
               }}
             >
-              <span className="remix ri-refresh-fill"></span>
+              <span className="remix ri-refresh-line"></span>
               <span>恢复默认</span>
             </button>
             <button className="settings-close-btn" onClick={onClose}>
@@ -120,7 +120,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         {/* Footer */}
         <div className="settings-footer">
           <div className="settings-footer-left">
-            <span className="remix ri-openai-fill"></span>
+            <span className="remix ri-information-line"></span>
             <span>修改将在点击"完成"后生效</span>
           </div>
           <div className="settings-footer-right">
@@ -141,10 +141,10 @@ function getNavIcon(group: SettingsGroup): string {
     general: 'ri-information-fill',
     editor: 'ri-edit-2-fill',
     appearance: 'ri-palette-fill',
-    ai: 'ri-openai-fill',
+    ai: 'ri-information-line',
     shortcut: 'ri-keyboard-fill',
     export: 'ri-download-2-line',
-    sync: 'ri-refresh-fill',
+    sync: 'ri-refresh-line',
     advanced: 'ri-rocket-fill',
     about: 'ri-information-fill',
   }
@@ -640,7 +640,7 @@ function renderAdvancedSection() {
       />
       <div className="setting-divider" />
       <ToggleRow
-        icon="ri-pen-nib-fill"
+        icon="ri-book-open-fill"
         title="禁用硬件加速"
         desc="解决渲染兼容性问题"
         checked={state.hardwareAccel === false}
@@ -669,7 +669,7 @@ function renderAboutSection() {
     <div className="settings-section" style={{ textAlign: 'center', padding: '40px 24px' }}>
       <div className="about-logo">
         <div className="about-logo-icon">
-          <span className="remix ri-pen-nib-fill"></span>
+          <span className="remix ri-book-open-fill"></span>
         </div>
       </div>
       <div className="about-title">lzeditor</div>
