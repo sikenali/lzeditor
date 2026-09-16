@@ -1,0 +1,214 @@
+/* ============================================================
+   LZEditor — Semantic Color Tokens (lzmail pattern)
+   ============================================================ */
+
+/* ── Dark theme (default) ── */
+:root {
+  /* Backgrounds */
+  --background:           #0a0e13;
+  --background-card:      #101720;
+  --background-elevated:  #161d28;
+  --background-hover:     #1a2230;
+  --background-input:     #0f151e;
+  --background-code:      #0f151e;
+  --background-quote:     #0b1017;
+  --background-muted:     #111820;
+
+  /* Text */
+  --foreground:           #e0eaf0;
+  --foreground-secondary: #7d8b9a;
+  --foreground-muted:     #5f6e7d;
+  --foreground-heading:   #f2f8fb;
+  --foreground-heading-2: #eaf4f8;
+
+  /* Primary accent — neon green (dark default) */
+  --accent:              #39ff9e;
+  --accent-foreground:   #062417;
+
+  /* Accent alpha variants (set dynamically by useTheme.ts) */
+  --accent-a3:  rgba(57,255,158,0.03);
+  --accent-a5:  rgba(57,255,158,0.05);
+  --accent-a8:  rgba(57,255,158,0.08);
+  --accent-a10: rgba(57,255,158,0.10);
+  --accent-a15: rgba(57,255,158,0.15);
+  --accent-a20: rgba(57,255,158,0.20);
+  --accent-a30: rgba(57,255,158,0.30);
+  --accent-a40: rgba(57,255,158,0.40);
+  --accent-a60: rgba(57,255,158,0.60);
+
+  /* Back-compat alias for existing --accent-primary references */
+  --accent-primary: var(--accent);
+
+  /* Borders */
+  --border:        #33404c;
+  --border-subtle: #1d2731;
+  --border-input:  #33404c;
+
+  /* Surface */
+  --toolbar-bg:      #0d1319;
+  --toolbar-hover:   var(--accent-a8);
+  --toolbar-active:  var(--accent-a15);
+  --statusbar-bg:    #12181f;
+  --card:            #161d28;
+  --card-border:     #33404c;
+
+  /* AI panel */
+  --ai-panel-bg:        rgba(13,19,25,0.97);
+  --ai-panel-border:    var(--accent-a30);
+  --ai-panel-shadow:    0 4px 24px rgba(0,0,0,0.5), 0 0 16px var(--accent-a10);
+  --ai-loading-dot:     var(--accent-a60);
+
+  /* Auxiliary colors */
+  --amber:        #ffe45c;
+  --amber-soft:   rgba(255,228,92,0.15);
+  --amber-dim:    #8a7b33;
+  --red:          #ff5f57;
+  --red-soft:     rgba(255,95,87,0.12);
+  --red-text:     #ff8a8a;
+  --yellow:       #beec2e;
+  --green:        #28c840;
+  --green-soft:   rgba(40,200,64,0.12);
+  --green-accent: #7fbfa2;
+
+  /* Feedback surfaces */
+  --success-bg:     rgba(16,40,31,1);
+  --success-border: rgba(44,74,60,1);
+  --danger-bg:      rgba(58,26,29,1);
+  --note-bg:        rgba(42,36,16,1);
+  --note-border:    rgba(92,82,32,1);
+
+  /* Shadows */
+  --shadow-color-1: rgba(0,0,0,0.40);
+  --shadow-color-2: rgba(0,0,0,0.50);
+  --shadow-strong:  rgba(0,0,0,0.60);
+  --shadow-lg:      0 20px 60px var(--shadow-strong);
+  --shadow-modal:   0 20px 60px rgba(0,0,0,0.6);
+
+  /* Fonts */
+  --font-sans:  "Source Han Sans", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-mono:  "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+
+  /* ── Backward-compat aliases (was neon-theme.css) ── */
+  --bg-primary:    var(--background);
+  --bg-secondary:  var(--background-card);
+  --bg-tertiary:   var(--background-muted);
+  --bg-code:       var(--background-code);
+  --bg-elevated:   var(--background-elevated);
+  --bg-overlay:    var(--background-card);
+  --bg-hover:      var(--background-hover);
+  --bg-input:      var(--background-input);
+  --text-primary:  var(--foreground);
+  --text-secondary: var(--foreground-secondary);
+  --text-muted:    var(--foreground-muted);
+  --text-heading:  var(--foreground-heading);
+  --text-heading-2: var(--foreground-heading-2);
+  --accent-a70:    rgba(57,255,158,0.7);
+  --bg-quote:      var(--background-quote);
+  --text-on-accent: var(--accent-foreground);
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --background:           #f7f9fb;
+  --background-card:      #ffffff;
+  --background-elevated:  #ffffff;
+  --background-hover:     #edf2f6;
+  --background-input:     #eef1f5;
+  --background-code:      #eef1f5;
+  --background-quote:     #f0f3f6;
+  --background-muted:     #f0f3f7;
+
+  --foreground:           #172029;
+  --foreground-secondary: #5a6876;
+  --foreground-muted:     #788694;
+  --foreground-heading:   #121a23;
+  --foreground-heading-2: #1e2834;
+
+  --accent:              #0d8c5f;
+  --accent-foreground:   #ffffff;
+  --accent-primary:      var(--accent);
+
+  --accent-a3:  rgba(13,140,95,0.03);
+  --accent-a5:  rgba(13,140,95,0.05);
+  --accent-a8:  rgba(13,140,95,0.08);
+  --accent-a10: rgba(13,140,95,0.10);
+  --accent-a15: rgba(13,140,95,0.15);
+  --accent-a20: rgba(13,140,95,0.20);
+  --accent-a30: rgba(13,140,95,0.30);
+  --accent-a40: rgba(13,140,95,0.40);
+  --accent-a60: rgba(13,140,95,0.60);
+
+  --border:        #c6d0da;
+  --border-subtle: #dfe6ee;
+  --border-input:  #c6d0da;
+
+  --toolbar-bg:     #f1f4f7;
+  --toolbar-hover:  var(--accent-a8);
+  --toolbar-active: var(--accent-a15);
+  --statusbar-bg:   #f1f4f7;
+  --card:           #ffffff;
+  --card-border:    #c6d0da;
+
+  --ai-panel-bg:        rgba(255,255,255,0.97);
+  --ai-panel-border:    var(--accent-a30);
+  --ai-panel-shadow:    0 4px 24px rgba(18,26,35,0.12), 0 0 16px var(--accent-a10);
+  --ai-loading-dot:     var(--accent-a60);
+
+  --amber:        #b28014;
+  --amber-soft:   rgba(178,128,20,0.12);
+  --amber-dim:    #967d1e;
+  --red:          #d7372d;
+  --red-soft:     rgba(215,55,45,0.10);
+  --red-text:     #c8372d;
+  --yellow:       #eb9f1e;
+  --green:        #28a546;
+  --green-soft:   rgba(40,165,70,0.10);
+  --green-accent: #28a546;
+
+  --success-bg:     rgba(228,250,240,1);
+  --success-border: rgba(110,180,145,1);
+  --danger-bg:      rgba(255,230,230,1);
+  --note-bg:        rgba(255,243,210,1);
+  --note-border:    rgba(210,175,80,1);
+
+  --shadow-color-1: rgba(18,26,35,0.08);
+  --shadow-color-2: rgba(18,26,35,0.12);
+  --shadow-strong:  rgba(18,26,35,0.30);
+  --shadow-lg:      0 20px 60px var(--shadow-strong);
+  --shadow-modal:   0 20px 60px rgba(18,26,35,0.18);
+
+  /* ── Backward-compat aliases ── */
+  --bg-primary:    var(--background);
+  --bg-secondary:  var(--background-card);
+  --bg-tertiary:   var(--background-muted);
+  --bg-code:       var(--background-code);
+  --bg-elevated:   var(--background-elevated);
+  --bg-overlay:    var(--background-card);
+  --bg-hover:      var(--background-hover);
+  --bg-input:      var(--background-input);
+  --text-primary:  var(--foreground);
+  --text-secondary: var(--foreground-secondary);
+  --text-muted:    var(--foreground-muted);
+  --text-heading:  var(--foreground-heading);
+  --text-heading-2: var(--foreground-heading-2);
+  --accent-a70:    rgba(13,140,95,0.7);
+  --bg-quote:      var(--background-quote);
+  --text-on-accent: var(--accent-foreground);
+}
+
+/* ── Accent color presets ── */
+/* Dark mode presets */
+:root[data-accent="green"]  { --accent: #39ff9e; --accent-foreground: #062417; }
+:root[data-accent="cyan"]   { --accent: #00d4ff; --accent-foreground: #001a24; }
+:root[data-accent="purple"] { --accent: #a855f7; --accent-foreground: #1a0a2e; }
+:root[data-accent="orange"] { --accent: #ff8c42; --accent-foreground: #2a1200; }
+:root[data-accent="rose"]   { --accent: #f43f5e; --accent-foreground: #2a0008; }
+:root[data-accent="amber"]  { --accent: #f59e0b; --accent-foreground: #2a1a00; }
+
+/* Light mode presets (darker, readable variants) */
+[data-theme="light"][data-accent="green"]  { --accent: #0d8c5f; --accent-foreground: #fff; }
+[data-theme="light"][data-accent="cyan"]   { --accent: #0077b6; --accent-foreground: #fff; }
+[data-theme="light"][data-accent="purple"] { --accent: #7c3aed; --accent-foreground: #fff; }
+[data-theme="light"][data-accent="orange"] { --accent: #ea580c; --accent-foreground: #fff; }
+[data-theme="light"][data-accent="rose"]   { --accent: #e11d48; --accent-foreground: #fff; }
+[data-theme="light"][data-accent="amber"]  { --accent: #d97706; --accent-foreground: #fff; }

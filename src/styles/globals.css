@@ -1,5 +1,4 @@
-@import './neon-theme.css';
-@import './ai-components.css';
+@import './color-tokens.css';
 
 @font-face {
   font-family: 'RemixIcon';
@@ -34,24 +33,10 @@
   min-height: 100%;
 }
 
-/* Selection highlight matching design */
-.lz-editor-content .selection-highlight {
-  background: rgba(255, 228, 92, 0.12);
-  border-radius: 3px;
-}
-
 .lz-editor-content h1 {
   font-size: 28px;
   font-weight: 700;
-  color: rgba(242, 248, 251, 1);
-  margin: 24px 0 12px;
-  line-height: 1.3;
-}
-
-.lz-editor-content h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: rgba(242, 248, 251, 1);
+  color: var(--foreground-heading);
   margin: 24px 0 12px;
   line-height: 1.3;
 }
@@ -59,7 +44,7 @@
 .lz-editor-content h2 {
   font-size: 20px;
   font-weight: 600;
-  color: rgba(234, 243, 248, 1);
+  color: var(--foreground-heading-2);
   margin: 24px 0 8px;
   line-height: 1.3;
   display: flex;
@@ -69,7 +54,7 @@
 
 .lz-editor-content h2::before {
   content: '##';
-  color: rgba(138, 123, 51, 1);
+  color: var(--amber-dim);
   font-size: 16px;
   font-weight: 400;
   flex-shrink: 0;
@@ -79,7 +64,7 @@
   content: '';
   width: 29px;
   height: 3px;
-  background: rgba(255, 228, 92, 1);
+  background: var(--amber);
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -87,7 +72,7 @@
 .lz-editor-content h3 {
   font-size: 16px;
   font-weight: 600;
-  color: rgba(234, 243, 248, 1);
+  color: var(--foreground-heading-2);
   margin: 24px 0 8px;
   line-height: 1.3;
   display: flex;
@@ -97,39 +82,26 @@
 
 .lz-editor-content h3::before {
   content: '###';
-  color: rgba(138, 123, 51, 1);
+  color: var(--amber-dim);
   font-size: 14px;
   font-weight: 400;
   flex-shrink: 0;
 }
 
-.lz-editor-content h3::after {
-  content: '';
-  width: 29px;
-  height: 3px;
-  background: rgba(255, 228, 92, 1);
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
 .lz-editor-content p {
   font-size: 15px;
-  color: rgba(185, 198, 210, 1);
+  color: var(--foreground-secondary);
   margin: 8px 0;
   line-height: 1.75;
 }
 
 .lz-editor-content strong {
-  color: rgba(220, 230, 240, 1);
+  color: var(--foreground);
   font-weight: 600;
 }
 
-.lz-editor-content em {
-  color: rgba(168, 183, 196, 1);
-}
-
 .lz-editor-content a {
-  color: var(--accent-primary);
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -138,12 +110,12 @@
 }
 
 .lz-editor-content blockquote {
-  border-left: 3px solid rgba(255, 228, 92, 1);
-  background: rgba(11, 16, 23, 1);
+  border-left: 3px solid var(--accent);
+  background: var(--background-quote);
   padding: 20px 24px;
   margin: 32px 0;
   border-radius: 0 8px 8px 0;
-  color: rgba(168, 183, 196, 1);
+  color: var(--foreground-secondary);
   font-size: 16px;
   display: flex;
   align-items: flex-start;
@@ -151,28 +123,29 @@
 }
 
 .lz-editor-content blockquote .remix {
-  color: var(--amber);
+  color: var(--accent);
   margin-right: 8px;
 }
 
-.lz-editor-content ul, .lz-editor-content ol {
+.lz-editor-content ul,
+.lz-editor-content ol {
   padding-left: 24px;
   margin: 8px 0;
 }
 
 .lz-editor-content li {
   font-size: 15px;
-  color: rgba(185, 198, 210, 1);
+  color: var(--foreground-secondary);
   line-height: 1.75;
   margin: 4px 0;
 }
 
 .lz-editor-content li::marker {
-  color: var(--accent-primary);
+  color: var(--accent);
 }
 
 .lz-editor-content code {
-  background: var(--bg-code);
+  background: var(--background-code);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: var(--font-mono);
@@ -181,8 +154,8 @@
 }
 
 .lz-editor-content pre {
-  background: rgba(15, 22, 32, 1);
-  border: 0.7px solid rgba(30, 42, 53, 1);
+  background: var(--background-code);
+  border: 0.7px solid var(--border-subtle);
   border-radius: 8px;
   padding: 16px 20px;
   margin: 28px 0;
@@ -190,25 +163,25 @@
   position: relative;
 }
 
+.lz-editor-content pre::before {
+  content: '$';
+  color: var(--accent);
+  margin-right: 8px;
+  user-select: none;
+}
+
 .lz-editor-content pre code {
   background: none;
   padding: 0;
-  color: rgba(213, 226, 236, 1);
+  color: var(--foreground-secondary);
   font-size: 13px;
   line-height: 1.6;
-}
-
-.lz-editor-content pre::before {
-  content: '$';
-  color: var(--accent-primary);
-  margin-right: 8px;
-  user-select: none;
 }
 
 .lz-editor-content hr {
   border: none;
   height: 1px;
-  background: var(--border-default);
+  background: var(--border);
   margin: 20px 0;
 }
 
@@ -220,28 +193,42 @@
 }
 
 .lz-editor-content th {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: var(--background-card);
+  color: var(--foreground);
   font-weight: 600;
   padding: 8px 12px;
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border);
   text-align: left;
 }
 
 .lz-editor-content td {
   padding: 6px 12px;
-  border: 1px solid var(--border-default);
-  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground-secondary);
 }
 
 .lz-editor-content .selected-text {
-  background: rgba(255, 228, 92, 0.15);
+  background: var(--amber-soft);
   border-radius: 2px;
   padding: 0 2px;
 }
 
-/* Selection highlight matching design */
 .lz-editor-content .selection-highlight {
-  background: rgba(255, 228, 92, 0.12);
+  background: var(--amber-soft);
   border-radius: 3px;
+}
+
+/* ── Selection highlight in ProseMirror ── */
+.ProseMirror .selection {
+  background: var(--amber-soft) !important;
+  border-radius: 2px;
+}
+
+/* ── Task list checkbox ── */
+.ProseMirror .task-list-item input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+  cursor: pointer;
 }
