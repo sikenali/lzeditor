@@ -17,6 +17,17 @@
   line-height: 1;
 }
 
+/* Ensure ::before pseudo-element renders for all icon classes */
+.remix::before {
+  display: inline-block;
+  font-family: 'RemixIcon' !important;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* TipTap editor styles */
 .lz-editor {
   height: 100%;
