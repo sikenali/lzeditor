@@ -4,18 +4,28 @@ import { LanguageSelector } from '../ai/LanguageSelector'
 import { LANGUAGES } from '../../shared/languages'
 import type { AIAction } from '../../shared/types'
 
+// RemixIcon unicode values
+const ICONS = {
+  pen: '\uE8C1',           // ri-pen-line (改写)
+  sparkle: '\uE8A7',        // ri-sparkling-line (润色)
+  add: '\uF036',            // ri-add-line (续写)
+  file_text: '\uE83A',      // ri-file-text-line (摘要)
+  translate: '\uE9B2',      // ri-translate-line (翻译)
+  question: '\uF371',       // ri-question-line (提问)
+  robot: '\uF47B',          // ri-robot-line (AI toolbar button)
+} as const
+
 const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
-  { action: 'rewrite', icon: '\uEB41', label: '改写' },
-  { action: 'polish', icon: '\uE8D9', label: '润色' },
-  { action: 'continue', icon: '\uF44A', label: '续写' },
-  { action: 'summarize', icon: '\uE83A', label: '摘要' },
-  { action: 'translate', icon: '\uE9B2', label: '翻译' },
-  { action: 'question', icon: '\uF371', label: '提问' },
+  { action: 'rewrite', icon: ICONS.pen, label: '改写' },
+  { action: 'polish', icon: ICONS.sparkle, label: '润色' },
+  { action: 'continue', icon: ICONS.add, label: '续写' },
+  { action: 'summarize', icon: ICONS.file_text, label: '摘要' },
+  { action: 'translate', icon: ICONS.translate, label: '翻译' },
+  { action: 'question', icon: ICONS.question, label: '提问' },
 ]
 
 interface FloatingToolbarProps {
   position: { x: number; y: number }
-  selectedText: string
   visible: boolean
   onAction: (action: AIAction) => void
 }
