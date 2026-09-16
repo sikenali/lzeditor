@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { LFSCombo } from '../../components/ui/LFSCombo'
 
 type LinkMode = 'external' | 'document'
 
@@ -96,11 +97,16 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <>
               <div className="link-field">
                 <label className="link-label">文档</label>
-                <select className="lfs-select" value={docName} onChange={e => setDocName(e.target.value)} style={{ minWidth: 200 }}>
-                  <option value="">选择文档...</option>
-                  <option value="welcome">welcome.md</option>
-                  <option value="notes">技术笔记.md</option>
-                </select>
+                <LFSCombo
+                  value={docName}
+                  onChange={setDocName}
+                  options={[
+                    { value: 'welcome', label: 'welcome.md' },
+                    { value: 'notes', label: '技术笔记.md' },
+                  ]}
+                  placeholder="选择文档..."
+                  style={{ minWidth: 200 }}
+                />
               </div>
               <div className="link-field">
                 <label className="link-label">章节</label>
