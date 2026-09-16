@@ -7,11 +7,11 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const docHTML = useEditorStore((s) => s.docHTML)
   const wordCount = useEditorStore((s) => s.wordCount)
   const fontSize = useEditorStore((s) => s.fontSize)
+  const readProgress = useEditorStore((s) => s.readProgress)
   const setFontSize = useEditorStore((s) => s.setFontSize)
   const setReadProgress = useEditorStore((s) => s.setReadProgress)
 
   const bodyRef = useRef<HTMLDivElement>(null)
-  const prevHTMLRef = useRef(docHTML)
 
   const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
@@ -23,13 +23,6 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const progress = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0
     setReadProgress(Math.min(100, Math.max(0, progress)))
   }, [setReadProgress])
-
-  // Sync HTML if editor changed
-  useEffect(() => {
-    if (docHTML !== prevHTMLRef.current) {
-      prevHTMLRef.current = docHTML
-    }
-  }, [docHTML])
 
   const handleFontSizeChange = (delta: number) => {
     setFontSize(Math.min(24, Math.max(13, fontSize + delta)))
@@ -54,7 +47,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <span className="read-divider" />
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>预计阅读 {readingTime} 分钟</span>
             <span className="read-divider" />
-            <span style={{ fontSize: 12, color: 'var(--amber)' }}>已读 {Math.max(1, wordCount)} 词</span>
+            <span style={{ fontSize: 12, color: 'var(--accent-primary)' }}>已读 {readProgress}%</span>
           </div>
           <div className="read-mode-right">
             <div className="font-size-control">
@@ -81,7 +74,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
         {/* Progress bar */}
         <div className="read-progress-bar">
-          <div className="read-progress-fill" style={{ width: `${document.documentElement.style.getPropertyValue('--read-progress') || '0%'}` }} />
+          <div className="read-progress-fill" style={{ width: `${readProgress}%` }} />
         </div>
 
         {/* Article body */}
@@ -89,7 +82,6 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           ref={bodyRef}
           className="read-mode-body"
           onScroll={handleScroll}
-          style={{ '--read-font-size': `${fontSize}px` } as React.CSSProperties}
         >
           <div className="read-article">
             <div className="read-article-header">
@@ -108,7 +100,11 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="read-article-body" dangerouslySetInnerHTML={{ __html: docHTML }} />
+            <div
+              className="read-article-body"
+              dangerouslySetInnerHTML={{ __html: docHTML }}
+              style={{ fontSize: `${fontSize}px` }}
+            />
 
             <div className="read-footer">
               <div className="read-tags-footer">
