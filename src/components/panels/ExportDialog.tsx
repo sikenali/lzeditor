@@ -57,7 +57,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
                   className={`format-card ${selectedFormat === fmt.id ? 'active' : ''}`}
                   onClick={() => setSelectedFormat(fmt.id)}
                 >
-                  <span className="remix format-icon" style={{ fontSize: 24, color: selectedFormat === fmt.id ? 'var(--accent-primary)' : 'var(--green-accent-soft)' }}>className={`remix format-icon ${fmt.icon}`} style={{ fontSize: 24, color: selectedFormat === fmt.id ? 'var(--accent-primary)' : 'var(--green-accent-soft)' }}></span>
+                  <span className={`remix format-icon ${fmt.icon}`} style={{ fontSize: 24, color: selectedFormat === fmt.id ? 'var(--accent-primary)' : 'var(--green-accent-soft)' }}></span>
                   <div>
                     <div className="format-name">{fmt.name}</div>
                     <div className="format-desc">{fmt.desc}</div>
@@ -118,7 +118,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 8, alignItems: 'flex-start' }}>
               <div style={{ width: 63, height: 80, background: 'var(--bg-elevated)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="remix" style={{ fontSize: 20, color: 'var(--green-accent-soft)' }}>className={`remix ${selected.icon}`} style={{ fontSize: 20, color: 'var(--green-accent-soft)' }}></span>
+                <span className={`remix ${selected.icon}`} style={{ fontSize: 20, color: 'var(--green-accent-soft)' }}></span>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-heading)' }}>{selected.name} 格式</div>
