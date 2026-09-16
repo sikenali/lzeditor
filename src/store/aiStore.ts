@@ -30,8 +30,11 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => set({ openPanel: panel }),
   setShowOutline: (showOutline: boolean) => set({ showOutline }),
   setShowPreview: (showPreview: boolean) => set({ showPreview }),
+  setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
+  previewWidth: 400,
+  setPreviewWidth: (width: number) => set({ previewWidth: width }),
 
   panelVisible: false,
   panelAction: null,
