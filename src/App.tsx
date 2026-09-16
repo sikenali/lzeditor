@@ -8,11 +8,16 @@ import { SettingsDialog } from './components/panels/SettingsDialog'
 import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { ReadMode } from './components/panels/ReadMode'
+import { LibraryPanel } from './components/panels/LibraryPanel'
+import { FilePanel } from './components/panels/FilePanel'
+import { OutlinePanel } from './components/panels/OutlinePanel'
 import { useEditorStore } from './store/editorStore'
 
 function App() {
   const openPanel = useEditorStore(s => s.openPanel)
   const isReadMode = useEditorStore(s => s.isReadMode)
+
+  const closePanel = () => useEditorStore.getState().setOpenPanel('none')
 
   return (
     <div className="app">
@@ -24,9 +29,12 @@ function App() {
       </div>
       <StatusBar />
 
-      {openPanel === 'settings' && <SettingsDialog onClose={() => useEditorStore.getState().setOpenPanel('none')} />}
-      {openPanel === 'export' && <ExportDialog onClose={() => useEditorStore.getState().setOpenPanel('none')} />}
-      {openPanel === 'history' && <HistoryPanel onClose={() => useEditorStore.getState().setOpenPanel('none')} />}
+      {openPanel === 'settings' && <SettingsDialog onClose={closePanel} />}
+      {openPanel === 'export' && <ExportDialog onClose={closePanel} />}
+      {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
+      {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
+      {openPanel === 'file' && <FilePanel onClose={closePanel} />}
+      {openPanel === 'outline' && <OutlinePanel onClose={closePanel} />}
       {isReadMode && <ReadMode onClose={() => useEditorStore.getState().setReadMode(false)} />}
     </div>
   )

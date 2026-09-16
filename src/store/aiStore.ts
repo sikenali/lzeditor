@@ -11,6 +11,8 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   isReadMode: false,
   syncStatus: 'synced',
   openPanel: 'none',
+  editorRef: null,
+  setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
   setTitle: (title: string) => set({ docTitle: title }),
   setWordCount: (count: number) => set({ wordCount: count }),
   setCharCount: (count: number) => set({ charCount: count }),
@@ -18,7 +20,7 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setPreview: (isPreview: boolean) => set({ isPreview }),
   setReadMode: (isReadMode: boolean) => set({ isReadMode }),
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => set({ syncStatus: status }),
-  setOpenPanel: (panel: 'none' | 'styles' | 'history' | 'settings' | 'export') => set({ openPanel: panel }),
+  setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => set({ openPanel: panel }),
 
   panelVisible: false,
   panelAction: null,

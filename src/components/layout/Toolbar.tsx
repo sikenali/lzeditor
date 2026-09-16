@@ -1,5 +1,6 @@
 import React from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useAIStore } from '../../store/aiStore'
 
 const TOOLS = [
   { icon: '\uED6A', label: '文库', action: 'library' },

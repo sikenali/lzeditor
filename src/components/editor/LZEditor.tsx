@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import React, { useRef, useEffect, useCallback } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useAIStore } from '../../store/aiStore'
@@ -42,6 +42,11 @@ export const LZEditor = () => {
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
+  const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
+
+  React.useEffect(() => {
+    setEditorRef(editorRef.current)
+  }, [])
 
   const editor = useEditor({
     extensions: [StarterKit],
