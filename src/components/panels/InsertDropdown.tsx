@@ -1,5 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useEditorStore } from '../../store/editorStore'
+
+interface InsertDropdownProps {
+  open: boolean
+  onToggle: (v: boolean) => void
+}
 
 const INSERT_ITEMS = [
   { icon: 'ri-toc', label: '目录', action: 'toc' },
@@ -12,91 +17,83 @@ const INSERT_ITEMS = [
   { icon: 'ri-function-fill', label: '数学公式', action: 'math' },
 ]
 
-export const InsertDropdown: React.FC = () => {
-  const [open, setOpen] = useState(false)
+export const InsertDropdown: React.FC<InsertDropdownProps> = ({ open, onToggle }) => {
   const editorRef = useEditorStore((s: any) => s.editorRef)
+  const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
+  const setWordCount = useEditorStore((s: any) => s.setWordCount)
 
   const handleAction = (action: string) => {
     if (!editorRef) return
     const sel = window.getSelection()
-    if (!sel?.rangeCount) return
-    const range = sel.getRangeAt(0)
+    const range = sel?.rangeCount ? sel.getRangeAt(0) : null
 
     switch (action) {
       case 'toc': {
         const p = document.createElement('p')
         p.textContent = '[TOC]'
         p.style.cssText = 'color:var(--text-muted);font-size:11px;font-family:monospace;'
-        range.deleteContents()
-        range.insertNode(p)
+        range?.insertNode(p)
         break
       }
       case 'quote': {
-        const blockquote = document.createElement('blockquote')
-        blockquote.textContent = sel.toString() || '引用内容'
-        blockquote.style.cssText = 'border-left:3px solid var(--accent-primary);padding:8px 16px;margin:8px 0;background:var(--accent-a3);border-radius:0 8px 8px 0;'
-        range.deleteContents()
-        range.insertNode(blockquote)
+        const bq = document.createElement('blockquote')
+        bq.textContent = sel?.toString() || '引用内容'
+        bq.style.cssText = 'border-left:3px solid var(--accent-primary);padding:8px 16px;margin:8px 0;background:var(--accent-a3);border-radius:0 8px 8px 0;'
+        range?.deleteContents(); range?.insertNode(bq)
         break
       }
       case 'footnote': {
         const sup = document.createElement('sup')
         sup.textContent = '[^1]'
         sup.style.cssText = 'color:var(--accent-primary);'
-        range.deleteContents()
-        range.insertNode(sup)
+        range?.insertNode(sup)
         break
       }
       case 'hr': {
         const hr = document.createElement('hr')
         hr.style.cssText = 'border:none;border-top:1px solid var(--border-subtle);margin:12px 0;'
-        range.insertNode(hr)
+        range?.insertNode(hr)
         break
       }
       case 'blockquote': {
         const bq = document.createElement('blockquote')
-        bq.textContent = sel.toString() || '块引用内容'
+        bq.textContent = sel?.toString() || '块引用内容'
         bq.style.cssText = 'border-left:3px solid var(--amber);padding:12px 20px;margin:12px 0;background:var(--bg-quote);border-radius:0 10px 10px 0;font-style:italic;color:var(--text-secondary);'
-        range.deleteContents()
-        range.insertNode(bq)
+        range?.deleteContents(); range?.insertNode(bq)
         break
       }
       case 'code': {
         const code = prompt('请输入代码内容:')
-        if (code !== null) {
+        if (code !== null && range) {
           const pre = document.createElement('pre')
           pre.style.cssText = 'background:var(--bg-code);padding:14px 18px;border-radius:8px;font-family:monospace;font-size:13px;overflow-x:auto;margin:10px 0;border:1px solid var(--border-subtle);'
           const codeEl = document.createElement('code')
           codeEl.textContent = code
           pre.appendChild(codeEl)
-          range.deleteContents()
-          range.insertNode(pre)
+          range.deleteContents(); range.insertNode(pre)
         }
         break
       }
       case 'math': {
         const formula = prompt('输入数学公式 (LaTeX):', 'E = mc^2')
-        if (formula) {
+        if (formula && range) {
           const span = document.createElement('span')
           span.textContent = `$${formula}$`
           span.style.cssText = 'background:var(--bg-code);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:14px;color:var(--amber);border:1px solid var(--border-subtle);'
-          range.deleteContents()
           range.insertNode(span)
         }
         break
       }
     }
-    setOpen(false)
+    setDocHTML(editorRef.innerHTML)
+    const text = editorRef.innerText || ''
+    setWordCount(text.split(/\s+/).filter(Boolean).length)
+    onToggle(false)
   }
 
   return (
     <div style={{ position: 'relative', display: 'inline-flex' }}>
-      <button
-        className="toolbar-btn"
-        onClick={() => setOpen(!open)}
-        title="插入"
-        style={{ flexDirection: 'row', gap: 4, padding: '6px 10px' }}
-      >
+      <button className="toolbar-btn" onClick={() => onToggle(!open)} title="插入">
         <span className="remix toolbar-icon ri-add-circle-line"></span>
         <span className="toolbar-label">插入</span>
         <span className={`remix toolbar-arrow ${open ? 'open' : ''}`}>▼</span>
