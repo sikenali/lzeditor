@@ -23,7 +23,7 @@ export function htmlToMarkdown(html: string): string {
         (row.match(/<t[hde][^>]*>([\s\S]*?)<\/t[hde]>/gi) || [])
           .map((c: string) => c.replace(/<[^>]+>/g, '').trim())
           .join(' | ')
-      const headers = parseRow(rows[0])
+      const headers = parseRow(rows[0] as string)
       const sep = headers.split('|').map(() => '---').filter(Boolean).join('|')
       const lines = rows.slice(1).map(parseRow)
       return '\n| ' + headers + ' |\n| ' + sep + ' |\n' + lines.map(l => '| ' + l + ' |').join('\n') + '\n'

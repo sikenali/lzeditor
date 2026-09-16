@@ -17,6 +17,7 @@ import { DEFAULT_CONTENT } from './constants'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
+import { htmlToMarkdown } from '../../utils/htmlToMd'
 
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -26,6 +27,7 @@ export const LZEditor = () => {
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
+  const setMdContent = useEditorStore((s: any) => s.setMdContent)
   const showPreview = useEditorStore((s: any) => s.showPreview)
 
   React.useEffect(() => {
@@ -49,6 +51,7 @@ export const LZEditor = () => {
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
       setDocHTML(html)
+      setMdContent(htmlToMarkdown(html))
     },
     onSelectionUpdate: ({ editor }: any) => {
       const pos = editor.state.selection

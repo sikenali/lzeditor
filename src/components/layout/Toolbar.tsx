@@ -114,6 +114,14 @@ export const Toolbar: React.FC = () => {
                   <span className="remix ri-eye-fill"></span>
                   <span>预览 · 样式集</span>
                 </button>
+                <button className="toolbar-dropdown-item" onClick={() => {
+                  useEditorStore.getState().setIsCodeMode(true)
+                  setOpenPanel('preview')
+                  setPreviewOpen(false)
+                }}>
+                  <span className="remix ri-code-line"></span>
+                  <span>预览 · 源码</span>
+                </button>
               </div>
             )}
           </div>

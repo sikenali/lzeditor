@@ -51,6 +51,8 @@ export interface EditorStoreState {
   showOutline: boolean
   showPreview: boolean
   previewWidth: number
+  mdContent: string
+  isCodeMode: boolean
   readProgress: number
   fontSize: number
   setTitle: (title: string) => void
@@ -65,6 +67,8 @@ export interface EditorStoreState {
   setShowOutline: (showOutline: boolean) => void
   setShowPreview: (showPreview: boolean) => void
   setPreviewWidth: (width: number) => void
+  setMdContent: (md: string) => void
+  setIsCodeMode: (v: boolean) => void
   setReadProgress: (progress: number) => void
   setFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
