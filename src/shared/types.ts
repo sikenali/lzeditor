@@ -47,6 +47,8 @@ export interface EditorStoreState {
   isReadMode: boolean
   syncStatus: 'synced' | 'saving' | 'error'
   openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export'
+  showOutline: boolean
+  showPreview: boolean
   setTitle: (title: string) => void
   setWordCount: (count: number) => void
   setCharCount: (count: number) => void
@@ -55,6 +57,8 @@ export interface EditorStoreState {
   setReadMode: (isReadMode: boolean) => void
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
+  setShowOutline: (showOutline: boolean) => void
+  setShowPreview: (showPreview: boolean) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
 }

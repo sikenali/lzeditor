@@ -11,6 +11,8 @@ export const useEditorStore = create<EditorStoreState>((set: any) => ({
   isReadMode: false,
   syncStatus: 'synced',
   openPanel: 'none',
+  showOutline: false,
+  showPreview: false,
   editorRef: null,
 
   setTitle: (title: string) => set({ docTitle: title }),
@@ -21,5 +23,7 @@ export const useEditorStore = create<EditorStoreState>((set: any) => ({
   setReadMode: (isReadMode: boolean) => set({ isReadMode }),
   setSyncStatus: (status: EditorStoreState['syncStatus']) => set({ syncStatus: status }),
   setOpenPanel: (panel: EditorStoreState['openPanel']) => set({ openPanel: panel }),
+  setShowOutline: (showOutline: boolean) => set({ showOutline }),
+  setShowPreview: (showPreview: boolean) => set({ showPreview }),
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
 }))

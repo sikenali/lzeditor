@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { LZEditor } from './components/editor/LZEditor'
-import { TitleBar } from './components/layout/TitleBar'
 import { Toolbar } from './components/layout/Toolbar'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
 import { StatusBar } from './components/layout/StatusBar'
@@ -24,7 +23,6 @@ function App() {
 
   return (
     <div className="app">
-      <TitleBar />
       <Toolbar />
       <DocumentMetaBar />
       <div className="app-main">
