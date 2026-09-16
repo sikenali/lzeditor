@@ -143,7 +143,7 @@ function getNavIcon(group: SettingsGroup): string {
     appearance: 'ri-palette-fill',
     ai: 'ri-openai-fill',
     shortcut: 'ri-keyboard-fill',
-    export: 'ri-file-export-fill',
+    export: 'ri-download-2-line',
     sync: 'ri-refresh-fill',
     advanced: 'ri-rocket-fill',
     about: 'ri-information-fill',
@@ -547,7 +547,7 @@ function renderExportSection() {
       />
       <div className="setting-divider" />
       <ToggleRow
-        icon="F0ED"
+        icon="ri-settings-3-fill"
         title="导出时包含行号"
         desc="代码块显示行号"
         checked={state.includeLineNumbers || false}

@@ -3,21 +3,21 @@ import { useEditorStore } from '../../store/editorStore'
 import { useAIStore } from '../../store/aiStore'
 
 const TOOLS = [
-  { icon: '\uEA47', label: '文库', action: 'library' },
-  { icon: '\uECE0', label: '文件', action: 'file' },
-  { icon: '\uEEBE', label: '大纲', action: 'outline' },
-  { icon: '\uECB0', label: '预览', action: 'preview' },
+  { icon: 'ri-archive-fill', label: '文库', action: 'library' },
+  { icon: 'ri-file-fill', label: '文件', action: 'file' },
+  { icon: 'ri-list-unordered', label: '大纲', action: 'outline' },
+  { icon: 'ri-eye-2-fill', label: '预览', action: 'preview' },
   // --- gap 36px ---
-  { icon: '\uEE4B', label: '图片', action: 'image' },
-  { icon: '\uEEB2', label: '链接', action: 'link' },
-  { icon: '\uEBA8', label: '代码', action: 'code' },
-  { icon: '\uF1DD', label: '表格', action: 'table' },
+  { icon: 'ri-image-line', label: '图片', action: 'image' },
+  { icon: 'ri-link', label: '链接', action: 'link' },
+  { icon: 'ri-code-fill', label: '代码', action: 'code' },
+  { icon: 'ri-table-fill', label: '表格', action: 'table' },
   // --- gap 36px ---
-  { icon: '\uF34A', label: 'AI', action: 'ai' },
-  { icon: '\uEADA', label: '阅读', action: 'read' },
-  { icon: '\uEE16', label: '历史', action: 'history' },
-  { icon: '\uEC54', label: '导出', action: 'export' },
-  { icon: '\uF0E5', label: '设置', action: 'settings' },
+  { icon: 'ri-openai-fill', label: 'AI', action: 'ai' },
+  { icon: 'ri-book-open-fill', label: '阅读', action: 'read' },
+  { icon: 'ri-history-fill', label: '历史', action: 'history' },
+  { icon: 'ri-download-2-line', label: '导出', action: 'export' },
+  { icon: 'ri-settings-3-fill', label: '设置', action: 'settings' },
 ]
 
 const LEFT_TOOLS = TOOLS.slice(0, 4)

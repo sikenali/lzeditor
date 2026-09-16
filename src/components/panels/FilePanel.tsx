@@ -28,7 +28,6 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }
 
   const handleOpen = () => {
-    // Electron or native file dialog in production
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.md,.txt,.markdown'
@@ -54,15 +53,15 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="settings-header">
           <div className="settings-title">
             <div className="settings-icon">
-              <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uECEB</span>
+              <span className="remix ri-file-list-2-line"></span>
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>文件</div>
-              <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>File • 新建或打开文档</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>文件</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>File • 新建或打开文档</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix">\uE61C</span>
+            <span className="remix ri-close-line"></span>
           </button>
         </div>
 
@@ -85,7 +84,7 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               }}
             />
             <button className="settings-save-btn" onClick={handleOpen} style={{ whiteSpace: 'nowrap' }}>
-              <span className="remix" style={{ marginRight: 4 }}>\uEC54</span>打开
+              <span className="remix ri-open-arm-line"></span>打开
             </button>
           </div>
 
@@ -105,9 +104,9 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   e.currentTarget.style.background = 'transparent'
                 }}
               >
-                <span className="remix" style={{ fontSize: 24, color: 'rgba(127,191,162,1)' }}>\uECEB</span>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(242,248,251,1)', marginTop: 8 }}>{t.name}</div>
-                <div style={{ fontSize: 11, color: 'rgba(111,125,138,1)', marginTop: 4 }}>{t.desc}</div>
+                <span className="remix ri-file-text-fill"></span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-heading)', marginTop: 8 }}>{t.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{t.desc}</div>
               </div>
             ))}
           </div>

@@ -10,27 +10,27 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="read-mode-container" onClick={e => e.stopPropagation()}>
         <div className="read-mode-topbar">
           <div className="read-mode-left">
-            <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}></span>
-            <span style={{ fontSize: 13, color: 'rgba(139,152,165,1)' }}>阅读模式 · Read Mode</span>
+            <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>ri-book-open-fill</span>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>阅读模式 · Read Mode</span>
           </div>
           <div className="read-mode-center">
-            <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>technical-notes.md</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>technical-notes.md</span>
             <span className="read-divider" />
-            <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>预计阅读 6 分钟</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>预计阅读 6 分钟</span>
             <span className="read-divider" />
             <span style={{ fontSize: 12, color: 'var(--amber)' }}>已读 34%</span>
           </div>
           <div className="read-mode-right">
             <div className="font-size-control">
-              <span style={{ fontSize: 12, color: 'rgba(139,152,165,1)' }}>A</span>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>A</span>
               <div className="font-slider">
                 <span className="font-slider-fill" style={{ width: `${Math.max(0, (fontSize - 14) * 5.65)}px` }} />
                 <span className="font-slider-dot" style={{ left: `${Math.max(0, (fontSize - 14) * 5.65 + 2)}px` }} />
               </div>
-              <span style={{ fontSize: 16, color: 'rgba(139,152,165,1)' }}>A</span>
+              <span style={{ fontSize: 16, color: 'var(--text-secondary)' }}>A</span>
             </div>
             <button className="read-exit-btn" onClick={onClose}>
-              <span className="remix" style={{ fontSize: 14 }}></span>
+              <span className="remix">ri-close-line</span>
               <span>退出阅读</span>
             </button>
           </div>
@@ -47,19 +47,19 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <span className="read-tag read-tag-tech">技术笔记</span>
                 <span className="read-tag read-tag-system">系统</span>
               </div>
-              <h1 style={{ fontSize: 34, fontWeight: 700, color: 'rgba(242,248,251,1)', marginTop: 20 }}>
+              <h1 style={{ fontSize: 34, fontWeight: 700, color: 'var(--text-heading)', marginTop: 20 }}>
                 Praesent varius diam
               </h1>
               <div className="read-meta">
                 <div className="read-avatar" />
                 <div>
-                  <div style={{ fontSize: 13, color: 'rgba(199,211,222,1)' }}>Ivar Pratt</div>
-                  <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>2024-05-18 · 更新于 3 天前</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Ivar Pratt</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>2024-05-18 · 更新于 3 天前</div>
                 </div>
                 <div className="read-divider-v" />
                 <div className="read-views">
-                  <span className="remix" style={{ fontSize: 14, color: 'rgba(127,191,162,1)' }}></span>
-                  <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>1,204 次阅读</span>
+                  <span className="remix" style={{ fontSize: 14, color: 'var(--green-accent-soft)' }}>ri-eye-line</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>1,204 次阅读</span>
                 </div>
               </div>
             </div>
@@ -67,7 +67,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="read-article-body" style={{ fontSize }}>
               <p>Mauris ultrices ac erat quis gravida. Mauris non dictum mauris. Quisque rhoncus, nisi et condimentum cursus, felis orci lacinia ante, eget venenatis ligula quam at quam.</p>
 
-              <h2 style={{ fontSize: 22, fontWeight: 600, color: 'rgba(234,243,248,1)', marginTop: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-heading-2)', marginTop: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
                 Praesent varius diam
                 <span style={{ width: 31, height: 3, background: 'var(--accent-primary)', borderRadius: 2, flexShrink: 0 }} />
               </h2>
@@ -76,7 +76,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
               <div className="read-tip-card">
                 <div className="read-tip-header">
-                  <span className="remix" style={{ fontSize: 16, color: 'var(--amber)' }}></span>
+                  <span className="remix" style={{ fontSize: 16, color: 'var(--amber)' }}>ri-lightbulb-line</span>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--amber)' }}>本节要点</span>
                 </div>
                 <div className="read-tip-list">
@@ -87,18 +87,18 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   ].map((text, i) => (
                     <div key={i} className="read-tip-item">
                       <span className="read-tip-num">{i + 1}</span>
-                      <span style={{ fontSize: 15, color: 'rgba(185,198,210,1)' }}>{text}</span>
+                      <span style={{ fontSize: 15, color: 'var(--text-secondary)' }}>{text}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="read-quote">
-                <span className="remix" style={{ fontSize: 20, color: 'var(--amber)' }}></span>
+                <span className="remix" style={{ fontSize: 20, color: 'var(--amber)' }}>ri-double-quotes-l</span>
                 <span>"Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."</span>
               </div>
 
-              <h2 style={{ fontSize: 22, fontWeight: 600, color: 'rgba(234,243,248,1)', marginTop: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-heading-2)', marginTop: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
                 Libero finibus facilisis ac a lacus
                 <span style={{ width: 31, height: 3, background: 'var(--accent-primary)', borderRadius: 2, flexShrink: 0 }} />
               </h2>
@@ -108,34 +108,34 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className="read-code-block">
                 <div className="read-code-header">
                   <div className="read-code-lang">
-                    <span className="remix" style={{ fontSize: 14, color: 'rgba(127,191,162,1)' }}></span>
-                    <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>bash</span>
+                    <span className="remix" style={{ fontSize: 14, color: 'var(--green-accent-soft)' }}>ri-terminal-box-line</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>bash</span>
                   </div>
-                  <button style={{ fontSize: 11, color: 'var(--text-secondary)', padding: '2px 8px', border: '1px solid rgba(37,50,62,1)', borderRadius: 4 }}>
-                    <span className="remix" style={{ fontSize: 12, marginRight: 4 }}></span>复制
+                  <button style={{ fontSize: 11, color: 'var(--text-secondary)', padding: '2px 8px', border: '1px solid var(--border-default)', borderRadius: 4 }}>
+                    <span className="remix" style={{ fontSize: 12, marginRight: 4 }}>ri-file-copy-line</span>复制
                   </button>
                 </div>
                 <pre style={{ margin: '12px 0', padding: '12px 16px', background: 'var(--bg-code)', borderRadius: 6, fontFamily: 'monospace', fontSize: 14 }}>
                   <div><span style={{ color: 'var(--accent-primary)' }}>$</span> cat /proc/cpuinfo | grep "model name" | head -n 3</div>
-                  <div style={{ marginTop: 8, color: 'rgba(213,226,236,1)' }}>model name : Apple M3 Pro</div>
-                  <div style={{ marginTop: 4, color: 'rgba(213,226,236,1)' }}>cpu cores : 12</div>
+                  <div style={{ marginTop: 8, color: 'var(--text-secondary)' }}>model name : Apple M3 Pro</div>
+                  <div style={{ marginTop: 4, color: 'var(--text-secondary)' }}>cpu cores : 12</div>
                 </pre>
               </div>
 
               <div className="read-footer">
                 <div className="read-tags-footer">
-                  <span className="remix" style={{ fontSize: 15, color: 'rgba(127,191,162,1)' }}></span>
+                  <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>ri-price-tag-3-line</span>
                   <span className="read-tag-sm">markdown</span>
                   <span className="read-tag-sm">writing</span>
                   <span className="read-tag-sm">workflow</span>
                 </div>
                 <div className="read-footer-actions">
                   <button className="read-back-top-btn">
-                    <span className="remix" style={{ fontSize: 14 }}></span>
+                    <span className="remix" style={{ fontSize: 14 }}>ri-arrow-up-line</span>
                     <span>回到顶部</span>
                   </button>
                   <button className="read-edit-btn" onClick={onClose}>
-                    <span className="remix" style={{ fontSize: 14 }}></span>
+                    <span className="remix" style={{ fontSize: 14 }}>ri-edit-line</span>
                     <span>继续编辑</span>
                   </button>
                 </div>

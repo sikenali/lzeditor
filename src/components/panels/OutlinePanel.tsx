@@ -22,7 +22,6 @@ export const OutlinePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
 
   const handleJump = (id: string) => {
-    // In a real app, scroll to the heading
     const el = document.getElementById(id)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -36,15 +35,15 @@ export const OutlinePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <div className="settings-header">
           <div className="settings-title">
             <div className="settings-icon">
-              <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uEEBE</span>
+              <span className="remix ri-list-unordered"></span>
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>大纲</div>
-              <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>Outline • {SAMPLE_OUTLINE.length} 章节</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>大纲</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Outline • {SAMPLE_OUTLINE.length} 章节</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix">\uE61C</span>
+            <span className="remix ri-close-line"></span>
           </button>
         </div>
 
@@ -66,8 +65,8 @@ export const OutlinePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              <span className="remix" style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>\uE613</span>
-              <span style={{ fontSize: 13, color: 'rgba(199,211,222,1)' }}>{item.text}</span>
+              <span className="remix ri-checkbox-fill"></span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.text}</span>
             </div>
           ))}
         </div>

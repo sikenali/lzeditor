@@ -34,18 +34,18 @@ export const TitleBar: React.FC = () => {
       </div>
       <div className="titlebar-drag-region">
         <div className="titlebar-title">
-          <span className="remix titlebar-logo" style={{ fontSize: 15 }}>\uEA8D</span>
+          <span className="remix titlebar-logo ri-ball-pen-fill"></span>
           <span>{docTitle}</span>
         </div>
         <div className="titlebar-actions">
           <div className={`sync-status ${syncStatus}`}>
             <span className="sync-dot" />
-            <span style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
               {syncStatus === 'synced' ? '已自动保存' : syncStatus === 'saving' ? '保存中...' : '保存失败'}
             </span>
           </div>
           <button className="titlebar-btn-icon" title="更多">
-            <span className="remix" style={{ fontSize: 17, color: 'rgba(92,106,120,1)' }}>\uEF3B</span>
+            <span className="remix ri-menu-fill"></span>
           </button>
         </div>
       </div>

@@ -31,25 +31,25 @@ export const LibraryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <div className="settings-header">
           <div className="settings-title">
             <div className="settings-icon">
-              <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uED6A</span>
+              <span className="remix ri-archive-2-line"></span>
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(242,248,251,1)' }}>文档库</div>
-              <div style={{ fontSize: 12, color: 'rgba(111,125,138,1)' }}>Library • {SAMPLE_FILES.length} 个文件</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>文档库</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Library • {SAMPLE_FILES.length} 个文件</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix">\uE61C</span>
+            <span className="remix ri-close-line"></span>
           </button>
         </div>
 
         <div className="settings-body" style={{ padding: 0 }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: 8 }}>
             <button className="settings-save-btn" onClick={handleNewFile} style={{ flex: 1 }}>
-              <span className="remix" style={{ marginRight: 4 }}>\uECEB</span>新建文档
+              <span className="remix ri-file-add-line"></span>新建文档
             </button>
             <button className="settings-cancel-btn" style={{ flex: 1 }}>
-              <span className="remix" style={{ marginRight: 4 }}>\uEC54</span>导入文件
+              <span className="remix ri-download-2-line"></span>导入文件
             </button>
           </div>
 
@@ -64,12 +64,12 @@ export const LibraryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span className="remix" style={{ fontSize: 18, color: 'rgba(127,191,162,1)' }}>\uECEB</span>
+                  <span className="remix ri-file-text-fill"></span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, color: 'rgba(242,248,251,1)', fontWeight: 500 }}>{file.title}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(111,125,138,1)' }}>{file.date} · {file.size}</div>
+                    <div style={{ fontSize: 14, color: 'var(--text-heading)', fontWeight: 500 }}>{file.title}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{file.date} · {file.size}</div>
                   </div>
-                  <span className="remix" style={{ fontSize: 14, color: 'rgba(111,125,138,1)' }}>\uEC54</span>
+                  <span className="remix ri-arrow-right-s-line"></span>
                 </div>
               </div>
             ))}

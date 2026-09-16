@@ -6,22 +6,22 @@ import type { AIAction } from '../../shared/types'
 
 // RemixIcon unicode values
 const ICONS = {
-  pen: '\uE8C1',           // ri-pen-line (改写)
-  sparkle: '\uE8A7',        // ri-sparkling-line (润色)
-  add: '\uF036',            // ri-add-line (续写)
-  file_text: '\uE83A',      // ri-file-text-line (摘要)
-  translate: '\uE9B2',      // ri-translate-line (翻译)
-  question: '\uF371',       // ri-question-line (提问)
-  robot: '\uF47B',          // ri-robot-line (AI toolbar button)
+  pen: 'ri-ball-pen-fill',           // ri-ball-pen-fill (改写)
+  sparkle: 'ri-sparkling-fill',        // ri-sparkling-fill (润色)
+  add: 'ri-add-line',            // ri-add-line (续写)
+  file_text: 'ri-article-fill',      // ri-file-text-fill (摘要)
+  translate: 'ri-translate-2',      // ri-translate-2 (翻译)
+  question: 'ri-speed-up-line',       // ri-question-line (提问)
+  robot: 'ri-openai-fill',          // ri-openai-fill (AI toolbar button)
 } as const
 
 const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
-  { action: 'rewrite', icon: '\uEA8D', label: '改写' },
-  { action: 'polish', icon: '\uEC7F', label: '润色' },
-  { action: 'continue', icon: '\uEA59', label: '续写' },
-  { action: 'summarize', icon: '\uEA7D', label: '摘要' },
-  { action: 'translate', icon: '\uF226', label: '翻译' },
-  { action: 'question', icon: '\uF044', label: '提问' },
+  { action: 'rewrite', icon: 'ri-ball-pen-fill', label: '改写' },
+  { action: 'polish', icon: 'ri-edit-2-fill', label: '润色' },
+  { action: 'continue', icon: 'ri-arrow-go-forward-fill', label: '续写' },
+  { action: 'summarize', icon: 'ri-article-fill', label: '摘要' },
+  { action: 'translate', icon: 'ri-translate-2', label: '翻译' },
+  { action: 'question', icon: 'ri-question-fill', label: '提问' },
 ]
 
 interface FloatingToolbarProps {

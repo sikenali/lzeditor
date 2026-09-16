@@ -1,5 +1,11 @@
 @import './color-tokens.css';
 
+/* Google Fonts — Noto Serif SC + Ma Shan Zheng + JetBrains Mono */
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono&display=swap" media="print" onload="this.media='all'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet" /></noscript>
+
 @font-face {
   font-family: 'RemixIcon';
   src: url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.woff2') format('woff2');
@@ -231,4 +237,20 @@
   height: 15px;
   margin-right: 6px;
   cursor: pointer;
+}
+
+/* ── Page entry animation (LZMail spec: translateY 12px → 0) ── */
+@keyframes pageSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: pageSlideIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ── No-animation mode ── */
+.no-animations * {
+  animation: none !important;
+  transition: none !important;
 }
