@@ -253,6 +253,30 @@
 .about-sep     { font-size: 12px; color: var(--text-muted); }
 .about-copy    { font-size: 11px; color: var(--text-muted); }
 
+/* ── Legacy lfs-select fallback (deprecated, use LFSCombo) ── */
+.lfs-select {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  padding: 6px 28px 6px 10px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237d8b9a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+}
+.lfs-select:hover { border-color: var(--accent-primary); }
+.lfs-select:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-a10); }
+.lfs-select:disabled { opacity: 0.5; cursor: not-allowed; }
+.lfs-select option { background: var(--bg-overlay); color: var(--text-primary); }
+
 /* ── Unified Combo (custom select replacement) ── */
 .lfs-combo {
   position: relative;
