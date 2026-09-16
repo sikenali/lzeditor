@@ -10,6 +10,7 @@ import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
+import { remark } from 'remark'
 import remarkHtml from 'remark-html'
 
 export const LZEditor = () => {
