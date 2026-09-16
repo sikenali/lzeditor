@@ -123,24 +123,53 @@ export const LZEditor = () => {
     })
   }, [editor])
 
+  // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom
   useEffect(() => {
-    // Wait for editor to mount before accessing view.dom
-    const timer = setTimeout(() => {
-      const dom = editor?.view?.dom as HTMLDivElement | undefined
-      if (dom) {
-        dom.addEventListener('paste', handlePaste as any)
-        dom.addEventListener('drop', handleDrop as any)
-      }
-    }, 50)
-    return () => {
-      clearTimeout(timer)
-      const dom = editor?.view?.dom as HTMLDivElement | undefined
-      if (dom) {
-        dom.removeEventListener('paste', handlePaste as any)
-        dom.removeEventListener('drop', handleDrop as any)
+    const el = editorRef.current
+    if (!el) return
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          e.preventDefault()
+          const file = items[i].getAsFile()
+          if (file && editor) {
+            const reader = new FileReader()
+            reader.onload = (ev) => {
+              editor.commands.insertContent({
+                type: 'image',
+                attrs: { src: ev.target?.result as string, alt: file.name },
+              })
+            }
+            reader.readAsDataURL(file)
+          }
+        }
       }
     }
-  }, [editor, handlePaste, handleDrop])
+    const onDrop = (e: DragEvent) => {
+      const files = e.dataTransfer?.files
+      if (!files) return
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/') && editor) {
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            editor.commands.insertContent({
+              type: 'image',
+              attrs: { src: ev.target?.result as string, alt: file.name },
+            })
+          }
+          reader.readAsDataURL(file)
+        }
+      })
+    }
+    el.addEventListener('paste', onPaste)
+    el.addEventListener('drop', onDrop)
+    return () => {
+      el.removeEventListener('paste', onPaste)
+      el.removeEventListener('drop', onDrop)
+    }
+  }, [editor, editorRef])
 
   return (
     <div className="lz-editor" ref={editorRef}>
