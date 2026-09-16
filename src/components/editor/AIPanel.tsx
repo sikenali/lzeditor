@@ -21,6 +21,15 @@ const ACTION_PLACEHOLDERS: Record<string, string> = {
   question: '输入你的问题...',
 }
 
+const ACTION_ICONS: Record<string, string> = {
+  rewrite: 'ri-pencil-line',
+  polish: 'ri-brush-line',
+  continue: 'ri-terminal-box-line',
+  summarize: 'ri-contract-left-line',
+  translate: 'ri-translate-2',
+  question: 'ri-chat-history-line',
+}
+
 export const AIPanel: React.FC = () => {
   const state = useAIStore()
   const { send, isStreaming, applyToDoc, undo, copyOutput } = useAI()
@@ -45,16 +54,14 @@ export const AIPanel: React.FC = () => {
 
   const placeholder = ACTION_PLACEHOLDERS[state.panelAction || 'question'] || '输入指令...'
   const actionLabel = ACTION_LABELS[state.panelAction || 'question'] || 'AI'
+  const actionIcon = ACTION_ICONS[state.panelAction || 'question'] || 'ri-speed-up-line'
 
   return (
     <div className={`ai-panel ${state.panelStatus === 'thinking' ? 'thinking' : ''}`}>
       <div className="ai-panel-header">
-        <span className="remix ri-speed-up-line"></span>
-        <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{actionLabel}</span>
-        <button
-          onClick={() => useAIStore.getState().hidePanel()}
-          style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: 16 }}
-        >
+        <span className={`remix ai-panel-icon ${actionIcon}`}></span>
+        <span className="ai-panel-title">{actionLabel}</span>
+        <button className="ai-panel-close" onClick={() => useAIStore.getState().hidePanel()}>
           <span className="remix ri-close-line"></span>
         </button>
       </div>
@@ -87,7 +94,7 @@ export const AIPanel: React.FC = () => {
             disabled={!state.panelInput.trim() || isStreaming}
             onClick={handleSubmit}
           >
-            <span className="remix ri-checkbox-fill"></span>
+            <span className="remix ri-send-plane-fill"></span>
           </button>
         </div>
       )}
@@ -129,7 +136,7 @@ export const AIPanel: React.FC = () => {
         <div className="ai-error-msg">
           <span className="remix ri-error-warning-fill"></span>
           {state.panelError}
-          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }}className="remix ri-close-line"></button>
+          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }} className="remix ri-close-line"></button>
         </div>
       )}
     </div>
