@@ -100,10 +100,10 @@ export const Toolbar: React.FC = () => {
               <span className="toolbar-label">预览</span>
             </button>
             <span
-              className={`remix toolbar-dd-arrow ${previewOpen ? 'open' : ''}`}
+              className={`toolbar-dd-arrow ${previewOpen ? 'open' : ''}`}
               onClick={(e) => { e.stopPropagation(); setPreviewOpen(!previewOpen) }}
               style={{ cursor: 'pointer' }}
-            >▶</span>
+            >{previewOpen ? '▶' : '▼'}</span>
             {previewOpen && (
               <div className="toolbar-dropdown">
                 <button className="toolbar-dropdown-item" onClick={() => { setShowPreview(true); setPreviewOpen(false) }}>
