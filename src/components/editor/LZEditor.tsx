@@ -9,173 +9,25 @@ import { FloatingToolbar } from './FloatingToolbar'
 import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
-import { DEFAULT_CONTENT } from './constants'
 
-\`\`bash
-# 开发环境
-npm run dev
+const DEFAULT_CONTENT = `# 技术笔记
 
-# 构建桌面应用
-npm run electron:build
-
-# 打包 LPK 云应用
-cd lzc && bash package.sh
-\`\`\`
-
-> 选中这段文字可以体验 AI 浮动工具栏 —— 点击图标即可唤起 AI 辅助。
+> 本文档基于 Calicat 设计稿构建，包含所有 mock 数据用于功能测试。
 
 ---
 
-## 编辑器特性
+## 项目规划
 
-### 差异对比
+### 核心功能
 
-Lorem ipsum dolor sit \`amet\`, consectetur adipiscing **elit**.
+- Markdown 编辑与实时预览
+- AI 写作助手（改写/润色/续写/摘要/翻译）
+- 版本历史与回滚
+- 暗夜霓虹主题
 
-- ~~vestibulum~~ eros. Aliquam pellentesque **vehicula** sapien,
-- ~~Sed hendrerit ligula in tempus.~~
-- \`Sed sit amet elit ornare\`, vehicula elit vel, imperdiet leo.
-- \`neque venenatis gravida\` [quam suscipit](https://example.com) a eget mi.
-- Curabitur placerat viverra libero.
-
-### 任务列表
-
-1. 完成 AI 代理服务器
-2. 接入真实 LLM API
-3. 打包为桌面应用
-4. *支持多平台编译*
-5. *Nascetur ridiculus mus*
-
----
-
-## 引用与代码
-
-> "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."
-> — Lorem Ipsum
-
-### 终端命令
+### 技术栈
 
 \`\`\`bash
-$ cat /proc/cpuinfo | grep "model name" | head -n 3
-model name : Apple M3 Pro
-cpu cores  : 12
-\`\`\`
-
-### JavaScript 示例
-
-\`\`\`javascript
-const editor = createEditor({
-  extensions: [StarterKit, TaskList, AIAssistant],
-  content: DEFAULT_CONTENT,
-  onUpdate: ({ editor }) => {
-    saveSnapshot(editor.getHTML())
-  }
-})
-\`\`\`
-
----
-
-## 表格示例
-
-| 模块 | 状态 | 说明 |
-|------|------|------|
-| 编辑器 | ✅ 已完成 | TipTap + React |
-| AI 助手 | 🔄 开发中 | 多 Provider 支持 |
-| 导出 | ⏳ 待完成 | PDF/HTML/DOCX |
-| 同步 | 📋 规划中 | Git/Dropbox/WebDAV |
-
----
-
-## 标签
-
-\`markdown\` \`writing\` \`workflow\` \`ai\` \`editor\` \`electron\`
-
----
-
-*END OF DOCUMENT*
-`\`\`bash
-# 开发环境
-npm run dev
-
-# 构建桌面应用
-npm run electron:build
-
-# 打包 LPK 云应用
-cd lzc && bash package.sh
-\`\`\`
-
-> 选中这段文字可以体验 AI 浮动工具栏 —— 点击图标即可唤起 AI 辅助。
-
----
-
-## 编辑器特性
-
-### 差异对比
-
-Lorem ipsum dolor sit \`amet\`, consectetur adipiscing **elit**.
-
-- ~~vestibulum~~ eros. Aliquam pellentesque **vehicula** sapien,
-- ~~Sed hendrerit ligula in tempus.~~
-- \`Sed sit amet elit ornare\`, vehicula elit vel, imperdiet leo.
-- \`neque venenatis gravida\` [quam suscipit](https://example.com) a eget mi.
-- Curabitur placerat viverra libero.
-
-### 任务列表
-
-1. 完成 AI 代理服务器
-2. 接入真实 LLM API
-3. 打包为桌面应用
-4. *支持多平台编译*
-5. *Nascetur ridiculus mus*
-
----
-
-## 引用与代码
-
-> "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."
-> — Lorem Ipsum
-
-### 终端命令
-
-\`\`\`bash
-$ cat /proc/cpuinfo | grep "model name" | head -n 3
-model name : Apple M3 Pro
-cpu cores  : 12
-\`\`\`
-
-### JavaScript 示例
-
-\`\`\`javascript
-const editor = createEditor({
-  extensions: [StarterKit, TaskList, AIAssistant],
-  content: DEFAULT_CONTENT,
-  onUpdate: ({ editor }) => {
-    saveSnapshot(editor.getHTML())
-  }
-})
-\`\`\`
-
----
-
-## 表格示例
-
-| 模块 | 状态 | 说明 |
-|------|------|------|
-| 编辑器 | ✅ 已完成 | TipTap + React |
-| AI 助手 | 🔄 开发中 | 多 Provider 支持 |
-| 导出 | ⏳ 待完成 | PDF/HTML/DOCX |
-| 同步 | 📋 规划中 | Git/Dropbox/WebDAV |
-
----
-
-## 标签
-
-\`markdown\` \`writing\` \`workflow\` \`ai\` \`editor\` \`electron\`
-
----
-
-*END OF DOCUMENT*
-`\`\`bash
 npm run dev
 \`\`\`
 
