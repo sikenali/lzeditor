@@ -28,12 +28,12 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
-            <div className="export-icon" style={{ background: 'var(--success-bg)', borderRadius: 10 }}>
+            <div className="export-icon">
               <span className="remix ri-download-2-line"></span>
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>导出文档</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>选择格式和选项</div>
+              <div className="export-title-text">导出文档</div>
+              <div className="export-title-desc">选择格式和选项</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={onClose}>
@@ -46,11 +46,11 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
           {/* Format selection */}
           <div className="export-section">
             <div className="export-section-header">
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>导出格式</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--note-bg)', borderRadius: 6, padding: '2px 8px' }}>
+              <span className="export-section-label">导出格式</span>
+              <span className="export-recommend-badge">
                 <span className="remix ri-bookmark-fill"></span>
-                <span style={{ fontSize: 11, color: 'var(--amber)' }}>推荐 PDF</span>
-              </div>
+                <span>推荐 PDF</span>
+              </span>
             </div>
             <div className="format-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
               {EXPORT_FORMATS.map(fmt => (
@@ -59,7 +59,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
                   className={`format-card ${selectedFormat === fmt.id ? 'active' : ''}`}
                   onClick={() => setSelectedFormat(fmt.id)}
                 >
-                  <span className={`remix format-icon ${fmt.icon}`} style={{ fontSize: 24, color: selectedFormat === fmt.id ? 'var(--accent-primary)' : 'var(--green-accent-soft)' }}></span>
+                  <span className={`remix format-icon ${fmt.icon}`}></span>
                   <div>
                     <div className="format-name">{fmt.name}</div>
                     <div className="format-desc">{fmt.desc}</div>
@@ -73,9 +73,9 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
           {/* Style set selector */}
           <div className="export-section">
             <div className="export-section-header">
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>样式集</span>
+              <span className="export-section-label">样式集</span>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <div className="style-set-row">
               {STYLE_SETS.map(s => (
                 <button
                   key={s}
@@ -91,7 +91,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
           {/* Export options */}
           <div className="export-section">
             <div className="export-section-header">
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>导出选项</span>
+              <span className="export-section-label">导出选项</span>
             </div>
             <ToggleOption
               icon="ri-archive-fill"
@@ -130,7 +130,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
           {/* Save location */}
           <div className="export-section">
             <div className="export-section-header">
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>保存位置</span>
+              <span className="export-section-label">保存位置</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
               <span className="remix ri-file-text-line"></span>
@@ -140,16 +140,16 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
           </div>
 
           {/* Preview */}
-          <div className="export-section" style={{ background: 'var(--bg-code)', borderRadius: 10, padding: 14 }}>
+          <div className="export-preview">
             <div className="export-section-header">
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>预览 · 第 1 页 / 共 4 页</span>
+              <span className="export-section-label">预览 · 第 1 页 / 共 4 页</span>
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>A4 · 纵向 · 页边距 24mm · 样式集 {styleSet}</span>
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 8, alignItems: 'flex-start' }}>
-              <div style={{ width: 63, height: 80, background: 'var(--bg-elevated)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className={`remix ${selected.icon}`} style={{ fontSize: 20, color: 'var(--green-accent-soft)' }}></span>
+              <div className="export-preview-thumb">
+                <span className={`remix ${selected.icon}`}></span>
               </div>
-              <div style={{ flex: 1 }}>
+              <div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-heading)' }}>{selected.name} 格式</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
                   technical-notes.md · 1399 词
@@ -161,13 +161,13 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ onClose }) => {
 
         {/* Footer */}
         <div className="export-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="export-footer-hint">
             <span className="remix ri-information-line"></span>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>导出不会修改原文档</span>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="export-footer-actions">
             <button className="settings-cancel-btn" onClick={onClose}>取消</button>
-            <button className="settings-save-btn" style={{ background: 'var(--accent-primary)', color: 'var(--text-on-accent)' }}>
+            <button className="settings-save-btn">
               <span className="remix ri-download-2-line"></span>
               导出 {selected.name}
             </button>
@@ -182,25 +182,20 @@ const ToggleOption: React.FC<{
   icon: string; title: string; desc: string;
   checked: boolean; onChange: (v: boolean) => void; disabled?: boolean
 }> = ({ icon, title, desc, checked, onChange, disabled }) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <span className={`remix ${icon}`} style={{ fontSize: 16, color: 'var(--green-accent-soft)' }}></span>
+  <div className="toggle-option-row">
+    <div className="toggle-option-left">
+      <span className={`remix toggle-option-icon ${icon}`}></span>
       <div>
-        <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{title}</div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{desc}</div>
+        <div className="toggle-option-title">{title}</div>
+        <div className="toggle-option-desc">{desc}</div>
       </div>
     </div>
-    {!disabled && (
-      <button
-        className={`toggle-btn ${checked ? 'active' : ''}`}
-        onClick={() => onChange(!checked)}
-        style={{ width: 38, height: 21, borderRadius: 9999, background: checked ? 'var(--accent-primary)' : 'var(--bg-hover)', display: 'flex', alignItems: 'center', padding: '0 3px', cursor: 'pointer', border: 'none', transition: 'background 0.15s' }}
-      >
-        <span style={{ width: 16, height: 16, borderRadius: 9999, background: checked ? 'var(--text-on-accent)' : 'var(--text-muted)', transform: checked ? 'translateX(17px)' : 'translateX(0)', transition: 'transform 0.15s, background 0.15s' }} />
+    {disabled ? (
+      <span className="toggle-disabled-label">已启用</span>
+    ) : (
+      <button className={`toggle-btn ${checked ? 'active' : ''}`} onClick={() => onChange(!checked)}>
+        <span className="toggle-knob" />
       </button>
-    )}
-    {disabled && (
-      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>已启用</span>
     )}
   </div>
 )

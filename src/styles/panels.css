@@ -29,6 +29,36 @@
 .export-section { margin-bottom: 28px; }
 .export-section:last-child { margin-bottom: 0; }
 .export-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.export-section-label { font-size: 13px; color: var(--text-secondary); }
+.export-recommend-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--note-bg); border: 1px solid var(--note-border);
+  border-radius: 6px; padding: 2px 8px;
+  font-size: 11px; color: var(--amber);
+}
+
+/* ── Toggle Option Row ── */
+.toggle-option-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+}
+.toggle-option-left { display: flex; align-items: center; gap: 12px; }
+.toggle-option-icon {
+  font-size: 16px; color: var(--green-accent-soft); flex-shrink: 0;
+}
+.toggle-option-title { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+.toggle-option-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.toggle-disabled-label { font-size: 11px; color: var(--text-muted); }
+
+/* ── Export Preview ── */
+.export-preview {
+  background: var(--bg-code); border-radius: 10px; padding: 14px;
+}
+.export-preview-thumb {
+  width: 63px; height: 80px; background: var(--bg-elevated);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+}
+.export-preview-thumb .remix { font-size: 20px; color: var(--green-accent-soft); }
 .export-section-dot { width: 16px; height: 3px; background: var(--accent-primary); border-radius: 2px; }
 .export-section-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
@@ -70,7 +100,9 @@
 .toggle-knob {
   position: absolute; top: 2px; left: 2px;
   width: 16px; height: 16px; border-radius: 50%;
-  background: white; transition: left 0.15s;
+  background: var(--text-on-accent);
+  transition: left 0.15s, background 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 .toggle-btn.active .toggle-knob { left: 18px; }
 
@@ -80,6 +112,35 @@
 }
 .export-footer-hint { display: flex; align-items: center; gap: 8px; }
 .export-footer-actions { display: flex; gap: 12px; }
+.export-divider { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
+/* ── Style Set Pills ── */
+.style-set-row {
+  display: flex; gap: 8px; margin-top: 4px;
+}
+.style-set-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-code);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: center;
+}
+.style-set-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--text-heading-2);
+  background: var(--bg-hover);
+}
+.style-set-btn.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-tint-bg);
+  color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-a20);
+}
 
 /* ── History Panel ── */
 .history-panel {
