@@ -15,20 +15,20 @@
 /* ── Toolbar ── */
 .toolbar {
   display: flex; align-items: center;
-  height: 64px; padding: 0 28px;
+  height: 56px; padding: 0 20px;
   background: var(--toolbar-bg);
   border-bottom: 1px solid var(--border-subtle);
-  gap: 32px; flex-shrink: 0;
+  gap: 24px; flex-shrink: 0;
 }
 .toolbar-group { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
 .toolbar-group--middle { flex: 1; justify-content: center; }
-.toolbar-group--middle .toolbar-btn { min-width: 44px; padding: 4px 6px; }
 
+/* ── Toolbar Button: icon+label vertical, arrow on right ── */
 .toolbar-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; padding: 6px 10px;
-  min-width: 70px; transition: color 0.12s; cursor: pointer;
-  border-radius: 0; border: none; background: transparent; position: relative;
+  min-width: 60px; transition: color 0.12s; cursor: pointer;
+  border-radius: 8px; border: none; background: transparent; position: relative;
 }
 .toolbar-btn:hover   { background: var(--toolbar-hover); }
 .toolbar-btn:hover .toolbar-icon { color: var(--text-primary); }
@@ -36,14 +36,49 @@
 .toolbar-btn.active .toolbar-icon,
 .toolbar-btn.active .toolbar-label { color: var(--accent-primary); }
 
-.toolbar-icon { font-size: 18px; color: var(--green-accent-soft); line-height: 1; transition: color 0.12s; position: relative; }
+.toolbar-icon { font-size: 20px; color: var(--green-accent-soft); line-height: 1; transition: color 0.12s; }
 .toolbar-label { font-size: 11px; color: var(--text-secondary); transition: color 0.12s; white-space: nowrap; }
-.toolbar-arrow {
-  position: absolute; top: -2px; right: -4px;
-  font-size: 8px; color: var(--text-muted); line-height: 1;
-  transition: transform 0.15s;
+
+/* ── Dropdown arrow badge on right side of icon ── */
+.toolbar-btn-with-dd { position: relative; display: inline-flex; }
+.toolbar-dd-arrow {
+  position: absolute; top: 2px; right: 2px;
+  font-size: 9px; color: var(--text-muted); line-height: 1;
+  transition: transform 0.15s; pointer-events: none;
 }
-.toolbar-arrow.open { transform: rotate(180deg); }
+.toolbar-dd-arrow.open { transform: rotate(90deg); }
+
+/* ── Dropdown: appears to the RIGHT of the button, horizontally aligned ── */
+.toolbar-dd-wrap { position: relative; display: inline-flex; align-items: center; }
+.toolbar-dropdown {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  left: calc(100% + 6px);
+  z-index: 500;
+  min-width: 160px; max-width: 220px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px var(--shadow-strong);
+  padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  animation: dd-in 0.12s ease-out;
+}
+@keyframes dd-in {
+  from { opacity: 0; transform: translateY(-50%) translateX(-4px); }
+  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+.toolbar-dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border: none; background: none;
+  border-radius: 6px; cursor: pointer;
+  font-size: 12px; color: var(--text-secondary);
+  transition: all 0.1s; width: 100%; text-align: left;
+}
+.toolbar-dropdown-item:hover { background: var(--toolbar-hover); color: var(--text-primary); }
+.toolbar-dropdown-item .remix { font-size: 14px; width: 18px; text-align: center; color: var(--text-muted); }
+.toolbar-dropdown-item:hover .remix { color: var(--accent-primary); }
+.toolbar-dropdown-sep { height: 1px; background: var(--border-subtle); margin: 4px 0; }
 
 /* ── Document Meta Bar ── */
 .document-meta-bar {
