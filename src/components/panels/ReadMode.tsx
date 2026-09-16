@@ -10,7 +10,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="read-mode-container" onClick={e => e.stopPropagation()}>
         <div className="read-mode-topbar">
           <div className="read-mode-left">
-            <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>ri-book-open-fill</span>
+            <span className="remix ri-book-open-fill"</span>
             <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>阅读模式 · Read Mode</span>
           </div>
           <div className="read-mode-center">
@@ -30,7 +30,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <span style={{ fontSize: 16, color: 'var(--text-secondary)' }}>A</span>
             </div>
             <button className="read-exit-btn" onClick={onClose}>
-              <span className="remix">ri-close-line</span>
+              <span className="remix ri-close-line"</span>
               <span>退出阅读</span>
             </button>
           </div>
@@ -58,7 +58,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
                 <div className="read-divider-v" />
                 <div className="read-views">
-                  <span className="remix" style={{ fontSize: 14, color: 'var(--green-accent-soft)' }}>ri-eye-line</span>
+                  <span className="remix ri-eye-line"</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>1,204 次阅读</span>
                 </div>
               </div>
@@ -76,7 +76,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
               <div className="read-tip-card">
                 <div className="read-tip-header">
-                  <span className="remix" style={{ fontSize: 16, color: 'var(--amber)' }}>ri-lightbulb-line</span>
+                  <span className="remix ri-lightbulb-line"</span>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--amber)' }}>本节要点</span>
                 </div>
                 <div className="read-tip-list">
@@ -94,7 +94,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </div>
 
               <div className="read-quote">
-                <span className="remix" style={{ fontSize: 20, color: 'var(--amber)' }}>ri-double-quotes-l</span>
+                <span className="remix ri-double-quotes-l"</span>
                 <span>"Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."</span>
               </div>
 
@@ -108,11 +108,11 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className="read-code-block">
                 <div className="read-code-header">
                   <div className="read-code-lang">
-                    <span className="remix" style={{ fontSize: 14, color: 'var(--green-accent-soft)' }}>ri-terminal-box-line</span>
+                    <span className="remix ri-terminal-box-line"</span>
                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>bash</span>
                   </div>
                   <button style={{ fontSize: 11, color: 'var(--text-secondary)', padding: '2px 8px', border: '1px solid var(--border-default)', borderRadius: 4 }}>
-                    <span className="remix" style={{ fontSize: 12, marginRight: 4 }}>ri-file-copy-line</span>复制
+                    <span className="remix ri-file-copy-line"</span>复制
                   </button>
                 </div>
                 <pre style={{ margin: '12px 0', padding: '12px 16px', background: 'var(--bg-code)', borderRadius: 6, fontFamily: 'monospace', fontSize: 14 }}>
@@ -124,18 +124,18 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
               <div className="read-footer">
                 <div className="read-tags-footer">
-                  <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>ri-price-tag-3-line</span>
+                  <span className="remix ri-price-tag-3-line"</span>
                   <span className="read-tag-sm">markdown</span>
                   <span className="read-tag-sm">writing</span>
                   <span className="read-tag-sm">workflow</span>
                 </div>
                 <div className="read-footer-actions">
                   <button className="read-back-top-btn">
-                    <span className="remix" style={{ fontSize: 14 }}>ri-arrow-up-line</span>
+                    <span className="remix ri-arrow-up-line"</span>
                     <span>回到顶部</span>
                   </button>
                   <button className="read-edit-btn" onClick={onClose}>
-                    <span className="remix" style={{ fontSize: 14 }}>ri-edit-line</span>
+                    <span className="remix ri-edit-line"</span>
                     <span>继续编辑</span>
                   </button>
                 </div>

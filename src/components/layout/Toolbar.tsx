@@ -167,7 +167,7 @@ export const Toolbar: React.FC = () => {
           onClick={() => handleClick(t.action)}
           title={t.label}
         >
-          <span className="remix toolbar-icon">{t.icon}</span>
+          <span className={`remix toolbar-icon ${t.icon}`}></span>
           <span className="toolbar-label">{t.label}</span>
         </button>
       ))}

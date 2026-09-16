@@ -129,7 +129,7 @@ export const AIPanel: React.FC = () => {
         <div className="ai-error-msg">
           <span className="remix ri-error-warning-fill"></span>
           {state.panelError}
-          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }}>ri-close-line</button>
+          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }}className="remix ri-close-line"></button>
         </div>
       )}
     </div>

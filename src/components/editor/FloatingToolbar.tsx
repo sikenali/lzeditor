@@ -62,7 +62,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ position, visi
               onClick={() => btn.action === 'translate' ? handleTranslate() : onAction(btn.action)}
               title={btn.label}
             >
-              <span className="remix" style={{ fontSize: 16 }}>{btn.icon}</span>
+              <span className={`remix ${btn.icon}`} style={{ fontSize: 16 }}></span>
               <span className="tooltip">{btn.label}</span>
             </button>
           ))}

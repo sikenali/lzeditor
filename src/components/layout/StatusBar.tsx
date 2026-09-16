@@ -13,25 +13,25 @@ export const StatusBar: React.FC = () => {
     <div className="statusbar">
       <div className="statusbar-left">
         <div className="statusbar-item">
-          <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>ri-text</span>
+          <span className="remix ri-text"</span>
           <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Words: {wordCount.toLocaleString()}</span>
         </div>
         <div className="statusbar-item">
-          <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>ri-timer-line</span>
+          <span className="remix ri-timer-line"</span>
           <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Read: {readTime} min</span>
         </div>
       </div>
       <div className="statusbar-center">
-        <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>ri-message-3-fill</span>
+        <span className="remix ri-message-3-fill"</span>
         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Style Set:</span>
         <span style={{ fontSize: 12, color: 'var(--accent-primary)' }}>Ocean</span>
-        <span className="remix" style={{ fontSize: 16, color: 'var(--accent-primary)' }}>ri-booklet-fill</span>
+        <span className="remix ri-booklet-fill"</span>
         <span className="statusbar-divider" />
         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Collapse</span>
       </div>
       <div className="statusbar-right">
         <div className="statusbar-item">
-          <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>ri-edit-fill</span>
+          <span className="remix ri-edit-fill"</span>
           <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Editing: in {readTime} minutes</span>
         </div>
         <div className="statusbar-badge">
