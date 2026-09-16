@@ -14,6 +14,7 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   openPanel: 'none',
   showOutline: false,
   showPreview: false,
+  previewWidth: 400,
   readProgress: 0,
   fontSize: 17,
   editorRef: null,
