@@ -18,6 +18,7 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   previewWidth: 500,
   readProgress: 0,
   fontSize: 16,
+  docHTML: '',
 
   setTitle: (title: string) => set({ docTitle: title }),
   setWordCount: (count: number) => set({ wordCount: count }),
@@ -33,6 +34,7 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
+  setDocHTML: (docHTML: string) => set({ docHTML }),
 
   // AI Panel state
   panelVisible: false,
