@@ -1,0 +1,14 @@
+application:
+  subdomain: lzeditor
+  routes:
+    - /api/=exec://3001
+    - /=file:///lzcapp/pkg/content/frontend
+  environment:
+    PORT: "3001"
+    DATA_DIR: /lzcapp/var/data
+    TZ: Asia/Shanghai
+    NODE_ENV: production
+  health_check:
+    test_url: http://127.0.0.1:3001/api/health
+    start_period: 30s
+    timeout: 10s

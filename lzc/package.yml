@@ -1,0 +1,21 @@
+package: cloud.lazycat.app.lazycateditor
+version: 0.1.0
+name: 懒猫编辑器
+description: 轻文档markdown编辑器，AI 辅助写作
+author: sikenali
+license: MIT
+homepage: https://github.com/sikenali/lzeditor
+min_os_version: 1.5.0
+unsupported_platforms:
+  - ios
+locales:
+  zh-CN:
+    name: 懒猫编辑器
+    description: 轻文档markdown编辑器，AI 辅助写作
+  en:
+    name: LazyCat Editor
+    description: Lightweight markdown document editor with AI assistance
+permissions:
+  required:
+    - net.internet
+    - net.local
