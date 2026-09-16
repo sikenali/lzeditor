@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor } from '../../store/settingsStore'
+import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor, DEFAULT_SETTINGS } from '../../store/settingsStore'
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
 import { LANGUAGES } from '../../shared/languages'
