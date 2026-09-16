@@ -138,12 +138,12 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
 function getNavIcon(group: SettingsGroup): string {
   const icons: Record<SettingsGroup, string> = {
-    general: 'ri-information-fill',
+    general: 'ri-settings-3-fill',
     editor: 'ri-edit-2-fill',
     appearance: 'ri-palette-fill',
-    ai: 'ri-information-line',
+    ai: 'ri-openai-fill',
     shortcut: 'ri-keyboard-fill',
-    export: 'ri-download-2-line',
+    export: 'ri-file-export-fill',
     sync: 'ri-refresh-line',
     advanced: 'ri-rocket-fill',
     about: 'ri-information-fill',
@@ -223,7 +223,7 @@ function renderGeneralSection() {
       <div className="settings-section">
         <div className="settings-section-title"><span>显示选项</span></div>
         <ToggleRow
-          icon="ri-checkbox-fill"
+          icon="ri-markdown-fill"
           title="Markdown 标记常显"
           desc="始终显示 ### 与列表符号"
           checked={showMarkdownMarkers !== false}
@@ -231,7 +231,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="ri-checkbox-fill"
+          icon="ri-diff-fill"
           title="快照差异高亮"
           desc="红底为删除、绿底为新增"
           checked={showDiffHighlight !== false}
@@ -239,7 +239,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="ri-checkbox-fill"
+          icon="ri-cursor-fill"
           title="打字机模式"
           desc="光标始终居中垂直位置"
           checked={typewriterMode || false}
@@ -247,7 +247,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="ri-checkbox-fill"
+          icon="ri-focus-3"
           title="专注模式"
           desc="仅高亮当前段落，其余淡化"
           checked={focusMode || false}
@@ -539,7 +539,7 @@ function renderExportSection() {
         </select>
       </div>
       <ToggleRow
-        icon="ri-history-fill"
+        icon="ri-bookmark-fill"
         title="导出时包含目录"
         desc="在开头自动插入文档目录"
         checked={state.includeTOC !== false}
@@ -547,7 +547,7 @@ function renderExportSection() {
       />
       <div className="setting-divider" />
       <ToggleRow
-        icon="ri-settings-3-fill"
+        icon="ri-list-ordered-2"
         title="导出时包含行号"
         desc="代码块显示行号"
         checked={state.includeLineNumbers || false}
@@ -669,7 +669,7 @@ function renderAboutSection() {
     <div className="settings-section" style={{ textAlign: 'center', padding: '40px 24px' }}>
       <div className="about-logo">
         <div className="about-logo-icon">
-          <span className="remix ri-book-open-fill"></span>
+          <span className="remix ri-pen-nib-fill"></span>
         </div>
       </div>
       <div className="about-title">lzeditor</div>
