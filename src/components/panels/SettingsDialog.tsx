@@ -49,7 +49,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         <div className="settings-header">
           <div className="settings-title">
             <div className="settings-icon">
-              <span className="remix" style={{ fontSize: 17, color: 'var(--accent-primary)' }}>\uF0E5</span>
+              <span className="remix ri-settings-3-fill"></span>
             </div>
             <div>
               <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>设置</div>
@@ -64,11 +64,11 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 setActiveGroup('general')
               }}
             >
-              <span className="remix" style={{ fontSize: 14 }}>\uF063</span>
+              <span className="remix ri-refresh-fill"></span>
               <span>恢复默认</span>
             </button>
             <button className="settings-close-btn" onClick={onClose}>
-              <span className="remix">\uEB99</span>
+              <span className="remix ri-close-line"></span>
             </button>
           </div>
         </div>
@@ -120,13 +120,13 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         {/* Footer */}
         <div className="settings-footer">
           <div className="settings-footer-left">
-            <span className="remix" style={{ fontSize: 15, color: 'var(--green-accent-soft)' }}>\uF34A</span>
+            <span className="remix ri-openai-fill"></span>
             <span>修改将在点击"完成"后生效</span>
           </div>
           <div className="settings-footer-right">
             <button className="settings-cancel-btn" onClick={onClose}>取消</button>
             <button className="settings-save-btn" onClick={handleSave}>
-              <span className="remix" style={{ fontSize: 12 }}>\uEAF7</span>
+              <span className="remix ri-check-line"></span>
               <span>完成</span>
             </button>
           </div>
@@ -138,15 +138,15 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
 function getNavIcon(group: SettingsGroup): string {
   const icons: Record<SettingsGroup, string> = {
-    general: '\uEE58',
-    editor: '\uEC7F',
-    appearance: '\uEFC4',
-    ai: '\uF34A',
-    shortcut: '\uEE74',
-    export: '\uEC53',
-    sync: '\uF063',
-    advanced: '\uF095',
-    about: '\uEE58',
+    general: 'ri-information-fill',
+    editor: 'ri-edit-2-fill',
+    appearance: 'ri-palette-fill',
+    ai: 'ri-openai-fill',
+    shortcut: 'ri-keyboard-fill',
+    export: 'ri-file-export-fill',
+    sync: 'ri-refresh-fill',
+    advanced: 'ri-rocket-fill',
+    about: 'ri-information-fill',
   }
   return icons[group] || '\uF0E5'
 }
@@ -174,7 +174,7 @@ function renderGeneralSection() {
               className={`segmented-btn ${theme === m ? 'active' : ''}`}
               onClick={() => updateSetting('theme', m)}
             >
-              <span className="remix" style={{ fontSize: 15 }}>{m === 'light' ? '\uF1BC' : m === 'dark' ? '\uEF72' : '\uEE58'}</span>
+              <span className="remix" style={{ fontSize: 15 }}>{m === 'light' ? '\uF1BC' : m === 'dark' ? '\uEF72' : 'ri-information-fill'}</span>
               <span>{m === 'light' ? '浅色' : m === 'dark' ? '深色' : '跟随系统'}</span>
             </button>
           ))}
@@ -195,7 +195,7 @@ function renderGeneralSection() {
               title={p.name}
             >
               <span className="color-swatch-bg" style={{ background: p.color }} />
-              {accentColor === p.id && <span className="remix color-swatch-check" style={{ fontSize: 14 }}>{'\uEB7B'}</span>}
+              {accentColor === p.id && <span className="remix color-swatch-check ri-check-line"></span>}
             </button>
           ))}
           <button
@@ -209,7 +209,7 @@ function renderGeneralSection() {
               }
             }}
           >
-            <span className="remix" style={{ fontSize: 16 }}>{'\uF226'}</span>
+            <span className="remix ri-translate-2"></span>
           </button>
         </div>
         <div className="color-current-value">
@@ -223,7 +223,7 @@ function renderGeneralSection() {
       <div className="settings-section">
         <div className="settings-section-title"><span>显示选项</span></div>
         <ToggleRow
-          icon="\uEB82"
+          icon="ri-checkbox-fill"
           title="Markdown 标记常显"
           desc="始终显示 ### 与列表符号"
           checked={showMarkdownMarkers !== false}
@@ -231,7 +231,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="\uEB82"
+          icon="ri-checkbox-fill"
           title="快照差异高亮"
           desc="红底为删除、绿底为新增"
           checked={showDiffHighlight !== false}
@@ -239,7 +239,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="\uEB82"
+          icon="ri-checkbox-fill"
           title="打字机模式"
           desc="光标始终居中垂直位置"
           checked={typewriterMode || false}
@@ -247,7 +247,7 @@ function renderGeneralSection() {
         />
         <div className="setting-divider" />
         <ToggleRow
-          icon="\uEB82"
+          icon="ri-checkbox-fill"
           title="专注模式"
           desc="仅高亮当前段落，其余淡化"
           checked={focusMode || false}
@@ -539,7 +539,7 @@ function renderExportSection() {
         </select>
       </div>
       <ToggleRow
-        icon="\uEE16"
+        icon="ri-history-fill"
         title="导出时包含目录"
         desc="在开头自动插入文档目录"
         checked={state.includeTOC !== false}
@@ -547,7 +547,7 @@ function renderExportSection() {
       />
       <div className="setting-divider" />
       <ToggleRow
-        icon="\uF0ED"
+        icon="F0ED"
         title="导出时包含行号"
         desc="代码块显示行号"
         checked={state.includeLineNumbers || false}
@@ -576,7 +576,7 @@ function renderSyncSection() {
             onClick={() => updateSetting('syncProvider', p.id)}
           >
             <div className="sync-provider-icon">
-              {p.id === 'git' ? '\uEDBC' : p.id === 'dropbox' ? '\uEC6B' : p.id === 'google' ? '\uEDD4' : '\uF305'}
+              {p.id === 'git' ? '\uEDBC' : p.id === 'dropbox' ? '\uEC6B' : p.id === 'google' ? '\uEDD4' : 'ri-webcam-fill'}
             </div>
             <div className="sync-provider-info">
               <div className="sync-provider-name">{p.name}</div>
@@ -632,7 +632,7 @@ function renderAdvancedSection() {
         <span className="settings-section-desc">开发者选项与调试</span>
       </div>
       <ToggleRow
-        icon="\uF095"
+        icon="ri-rocket-fill"
         title="启用开发工具"
         desc="打开开发者调试面板"
         checked={state.devTools || false}
@@ -640,7 +640,7 @@ function renderAdvancedSection() {
       />
       <div className="setting-divider" />
       <ToggleRow
-        icon="\uEFDD"
+        icon="ri-pen-nib-fill"
         title="禁用硬件加速"
         desc="解决渲染兼容性问题"
         checked={state.hardwareAccel === false}
@@ -669,7 +669,7 @@ function renderAboutSection() {
     <div className="settings-section" style={{ textAlign: 'center', padding: '40px 24px' }}>
       <div className="about-logo">
         <div className="about-logo-icon">
-          <span className="remix" style={{ fontSize: 40, color: 'var(--accent-primary)' }}>\uEFDD</span>
+          <span className="remix ri-pen-nib-fill"></span>
         </div>
       </div>
       <div className="about-title">lzeditor</div>

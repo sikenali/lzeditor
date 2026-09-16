@@ -49,13 +49,13 @@ export const AIPanel: React.FC = () => {
   return (
     <div className={`ai-panel ${state.panelStatus === 'thinking' ? 'thinking' : ''}`}>
       <div className="ai-panel-header">
-        <span className="remix" style={{ color: 'var(--accent-primary)', fontSize: 14 }}>\uF371</span>
+        <span className="remix ri-speed-up-line"></span>
         <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{actionLabel}</span>
         <button
           onClick={() => useAIStore.getState().hidePanel()}
           style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: 16 }}
         >
-          <span className="remix">\uE61C</span>
+          <span className="remix ri-close-line"></span>
         </button>
       </div>
 
@@ -87,7 +87,7 @@ export const AIPanel: React.FC = () => {
             disabled={!state.panelInput.trim() || isStreaming}
             onClick={handleSubmit}
           >
-            <span className="remix" style={{ fontSize: 16 }}>\uE613</span>
+            <span className="remix ri-checkbox-fill"></span>
           </button>
         </div>
       )}
@@ -106,13 +106,13 @@ export const AIPanel: React.FC = () => {
           </div>
           <div className="ai-actions">
             <button className="ai-action-btn primary" onClick={applyToDoc}>
-              <span className="remix" style={{ fontSize: 12 }}>\uE6AF</span> 应用到文档
+              <span className="remix ri-checkbox-fill"></span> 应用到文档
             </button>
             <button className="ai-action-btn secondary" onClick={undo}>
-              <span className="remix" style={{ fontSize: 12 }}>\uE847</span> 撤销
+              <span className="remix ri-arrow-go-forward-fill"></span> 撤销
             </button>
             <button className="ai-action-btn secondary" onClick={copyOutput}>
-              <span className="remix" style={{ fontSize: 12 }}>\uE82A</span> 复制
+              <span className="remix ri-file-copy-fill"></span> 复制
             </button>
           </div>
         </>
@@ -120,16 +120,16 @@ export const AIPanel: React.FC = () => {
 
       {state.panelStatus === 'applied' && (
         <div className="ai-applied-bar">
-          <span><span className="remix" style={{ marginRight: 4 }}>\uE6AF</span>已应用到文档</span>
+          <span><span className="remix ri-checkbox-fill"></span>已应用到文档</span>
           <span style={{ fontSize: 11, opacity: 0.7 }}>{new Date().toLocaleTimeString()}</span>
         </div>
       )}
 
       {state.panelError && (
         <div className="ai-error-msg">
-          <span className="remix" style={{ marginRight: 4 }}>\uE88F</span>
+          <span className="remix ri-error-warning-fill"></span>
           {state.panelError}
-          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }}>\uE61C</button>
+          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }}>ri-close-line</button>
         </div>
       )}
     </div>
