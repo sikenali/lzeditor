@@ -21,14 +21,14 @@ function rgba(rgb: [number, number, number], alpha: number): string {
 
 /** Get accent color hex for a given preset id */
 function getAccentHex(presetId: string): string {
-  const map: Record<string, { dark: string; light: string }> = {
-    red:    { dark: '#c43d3d', light: '#c43d3d' },
-    teal:   { dark: '#5a9b8c', light: '#4a7b8c' },
-    green:  { dark: '#5b8c5a', light: '#5b8c5a' },
-    gold:   { dark: '#c9a96e', light: '#b28014' },
-    ink:    { dark: '#3d2b1f', light: '#6b5b4f' },
+  const map: Record<string, string> = {
+    red:    '#c43d3d',
+    teal:   '#6b8fa3',
+    green:  '#5b8c5a',
+    gold:   '#c9a96e',
+    ink:    '#3d2b1f',
   }
-  return map[presetId]?.dark ?? '#5b8c5a'
+  return map[presetId] ?? '#5b8c5a'
 }
 
 export function applyTheme(theme: string, accent: string): void {

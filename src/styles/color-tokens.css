@@ -230,14 +230,14 @@
 /* ── Accent color presets (LZMail palette) ── */
 /* Dark mode presets */
 :root[data-accent="green"]  { --accent: #5b8c5a; --accent-foreground: #ffffff; }
-:root[data-accent="teal"]   { --accent: #5a9b8c; --accent-foreground: #ffffff; }
+:root[data-accent="teal"]   { --accent: #6b8fa3; --accent-foreground: #ffffff; }
 :root[data-accent="red"]    { --accent: #c43d3d; --accent-foreground: #ffffff; }
 :root[data-accent="gold"]   { --accent: #c9a96e; --accent-foreground: #1a1612; }
 :root[data-accent="ink"]    { --accent: #3d2b1f; --accent-foreground: #f5f0e8; }
 
 /* Light mode presets (darker, readable variants) */
 [data-theme="light"][data-accent="green"]  { --accent: #5b8c5a; --accent-foreground: #ffffff; }
-[data-theme="light"][data-accent="teal"]   { --accent: #4a7b8c; --accent-foreground: #ffffff; }
+[data-theme="light"][data-accent="teal"]   { --accent: #6b8fa3; --accent-foreground: #ffffff; }
 [data-theme="light"][data-accent="red"]    { --accent: #c43d3d; --accent-foreground: #ffffff; }
 [data-theme="light"][data-accent="gold"]   { --accent: #b28014; --accent-foreground: #ffffff; }
 [data-theme="light"][data-accent="ink"]    { --accent: #6b5b4f; --accent-foreground: #ffffff; }
