@@ -57,6 +57,8 @@ export interface EditorStoreState {
   setOpenPanel: (panel: 'none' | 'styles' | 'history' | 'settings' | 'export') => void
 }
 
+export type SettingsGroup = 'general' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'
+
 export interface SettingsState {
   provider: string
   model: string
@@ -67,6 +69,7 @@ export interface SettingsState {
   theme: 'dark' | 'light' | 'system'
   accentColor: string
   shortcut: string
+  activeGroup: SettingsGroup
 }
 
 export interface ThemeState {

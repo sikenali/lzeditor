@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAIStore } from '../../store/aiStore'
-import { useFloatingToolbar } from '../../hooks/useFloatingToolbar'
+import { LanguageSelector } from '../ai/LanguageSelector'
 import type { AIAction } from '../../shared/types'
 
 const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
@@ -12,6 +12,21 @@ const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
   { action: 'question', icon: '\uF371', label: '提问' },
 ]
 
+const LANGUAGES = [
+  { code: 'zh', name: '简体中文' },
+  { code: 'en', name: 'English' },
+  { code: 'ja', name: '日本語' },
+  { code: 'ko', name: '한국어' },
+  { code: 'fr', name: 'Français' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'es', name: 'Español' },
+  { code: 'ru', name: 'Русский' },
+  { code: 'ar', name: 'العربية' },
+  { code: 'pt', name: 'Português' },
+  { code: 'it', name: 'Italiano' },
+  { code: 'hi', name: 'हिन्दी' },
+]
+
 interface FloatingToolbarProps {
   position: { x: number; y: number }
   selectedText: string
@@ -20,24 +35,50 @@ interface FloatingToolbarProps {
 }
 
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ position, visible, onAction }) => {
-  if (!visible) return null
+  const [showLangSelector, setShowLangSelector] = useState(false)
+  const [targetLang, setTargetLang] = useState('zh')
+
+  const handleTranslate = () => {
+    setShowLangSelector(true)
+  }
+
+  const handleLangSelect = (lang: string) => {
+    setTargetLang(lang)
+    setShowLangSelector(false)
+    const langName = LANGUAGES.find(l => l.code === lang)?.name || lang
+    onAction('translate')
+    useAIStore.getState().setPanelInput('翻译为' + langName)
+  }
+
+  if (!visible && !showLangSelector) return null
 
   return (
-    <div
-      className="ai-floating-toolbar"
-      style={{ left: position.x, top: position.y }}
-    >
-      {BUTTONS.map((btn) => (
-        <button
-          key={btn.action}
-          className="ai-toolbar-btn"
-          onClick={() => onAction(btn.action)}
-          title={btn.label}
+    <>
+      {visible && (
+        <div
+          className="ai-floating-toolbar"
+          style={{ left: position.x, top: position.y }}
         >
-          <span className="remix" style={{ fontSize: 16 }}>{btn.icon}</span>
-          <span className="tooltip">{btn.label}</span>
-        </button>
-      ))}
-    </div>
+          {BUTTONS.map((btn) => (
+            <button
+              key={btn.action}
+              className={'ai-toolbar-btn' + (btn.action === 'translate' && showLangSelector ? ' active' : '')}
+              onClick={() => btn.action === 'translate' ? handleTranslate() : onAction(btn.action)}
+              title={btn.label}
+            >
+              <span className="remix" style={{ fontSize: 16 }}>{btn.icon}</span>
+              <span className="tooltip">{btn.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {showLangSelector && (
+        <LanguageSelector
+          targetLang={targetLang}
+          onSelect={handleLangSelect}
+          onClose={() => setShowLangSelector(false)}
+        />
+      )}
+    </>
   )
 }

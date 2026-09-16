@@ -11,13 +11,14 @@ const DEFAULT_SETTINGS: SettingsState = {
   theme: 'dark',
   accentColor: '#39FF9E',
   shortcut: 'Ctrl+/',
+  activeGroup: 'general',
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => {
   const saved = localStorage.getItem('lzeditor-settings')
   if (saved) {
     try {
-      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) }
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved), activeGroup: 'general' }
     } catch {}
   }
   return DEFAULT_SETTINGS
@@ -27,5 +28,8 @@ export function saveSettings(settings: Partial<SettingsState>) {
   const current = useSettingsStore.getState()
   const updated = { ...current, ...settings }
   useSettingsStore.setState(updated)
-  localStorage.setItem('lzeditor-settings', JSON.stringify(updated))
+  try {
+    const { activeGroup, ...rest } = updated
+    localStorage.setItem('lzeditor-settings', JSON.stringify(rest))
+  } catch {}
 }
