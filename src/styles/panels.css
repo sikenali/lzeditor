@@ -715,3 +715,18 @@
 .export-field { display: flex; flex-direction: column; gap: 6px; }
 .export-label { font-size: 14px; color: var(--text-muted); }
 .image-url-tip { font-size: 14px; color: var(--amber); }
+
+/* ── Link Dialog ── */
+.link-mode-tabs {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.link-mode-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px; border: 1px solid var(--border-default);
+  border-radius: 8px; background: transparent; cursor: pointer;
+  font-size: 14px; color: var(--text-secondary); transition: all 0.12s;
+}
+.link-mode-tab:hover { border-color: var(--accent-border); color: var(--text-primary); }
+.link-mode-tab.active { border-color: var(--accent-primary); background: var(--accent-a10); color: var(--accent-primary); }
+.link-mode-tab .remix { font-size: 16px; }
+.link-url-tip { font-size: 14px; color: var(--amber); }
