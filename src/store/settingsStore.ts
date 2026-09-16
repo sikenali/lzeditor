@@ -15,12 +15,11 @@ export const DEFAULT_SETTINGS: SettingsState = {
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [
-  { id: 'green',  name: '翠绿',   color: '#39ff9e' },
-  { id: 'cyan',   name: '青蓝',   color: '#00d4ff' },
-  { id: 'purple', name: '紫罗兰', color: '#a855f7' },
-  { id: 'orange', name: '橙色',   color: '#ff8c42' },
-  { id: 'rose',   name: '玫红',   color: '#f43f5e' },
-  { id: 'amber',  name: '琥珀',   color: '#f59e0b' },
+  { id: 'red',    name: '朱红',   color: '#c43d3d' },
+  { id: 'teal',   name: '云蓝',   color: '#6b8fa3' },
+  { id: 'green',  name: '玉绿',   color: '#5b8c5a' },
+  { id: 'gold',   name: '金色',   color: '#c9a96e' },
+  { id: 'ink',    name: '墨色',   color: '#3d2b1f' },
 ]
 
 type SettingsStore = SettingsState & {

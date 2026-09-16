@@ -22,8 +22,8 @@
   --foreground-heading-2: #eaf4f8;
 
   /* Primary accent — neon green (dark default) */
-  --accent:              #39ff9e;
-  --accent-foreground:   #062417;
+  --accent:              #5b8c5a;
+  --accent-foreground:   #ffffff;
 
   /* Accent alpha variants (set dynamically by useTheme.ts) */
   --accent-a3:  rgba(57,255,158,0.03);
@@ -124,7 +124,7 @@
   --foreground-heading:   #121a23;
   --foreground-heading-2: #1e2834;
 
-  --accent:              #0d8c5f;
+  --accent:              #5b8c5a;
   --accent-foreground:   #ffffff;
   --accent-primary:      var(--accent);
 
