@@ -1,7 +1,9 @@
 import { create } from 'zustand'
-import type { EditorStoreState } from '../shared/types'
+import type { EditorStoreState, DocVersion } from '../shared/types'
 
-export const useEditorStore = create<EditorStoreState>((set: any) => ({
+const MAX_VERSIONS = 30
+
+export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
   docTitle: 'Welcome to LZEditor',
   docPath: '',
   docHTML: '',
@@ -19,6 +21,8 @@ export const useEditorStore = create<EditorStoreState>((set: any) => ({
   readProgress: 0,
   fontSize: 17,
   editorRef: null,
+  editor: null,
+  versions: [],
 
   setTitle: (title: string) => set({ docTitle: title }),
   setDocPath: (path: string) => set({ docPath: path }),
@@ -37,4 +41,12 @@ export const useEditorStore = create<EditorStoreState>((set: any) => ({
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
+  setEditor: (editor: any) => set({ editor }),
+  addVersion: (version: DocVersion) => {
+    const versions = get().versions
+    // Skip if content unchanged vs latest snapshot
+    if (versions.length > 0 && versions[versions.length - 1].html === version.html) return
+    set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
+  },
+  clearVersions: () => set({ versions: [] }),
 }))

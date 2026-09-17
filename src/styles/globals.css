@@ -2822,3 +2822,145 @@
 .katex { color: rgba(57, 255, 158, 1); }
 .katex-display { margin: 16px 0; padding: 16px; background: rgba(15, 22, 32, 1); border-radius: 8px; overflow-x: auto; }
 .math-block { margin: 16px 0; padding: 16px; background: rgba(15, 22, 32, 1); border-radius: 8px; overflow-x: auto; }
+
+/* ── History Panel ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.history-panel {
+  width: 100%; max-width: 1440px;
+  background: rgba(18, 24, 31, 1);
+  border-top: 1px solid var(--border-subtle);
+  padding: 20px 32px 24px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+/* Version info bar */
+.history-version-bar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 24px;
+}
+.history-version-meta {
+  display: flex; align-items: center; gap: 8px;
+}
+.history-meta-icon {
+  font-size: 15px; color: rgba(127, 191, 162, 1); line-height: 1;
+}
+.history-meta-label {
+  font-size: 13px; color: rgba(125, 139, 153, 1);
+}
+.history-meta-value {
+  font-size: 13px; font-weight: 700; color: rgba(255, 228, 92, 1);
+}
+.history-meta-sep {
+  font-size: 13px; color: rgba(80, 90, 100, 1);
+}
+.history-meta-date {
+  font-size: 13px; color: rgba(139, 152, 165, 1);
+}
+/* Action buttons */
+.history-version-actions {
+  display: flex; gap: 8px;
+}
+.history-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px;
+  font-size: 12px; cursor: pointer; transition: all 0.12s;
+}
+.history-btn-rollback {
+  background: rgba(15, 22, 32, 1);
+  border: 0.7px solid rgba(42, 56, 67, 1);
+  color: rgba(213, 226, 236, 1);
+}
+.history-btn-rollback:hover { border-color: rgba(57, 255, 158, 0.3); }
+.history-btn-rollback .remix { color: rgba(57, 255, 158, 1); }
+.history-btn-replay {
+  background: rgba(57, 255, 158, 1);
+  border: none;
+  color: rgba(6, 36, 23, 1); font-weight: 600;
+}
+.history-btn-replay:hover { opacity: 0.88; }
+.history-btn-replay .remix { color: rgba(6, 36, 23, 1); }
+/* Histogram */
+.history-histogram {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 10px;
+}
+.histogram-col {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px;
+}
+.histogram-bar-wrap {
+  width: 26px; height: 110px;
+  display: flex; align-items: flex-end;
+  padding: 2px;
+  border-radius: 3px;
+  box-sizing: content-box;
+}
+.histogram-bar-wrap.current {
+  border: 0.7px solid rgba(57, 255, 158, 1);
+  border-radius: 3px;
+  padding: 2px;
+}
+.histogram-bar {
+  width: 100%; height: 110px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  gap: 0; border-radius: 2px; overflow: hidden;
+}
+.histogram-bar.current {
+  border-radius: 2px;
+}
+.histogram-bar-dark {
+  width: 100%;
+  background: rgba(38, 49, 60, 1);
+}
+.histogram-bar.current .histogram-bar-dark {
+  background: rgba(18, 51, 38, 1);
+}
+.histogram-bar-light {
+  width: 100%;
+  background: rgba(76, 90, 103, 1);
+}
+.histogram-bar.current .histogram-bar-light {
+  background: rgba(57, 255, 158, 1);
+}
+.histogram-label {
+  font-size: 12px; color: rgba(111, 125, 138, 1);
+  line-height: 1;
+}
+.histogram-label.current {
+  color: rgba(57, 255, 158, 1);
+  font-weight: 700;
+}
+/* Legend */
+.history-legend {
+  display: flex; align-items: center;
+  gap: 32px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+}
+.legend-swatch {
+  width: 11px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}
+.legend-swatch-added { background: rgba(76, 90, 103, 1); }
+.legend-swatch-kept { background: rgba(38, 49, 60, 1); }
+.legend-swatch-current { background: rgba(57, 255, 158, 1); }
+.legend-text {
+  font-size: 12px; color: rgba(111, 125, 138, 1);
+}
+.legend-text-current { color: rgba(57, 255, 158, 1); }
+.legend-tip {
+  margin-left: auto;
+}
+.legend-text-tip { color: rgba(255, 228, 92, 1); }
+.legend-tip .remix { color: rgba(255, 228, 92, 1); font-size: 14px; }
+/* Close button */
+.settings-cancel-btn {
+  padding: 6px 16px; border-radius: 6px;
+  background: var(--bg-code); border: 1px solid var(--border-subtle);
+  color: var(--text-secondary); font-size: 12px; cursor: pointer;
+  transition: all 0.12s;
+}
+.settings-cancel-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }

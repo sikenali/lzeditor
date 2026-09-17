@@ -9,7 +9,6 @@ import { HistoryPanel } from './components/panels/HistoryPanel'
 import { ReadMode } from './components/panels/ReadMode'
 import { LibraryPanel } from './components/panels/LibraryPanel'
 import { FilePanel } from './components/panels/FilePanel'
-import { OutlinePanel } from './components/panels/OutlinePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
 import { SidebarOutline } from './components/sidebar/SidebarOutline'
 import { SidebarPreview } from './components/sidebar/SidebarPreview'
@@ -43,7 +42,6 @@ function App() {
       {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
-      {openPanel === 'outline' && <OutlinePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
       {isReadMode && <ReadMode onClose={() => useEditorStore.getState().setReadMode(false)} />}
     </div>

@@ -1,108 +1,162 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { TextSelection } from '@tiptap/pm/state'
 
 interface OutlineItem {
   id: string
   level: number
   text: string
+  pos: number
+  number: string
 }
 
-function extractHeadings(html: string): OutlineItem[] {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6')
-  return Array.from(headings).map((h, i) => ({
-    id: `heading-${i}`,
-    level: parseInt(h.tagName[1]) || 1,
-    text: h.textContent?.trim() || '',
-  }))
+interface NumberingState {
+  counters: number[]
+}
+
+/** Walk the ProseMirror doc, collect headings with 1 / 1.1 / 1.1.1 numbering. */
+function collectOutline(doc: any): OutlineItem[] {
+  const items: OutlineItem[] = []
+  const counters: number[] = [0, 0, 0, 0, 0, 0]
+
+  doc.descendants((node: any, pos: number) => {
+    if (node.type.name !== 'heading') return true
+    const level = node.attrs.level || 1
+    counters[level - 1] += 1
+    for (let i = level; i < counters.length; i++) counters[i] = 0
+
+    const number = counters.slice(0, level).join('.')
+    items.push({
+      id: `h-${pos}`,
+      level,
+      text: node.textContent.trim() || '(无标题)',
+      pos,
+      number,
+    })
+    return true
+  })
+
+  return items
+}
+
+/** Group flat items into a tree keyed by parent number (1 → 1.1 → 1.1.1). */
+function buildTree(items: OutlineItem[]): Map<string, OutlineItem[]> {
+  const tree = new Map<string, OutlineItem[]>()
+  for (const item of items) {
+    const parentNumber = item.number.includes('.')
+      ? item.number.slice(0, item.number.lastIndexOf('.'))
+      : ''
+    const key = parentNumber || '__root__'
+    if (!tree.has(key)) tree.set(key, [])
+    tree.get(key)!.push(item)
+  }
+  return tree
 }
 
 export const SidebarOutline: React.FC = () => {
-  const editorRef = useEditorStore((s) => s.editorRef)
+  const editor = useEditorStore((s) => s.editor)
   const setShowOutline = useEditorStore((s) => s.setShowOutline)
   const [items, setItems] = useState<OutlineItem[]>([])
   const [activeId, setActiveId] = useState<string>('')
-  const observerRef = useRef<IntersectionObserver | null>(null)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  const updateItems = useCallback(() => {
-    if (!editorRef) return
-    const html = editorRef.innerHTML
-    setItems(extractHeadings(html))
-  }, [editorRef])
+  const refresh = useCallback(() => {
+    if (!editor) return
+    const next = collectOutline(editor.state.doc)
+    setItems(next)
+    // Track active heading from current cursor position
+    const from = editor.state.selection.from
+    let active: OutlineItem | undefined
+    for (const item of next) {
+      if (item.pos <= from) active = item
+      else break
+    }
+    setActiveId(active ? active.id : '')
+  }, [editor])
 
+  // Recompute outline + active heading on editor/selection changes
   useEffect(() => {
-    updateItems()
-    if (!editorRef) return
-
-    const observer = new MutationObserver(() => {
-      requestAnimationFrame(updateItems)
-    })
-    observer.observe(editorRef, { childList: true, subtree: true, characterData: true })
-
-    const sections = editorRef.querySelectorAll('h1, h2, h3, h4, h5, h6')
-    sections.forEach((el) => {
-      if (!el.id) el.id = `heading-${items.length}`
-    })
-    // Re-extract after assigning IDs
-    updateItems()
-
-    if (window.IntersectionObserver) {
-      const io = new IntersectionObserver(
-        (entries) => {
-          const visible = entries.filter(e => e.isIntersecting)
-          if (visible.length > 0) {
-            const first = visible[0].target as HTMLElement
-            setActiveId(first.id || '')
-          }
-        },
-        { root: editorRef, threshold: 0.3 }
-      )
-      sections.forEach(el => io.observe(el))
-      observerRef.current = io
-    }
-
+    refresh()
+    if (!editor) return
+    const handler = () => refresh()
+    editor.on('update', handler)
+    editor.on('selectionUpdate', handler)
     return () => {
-      observer.disconnect()
-      observerRef.current?.disconnect()
+      editor.off('update', handler)
+      editor.off('selectionUpdate', handler)
     }
-  }, [editorRef, updateItems, items.length])
+  }, [editor, refresh])
 
-  const handleJump = (id: string) => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      setActiveId(id)
-    }
+  const handleJump = (item: OutlineItem) => {
+    if (!editor) return
+    const tr = editor.state.tr.setSelection(TextSelection.near(editor.state.doc.resolve(item.pos + 1)))
+    tr.scrollIntoView()
+    editor.view.dispatch(tr)
+    editor.commands.focus()
+    setActiveId(item.id)
+  }
+
+  const toggleCollapse = (number: string) => {
+    setCollapsed((prev) => ({ ...prev, [number]: !prev[number] }))
+  }
+
+  const tree = buildTree(items)
+
+  const renderGroup = (parentNumber: string, depth: number): React.ReactNode[] => {
+    const children = tree.get(parentNumber) || []
+    return children.map((item) => {
+      const hasChildren = (tree.get(item.number) || []).length > 0
+      const isCollapsed = !!collapsed[item.number]
+      return (
+        <div key={item.id} className="outline-node">
+          <div
+            className={`sidebar-item ${activeId === item.id ? 'active' : ''}`}
+            style={{ paddingLeft: `${depth * 16 + 10}px` }}
+          >
+            {hasChildren ? (
+              <button
+                className="outline-toggle-btn"
+                onClick={(e) => { e.stopPropagation(); toggleCollapse(item.number) }}
+                title={isCollapsed ? '展开' : '折叠'}
+              >
+                <span className={`remix ${isCollapsed ? 'ri-arrow-right-s-line' : 'ri-arrow-down-s-line'}`}></span>
+              </button>
+            ) : (
+              <span className="outline-toggle-placeholder" />
+            )}
+            <button
+              className="outline-content-btn"
+              onClick={() => handleJump(item)}
+              title={item.text}
+            >
+              <span className="outline-number">{item.number}</span>
+              <span className="sidebar-item-text">{item.text}</span>
+            </button>
+          </div>
+          {hasChildren && !isCollapsed && renderGroup(item.number, depth + 1)}
+        </div>
+      )
+    })
   }
 
   return (
     <div className="sidebar-outline">
       <div className="sidebar-header">
         <span className="remix sidebar-header-icon ri-list-unordered"></span>
-        <span className="sidebar-header-title">大纲</span>
+        <span className="sidebar-header-title">目录</span>
         <button className="sidebar-close-btn" onClick={() => setShowOutline(false)}>
           <span className="remix ri-close-line"></span>
         </button>
       </div>
       <div className="sidebar-scroll">
-        {items.length === 0 && (
+        {items.length === 0 ? (
           <div className="sidebar-empty">
             <span className="remix ri-article-line"></span>
-            <span>添加标题以生成大纲</span>
+            <span>添加标题以生成目录</span>
           </div>
+        ) : (
+          renderGroup('__root__', 0)
         )}
-        {items.map(item => (
-          <button
-            key={item.id}
-            className={`sidebar-item ${activeId === item.id ? 'active' : ''}`}
-            style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-            onClick={() => handleJump(item.id)}
-          >
-            <span className="sidebar-item-dot" />
-            <span className="sidebar-item-text">{item.text}</span>
-          </button>
-        ))}
       </div>
     </div>
   )

@@ -38,15 +38,18 @@ const INSERT_ITEMS = [
 const TABLE_ITEMS = [
   { icon: 'ri-table-2', label: '插入表格', action: 'insert' },
   { sep: true },
-  { icon: 'ri-arrow-left-line', label: '向左移动列', action: 'moveL' },
-  { icon: 'ri-arrow-right-line', label: '向右移动列', action: 'moveR' },
-  { icon: 'ri-insert-column-left', label: '插入列', action: 'col' },
-  { icon: 'ri-insert-row-bottom', label: '插入行', action: 'row' },
+  { icon: 'ri-insert-column-left', label: '在左侧插入列', action: 'colBefore' },
+  { icon: 'ri-insert-column-right', label: '在右侧插入列', action: 'col' },
+  { icon: 'ri-insert-row-bottom', label: '在下方插入行', action: 'row' },
   { icon: 'ri-delete-column', label: '删除列', action: 'delCol' },
   { icon: 'ri-delete-row', label: '删除行', action: 'delRow' },
   { sep: true },
+  { icon: 'ri-git-merge-line', label: '合并单元格', action: 'merge' },
+  { icon: 'ri-git-pull-request-line', label: '拆分单元格', action: 'split' },
+  { icon: 'ri-layout-column-line', label: '切换标题列', action: 'headerCol' },
+  { sep: true },
   { icon: 'ri-delete-bin-line', label: '删除表格', action: 'delete' },
-  { icon: 'ri-expand-left-right-line', label: '自动调整列宽', action: 'autoW' },
+  { icon: 'ri-expand-left-right-line', label: '修复表格布局', action: 'autoW' },
 ]
 
 const SUPSUB_ITEMS = [
@@ -67,11 +70,9 @@ export const Toolbar: React.FC = () => {
   const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
   const setShowPreview = useEditorStore((s: any) => s.setShowPreview)
   const setReadMode = useEditorStore((s: any) => s.setReadMode)
-  const editorRef = useEditorStore((s: any) => s.editorRef)
+  const editor = useEditorStore((s: any) => s.editor)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const setTitle = useEditorStore((s: any) => s.setTitle)
-  const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
-  const setWordCount = useEditorStore((s: any) => s.setWordCount)
   const isReadMode = useEditorStore((s: any) => s.isReadMode)
 
   const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
@@ -95,31 +96,26 @@ export const Toolbar: React.FC = () => {
   }
 
   const applyCmd = (cmd: string) => {
-    if (!editorRef) return
-    document.execCommand(cmd, false)
-    editorRef.focus()
-    setDocHTML(editorRef.innerHTML)
-    const text = editorRef.innerText || ''
-    setWordCount(text.split(/\s+/).filter(Boolean).length)
+    if (!editor) return
+    editor.chain().focus()
+    const ok = (editor.commands as any)[cmd]?.()
+    if (!ok) {
+      // Fall back to mark toggle for known format names
+      const markMap: Record<string, string> = { bold: 'toggleBold', italic: 'toggleItalic', underline: 'toggleUnderline', strikeThrough: 'toggleStrike' }
+      const fn = markMap[cmd]
+      if (fn) (editor.commands as any)[fn]()
+    }
   }
 
   const handleNewFile = () => { setTitle(`untitled-${Date.now()}.md`); useEditorStore.getState().setDocPath('') }
 
   const insertImageFromUrl = (url: string, alt: string) => {
-    if (!editorRef) return
-    const img = document.createElement('img')
-    img.src = url; img.alt = alt
-    img.style.maxWidth = '100%'
-    const sel = window.getSelection()
-    const range = sel?.rangeCount ? sel.getRangeAt(0) : null
-    if (range) { range.insertNode(img); range.setStartAfter(img); range.collapse(true) }
-    else editorRef.appendChild(img)
-    editorRef.focus()
-    setDocHTML(editorRef.innerHTML)
+    if (!editor) return
+    editor.chain().focus().insertImage({ src: url, alt }).run()
   }
 
   const handleImageUpload = (file: File) => {
-    if (!editorRef) return
+    if (!editor) return
     const reader = new FileReader()
     reader.onload = (ev) => insertImageFromUrl(ev.target?.result as string, file.name)
     reader.readAsDataURL(file)
@@ -127,151 +123,140 @@ export const Toolbar: React.FC = () => {
 
   const handleFormatAction = (action: string) => {
     setMenuOpen(null)
-    if (!editorRef) return
-    const sel = window.getSelection()
-    const range = sel?.rangeCount ? sel.getRangeAt(0) : null
-
+    if (!editor) return
+    const chain = editor.chain().focus()
     switch (action) {
       case 'h1': case 'h2': case 'h3': case 'h4': case 'h5': {
-        const tag = action as `h${1|2|3|4|5}`
-        const el = document.createElement(tag)
-        el.textContent = sel?.toString() || `标题 ${action[1]}`
-        range?.deleteContents(); range?.insertNode(el)
+        const level = parseInt(action[1])
+        const selected = editor.state.selection
+        const hasText = selected && selected.from !== selected.to
+        if (!hasText) chain.insertContent(`<h${level}>标题 ${level}</h${level}>`).run()
+        else chain.toggleHeading({ level }).run()
         break
       }
-      case 'clear': {
-        const el = range?.commonAncestorContainer?.parentElement
-        if (el?.tagName?.match(/^H[1-5]$/)) {
-          const p = document.createElement('p')
-          p.textContent = el.textContent
-          el.replaceWith(p)
-        }
+      case 'clear':
+        chain.unsetAllMarks().clearNodes().run()
         break
-      }
-      case 'hr': {
-        const hr = document.createElement('hr')
-        range?.insertNode(hr)
+      case 'hr':
+        chain.setHorizontalRule().run()
         break
-      }
       case 'link':
         setShowLinkDialog(true)
         return
       case 'image':
         setShowImageDialog(true)
         return
-      case 'ol': {
-        const ol = document.createElement('ol')
-        ol.innerHTML = '<li>列表项</li><li>列表项</li>'
-        range?.deleteContents(); range?.insertNode(ol)
+      case 'ol':
+        chain.toggleOrderedList().run()
         break
-      }
-      case 'ul': {
-        const ul = document.createElement('ul')
-        ul.innerHTML = '<li>列表项</li><li>列表项</li>'
-        range?.deleteContents(); range?.insertNode(ul)
+      case 'ul':
+        chain.toggleBulletList().run()
         break
-      }
-      case 'task': {
-        const ul = document.createElement('ul')
-        ul.innerHTML = '<li class="task-item"><input type="checkbox"> 待办</li><li class="task-item"><input type="checkbox"> 待办</li>'
-        range?.deleteContents(); range?.insertNode(ul)
+      case 'task':
+        chain.toggleTaskList().run()
         break
-      }
+      case 'sup':
+        chain.toggleSuperscript().run()
+        break
+      case 'sub':
+        chain.toggleSubscript().run()
+        break
     }
-    setDocHTML(editorRef.innerHTML)
-    const text = editorRef.innerText || ''
-    setWordCount(text.split(/\s+/).filter(Boolean).length)
   }
 
   const handleInsertAction = (action: string) => {
     setMenuOpen(null)
-    if (!editorRef) return
-    const sel = window.getSelection()
-    const range = sel?.rangeCount ? sel.getRangeAt(0) : null
-
+    if (!editor) return
+    const chain = editor.chain().focus()
     switch (action) {
       case 'toc': {
-        const p = document.createElement('p')
-        p.textContent = '[TOC]'
-        p.style.cssText = 'color:var(--text-muted);font-size:12px;font-family:monospace;'
-        range?.insertNode(p)
+        const headings: string[] = []
+        editor.state.doc.descendants((node: any) => {
+          if (node.type.name === 'heading') {
+            headings.push(' '.repeat(node.attrs.level - 1) + '- '.repeat(1) + node.textContent)
+          }
+          return true
+        })
+        const tocBody = headings.length > 0
+          ? headings.map(h => `<p>${h}</p>`).join('')
+          : '<p>暂无标题</p>'
+        chain.insertContent(
+          `<div data-toc><p><strong>目录</strong></p>${tocBody}</div><p></p>`
+        ).run()
         break
       }
       case 'quote': {
-        const bq = document.createElement('blockquote')
-        bq.textContent = sel?.toString() || '引用内容'
-        bq.style.cssText = 'border-left:3px solid var(--accent-primary);padding:8px 16px;margin:8px 0;background:var(--accent-a3);border-radius:0 8px 8px 0;'
-        range?.deleteContents(); range?.insertNode(bq)
+        const sel = editor.state.selection
+        const text = sel && sel.from !== sel.to ? editor.state.doc.textBetween(sel.from, sel.to) : '引用内容'
+        chain.insertContent(`<blockquote><p>${text}</p></blockquote>`).run()
         break
       }
-      case 'footnote': {
-        const sup = document.createElement('sup')
-        sup.textContent = '[^1]'
-        sup.style.cssText = 'color:var(--accent-primary);'
-        range?.insertNode(sup)
+      case 'footnote':
+        chain.insertContent('<sup>[^1]</sup>').run()
         break
-      }
-      case 'hr': {
-        const hr = document.createElement('hr')
-        hr.style.cssText = 'border:none;border-top:1px solid var(--border-subtle);margin:12px 0;'
-        range?.insertNode(hr)
+      case 'hr':
+        chain.setHorizontalRule().run()
         break
-      }
-      case 'blockquote': {
-        const bq = document.createElement('blockquote')
-        bq.textContent = sel?.toString() || '块引用'
-        bq.style.cssText = 'border-left:3px solid var(--amber);padding:12px 20px;margin:12px 0;background:var(--bg-quote);border-radius:0 10px 10px 0;font-style:italic;color:var(--text-secondary);'
-        range?.deleteContents(); range?.insertNode(bq)
+      case 'blockquote':
+        chain.toggleBlockquote().run()
         break
-      }
       case 'code': {
         const code = prompt('请输入代码内容:')
-        if (code !== null && range) {
-          const pre = document.createElement('pre')
-          pre.style.cssText = 'background:var(--bg-code);padding:14px 18px;border-radius:8px;font-family:monospace;font-size:13px;overflow-x:auto;margin:10px 0;border:1px solid var(--border-subtle);'
-          const codeEl = document.createElement('code')
-          codeEl.textContent = code
-          pre.appendChild(codeEl)
-          range.deleteContents(); range.insertNode(pre)
+        if (code !== null && code !== undefined) {
+          const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          chain.insertContent(`<pre><code>${escaped}</code></pre>`).run()
         }
         break
       }
       case 'math': {
         const formula = prompt('输入数学公式 (LaTeX):', 'E = mc^2')
-        if (formula && range) {
-          const span = document.createElement('span')
-          span.textContent = `$${formula}$`
-          span.style.cssText = 'background:var(--bg-code);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:14px;color:var(--amber);border:1px solid var(--border-subtle);'
-          range.insertNode(span)
-        }
+        if (formula) chain.insertMath(formula).run()
         break
       }
     }
-    setDocHTML(editorRef.innerHTML)
   }
 
   const handleTableAction = (action: string) => {
     setMenuOpen(null)
-    if (action === 'insert' && editorRef) {
-      const r = parseInt(prompt('行数:', '3') || '3')
-      const c = parseInt(prompt('列数:', '3') || '3')
-      if (r > 0 && c > 0) {
-        const table = document.createElement('table')
-        table.style.cssText = 'border-collapse:collapse;width:100%;margin:8px 0;'
-        for (let i = 0; i < r; i++) {
-          const tr = document.createElement('tr')
-          for (let j = 0; j < c; j++) {
-            const td = document.createElement('td')
-            td.style.cssText = 'border:1px solid var(--border-default);padding:6px 10px;min-width:50px;'
-            td.textContent = i === 0 ? '标题' : ''
-            tr.appendChild(td)
-          }
-          table.appendChild(tr)
-        }
-        editorRef.appendChild(table)
-        editorRef.focus()
-        setDocHTML(editorRef.innerHTML)
+    if (!editor) return
+    const chain = editor.chain().focus()
+    switch (action) {
+      case 'insert': {
+        const r = parseInt(prompt('行数:', '3') || '3')
+        const c = parseInt(prompt('列数:', '3') || '3')
+        if (r > 0 && c > 0) chain.insertTable({ rows: r, cols: c, withHeaderRow: true }).run()
+        break
       }
+      case 'colBefore':
+        chain.addColumnBefore().run()
+        break
+      case 'col':
+        chain.addColumnAfter().run()
+        break
+      case 'row':
+        chain.addRowAfter().run()
+        break
+      case 'delCol':
+        chain.deleteColumn().run()
+        break
+      case 'delRow':
+        chain.deleteRow().run()
+        break
+      case 'merge':
+        chain.mergeCells().run()
+        break
+      case 'split':
+        chain.splitCell().run()
+        break
+      case 'headerCol':
+        chain.toggleHeaderColumn().run()
+        break
+      case 'delete':
+        chain.deleteTable().run()
+        break
+      case 'autoW':
+        chain.fixTables().run()
+        break
     }
   }
 
@@ -360,10 +345,7 @@ export const Toolbar: React.FC = () => {
           <button className="toolbar-btn" onClick={() => applyCmd('italic')} title="斜体"><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
           <button className="toolbar-btn" onClick={() => applyCmd('underline')} title="下划线"><span className="remix toolbar-icon ri-underline"></span><span className="toolbar-label">下划线</span></button>
           <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')} title="删除线"><span className="remix toolbar-icon ri-strikethrough"></span><span className="toolbar-label">删除线</span></button>
-          <button className="toolbar-btn" onClick={() => {
-            const sel = window.getSelection()
-            if (sel?.rangeCount) { const r = sel.getRangeAt(0); const s = document.createElement('span'); s.style.cssText='background:var(--accent-a40);padding:0 2px;border-radius:2px'; r.surroundContents(s) }
-          }} title="高亮"><span className="remix toolbar-icon ri-mark-pen-fill"></span><span className="toolbar-label">高亮</span></button>
+          <button className="toolbar-btn" onClick={() => applyCmd('toggleHighlight')} title="高亮"><span className="remix toolbar-icon ri-mark-pen-fill"></span><span className="toolbar-label">高亮</span></button>
 
           <div className="toolbar-menu-btn">
             <button className="toolbar-btn" onClick={(e) => { e.stopPropagation(); toggleMenu('format') }} title="格式">

@@ -5,7 +5,7 @@ import { LFSCombo } from '../../components/ui/LFSCombo'
 type LinkMode = 'external' | 'document'
 
 export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const editorRef = useEditorStore((s: any) => s.editorRef)
+  const editor = useEditorStore((s: any) => s.editor)
   const [mode, setMode] = useState<LinkMode>('external')
   const [linkText, setLinkText] = useState('')
   const [linkUrl, setLinkUrl] = useState('')
@@ -13,28 +13,19 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [heading, setHeading] = useState('')
 
   const handleInsert = () => {
-    if (!editorRef) return
-    const sel = window.getSelection()
-    if (!sel?.rangeCount) return
-    const range = sel.getRangeAt(0)
+    if (!editor) return
+    const href = mode === 'external' ? linkUrl.trim() : `#${heading}`
+    if (!href) return
 
-    const text = linkText || (mode === 'external' ? linkUrl : `#${heading}`)
-    const href = mode === 'external' ? linkUrl : `#${heading}`
+    const { from, to } = editor.state.selection
+    const hasSelection = from !== to
+    const text = linkText || (mode === 'external' ? linkUrl : heading)
 
-    const a = document.createElement('a')
-    a.href = href
-    a.target = '_blank'
-    a.rel = 'noopener noreferrer'
-    a.textContent = text
-    a.style.color = 'var(--accent-primary)'
-    a.style.textDecoration = 'none'
-
-    range.deleteContents()
-    range.insertNode(a)
-    range.setStartAfter(a)
-    range.collapse(true)
-    sel.removeAllRanges()
-    sel.addRange(range)
+    const chain = editor.chain().focus()
+    if (hasSelection || text) {
+      if (text && !hasSelection) chain.insertContent(text)
+      chain.setLink({ href, target: '_blank', rel: 'noopener noreferrer' }).run()
+    }
     onClose()
   }
 

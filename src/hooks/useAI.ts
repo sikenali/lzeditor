@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { useAIStore } from '../store/aiStore'
+import { useEditorStore } from '../store/editorStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { buildPrompt } from '../services/promptTemplate'
 import type { AIAction, ChatMessage } from '../shared/types'
@@ -105,10 +106,27 @@ export function useAI() {
   const applyToDoc = useCallback(() => {
     const state = useAIStore.getState()
     if (state.panelStatus !== 'result') return
+    const editor = useEditorStore.getState().editor
+    const output = state.panelOutput || ''
+    if (editor) {
+      const selectedText = state.panelSelectedText || ''
+      const escaped = output
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '</p><p>')
+      const html = `<p>${escaped}</p>`
+      const { from, to } = editor.state.selection
+      if (selectedText && from !== to) {
+        editor.chain().focus().deleteRange({ from, to }).insertContent(html).run()
+      } else {
+        editor.chain().focus().insertContent(html).run()
+      }
+    }
     useAIStore.getState().recordApply({
       action: state.panelAction,
       originalText: state.panelSelectedText,
-      newText: state.panelOutput,
+      newText: output,
       position: { from: 0, to: state.panelSelectedText.length },
     })
     useAIStore.getState().setPanelStatus('applied')

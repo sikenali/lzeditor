@@ -161,3 +161,71 @@
   border: 1px solid var(--border-subtle);
 }
 
+
+/* ── Sidebar outline (numbered + collapsible) ── */
+.sidebar-outline .outline-node { width: 100%; }
+.sidebar-outline .sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding-block: 6px;
+  border-radius: 6px;
+  cursor: default;
+}
+.sidebar-outline .outline-toggle-btn {
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0;
+}
+.sidebar-outline .outline-toggle-btn:hover { color: var(--accent-primary); }
+.sidebar-outline .outline-toggle-placeholder { flex: 0 0 16px; }
+.sidebar-outline .outline-content-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.sidebar-outline .outline-number {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.sidebar-outline .sidebar-item.active .outline-number { color: var(--accent-primary); }
+.sidebar-outline .sidebar-item.active .sidebar-item-text { color: var(--accent-primary); }
+.sidebar-outline .outline-content-btn .sidebar-item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+/* Inline math */
+.ProseMirror .math-inline { padding: 0 2px; }
+
+/* ── History snapshot description ── */
+.history-snapshot-desc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-elevated, rgba(26, 34, 43, 1));
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.history-snapshot-desc .remix { font-size: 14px; color: var(--accent-primary); }

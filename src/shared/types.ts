@@ -37,6 +37,16 @@ export interface ApplyRecord {
   position: { from: number; to: number }
 }
 
+export interface DocVersion {
+  id: string
+  time: string
+  date: string
+  desc: string
+  changes: number
+  html: string
+  md: string
+}
+
 export interface EditorStoreState {
   docTitle: string
   docPath: string
@@ -54,6 +64,8 @@ export interface EditorStoreState {
   mdContent: string
   readProgress: number
   fontSize: number
+  versions: DocVersion[]
+  editor: any
   setTitle: (title: string) => void
   setDocPath: (path: string) => void
   setWordCount: (count: number) => void
@@ -72,6 +84,9 @@ export interface EditorStoreState {
   setFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
+  setEditor: (editor: any) => void
+  addVersion: (version: DocVersion) => void
+  clearVersions: () => void
 }
 
 export type SettingsGroup = 'general' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'

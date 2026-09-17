@@ -14,6 +14,10 @@ import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
+import { CodeHighlight } from './extensions/CodeHighlight'
+import { Superscript, Subscript } from './extensions/SupSub'
+import { Mathematics } from './extensions/Mathematics'
+import { ImageExt } from './extensions/ImageExt'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
@@ -28,14 +32,42 @@ export const LZEditor = () => {
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
+  const setEditor = useEditorStore((s: any) => s.setEditor)
+  const addVersion = useEditorStore((s: any) => s.addVersion)
+  const snapshotTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
   }, [])
 
+  const takeSnapshot = React.useCallback((editor: any) => {
+    const html = editor.getHTML()
+    const text = editor.getText()
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`
+    const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+    addVersion({
+      id: String(Date.now()),
+      time,
+      date,
+      desc: text.trim().slice(0, 24) || '空文档',
+      changes: text.length,
+      html,
+      md: htmlToMarkdown(html),
+    })
+  }, [addVersion])
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: { openOnClick: false, autolink: true, HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } },
+      }),
+      CodeHighlight,
+      Superscript,
+      Subscript,
+      Mathematics,
+      ImageExt,
       TaskList,
       TaskItem,
       Table.configure({ resizable: false }),
@@ -45,12 +77,14 @@ export const LZEditor = () => {
     ],
     content: remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
     onCreate: ({ editor }: any) => {
+      setEditor(editor)
       const html = editor.getHTML()
       const text = editor.getText()
       setDocHTML(html)
       setMdContent(htmlToMarkdown(html))
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
+      takeSnapshot(editor)
     },
     onUpdate: ({ editor }: any) => {
       const text = editor.getText()
@@ -59,6 +93,8 @@ export const LZEditor = () => {
       setCharCount(text.length)
       setDocHTML(html)
       setMdContent(htmlToMarkdown(html))
+      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
+      snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
     },
     onSelectionUpdate: ({ editor }: any) => {
       const pos = editor.state.selection
@@ -77,7 +113,11 @@ export const LZEditor = () => {
   }, [editor, toolbar])
 
   useEffect(() => {
-    return () => { editor?.destroy() }
+    return () => {
+      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
+      setEditor(null)
+      editor?.destroy()
+    }
   }, [editor])
 
   // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom

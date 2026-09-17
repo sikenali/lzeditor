@@ -26,20 +26,25 @@ const ORIENTATIONS = [
 export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const docTitle = useEditorStore((s: any) => s.docTitle)
   const docHTML = useEditorStore((s: any) => s.docHTML)
-  const [format, setFormat] = useState('pdf')
+  const mdContent = useEditorStore((s: any) => s.mdContent)
+  const [format, setFormat] = useState<'pdf' | 'html' | 'docx' | 'md'>('pdf')
   const [paperSize, setPaperSize] = useState('a4')
   const [orientation, setOrientation] = useState('portrait')
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
 
-  const handleExport = () => {
-    const blob = new Blob([docHTML || '<h1>Empty</h1>'], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${docTitle || 'document'}.${format === 'md' ? 'md' : 'html'}`
-    a.click()
-    URL.revokeObjectURL(url)
+  const handleExport = async () => {
+    const html = docHTML || '<h1>Empty</h1>'
+    const safeTitle = (docTitle || 'document').replace(/\.[^.]+$/, '')
+    try {
+      await exportDocument({
+        title: safeTitle,
+        content: format === 'md' ? mdContent || html : html,
+        format,
+      })
+    } catch (err) {
+      console.error('export failed', err)
+    }
     onClose()
   }
 
@@ -69,7 +74,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                 <button
                   key={fmt.id}
                   className={`format-card ${format === fmt.id ? 'active' : ''}`}
-                  onClick={() => setFormat(fmt.id)}
+                  onClick={() => setFormat(fmt.id as 'pdf' | 'html' | 'docx' | 'md')}
                 >
                   <span className={`remix format-icon ${fmt.icon}`}></span>
                   <div className="format-info">
