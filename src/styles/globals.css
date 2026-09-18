@@ -255,11 +255,10 @@ li.ProseMirror-selectednode:after { border: none !important; }
   border-radius: 0 8px 8px 0;
   color: var(--foreground-secondary);
   font-size: 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
 }
-
+.lz-editor-content blockquote:has(> .remix) {
+  display: flex; align-items: flex-start; gap: 12px;
+}
 .lz-editor-content blockquote .remix {
   color: var(--accent);
   margin-right: 8px;
