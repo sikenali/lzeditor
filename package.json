@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npx vite\" \"npx tsx watch server/src/index.ts\"",
+    "dev": "concurrently npm:dev:web npm:dev:server",
     "dev:web": "vite",
     "dev:server": "tsx watch server/src/index.ts",
     "build": "tsc && vite build",

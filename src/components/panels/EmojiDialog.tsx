@@ -20,7 +20,7 @@ const EMOJI_CATEGORIES = [
 
 const EMOJI_DATA: Record<string, string[]> = {
   smiley: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫢','🤫','🤔','🫡','🤐','🤨','😐','😑','😶','🫥','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','🫤','😟','🙁','😮','😯','😲','😳','🥺','🥹','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖'],
-  gesture: ['👍','👎','👊','✊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✌️','🤞','🫰','🤟','🤘','👌','🤌','🤏','👈','👉','👆','🖕','👇','☝️','🫵','👋','🤚','🖐️','🖖','🫱','🫲','🫳','🫴','👌','🤏'],
+  gesture: ['👍','👎','👊','✊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✌️','🤞','🫰','🤟','🤘','👌','🤌','🤏','👈','👉','👆','🖕','👇','☝️','🫵','👋','🤚','🖐️','🖖','🫱','�2','🫳','🫴','👌','🤏'],
   heart: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','🫀','💌','💋'],
   animal: ['🐱','🐶','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐒','🦍','🦧','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🦟','🦗','🕷️','🕸️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐈','🐓','🦃','🦤','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿️','🦔'],
   food: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🫘','🥐','🥖','🍞','🥨','🥯','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🦪','🍤','🍙','🍚','🍛','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽️','🍏','🍐'],
@@ -47,8 +47,7 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog chart-dialog" style={{ width: 680 }} onClick={e => e.stopPropagation()}>
-        {/* Header */}
+      <div className="settings-dialog chart-dialog" onClick={e => e.stopPropagation()}>
         <div className="settings-header">
           <div className="settings-title">
             <div className="settings-icon"><span className="remix ri-emotion-line"></span></div>
@@ -64,46 +63,31 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
           </button>
         </div>
 
-        {/* Left: category list | Right: emoji grid */}
         <div className="chart-body">
-          {/* Left panel — categories */}
+          {/* Left panel — category list */}
           <div className="chart-type-panel">
-            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ position: 'relative' }}>
-                <span className="remix ri-search-line" style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--text-muted)', pointerEvents: 'none' }}></span>
-                <input
-                  ref={searchRef}
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="搜索…"
-                  style={{
-                    width: '100%',
-                    padding: '5px 28px 5px 28px',
-                    fontSize: 12,
-                    border: '1px solid var(--border-default)',
-                    borderRadius: 6,
-                    background: 'var(--bg-code)',
-                    color: 'var(--text-primary)',
-                    outline: 'none',
-                  }}
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => setSearch('')}
-                    style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 2 }}
-                  >
-                    <span className="remix ri-close-line" style={{ fontSize: 13 }}></span>
-                  </button>
-                )}
-              </div>
+            <div className="emoji-search-wrap">
+              <span className="remix ri-search-line emoji-search-icon"></span>
+              <input
+                ref={searchRef}
+                className="emoji-search-input"
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="搜索…"
+              />
+              {search && (
+                <button type="button" className="emoji-search-clear" onClick={() => setSearch('')}>
+                  <span className="remix ri-close-line"></span>
+                </button>
+              )}
             </div>
-            <div style={{ overflowY: 'auto', padding: '6px 0' }}>
+            <div className="chart-type-grid">
               {EMOJI_CATEGORIES.map(cat => (
                 <button
                   key={cat.id}
-                  type="button"
                   className={`chart-type-card ${activeCat === cat.id ? 'active' : ''}`}
+                  type="button"
                   onClick={() => { setActiveCat(cat.id as CategoryId); setSearch('') }}
                 >
                   <span className="chart-type-icon">{cat.icon}</span>
@@ -115,29 +99,23 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
 
           {/* Right panel — emoji grid */}
           <div className="chart-right-panel">
-            <div className="chart-preview-wrap" style={{ flex: 1, overflow: 'hidden' }}>
-              <div className="chart-preview-label"><span className="remix ri-grid-fill"></span> 表情</div>
-              <div className="chart-preview" style={{ overflowY: 'auto' }}>
+            <div className="chart-preview-wrap">
+              <div className="chart-preview-label">
+                <span className="remix ri-grid-fill"></span>
+                {EMOJI_CATEGORIES.find(c => c.id === activeCat)?.label || ''}
+                <span className="emoji-count">{filtered.length}</span>
+              </div>
+              <div className="chart-preview">
                 {filtered.length === 0 ? (
-                  <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>没有找到匹配的表情</div>
+                  <div className="emoji-empty">没有找到匹配的表情</div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(38px, 1fr))', gap: 4, padding: 8 }}>
+                  <div className="emoji-grid">
                     {filtered.map((emoji, i) => (
                       <button
                         key={i}
+                        className="emoji-item"
                         type="button"
-                        style={{
-                          fontSize: 22,
-                          background: 'transparent',
-                          border: '1px solid transparent',
-                          borderRadius: 6,
-                          cursor: 'pointer',
-                          padding: '4px 0',
-                          lineHeight: 1,
-                        }}
                         onClick={() => { onInsert(emoji); onClose() }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--accent-a5)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-primary)' }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent' }}
                         title={emoji}
                       >
                         {emoji}
@@ -147,7 +125,7 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
                 )}
               </div>
             </div>
-            <div className="export-actions" style={{ padding: '10px 12px', borderTop: '1px solid var(--border-subtle)' }}>
+            <div className="export-actions">
               <button className="settings-cancel-btn" onClick={onClose} type="button">关闭</button>
             </div>
           </div>
