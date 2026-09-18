@@ -23,7 +23,7 @@ export const SidebarPreview: React.FC = () => {
     const fromPct = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
     const toMaxScroll = Math.max(0, to.scrollHeight - to.clientHeight)
     to.scrollTop = fromPct * toMaxScroll
-    setTimeout(() => { syncingRef.current = false }, 60)
+    setTimeout(() => { syncingRef.current = false }, 80)
   }
 
   // ── Sync content on mutation ──
@@ -45,19 +45,58 @@ export const SidebarPreview: React.FC = () => {
     return () => observer.disconnect()
   }, [editorRef])
 
-  // ── Editor → Preview scroll sync ──
+  // ── Wheel-based scroll sync (primary for mouse wheel) ──
+  useEffect(() => {
+    const el = editorContentRef
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (syncingRef.current || !previewRef.current) return
+      const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
+      syncingRef.current = true
+      requestAnimationFrame(() => {
+        const target = previewRef.current
+        if (target) {
+          const maxScroll = Math.max(0, target.scrollHeight - target.clientHeight)
+          target.scrollTop = pct * maxScroll
+        }
+        setTimeout(() => { syncingRef.current = false }, 100)
+      })
+    }
+    el.addEventListener('wheel', onWheel, { passive: true })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [editorContentRef])
+
+  useEffect(() => {
+    const el = previewRef.current
+    if (!el || !editorContentRef) return
+    const onWheel = (e: WheelEvent) => {
+      if (syncingRef.current) return
+      const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
+      syncingRef.current = true
+      requestAnimationFrame(() => {
+        if (editorContentRef) {
+          const maxScroll = Math.max(0, editorContentRef.scrollHeight - editorContentRef.clientHeight)
+          editorContentRef.scrollTop = pct * maxScroll
+        }
+        setTimeout(() => { syncingRef.current = false }, 100)
+      })
+    }
+    el.addEventListener('wheel', onWheel, { passive: true })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [previewRef, editorContentRef])
+
+  // ── Scroll event sync (fallback for drag-scroll, etc.) ──
   useEffect(() => {
     const el = editorContentRef
     if (!el) return
     const onScroll = () => {
-      if (syncingRef.current) return
-      syncScroll(el, previewRef.current as HTMLElement)
+      if (syncingRef.current || !previewRef.current) return
+      syncScroll(el, previewRef.current)
     }
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
   }, [editorContentRef])
 
-  // ── Preview → Editor scroll sync ──
   useEffect(() => {
     const el = previewRef.current
     if (!el || !editorContentRef) return
