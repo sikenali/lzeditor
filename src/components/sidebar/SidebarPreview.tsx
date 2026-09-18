@@ -47,7 +47,7 @@ export const SidebarPreview: React.FC = () => {
 
   // ── Editor → Preview scroll sync ──
   useEffect(() => {
-    const el = editorContentRef.current
+    const el = editorContentRef
     if (!el) return
     const onScroll = () => {
       if (syncingRef.current) return
@@ -60,10 +60,10 @@ export const SidebarPreview: React.FC = () => {
   // ── Preview → Editor scroll sync ──
   useEffect(() => {
     const el = previewRef.current
-    if (!el || !editorContentRef.current) return
+    if (!el || !editorContentRef) return
     const onScroll = () => {
       if (syncingRef.current) return
-      syncScroll(el, editorContentRef.current as HTMLElement)
+      syncScroll(el, editorContentRef)
     }
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
