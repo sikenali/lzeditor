@@ -366,6 +366,56 @@ function renderGeneralSection(s: any, u: any) {
         </div>
       </div>
       <div className="settings-section">
+        <div className="settings-section-title"><span>标题样式</span><span className="settings-section-desc">为各级标题添加装饰</span></div>
+        {(['h1','h2','h3','h4','h5','h6'] as const).map(level => (
+          <div key={level} className="setting-row" style={{ marginBottom: 10 }}>
+            <div className="setting-label"><span>{level.toUpperCase()}</span></div>
+            <div className="segmented-control" style={{ flex: 1 }}>
+              {([
+                { v: 'default',  l: '默认' },
+                { v: 'color-only',       l: '主题色' },
+                { v: 'border-bottom',    l: '下划线' },
+                { v: 'border-left',      l: '左侧线' },
+              ] as const).map(opt => (
+                <button
+                  key={opt.v}
+                  className={`segmented-btn ${(s.headingStyles?.[level] ?? 'default') === opt.v ? 'active' : ''}`}
+                  onClick={() => {
+                    const hs = { ...(s.headingStyles ?? {}) }
+                    if (opt.v === 'default') delete hs[level]
+                    else hs[level] = opt.v
+                    u('headingStyles', hs)
+                  }}
+                >{opt.l}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="settings-section">
+        <div className="settings-section-title"><span>段落排版</span><span className="settings-section-desc">首行缩进与对齐方式</span></div>
+        <ToggleRow icon="ri-text-spacing" title="首行缩进" desc="每个段落首行缩进两个字符" checked={s.textIndent || false} onChange={v => u('textIndent', v)} />
+        <div className="setting-divider" />
+        <ToggleRow icon="ri-align-justify" title="两端对齐" desc="段落文字左右两端对齐" checked={s.textJustify || false} onChange={v => u('textJustify', v)} />
+      </div>
+      <div className="settings-section">
+        <div className="settings-section-title"><span>效果预览</span><span className="settings-section-desc">当前设置预览</span></div>
+        <div className="preview-card" style={{ fontFamily: s.editorFont === 'serif' ? 'var(--font-sans)' : (s.editorFont || 'sans-serif'), fontSize: `${s.defaultFontSize || 17}px`, lineHeight: s.lineHeight || '1.5', ...(s.textIndent ? { textAlign: 'justify' } : {}), ...(s.textJustify ? { textAlign: 'justify' } : {}) }}>
+          {s.textIndent && <div className="preview-text-line" style={{ textIndent: '2em' }}><span className="preview-text">首行缩进示例：这是一个段落，首行会缩进两个字符。</span></div>}
+          <div className="preview-title-line"><span className="preview-hash">###</span><span className="preview-text">Praesent varius diam</span></div>
+          <div className="preview-text-line"><span className="preview-text">Nam id imperdiet turpis.</span><span className="preview-deleted">mollis</span><span className="preview-text">vestibulum eros.</span><span className="preview-added">sed hendrerit</span></div>
+          <div className="preview-text-line"><span className="preview-selected">当前选中段落</span><span className="preview-text">aliquam pellentesque vehicula sapien.</span></div>
+        </div>
+        <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 12 }}>
+          <span>字体：{s.editorFont === 'serif' ? '衬线' : s.editorFont === 'monospace' ? '等宽' : '无衬线'}</span>
+          <span>字号：{s.defaultFontSize || 17}px</span>
+          <span>行高：{s.lineHeight || '1.5'}</span>
+          <span>宽度：{s.contentWidth || '1024'}px</span>
+          {s.textIndent && <span style={{ color: 'var(--accent-primary)' }}>首行缩进</span>}
+          {s.textJustify && <span style={{ color: 'var(--accent-primary)' }}>两端对齐</span>}
+        </div>
+      </div>
+      <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
         <ToggleRow icon="ri-apps-2-fill" title="显示所有工具栏按钮" desc="关闭后仅显示：格式、图片、链接、插入" checked={s.showAllToolbarButtons !== false} onChange={v => u('showAllToolbarButtons', v)} />
         <div className="setting-divider" />

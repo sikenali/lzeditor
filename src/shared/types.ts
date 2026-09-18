@@ -151,6 +151,12 @@ export interface SettingsState {
   cornerQuotes?: boolean
   fullwidthSymbols?: boolean
   showLineNumbers?: boolean
+  // ── Typography & reading ──
+  headingStyles?: Record<string, string>
+  textIndent?: boolean
+  textJustify?: boolean
+  linkColor?: string
+  blockquoteBackground?: string
   // ── Export ──
   exportFormat?: string
   styleSet?: string

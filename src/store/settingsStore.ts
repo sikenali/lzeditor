@@ -50,6 +50,12 @@ export const DEFAULT_SETTINGS: SettingsState = {
   cornerQuotes: false,
   fullwidthSymbols: false,
   showLineNumbers: false,
+  // ── Typography & reading ──
+  headingStyles: {},
+  textIndent: false,
+  textJustify: false,
+  linkColor: '',
+  blockquoteBackground: '',
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [

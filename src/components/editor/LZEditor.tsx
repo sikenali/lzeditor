@@ -24,6 +24,7 @@ import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { useTheme } from '../../hooks/useTheme'
+import { applyTypographyOverrides } from '../../styles/themes'
 
 const CONTENT_WIDTH_MAP: Record<string, string> = {
   '960': '960px',
@@ -164,6 +165,83 @@ export const LZEditor = () => {
       else inner.style.fontFamily = editorFont
     }
   }, [editorFont, defaultFontSize, lineHeight, contentWidth])
+
+  // Apply typography overrides to :root for read-mode / preview areas
+  const textIndent = useSettingsStore((s) => s.textIndent)
+  const textJustify = useSettingsStore((s) => s.textJustify)
+  const headingStyles = useSettingsStore((s) => s.headingStyles)
+  useEffect(() => {
+    applyTypographyOverrides({
+      fontSize: defaultFontSize,
+      lineHeight: lineHeight,
+      fontFamily: editorFont === 'serif' ? '"Noto Serif SC", serif' : (editorFont === 'monospace' ? 'monospace' : editorFont),
+      contentWidth: contentWidth,
+      textIndent,
+      textJustify,
+      headingStyles,
+    })
+  }, [defaultFontSize, lineHeight, editorFont, contentWidth, textIndent, textJustify, headingStyles])
+
+  // ── Typewriter mode: keep cursor vertically centered ──
+  const typewriterMode = useSettingsStore((s) => s.typewriterMode)
+  useEffect(() => {
+    if (!typewriterMode || !editor) return
+    const onCursor = () => {
+      try {
+        const view = editor.view
+        if (!view || !view.dom) return
+        const { from } = view.state.selection
+        const coords = view.coordsAtPos(from)
+        const dom = view.dom as HTMLElement
+        const rect = dom.getBoundingClientRect()
+        if (coords.top !== undefined) {
+          const offset = coords.top - rect.top - rect.height / 2
+          dom.scrollTop += offset
+        }
+      } catch {}
+    }
+    editor.on('selectionUpdate', onCursor)
+    return () => { editor.off('selectionUpdate', onCursor) }
+  }, [editor, typewriterMode])
+
+  // ── Focus mode: dim non-active paragraphs ──
+  const focusMode = useSettingsStore((s) => s.focusMode)
+  useEffect(() => {
+    const el = editorRef.current
+    if (!el || !focusMode) return
+    const pm = el.querySelector('.ProseMirror') as HTMLElement | null
+    if (!pm) return
+    const applyFocus = () => {
+      if (!pm || !focusMode) return
+      const { from } = editor!.state.selection
+      pm.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote, pre').forEach(node => {
+        const rect = node.getBoundingClientRect()
+        const pmRect = pm.getBoundingClientRect()
+        const isActive = rect.top >= pmRect.top - 20 && rect.bottom <= pmRect.bottom + 20
+        ;(node as HTMLElement).style.opacity = isActive ? '' : '0.25'
+      })
+    }
+    editor!.on('update', applyFocus)
+    applyFocus()
+    return () => { editor!.off('update', applyFocus) }
+  }, [editor, focusMode])
+
+  // ── Markdown markers: show ### etc. in editor ──
+  const showMarkdownMarkers = useSettingsStore((s) => s.showMarkdownMarkers)
+  useEffect(() => {
+    const el = editorRef.current
+    if (!el) return
+    const inner = el.querySelector('.lz-editor-content') as HTMLElement | null
+    if (!inner) return
+    inner.setAttribute('data-md-markers', showMarkdownMarkers ? 'inline' : 'none')
+  }, [showMarkdownMarkers])
+
+  // ── Spell check ──
+  const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck)
+  useEffect(() => {
+    const pm = editorRef.current?.querySelector('.ProseMirror') as HTMLElement | null
+    if (pm) pm.setAttribute('spellcheck', enableSpellCheck ? 'true' : 'false')
+  }, [enableSpellCheck])
 
   // Initialize docsMd: merge missing docs from localStorage (never overwrite existing)
   React.useEffect(() => {

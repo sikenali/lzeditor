@@ -3137,3 +3137,48 @@ li.ProseMirror-selectednode:after { border: none !important; }
   display: block;
   margin: 0 auto;
 }
+
+/* ── Markdown Markers (controlled by --md-markers-visible) ── */
+.lz-editor-content[data-md-markers="inline"] h2::before,
+.lz-editor-content[data-md-markers="inline"] h3::before,
+.lz-editor-content[data-md-markers="inline"] h4::before,
+.lz-editor-content[data-md-markers="inline"] h5::before,
+.lz-editor-content[data-md-markers="inline"] h6::before {
+  display: var(--md-markers-visible, inline);
+}
+.lz-editor-content h1::before { content: '#'; }
+.lz-editor-content h4::before { content: '####'; }
+.lz-editor-content h5::before { content: '#####'; }
+.lz-editor-content h6::before { content: '######'; }
+.lz-editor-content h1::before,
+.lz-editor-content h4::before,
+.lz-editor-content h5::before,
+.lz-editor-content h6::before {
+  color: var(--amber-dim);
+  font-size: 14px;
+  font-weight: 400;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.lz-editor-content h1,
+.lz-editor-content h4,
+.lz-editor-content h5,
+.lz-editor-content h6 {
+  display: flex;
+  align-items: center;
+}
+/* List markers */
+.lz-editor-content[data-md-markers="inline"] ul li::before {
+  content: '·' !important;
+  color: var(--accent) !important;
+  margin-right: 6px;
+}
+.lz-editor-content[data-md-markers="inline"] ol {
+  counter-reset: item;
+}
+.lz-editor-content[data-md-markers="inline"] ol li::before {
+  content: counter(item) '.' !important;
+  color: var(--accent) !important;
+  margin-right: 6px;
+  counter-increment: item;
+}
