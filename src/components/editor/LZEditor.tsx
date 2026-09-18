@@ -60,15 +60,13 @@ export const LZEditor = () => {
     setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
   }, [])
 
-  // Initialize docsMd if not present
+  // Initialize docsMd: merge missing docs from localStorage (never overwrite existing)
   React.useEffect(() => {
-    if (!docsMd || Object.keys(docsMd).length === 0) {
-      const init: Record<string, string> = {}
-      docs.forEach((d: { id: string }) => {
-        if (!init[d.id]) init[d.id] = getDocMd(d.id)
-      })
-      if (Object.keys(init).length > 0) setDocsMd(init)
-    }
+    const init: Record<string, string> = {}
+    docs.forEach((d: { id: string }) => {
+      if (!docsMd[d.id]) init[d.id] = getDocMd(d.id)
+    })
+    if (Object.keys(init).length > 0) setDocsMd(init)
   }, [docs])
 
   const takeSnapshot = React.useCallback((editor: any) => {
@@ -166,6 +164,24 @@ export const LZEditor = () => {
   })
 
   const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastDocIdRef = useRef<string | null>(null)
+
+  // Switch editor content when active doc changes
+  useEffect(() => {
+    if (!editor || !activeDocId || activeDocId === lastDocIdRef.current) return
+    lastDocIdRef.current = activeDocId
+    const md = docsMd[activeDocId] || getDocMd(activeDocId)
+    const html = remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
+    editor.commands.setContent(html)
+  }, [activeDocId, editor, docsMd])
+
+  useEffect(() => {
+    return () => {
+      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
+      setEditor(null)
+      editor?.destroy()
+    }
+  }, [editor])
 
   const handleToolbarAction = useCallback((action: AIAction) => {
     const selectedText = editor ? editor.state.doc.textContent.slice(editor.state.selection.from, editor.state.selection.to) : ''
