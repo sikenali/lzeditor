@@ -8,31 +8,31 @@ const CATEGORIES = [
   { id: 'ebook', label: '电子书', icon: 'ri-book-mark-fill', desc: 'EPUB / MOBI 导入' },
 ]
 
-const DOCS = [
-  { id: '1', name: '技术笔记', date: '2026-09-16', size: '12 KB' },
-  { id: '2', name: '会议记录', date: '2026-09-15', size: '8 KB' },
-  { id: '3', name: '项目规划', date: '2026-09-14', size: '24 KB' },
-  { id: '4', name: 'API 文档', date: '2026-09-13', size: '45 KB' },
-]
-
 export const LibraryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const setTitle = useEditorStore((s: any) => s.setTitle)
   const setDocPath = useEditorStore((s: any) => s.setDocPath)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
+  const docs = useEditorStore((s) => s.docs)
+  const createDoc = useEditorStore((s) => s.createDoc)
   const [category, setCategory] = useState('docs')
 
   const handleNewFile = () => {
-    const name = `untitled-${Date.now()}.md`
-    setTitle(name)
-    setDocPath('')
+    const id = createDoc('')
+    const editor = useEditorStore.getState().editor
+    if (editor) {
+      editor.chain().focus().clearContent().run()
+    }
     setOpenPanel('none')
     onClose()
   }
 
-  const handleOpen = (name: string) => {
-    setTitle(name)
-    setOpenPanel('none')
-    onClose()
+  const handleOpen = (docId: string) => {
+    const doc = docs.find((d: any) => d.id === docId)
+    if (doc) {
+      useEditorStore.getState().switchDoc(docId)
+      setOpenPanel('none')
+      onClose()
+    }
   }
 
   return (
@@ -77,32 +77,32 @@ export const LibraryPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   <span className="remix ri-file-add-line"></span>
                   <span>新建文档</span>
                 </button>
-                <button className="library-import-btn">
-                  <span className="remix ri-upload-cloud-2-line"></span>
-                  <span>导入文件</span>
-                </button>
-                <button className="library-import-btn">
-                  <span className="remix ri-folder-open-line"></span>
-                  <span>打开文件夹</span>
-                </button>
               </div>
               <div className="library-list">
-                {DOCS.map(doc => (
-                  <div
-                    key={doc.id}
-                    className="library-doc-item"
-                    onClick={() => handleOpen(doc.name)}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <span className="remix ri-file-text-fill library-doc-icon"></span>
-                    <div className="library-doc-info">
-                      <div className="library-doc-name">{doc.name}</div>
-                      <div className="library-doc-meta">{doc.date} · {doc.size}</div>
-                    </div>
-                    <span className="remix ri-arrow-right-s-line library-doc-arrow"></span>
+                {docs.length === 0 ? (
+                  <div className="library-empty-state">
+                    <span className="remix ri-folder-open-line library-empty-icon"></span>
+                    <div className="library-empty-title">暂无文档</div>
+                    <div className="library-empty-desc">点击"新建文档"开始写作</div>
                   </div>
-                ))}
+                ) : (
+                  docs.map(doc => (
+                    <div
+                      key={doc.id}
+                      className="library-doc-item"
+                      onClick={() => handleOpen(doc.id)}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <span className="remix ri-file-text-fill library-doc-icon"></span>
+                      <div className="library-doc-info">
+                        <div className="library-doc-name">{doc.title}</div>
+                        <div className="library-doc-meta">{doc.path || '未保存'}</div>
+                      </div>
+                      <span className="remix ri-arrow-right-s-line library-doc-arrow"></span>
+                    </div>
+                  ))
+                )}
               </div>
             </>
           )}

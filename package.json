@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently npm:dev:web npm:dev:server",
+    "dev": "concurrently \"npx vite\" \"npx tsx watch server/src/index.ts\"",
     "dev:web": "vite",
     "dev:server": "tsx watch server/src/index.ts",
     "build": "tsc && vite build",
@@ -34,7 +34,7 @@
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^9.4.3",
+    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.5",
     "dompurify": "^3.4.15",
     "dotenv": "^16.4.5",
@@ -172,5 +172,8 @@
         "libsecret-1-0"
       ]
     }
+  },
+  "allowScripts": {
+    "better-sqlite3@9.6.0": true
   }
 }

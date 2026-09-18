@@ -56,6 +56,10 @@ export const DEFAULT_SETTINGS: SettingsState = {
   textJustify: false,
   linkColor: '',
   blockquoteBackground: '',
+  // ── Sync / Backup defaults ──
+  syncProvider: '',
+  backupInterval: '30s',
+  backupKeep: 50,
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [

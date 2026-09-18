@@ -80,9 +80,10 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     onClose()
   }
 
+  const safeFilename = () => (docTitle || 'document').replace(/\.[^.]+$/, '')
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="export-dialog export-dialog-split" onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose}>      <div className="export-dialog export-dialog-split" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -128,7 +129,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   <div className="options-grid">
                     <OptionToggle
                       title="样式集排版"
-                      checked={state.styleSet !== 'minimal' && state.styleSet !== 'candy'}
+                      checked={state.styleSet !== 'minimal'}
                       onChange={(v) => updateSetting('styleSet', v ? 'ocean' : 'minimal')}
                     />
                     <OptionToggle
@@ -224,10 +225,6 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
       </div>
     </div>
   )
-
-  function safeFilename() {
-    return (docTitle || 'document').replace(/\.[^.]+$/, '')
-  }
 }
 
 const OptionToggle: React.FC<{ title: string; checked: boolean; onChange: (v: boolean) => void }> = ({ title, checked, onChange }) => (

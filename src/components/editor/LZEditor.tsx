@@ -11,7 +11,6 @@ import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { FloatingToolbar } from './FloatingToolbar'
-import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
@@ -206,13 +205,16 @@ export const LZEditor = () => {
 
   // ── Focus mode: dim non-active paragraphs ──
   const focusMode = useSettingsStore((s) => s.focusMode)
+  const focusModeRef = useRef(focusMode)
+  focusModeRef.current = focusMode
+
   useEffect(() => {
     const el = editorRef.current
-    if (!el || !focusMode) return
+    if (!el) return
     const pm = el.querySelector('.ProseMirror') as HTMLElement | null
     if (!pm) return
     const applyFocus = () => {
-      if (!pm || !focusMode) return
+      if (!pm || !focusModeRef.current) return
       const { from } = editor!.state.selection
       pm.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote, pre').forEach(node => {
         const rect = node.getBoundingClientRect()
@@ -224,7 +226,7 @@ export const LZEditor = () => {
     editor!.on('update', applyFocus)
     applyFocus()
     return () => { editor!.off('update', applyFocus) }
-  }, [editor, focusMode])
+  }, [editor])
 
   // ── Markdown markers: show ### etc. in editor ──
   const showMarkdownMarkers = useSettingsStore((s) => s.showMarkdownMarkers)
@@ -447,7 +449,6 @@ export const LZEditor = () => {
         visible={toolbar.visible}
         onAction={handleToolbarAction}
       />
-      <AIPanel />
     </div>
   )
 }

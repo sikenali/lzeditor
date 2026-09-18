@@ -3,7 +3,7 @@ export interface ExportOptions {
   title: string
   author?: string
   content: string
-  format: 'pdf' | 'html' | 'docx' | 'epub' | 'md'
+  format: 'pdf' | 'html' | 'docx' | 'epub' | 'md' | 'png' | 'svg' | 'drawio' | 'xlsx'
   options?: {
     styleSet?: string
     includeTOC?: boolean
@@ -227,6 +227,18 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
     case 'epub':
       await exportEPUB(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
       break
+    case 'png':
+      exportPNG(title, content)
+      break
+    case 'svg':
+      exportSVG(title, content)
+      break
+    case 'xlsx':
+      exportXLSX(title, content)
+      break
+    case 'drawio':
+      exportDrawio(title, content)
+      break
   }
 }
 
@@ -371,6 +383,90 @@ async function exportEPUB(title: string, content: string, opts: any): Promise<vo
   const a = document.createElement('a')
   a.href = url
   a.download = `${title}.epub`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+async function exportPNG(title: string, content: string): Promise<void> {
+  const { toPng } = await import('html-to-image')
+  const node = document.createElement('div')
+  node.style.cssText = 'padding:32px;font-family:"Noto Serif SC",serif;line-height:1.8;font-size:14px;background:#fff;color:#1a1a1a;max-width:800px;margin:0 auto'
+  node.innerHTML = `<h1 style="font-size:2em;border-bottom:2px solid #333;padding-bottom:0.3em">${title}</h1>${content}`
+  document.body.appendChild(node)
+  try {
+    const dataUrl = await toPng(node, { width: 800, style: { overflow: 'visible' } })
+    document.body.removeChild(node)
+    const blob = await (await fetch(dataUrl)).blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${title}.png`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    document.body.removeChild(node)
+    throw new Error('PNG 导出失败')
+  }
+}
+
+async function exportSVG(title: string, content: string): Promise<void> {
+  const node = document.createElement('div')
+  node.style.cssText = 'padding:32px;font-family:"Noto Serif SC",serif;line-height:1.8;font-size:14px;background:#fff;color:#1a1a1a;max-width:800px'
+  node.innerHTML = `<h1 style="font-size:2em;border-bottom:2px solid #333;padding-bottom:0.3em">${title}</h1>${content}`
+  document.body.appendChild(node)
+  try {
+    const { toSvg } = await import('html-to-image')
+    const svgData = await toSvg(node, { width: 800 })
+    document.body.removeChild(node)
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${title}.svg`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    document.body.removeChild(node)
+    throw new Error('SVG 导出失败')
+  }
+}
+
+function exportXLSX(title: string, content: string): void {
+  const { utils, writeFile } = require('xlsx')
+  // Extract tables from content
+  const tableMatches = content.match(/<table[^>]*>([\s\S]*?)<\/table>/gi) || []
+  const rows: string[][] = [['内容']]
+  if (tableMatches.length > 0) {
+    tableMatches.forEach(tbl => {
+      const cells = tbl.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || []
+      const rowData = cells.map(c => c.replace(/<[^>]+>/g, '').trim())
+      if (rowData.length) rows.push(rowData)
+    })
+  } else {
+    const paragraphs = content.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || []
+    paragraphs.slice(0, 50).forEach(p => rows.push([p.replace(/<[^>]+>/g, '').trim()]))
+  }
+  const ws = utils.aoa_to_sheet(rows)
+  const wb = utils.book_new()
+  utils.book_append_sheet(wb, ws, '文档内容')
+  writeFile(wb, `${title}.xlsx`)
+}
+
+function exportDrawio(title: string, content: string): void {
+  // Export raw HTML as .drawio for manual import into draw.io
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="755" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    ${content.replace(/<[^>]+>/g, '\n    ')}
+  </root>
+</mxGraphModel>`
+  const blob = new Blob([xml], { type: 'application/vnd.jgraph.mxfile' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${title}.drawio`
   a.click()
   URL.revokeObjectURL(url)
 }

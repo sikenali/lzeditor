@@ -5,15 +5,6 @@ import { useSettingsStore } from '../store/settingsStore'
 import { buildPrompt } from '../services/promptTemplate'
 import type { AIAction, ChatMessage } from '../shared/types'
 
-const ACTION_PLACEHOLDERS: Record<string, string> = {
-  rewrite: '改写为更正式的商务风格...',
-  polish: '润色这段文字，优化表达...',
-  continue: '续写以下内容，保持风格一致...',
-  summarize: '提炼核心观点，生成摘要...',
-  translate: '翻译为中文...',
-  question: '输入你的问题...',
-}
-
 export function useAI() {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -110,17 +101,11 @@ export function useAI() {
     const output = state.panelOutput || ''
     if (editor) {
       const selectedText = state.panelSelectedText || ''
-      const escaped = output
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\n/g, '</p><p>')
-      const html = `<p>${escaped}</p>`
       const { from, to } = editor.state.selection
       if (selectedText && from !== to) {
-        editor.chain().focus().deleteRange({ from, to }).insertContent(html).run()
+        editor.chain().focus().deleteRange({ from, to }).insertContent(output).run()
       } else {
-        editor.chain().focus().insertContent(html).run()
+        editor.chain().focus().insertContent(output).run()
       }
     }
     useAIStore.getState().recordApply({

@@ -4,17 +4,6 @@ import { LanguageSelector } from '../ai/LanguageSelector'
 import { LANGUAGES } from '../../shared/languages'
 import type { AIAction } from '../../shared/types'
 
-// RemixIcon unicode values
-const ICONS = {
-  pen: 'ri-ball-pen-fill',           // ri-ball-pen-fill (改写)
-  sparkle: 'ri-sparkling-fill',        // ri-sparkling-fill (润色)
-  add: 'ri-add-line',            // ri-add-line (续写)
-  file_text: 'ri-article-fill',      // ri-file-text-fill (摘要)
-  translate: 'ri-translate-2',      // ri-translate-2 (翻译)
-  question: 'ri-speed-up-line',       // ri-question-line (提问)
-  robot: 'ri-openai-fill',          // ri-openai-fill (AI toolbar button)
-} as const
-
 const BUTTONS: { action: AIAction; icon: string; label: string }[] = [
   { action: 'rewrite', icon: 'ri-ball-pen-fill', label: '改写' },
   { action: 'polish', icon: 'ri-edit-2-fill', label: '润色' },
