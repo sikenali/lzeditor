@@ -49,7 +49,7 @@
 .settings-action-btn:active { transform: scale(0.97); }
 
 .settings-reset-btn {
-  font-size: 13px; color: var(--text-muted);
+  font-size: 14px; color: var(--text-muted);
   padding: 7px 14px; border-radius: 8px;
   border: none; background: transparent;
   cursor: pointer; transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
@@ -127,7 +127,7 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; border-top: 1px solid var(--border-subtle); flex-shrink: 0;
 }
-.settings-footer-left  { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.settings-footer-left  { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
 .settings-footer-right { display: flex; gap: 10px; }
 
 .settings-cancel-btn {
@@ -198,7 +198,7 @@
 .color-swatch-custom { background: var(--bg-code); border: 1px dashed var(--border-default); }
 
 .color-current-value { display: flex; align-items: center; gap: 12px; }
-.color-current-label { font-size: 13px; color: var(--text-muted); letter-spacing: -0.01em; }
+.color-current-label { font-size: 14px; color: var(--text-muted); letter-spacing: -0.01em; }
 .color-current-hex {
   font-size: 11px; font-family: var(--font-mono);
   padding: 4px 10px; background: var(--bg-code); border-radius: 6px;
@@ -265,7 +265,7 @@
 .sync-provider-card.selected { border-color: var(--accent-primary); background: var(--accent-a5); box-shadow: 0 0 0 1px var(--accent-a20); }
 .sync-provider-icon { font-size: 22px; color: var(--accent-primary); }
 .sync-provider-info { flex: 1; }
-.sync-provider-name { font-size: 13px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+.sync-provider-name { font-size: 14px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
 .sync-provider-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .sync-status-dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -297,12 +297,12 @@
 }
 .about-version { font-size: 12px; color: var(--amber); margin-bottom: 12px; }
 .about-desc    { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; letter-spacing: -0.01em; }
-.about-desc2   { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; letter-spacing: -0.01em; }
+.about-desc2   { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; letter-spacing: -0.01em; }
 .about-links   { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
 .about-link    { font-size: 12px; color: var(--accent-primary); text-decoration: none; letter-spacing: -0.01em; }
 .about-link:hover { text-decoration: underline; }
-.about-sep     { font-size: 13px; color: var(--text-muted); }
-.about-copy    { font-size: 13px; color: var(--text-muted); cursor: pointer; transition: color 0.1s; }
+.about-sep     { font-size: 14px; color: var(--text-muted); }
+.about-copy    { font-size: 14px; color: var(--text-muted); cursor: pointer; transition: color 0.1s; }
 .about-copy:hover { color: var(--text-primary); }
 
 /* ── Legacy lfs-select fallback (deprecated, use LFSCombo) ── */
@@ -312,7 +312,7 @@
   border: 1px solid var(--border-input);
   border-radius: 10px;
   padding: 7px 28px 7px 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-sans);
   line-height: 1.5;
   cursor: pointer;
@@ -336,6 +336,7 @@
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
+  max-width: 100%;
 }
 .lfs-combo-trigger {
   width: 100%;
@@ -346,7 +347,7 @@
   border: 1px solid var(--border-input);
   border-radius: 10px;
   padding: 7px 28px 7px 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-sans);
   line-height: 1.5;
   cursor: pointer;
@@ -374,11 +375,6 @@
 .lfs-combo-trigger.open .lfs-combo-arrow { transform: rotate(180deg); }
 
 .lfs-combo-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 1000;
-  min-width: 100%;
   background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%),
               var(--bg-overlay);
   backdrop-filter: blur(28px) saturate(200%);
@@ -388,6 +384,7 @@
   box-shadow: 0 8px 32px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.06);
   overflow: hidden;
   animation: comboSlideIn 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  /* position is set via JS for proper viewport alignment */
 }
 @keyframes comboSlideIn {
   from { opacity: 0; transform: translateY(-4px) scale(0.97); }
@@ -399,7 +396,7 @@
   background: transparent;
   border: none;
   padding: 9px 14px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-sans);
   color: var(--text-primary);
   cursor: pointer;
@@ -418,7 +415,7 @@
 .lfs-combo-check { font-size: 14px; flex-shrink: 0; color: var(--accent-primary); }
 .lfs-combo-empty {
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
   font-style: italic;
 }
@@ -430,12 +427,14 @@
   border: 1px solid var(--border-input);
   border-radius: 10px;
   padding: 7px 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-sans);
   line-height: 1.5;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   letter-spacing: -0.01em;
 }
 .lfs-input:hover { border-color: var(--accent-primary); }
@@ -515,6 +514,6 @@
 .theme-mode-card.active .theme-mode-label { color: var(--accent-primary); }
 .theme-mode-check {
   position: absolute; top: 8px; right: 8px;
-  font-size: 13px; color: var(--accent-primary);
+  font-size: 14px; color: var(--accent-primary);
 }
 .theme-mode-card { position: relative; }

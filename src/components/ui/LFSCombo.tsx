@@ -22,6 +22,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -31,11 +32,23 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
+  // Position dropdown near trigger when opened
+  useEffect(() => {
+    if (!open || !ref.current || !dropdownRef.current) return
+    const rect = ref.current.getBoundingClientRect()
+    const dd = dropdownRef.current
+    dd.style.position = 'fixed'
+    dd.style.top = `${rect.bottom + 4}px`
+    dd.style.left = `${rect.left}px`
+    dd.style.width = `${rect.width}px`
+    dd.style.zIndex = '2000'
+  }, [open])
+
   const selected = options.find(o => o.value === value)
   const displayLabel = selected ? selected.label : (placeholder || '')
 
   return (
-    <div ref={ref} className={`lfs-combo${className ? ` ${className}` : ''}`} style={{ minWidth, ...style }}>
+    <div ref={ref} className={`lfs-combo${className ? ` ${className}` : ''}`} style={{ minWidth, ...style, position: 'relative', display: 'inline-block' }}>
       <button
         className={`lfs-combo-trigger${disabled ? ' disabled' : ''}${open ? ' open' : ''}`}
         disabled={disabled}
@@ -46,7 +59,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
       {open && (
-        <div className="lfs-combo-dropdown">
+        <div ref={dropdownRef} className="lfs-combo-dropdown">
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>
           ) : (
