@@ -75,7 +75,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build LPK
-        if: runner.os == 'Linux' && hash -t lzc-cli 2>/dev/null
+        if: runner.os == 'Linux'
         run: |
           npm install -g @lazycatcloud/lzc-cli
           cd lzc
