@@ -11,6 +11,15 @@ export interface ExportOptions {
     includePageNumbers?: boolean
     paperSize?: string
     orientation?: string
+    // ── Typography ──
+    fontSize?: number
+    lineHeight?: string
+    fontFamily?: string
+    textIndent?: boolean
+    textJustify?: boolean
+    linkColor?: string
+    blockquoteBackground?: string
+    headingStyles?: Record<string, string>
   }
 }
 
@@ -125,13 +134,33 @@ function addLineNumbers(html: string): string {
     })
 }
 
+function generateHeadingCSS(headingStyles: Record<string, string>, accent: string, baseSize: number): string {
+  const sizes: Record<string, number> = { h1: 28, h2: 22, h3: 18, h4: 16, h5: 15, h6: 14 }
+  const rules: string[] = []
+  for (const [level, style] of Object.entries(headingStyles)) {
+    if (!style || style === 'default') continue
+    const sz = Math.round((sizes[level] || 16) / 17 * baseSize)
+    if (style === 'color-only') {
+      rules.push(`#${level}{color:${accent};background:transparent}`)
+    } else if (style === 'border-bottom') {
+      rules.push(`#${level}{display:block;text-align:left;background:transparent;padding-bottom:0.3em;border-bottom:2px solid ${accent};color:${accent};font-size:${sz}px}`)
+    } else if (style === 'border-left') {
+      rules.push(`#${level}{display:block;text-align:left;margin-left:0;padding-left:10px;border-left:4px solid ${accent};color:${accent};background:transparent;font-size:${sz}px}`)
+    }
+  }
+  return rules.join('')
+}
+
 /** Render content into off-screen DOM, inline all computed styles, return self-contained HTML. */
 function buildStyledHTML(title: string, content: string, opts: any): string {
   const pageW = PAPER_SIZES[opts.paperSize] || '210mm'
   const pageH = PAPER_HEIGHTS[opts.paperSize] || '297mm'
   const v = THEME_VARS[opts.styleSet] || THEME_VARS.ocean
   const container = document.createElement('div')
-  container.style.cssText = `position:fixed;left:-9999px;top:0;width:${opts.orientation==='landscape'?'1200px':'800px'};background:${v.overlay};color:${v.text};font-family:"Noto Serif SC",system-ui,serif;line-height:1.8;padding:20px;font-size:14px`
+  const fs = opts.fontSize ?? 14
+  const lh = opts.lineHeight ?? '1.8'
+  const ff = opts.fontFamily || '"Noto Serif SC",system-ui,serif'
+  container.style.cssText = `position:fixed;left:-9999px;top:0;width:${opts.orientation==='landscape'?'1200px':'800px'};background:${v.overlay};color:${v.text};font-family:${ff};line-height:${lh};padding:20px;font-size:${fs}px${opts.textIndent ? ';text-indent:2em' : ''}${opts.textJustify ? ';text-align:justify' : ''}`
   container.innerHTML = `<h1 style="font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em">${title}</h1>${content}`
   document.body.appendChild(container)
   ;(function inlineEl(node: Node): void {
@@ -152,7 +181,14 @@ function buildStyledHTML(title: string, content: string, opts: any): string {
   const innerHTML = container.innerHTML
   document.body.removeChild(container)
   const accentA5 = `rgba(${hexToRgb(v.primary)},0.05)`
-  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title}</title><style>@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Noto Serif SC","Source Han Serif SC",system-ui,serif;line-height:1.8;max-width:${opts.orientation==='landscape'?pageH:pageW};margin:0 auto;padding:20px;background:${v.overlay};color:${v.text}}h1,h2,h3,h4{font-weight:600;line-height:1.3}h1{font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em}h2{font-size:1.5em;margin:0.83em 0}h3{font-size:1.17em;margin:1em 0}p{margin:0.5em 0}code{font-family:"JetBrains Mono",monospace;background:${v.code};padding:2px 6px;border-radius:4px;font-size:0.88em}pre{background:${v.code};padding:16px;overflow-x:auto;border-radius:8px;border:1px solid ${v.border};margin:12px 0}pre code{background:none;padding:0}blockquote{border-left:3px solid ${v.primary};padding:8px 16px;margin:16px 0;background:${accentA5};border-radius:0 8px 8px 0}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid ${v.border};padding:8px 12px}th{background:${v.code}}ul,ol{padding-left:24px;margin:8px 0}li{margin:4px 0}hr{border:none;height:1px;background:${v.border};margin:24px 0}a{color:${v.primary};text-decoration:none}a:hover{text-decoration:underline}img{max-width:100%;height:auto;border-radius:8px}@media print{body{padding:10mm}}</style></head><body>${innerHTML}</body></html>`
+  const fsPx = opts.fontSize ?? 14
+  const lhVal = opts.lineHeight ?? '1.8'
+  const ffVal = opts.fontFamily || '"Noto Serif SC","Source Han Serif SC",system-ui,serif'
+  const pStyle = `${opts.textIndent ? 'text-indent:2em;' : ''} ${opts.textJustify ? 'text-align:justify;' : ''}`.trim()
+  const headingCSS = opts.headingStyles ? generateHeadingCSS(opts.headingStyles, v.primary, fsPx) : ''
+  const linkCSS = opts.linkColor ? `a{color:${opts.linkColor};text-decoration:none}` : ''
+  const bqCSS = opts.blockquoteBackground ? `blockquote{background:${opts.blockquoteBackground}}` : ''
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title}</title><style>@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:${ffVal};font-size:${fsPx}px;line-height:${lhVal};max-width:${opts.orientation==='landscape'?pageH:pageW};margin:0 auto;padding:20px;background:${v.overlay};color:${v.text}}h1,h2,h3,h4{font-weight:600;line-height:1.3}h1{font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em}h2{font-size:1.5em;margin:0.83em 0}h3{font-size:1.17em;margin:1em 0}p{margin:0.5em 0${pStyle ? `;${pStyle}` : ''}}code{font-family:"JetBrains Mono",monospace;background:${v.code};padding:2px 6px;border-radius:4px;font-size:0.88em}pre{background:${v.code};padding:16px;overflow-x:auto;border-radius:8px;border:1px solid ${v.border};margin:12px 0}pre code{background:none;padding:0}blockquote{border-left:3px solid ${v.primary};padding:8px 16px;margin:16px 0;background:${accentA5};border-radius:0 8px 8px 0}${bqCSS}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid ${v.border};padding:8px 12px}th{background:${v.code}}ul,ol{padding-left:24px;margin:8px 0}li{margin:4px 0}hr{border:none;height:1px;background:${v.border};margin:24px 0}a{color:${v.primary};text-decoration:none}a:hover{text-decoration:underline}${linkCSS}img{max-width:100%;height:auto;border-radius:8px}@media print{body{padding:10mm}}${headingCSS}</style></head><body>${innerHTML}</body></html>`
 }
 
 export async function exportDocument(options: ExportOptions): Promise<void> {
@@ -164,22 +200,32 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
   const paperSize = expOpts.paperSize || 'a4'
   const orientation = expOpts.orientation || 'portrait'
   const cssVars = getCSSVars(styleSet)
+  const typoOpts = {
+    fontSize: expOpts.fontSize,
+    lineHeight: expOpts.lineHeight,
+    fontFamily: expOpts.fontFamily,
+    textIndent: expOpts.textIndent,
+    textJustify: expOpts.textJustify,
+    linkColor: expOpts.linkColor,
+    blockquoteBackground: expOpts.blockquoteBackground,
+    headingStyles: expOpts.headingStyles,
+  }
 
   switch (format) {
     case 'html':
-      exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation })
+      exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
       break
     case 'md':
       exportMarkdown(title, content)
       break
     case 'pdf':
-      await exportPDF(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation })
+      await exportPDF(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
       break
     case 'docx':
-      exportDOCX(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation })
+      exportDOCX(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
       break
     case 'epub':
-      await exportEPUB(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation })
+      await exportEPUB(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
       break
   }
 }

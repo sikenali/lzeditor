@@ -16,6 +16,15 @@ export interface StyleSetColors {
   amber: string
 }
 
+export interface HeadingStyleConfig {
+  h1?: 'default' | 'color-only' | 'border-bottom' | 'border-left'
+  h2?: 'default' | 'color-only' | 'border-bottom' | 'border-left'
+  h3?: 'default' | 'color-only' | 'border-bottom' | 'border-left'
+  h4?: 'default' | 'color-only' | 'border-bottom' | 'border-left'
+  h5?: 'default' | 'color-only' | 'border-bottom' | 'border-left'
+  h6?: 'default' | 'color-only' | 'border-bottom' | 'border-left'
+}
+
 export interface StyleSet {
   name: string        // display name in Chinese
   id: string          // matches CSS [data-style-set="id"]
@@ -169,4 +178,117 @@ export function applyStyleSet(styleSetId: string): void {
 /** Get the currently active style set name (empty if none). */
 export function getActiveStyleSetName(): string {
   return document.documentElement.getAttribute('data-style-set') ?? ''
+}
+
+// ── Dynamic typography CSS injection (doocs/md inspired) ──
+
+const HEADING_FONT_SIZES: Record<string, number> = { h1: 28, h2: 22, h3: 18, h4: 16, h5: 15, h6: 14 }
+const HEADING_FONT_SIZES_PX = (level: string, baseSize: number): string => {
+  const ratio = HEADING_FONT_SIZES[level] || 16
+  return `${Math.round(ratio / 17 * baseSize)}px`
+}
+
+export interface TypographyOverrides {
+  fontSize?: number
+  lineHeight?: string
+  fontFamily?: string
+  contentWidth?: string
+  textIndent?: boolean
+  textJustify?: boolean
+  linkColor?: string
+  blockquoteBackground?: string
+  headingStyles?: Record<string, string>
+}
+
+let _injectorEl: HTMLStyleElement | null = null
+
+function getInjector(): HTMLStyleElement {
+  if (!_injectorEl) {
+    _injectorEl = document.createElement('style')
+    _injectorEl.setAttribute('data-lzeditor-typo', 'true')
+    document.head.appendChild(_injectorEl)
+  }
+  return _injectorEl
+}
+
+/**
+ * Apply dynamic typography overrides directly to :root CSS variables
+ * and inject heading/text rules into a dedicated <style> element.
+ * This is called whenever font/line-height/heading settings change.
+ */
+export function applyTypographyOverrides(overrides: TypographyOverrides): void {
+  const root = document.documentElement
+  const {
+    fontSize,
+    lineHeight,
+    fontFamily,
+    contentWidth,
+    textIndent,
+    textJustify,
+    linkColor,
+    blockquoteBackground,
+    headingStyles,
+  } = overrides
+
+  // Update CSS custom properties on :root
+  if (fontSize !== undefined)
+    root.style.setProperty('--lz-font-size', `${fontSize}px`)
+  if (lineHeight !== undefined)
+    root.style.setProperty('--lz-line-height', lineHeight)
+  if (fontFamily !== undefined)
+    root.style.setProperty('--lz-font-family', fontFamily)
+  if (contentWidth !== undefined)
+    root.style.setProperty('--lz-content-width', `${contentWidth}px`)
+  if (linkColor !== undefined)
+    root.style.setProperty('--lz-link-color', linkColor)
+  if (blockquoteBackground !== undefined)
+    root.style.setProperty('--lz-blockquote-bg', blockquoteBackground)
+
+  // Build dynamic CSS rules
+  const baseSize = fontSize ?? 17
+  const lines: string[] = []
+
+  // Base reading font
+  if (fontFamily)
+    lines.push(`:root { --lz-body-font: ${fontFamily}; }`)
+
+  // Link color
+  if (linkColor)
+    lines.push(`:root { --lz-link-color: ${linkColor}; }`)
+  lines.push(`#output a, .read-article-body a { color: var(--lz-link-color, var(--accent-primary)); }`)
+
+  // Blockquote background
+  if (blockquoteBackground)
+    lines.push(`#output blockquote, .read-article-body blockquote { background: var(--lz-blockquote-bg, var(--accent-a10)); }`)
+
+  // Text indentation & justification
+  const pAlign = `${textIndent ? 'text-indent:2em;' : ''} ${textJustify ? 'text-align:justify;' : ''}`.trim()
+  if (pAlign)
+    lines.push(`#output p, .read-article-body p { ${pAlign} }`)
+
+  // Heading styles
+  if (headingStyles) {
+    for (const [level, style] of Object.entries(headingStyles)) {
+      if (!style || style === 'default') continue
+      const size = HEADING_FONT_SIZES_PX(level, baseSize)
+      if (style === 'color-only') {
+        lines.push(`#output ${level}, .read-article-body ${level} { color: var(--accent-primary); background: transparent; }`)
+      } else if (style === 'border-bottom') {
+        lines.push(`#output ${level}, .read-article-body ${level} { display:block; text-align:left; background:transparent; padding-bottom:0.3em; border-bottom:2px solid var(--accent-primary); color:var(--accent-primary); font-size:${size}; }`)
+      } else if (style === 'border-left') {
+        lines.push(`#output ${level}, .read-article-body ${level} { display:block; text-align:left; margin-left:0; padding-left:10px; border-left:4px solid var(--accent-primary); color:var(--accent-primary); background:transparent; font-size:${size}; }`)
+      }
+    }
+  }
+
+  // Apply
+  const injector = getInjector()
+  injector.textContent = lines.join('\n')
+}
+
+/** Clear all dynamically injected typography rules. */
+export function clearTypographyOverrides(): void {
+  if (_injectorEl) {
+    _injectorEl.textContent = ''
+  }
 }

@@ -65,6 +65,12 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           includePageNumbers: state.includePageNumbers || false,
           paperSize,
           orientation,
+          fontSize: state.defaultFontSize,
+          lineHeight: state.lineHeight,
+          fontFamily: state.editorFont,
+          textIndent: state.textIndent,
+          textJustify: state.textJustify,
+          headingStyles: state.headingStyles,
         } : {},
       })
     } catch (err) {
