@@ -73,12 +73,6 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 <span>{item.label}</span>
               </div>
             ))}
-            <div className="settings-nav-bottom">
-              <div className="settings-version">
-                <div className="settings-version-dot" />
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>lzeditor</span>
-              </div>
-            </div>
           </div>
 
           {/* Content */}

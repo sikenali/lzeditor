@@ -77,6 +77,7 @@ export const Toolbar: React.FC = () => {
   const setTitle = useEditorStore((s: any) => s.setTitle)
   const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
   const isReadMode = useEditorStore((s: any) => s.isReadMode)
+  const createDoc = useEditorStore((s: any) => s.createDoc)
 
    const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
    const [showLinkDialog, setShowLinkDialog] = useState(false)
@@ -119,15 +120,14 @@ export const Toolbar: React.FC = () => {
   }
 
   const handleNewFile = React.useCallback(() => {
-    const name = `untitled-${Date.now()}.md`
-    setTitle(name)
-    useEditorStore.getState().setDocPath('')
-    useEditorStore.getState().setLastEditTime(Date.now())
+    const name = `untitled-${Date.now().toString(36)}.md`
+    const id = createDoc(name)
     const editor = useEditorStore.getState().editor
     if (editor) {
       editor.chain().focus().clearContent().run()
     }
-  }, [setTitle])
+    useEditorStore.getState().setLastEditTime(Date.now())
+  }, [createDoc])
 
   const insertImageFromUrl = (url: string, alt: string) => {
     if (!editor) return

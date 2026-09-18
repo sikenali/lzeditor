@@ -89,6 +89,15 @@ export interface EditorStoreState {
   clearVersions: () => void
   lastEditTime: number
   setLastEditTime: (time: number) => void
+  // multi-tab
+  docs: Array<{ id: string; title: string; path: string }>
+  activeDocId: string | null
+  createDoc: (title: string, path?: string) => string
+  switchDoc: (id: string) => void
+  closeDoc: (id: string) => void
+  renameDoc: (id: string, title: string) => void
+  docsMd: Record<string, string>
+  setDocsMd: (mds: Record<string, string>) => void
 }
 
 export type SettingsGroup = 'theme' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'

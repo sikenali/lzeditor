@@ -26,6 +26,11 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   versions: [],
   lastEditTime: Date.now(),
 
+  // ── Multi-tab ──
+  docs: [] as Array<{ id: string; title: string; path: string }>,
+  activeDocId: null as string | null,
+  docsMd: {} as Record<string, string>,
+
   setTitle: (title: string) => set({ docTitle: title }),
   setDocPath: (path: string) => set({ docPath: path }),
   setWordCount: (count: number) => set({ wordCount: count }),
@@ -48,9 +53,41 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setLastEditTime: (time: number) => set({ lastEditTime: time }),
   addVersion: (version: DocVersion) => {
     const versions = get().versions
-    // Skip if content unchanged vs latest snapshot
     if (versions.length > 0 && versions[versions.length - 1].html === version.html) return
     set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
   },
   clearVersions: () => set({ versions: [] }),
+
+  // ── Tab actions ──
+  createDoc: (title: string, path = '') => {
+    const id = String(Date.now())
+    const newDoc = { id, title, path }
+    set((s: any) => ({
+      docs: [...s.docs, newDoc],
+      activeDocId: id,
+      docTitle: title,
+      docPath: path,
+      lastEditTime: Date.now(),
+    }))
+    return id
+  },
+  switchDoc: (id: string) => set({ activeDocId: id }),
+  closeDoc: (id: string) => {
+    const { docs, activeDocId } = get()
+    const idx = docs.findIndex((d: any) => d.id === id)
+    if (idx === -1) return
+    const nextDocs = docs.filter((d: any) => d.id !== id)
+    let nextActiveId = activeDocId
+    if (activeDocId === id) {
+      nextActiveId = nextDocs[Math.min(idx, nextDocs.length - 1)]?.id ?? null
+    }
+    set({ docs: nextDocs, activeDocId: nextActiveId })
+  },
+  renameDoc: (id: string, title: string) => {
+    set((s: any) => ({
+      docs: s.docs.map((d: any) => d.id === id ? { ...d, title } : d),
+      ...(s.activeDocId === id ? { docTitle: title } : {}),
+    }))
+  },
+  setDocsMd: (mds: Record<string, string>) => set({ docsMd: mds }),
 }))

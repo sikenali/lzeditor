@@ -66,12 +66,14 @@
 .settings-close-btn:hover { background: var(--toolbar-hover); color: var(--text-heading-2); transform: scale(1.05); }
 .settings-close-btn:active { transform: scale(0.95); }
 
-.settings-body { display: flex; flex: 1; overflow: hidden; }
+.settings-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 .settings-sidebar {
   width: 212px; padding: 20px 12px;
   border-right: 1px solid var(--border-subtle);
   overflow-y: auto; flex-shrink: 0;
+  display: flex; flex-direction: column;
 }
+.settings-content { flex: 1; padding: 24px; overflow-y: auto; min-height: 0; }
 .settings-nav-group { margin-bottom: 16px; }
 .settings-nav-label {
   font-size: 11px; color: var(--text-muted);
@@ -90,13 +92,6 @@
 .settings-nav-item.active { background: var(--accent-tint-bg); color: var(--accent-primary); font-weight: 500; }
 
 .settings-nav-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border-subtle); }
-.settings-version { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
-.settings-version-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent-primary);
-}
-.settings-content { flex: 1; padding: 24px; overflow-y: auto; }
-.settings-section { margin-bottom: 28px; }
 .settings-section:last-child { margin-bottom: 0; }
 .settings-section-title {
   font-size: 13px; font-weight: 600; color: var(--text-heading-2);

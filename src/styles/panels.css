@@ -81,7 +81,7 @@
 .format-card.active { border-color: var(--accent-primary); background: var(--accent-a5); box-shadow: 0 0 0 1px var(--accent-a20); }
 .format-icon { font-size: 22px; color: var(--accent-primary); }
 .format-name { font-size: 14px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
-.format-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.format-desc { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
 
 .format-radio {
   width: 15px; height: 14px; border-radius: 50%;
@@ -172,11 +172,11 @@
 .export-title { display: flex; align-items: center; gap: 12px; }
 .export-icon { font-size: 22px; color: var(--accent-primary); }
 .export-title-text { font-size: 16px; font-weight: 600; color: var(--text-heading); letter-spacing: -0.02em; }
-.export-title-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.export-title-desc { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
 .export-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
 .export-section { margin-bottom: 24px; }
 .export-section:last-child { margin-bottom: 0; }
-.export-section-label { font-size: 13px; font-weight: 600; color: var(--text-heading-2); margin-bottom: 12px; letter-spacing: -0.01em; }
+.export-section-label { font-size: 14px; font-weight: 600; color: var(--text-heading-2); margin-bottom: 12px; letter-spacing: -0.01em; }
 .export-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 
 .format-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -192,7 +192,7 @@
 .format-icon { font-size: 22px; color: var(--accent-primary); }
 .format-info { flex: 1; }
 .format-name { font-size: 14px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
-.format-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.format-desc { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
 .format-radio {
   width: 16px; height: 16px; border-radius: 50%;
   border: 2px solid var(--border-default); flex-shrink: 0;

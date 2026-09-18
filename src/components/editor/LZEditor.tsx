@@ -22,6 +22,19 @@ import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
+import { useTheme } from '../../hooks/useTheme'
+
+const getDocMd = (id: string): string => {
+  try {
+    const key = `lzeditor-doc-${id}`
+    const s = localStorage.getItem(key)
+    if (s) {
+      const d = JSON.parse(s)
+      return d.md || DEFAULT_CONTENT
+    }
+  } catch {}
+  return DEFAULT_CONTENT
+}
 
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -34,11 +47,27 @@ export const LZEditor = () => {
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
   const setEditor = useEditorStore((s: any) => s.setEditor)
   const addVersion = useEditorStore((s: any) => s.addVersion)
-  const snapshotTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeDocId = useEditorStore((s: any) => s.activeDocId)
+  const docs = useEditorStore((s: any) => s.docs)
+  const docsMd = useEditorStore((s: any) => s.docsMd || {})
+  const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
+
+  useTheme()
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
   }, [])
+
+  // Initialize docsMd if not present
+  React.useEffect(() => {
+    if (!docsMd || Object.keys(docsMd).length === 0) {
+      const init: Record<string, string> = {}
+      docs.forEach((d: { id: string }) => {
+        if (!init[d.id]) init[d.id] = getDocMd(d.id)
+      })
+      if (Object.keys(init).length > 0) setDocsMd(init)
+    }
+  }, [docs])
 
   const takeSnapshot = React.useCallback((editor: any) => {
     const html = editor.getHTML()
@@ -46,7 +75,7 @@ export const LZEditor = () => {
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
     const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`
-    const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+    const date = `${pad(now.getFullYear())}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
     addVersion({
       id: String(Date.now()),
       time,
@@ -77,11 +106,13 @@ export const LZEditor = () => {
       TableCell,
     ],
     content: (() => {
+      if (activeDocId && docsMd[activeDocId]) {
+        return remark().use(remarkGfm).use(remarkHtml).processSync(docsMd[activeDocId]).toString()
+      }
       try {
         const s = localStorage.getItem('lzeditor-doc')
         if (s) {
           const d = JSON.parse(s)
-          // Always ensure HTML format — remark-convert stored markdown
           return remark().use(remarkGfm).use(remarkHtml).processSync(d.md || DEFAULT_CONTENT).toString()
         }
       } catch {}
@@ -89,14 +120,21 @@ export const LZEditor = () => {
     })(),
     onCreate: ({ editor }: any) => {
       setEditor(editor)
-      useEditorStore.getState().setLastEditTime(Date.now())
-      const html = editor.getHTML()
-      const text = editor.getText()
-      setDocHTML(html)
-      setMdContent(htmlToMarkdown(html))
-      setWordCount(text.split(/\s+/).filter(Boolean).length)
-      setCharCount(text.length)
-      takeSnapshot(editor)
+      if (activeDocId) {
+        useEditorStore.getState().setLastEditTime(Date.now())
+        const html = editor.getHTML()
+        const text = editor.getText()
+        setDocHTML(html)
+        setMdContent(htmlToMarkdown(html))
+        setWordCount(text.split(/\s+/).filter(Boolean).length)
+        setCharCount(text.length)
+        takeSnapshot(editor)
+        // persist
+        if (activeDocId) {
+          const key = `lzeditor-doc-${activeDocId}`
+          localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
+        }
+      }
     },
     onUpdate: ({ editor }: any) => {
       useEditorStore.getState().setLastEditTime(Date.now())
@@ -106,10 +144,12 @@ export const LZEditor = () => {
       setCharCount(text.length)
       setDocHTML(html)
       setMdContent(htmlToMarkdown(html))
-      // Auto-save to localStorage
-      try {
-        localStorage.setItem('lzeditor-doc', JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
-      } catch {}
+      // persist to docsMd and localStorage
+      if (activeDocId) {
+        const md = htmlToMarkdown(html)
+        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [activeDocId]: md }))
+        localStorage.setItem(`lzeditor-doc-${activeDocId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
+      }
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
       snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
     },
@@ -122,6 +162,8 @@ export const LZEditor = () => {
     },
     editable: true,
   })
+
+  const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleToolbarAction = useCallback((action: AIAction) => {
     const selectedText = editor ? editor.state.doc.textContent.slice(editor.state.selection.from, editor.state.selection.to) : ''

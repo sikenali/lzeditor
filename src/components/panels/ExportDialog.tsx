@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { exportDocument } from '../../services/exportService'
 import { LFSCombo } from '../../components/ui/LFSCombo'
+import { useSettingsStore } from '../../store/settingsStore'
 
 const EXPORT_FORMATS = [
   { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
@@ -27,13 +28,16 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const docTitle = useEditorStore((s: any) => s.docTitle)
   const docHTML = useEditorStore((s: any) => s.docHTML)
   const mdContent = useEditorStore((s: any) => s.mdContent)
-  const [format, setFormat] = useState<'pdf' | 'html' | 'docx' | 'md'>('pdf')
+  const state = useSettingsStore.getState()
+  const updateSetting = useSettingsStore.getState().updateSetting
+  const [format, setFormat] = useState<'pdf' | 'html' | 'docx' | 'md'>(((state.exportFormat as any) || 'pdf'))
   const [paperSize, setPaperSize] = useState('a4')
   const [orientation, setOrientation] = useState('portrait')
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
 
   const handleExport = async () => {
+    updateSetting('exportFormat', format)
     const html = docHTML || '<h1>Empty</h1>'
     const safeTitle = (docTitle || 'document').replace(/\.[^.]+$/, '')
     try {
@@ -87,8 +91,41 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             </div>
           </div>
 
+          {/* Style set & options */}
+          <div className="export-section">
+            <div className="export-section-label">样式与选项</div>
+            <ToggleRow
+              title="样式集排版"
+              desc="使用主题样式集进行排版"
+              checked={state.styleSet !== 'minimal' && state.styleSet !== 'candy'}
+              onChange={(v) => updateSetting('styleSet', v ? 'ocean' : 'minimal')}
+            />
+            <div className="setting-divider" />
+            <ToggleRow
+              title="包含目录"
+              desc="在开头自动插入文档目录"
+              checked={state.includeTOC !== false}
+              onChange={(v) => updateSetting('includeTOC', v)}
+            />
+            <div className="setting-divider" />
+            <ToggleRow
+              title="代码行号"
+              desc="代码块显示行号"
+              checked={state.includeLineNumbers || false}
+              onChange={(v) => updateSetting('includeLineNumbers', v)}
+            />
+            <div className="setting-divider" />
+            <ToggleRow
+              title="页码"
+              desc="在底部显示当前页 / 总页数"
+              checked={state.includePageNumbers || false}
+              onChange={(v) => updateSetting('includePageNumbers', v)}
+            />
+          </div>
+
           {/* Paper size & orientation */}
           <div className="export-section">
+            <div className="export-section-label">页面设置</div>
             <div className="export-row">
               <div className="export-field">
                 <label className="export-label">纸张大小</label>
@@ -115,7 +152,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           <div className="export-section">
             <div className="export-section-header">
               <span className="export-section-label">预览</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                 {paperSize.toUpperCase()} · {orientation === 'portrait' ? '纵向' : '横向'}
               </span>
             </div>
@@ -126,8 +163,8 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
               >
                 <div className="export-preview-content">
                   <div className="remix ri-file-text-line export-preview-icon"></div>
-                  <div style={{ fontSize: 13, color: '#333', marginTop: 8 }}>{selected.name} 格式</div>
-                  <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>{docTitle}.md</div>
+                  <div style={{ fontSize: 14, color: '#333', marginTop: 8 }}>{selected.name} 格式</div>
+                  <div style={{ fontSize: 13, color: '#999', marginTop: 4 }}>{docTitle}.md</div>
                 </div>
               </div>
             </div>
@@ -138,13 +175,13 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <div className="export-footer">
           <div className="export-hint">
             <span className="remix ri-information-line"></span>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>导出不会修改原文档</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>导出不会修改原文档</span>
           </div>
           <div className="export-actions">
             <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
             <button className="settings-save-btn" onClick={handleExport}>
               <span className="remix ri-download-2-line"></span>
-              导出 {selected.name}
+              <span>导出 {selected.name}</span>
             </button>
           </div>
         </div>
@@ -152,3 +189,21 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     </div>
   )
 }
+
+const ToggleRow: React.FC<{ title: string; desc: string; checked: boolean; onChange: (v: boolean) => void }> = ({ title, desc, checked, onChange }) => (
+  <div className="toggle-row">
+    <div className="toggle-row-left">
+      <div className="toggle-text">
+        <span className="toggle-title">{title}</span>
+        <span className="toggle-desc">{desc}</span>
+      </div>
+    </div>
+    <Toggle checked={checked} onChange={onChange} />
+  </div>
+)
+
+const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
+  <button className={`toggle-btn ${checked ? 'active' : ''}`} onClick={() => onChange(!checked)}>
+    <span className="toggle-knob" />
+  </button>
+)
