@@ -175,5 +175,6 @@
   },
   "allowScripts": {
     "better-sqlite3@9.6.0": true
-  }
+  },
+  "main": "electron/main.js"
 }
