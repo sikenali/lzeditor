@@ -103,9 +103,9 @@ export const Toolbar: React.FC = () => {
      setMenuOpen(key)
    }
 
-   const closeMenu = () => {
-     menuTimerRef.current = setTimeout(() => setMenuOpen(null), 150)
-   }
+  const closeMenu = () => {
+    menuTimerRef.current = setTimeout(() => setMenuOpen(null), 400)
+  }
 
   const applyCmd = (cmd: string) => {
     if (!editor) return
