@@ -176,5 +176,9 @@
   "allowScripts": {
     "better-sqlite3@9.6.0": true
   },
-  "main": "electron/main.js"
+  "main": "electron/main.js",
+  "author": {
+    "name": "sikenali",
+    "email": "mrchiang1015@aliyun.com"
+  }
 }
