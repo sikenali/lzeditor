@@ -29,23 +29,14 @@ jobs:
           node-version: 22
           cache: npm
 
-      # ── macOS: 强制 node-gyp 使用 setup-python 安装的 Python 3.12 ──
-      - name: Setup Python 3.12 (macOS)
-        if: runner.os == 'macOS'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      # ── Windows: 安装 C++ Build Tools ──
+      # ── Windows: 安装 C++ Build Tools（electron-builder 需要） ──
       - name: Setup Visual C++ Build Tools (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
+      # 跳过 npm ci 的 build 脚本：better-sqlite3 由 electron-builder @electron/rebuild 处理
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-        env:
-          NODE_GYP_FORCE_PYTHON: ${{ runner.os == 'macOS' && 'python3' || '' }}
-          npm_config_vs_version: ${{ runner.os == 'Windows' && '17.0' || '' }}
+        run: npm ci --legacy-peer-deps --ignore-scripts
 
       - name: Build Vite app
         run: npm run build
