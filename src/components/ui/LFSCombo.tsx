@@ -18,16 +18,27 @@ export interface LFSComboProps {
   minWidth?: number
 }
 
+let portalCount = 0
 let portalRoot: HTMLDivElement | null = null
 
 function getPortalRoot(): HTMLDivElement {
   if (!portalRoot) {
     portalRoot = document.createElement('div')
     portalRoot.setAttribute('data-lfs-portal', 'true')
-    portalRoot.style.cssText = 'position:fixed;inset:0;z-index:3000;pointer-events:none;'
+    portalRoot.style.cssText = 'position:fixed;inset:0;z-index:3000;'
     document.body.appendChild(portalRoot)
   }
+  portalCount++
   return portalRoot
+}
+
+function releasePortalRoot(): void {
+  portalCount--
+  if (portalCount <= 0 && portalRoot) {
+    portalRoot.remove()
+    portalRoot = null
+    portalCount = 0
+  }
 }
 
 export const LFSCombo: React.FC<LFSComboProps> = ({
