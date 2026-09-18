@@ -55,25 +55,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Android APK
+      - name: Build LPK
         if: runner.os == 'Linux'
         run: |
-          npm install -g @capacitor/cli @capacitor/core
-          npx cap init --yes
-          npx cap add android
-          npx cap sync
-          cd platforms/android
-          ./gradlew assembleDebug
-          echo "APK_PATH=app/build/outputs/apk/debug/app-debug.apk" >> $GITHUB_ENV
+          npm install -g @lazycatcloud/lzc-cli
+          cd lzc
+          bash package.sh
         env:
-          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+          LPK_VERSION: ${{ github.ref_name }}
 
-      - name: Upload APK artifact
+      - name: Upload LPK artifact
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: apk
-          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          name: lpk
+          path: lzc/output*.lpk
 
   publish:
     name: Publish Release
@@ -88,11 +84,11 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Download APK artifact
+      - name: Download LPK artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/download-artifact@v4
         with:
-          name: apk
+          name: lpk
 
       - name: Publish Draft Release
         run: |
@@ -106,12 +102,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload APK to Release
+      - name: Upload LPK to Release
         if: github.event_name == 'workflow_dispatch' && steps.version.outputs.VERSION != ''
         run: |
-          gh release upload "${{ steps.version.outputs.VERSION }}" \
-            "app/build/outputs/apk/debug/app-debug.apk" \
-            --clobber
+          LPK_FILE=$(ls lzc/output*.lpk 2>/dev/null || ls *.lpk 2>/dev/null)
+          if [ -n "$LPK_FILE" ]; then
+            gh release upload "${{ steps.version.outputs.VERSION }}" "$LPK_FILE" --clobber
+            echo "✅ LPK: $LPK_FILE 已上传"
+          else
+            echo "⚠️ 未找到 LPK 文件"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -124,6 +124,6 @@ jobs:
           echo "- **macOS Apple Silicon**: lzeditor-${{ steps.version.outputs.VERSION }}-mac-arm64.dmg" >> $GITHUB_STEP_SUMMARY
           echo "- **Linux deb**: lzeditor-${{ steps.version.outputs.VERSION }}-linux-amd64.deb" >> $GITHUB_STEP_SUMMARY
           echo "- **Linux AppImage**: lzeditor-${{ steps.version.outputs.VERSION }}-linux-x86_64.AppImage" >> $GITHUB_STEP_SUMMARY
-          echo "- **Android APK**: lzeditor-${{ steps.version.outputs.VERSION }}-android.apk" >> $GITHUB_STEP_SUMMARY
+          echo "- **LazyCat Cloud**: $(ls lzc/output*.lpk 2>/dev/null || echo 'LPK 构建中...')" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📦 [点击下载](https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.VERSION }})" >> $GITHUB_STEP_SUMMARY
