@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
   maxTokens: 1024,
   theme: 'light',
-  accentColor: 'green',
+  accentColor: 'ink',
   shortcut: 'Ctrl+/',
   activeGroup: 'theme',
 }
