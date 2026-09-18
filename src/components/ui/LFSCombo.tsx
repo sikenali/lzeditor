@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
+import ReactDOM from 'react-dom'
 
 export interface LFSComboOption {
   value: string
@@ -17,12 +18,25 @@ export interface LFSComboProps {
   minWidth?: number
 }
 
+let portalRoot: HTMLDivElement | null = null
+
+function getPortalRoot(): HTMLDivElement {
+  if (!portalRoot) {
+    portalRoot = document.createElement('div')
+    portalRoot.setAttribute('data-lfs-portal', 'true')
+    portalRoot.style.cssText = 'position:fixed;inset:0;z-index:3000;pointer-events:none;'
+    document.body.appendChild(portalRoot)
+  }
+  return portalRoot
+}
+
 export const LFSCombo: React.FC<LFSComboProps> = ({
   value, onChange, options, style, className, disabled, placeholder, minWidth,
 }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
+  const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -32,16 +46,15 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
-  // Position dropdown near trigger when opened
+  // Open → compute position → create portal
   useEffect(() => {
-    if (!open || !ref.current || !dropdownRef.current) return
+    if (!open || !ref.current) {
+      if (open) setPortalNode(null)
+      return
+    }
     const rect = ref.current.getBoundingClientRect()
-    const dd = dropdownRef.current
-    dd.style.position = 'fixed'
-    dd.style.top = `${rect.bottom + 4}px`
-    dd.style.left = `${rect.left}px`
-    dd.style.width = `${rect.width}px`
-    dd.style.zIndex = '2000'
+    setPortalPos({ x: rect.left, y: rect.bottom + 4, w: rect.width })
+    setPortalNode(getPortalRoot())
   }, [open])
 
   const selected = options.find(o => o.value === value)
@@ -58,8 +71,12 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         <span className="lfs-combo-label">{displayLabel || placeholder}</span>
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
-      {open && (
-        <div ref={dropdownRef} className="lfs-combo-dropdown">
+      {open && portalNode && portalPos && ReactDOM.createPortal(
+        <div
+          className="lfs-combo-dropdown"
+          style={{ position: 'fixed', top: portalPos.y, left: portalPos.x, width: portalPos.w, zIndex: 3000 }}
+          onClick={e => e.stopPropagation()}
+        >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>
           ) : (
@@ -76,7 +93,8 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
               </button>
             ))
           )}
-        </div>
+        </div>,
+        portalNode
       )}
     </div>
   )
