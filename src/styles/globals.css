@@ -144,8 +144,7 @@ select.lfs-input:focus-visible, select:focus-visible {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  min-
-  
+  min-height: 0;
 }
 
 .lz-editor-content {
@@ -155,8 +154,7 @@ select.lfs-input:focus-visible, select:focus-visible {
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
-  min-
-  
+  min-height: 0;
 }
 
 .lz-editor-content.ProseMirror {
