@@ -189,14 +189,6 @@ export const LZEditor = () => {
     useAIStore.getState().showPanel(action, selectedText, pos)
   }, [editor, toolbar])
 
-  useEffect(() => {
-    return () => {
-      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
-      setEditor(null)
-      editor?.destroy()
-    }
-  }, [editor])
-
   // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom
   useEffect(() => {
     const el = editorRef.current
