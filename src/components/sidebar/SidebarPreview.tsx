@@ -7,11 +7,11 @@ const DEFAULT_WIDTH = 400
 
 export const SidebarPreview: React.FC = () => {
   const editorRef = useEditorStore((s) => s.editorRef)
+  const editorContentRef = useEditorStore((s) => s.editorContentRef)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
   const previewRef = useRef<HTMLDivElement>(null)
-  const editorContentRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
 
   // ── Scroll sync helpers ──
