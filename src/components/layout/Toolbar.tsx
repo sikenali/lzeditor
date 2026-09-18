@@ -120,8 +120,8 @@ export const Toolbar: React.FC = () => {
   }
 
   const handleNewFile = React.useCallback(() => {
-    const name = `untitled-${Date.now().toString(36)}.md`
-    const id = createDoc(name)
+    // createDoc handles naming automatically (Untitled-1.md, Untitled-2.md, ...)
+    const id = createDoc()
     const editor = useEditorStore.getState().editor
     if (editor) {
       editor.chain().focus().clearContent().run()

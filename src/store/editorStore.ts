@@ -31,6 +31,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   docs: [] as Array<{ id: string; title: string; path: string }>,
   activeDocId: null as string | null,
   docsMd: {} as Record<string, string>,
+  nextUntitledIdx: 1,
 
   setTitle: (title: string) => set({ docTitle: title }),
   setDocPath: (path: string) => set({ docPath: path }),
@@ -61,16 +62,19 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   clearVersions: () => set({ versions: [] }),
 
   // ── Tab actions ──
-  createDoc: (title: string, path = '') => {
+  createDoc: (title?: string, path = '') => {
+    const { docs, nextUntitledIdx: idx } = get()
+    const name = title || `Untitled-${idx}.md`
     const id = String(Date.now())
-    const newDoc = { id, title, path }
-    set((s: any) => ({
-      docs: [...s.docs, newDoc],
+    const newDoc = { id, title: name, path }
+    set({
+      docs: [...docs, newDoc],
       activeDocId: id,
-      docTitle: title,
+      docTitle: name,
       docPath: path,
       lastEditTime: Date.now(),
-    }))
+      nextUntitledIdx: idx + 1,
+    })
     return id
   },
   switchDoc: (id: string) => set({ activeDocId: id }),

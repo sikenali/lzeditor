@@ -52,27 +52,16 @@ export const DocumentMetaBar: React.FC = () => {
             >
               <span className="remix ri-file-text-line meta-tab-icon"></span>
               <span className="meta-tab-title">{doc.title}</span>
-              {docs.length > 1 && (
-                <button
-                  className="meta-tab-close"
-                  onClick={(e) => { e.stopPropagation(); closeDoc(doc.id) }}
-                  title="关闭"
-                >
-                  <span className="remix ri-close-line"></span>
-                </button>
-              )}
+              <button
+                className="meta-tab-close"
+                onClick={(e) => { e.stopPropagation(); closeDoc(doc.id) }}
+                title="关闭"
+              >
+                <span className="remix ri-close-line"></span>
+              </button>
             </div>
           )
         })}
-        {/* New tab button */}
-        <button className="meta-tab-new" title="新建文档" onClick={() => {
-          const { createDoc } = useEditorStore.getState()
-          const id = createDoc(`untitled-${Date.now().toString(36)}.md`)
-          const editor = useEditorStore.getState().editor
-          if (editor) editor.chain().focus().clearContent().run()
-        }}>
-          <span className="remix ri-add-line"></span>
-        </button>
       </div>
 
       {/* Meta info */}
