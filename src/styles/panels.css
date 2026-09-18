@@ -379,7 +379,7 @@
   background: var(--bg-code);
   color: var(--text-primary);
   font-family: "JetBrains Mono", "Fira Code", Consolas, Monaco, monospace;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   resize: vertical;
   transition: border-color 0.15s;
@@ -402,7 +402,7 @@
   overflow-x: auto;
 }
 .formula-preview .katex { font-size: 1.4em; color: var(--text-primary); }
-.formula-placeholder { color: var(--text-muted); font-size: 13px; }
+.formula-placeholder { color: var(--text-muted); font-size: 14px; }
 .formula-error {
   color: var(--red-accent);
   font-size: 12px;
