@@ -135,7 +135,7 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               onClick={handleInsert}
               disabled={!canInsert}
             >
-              <span className="remix ri-checkbox-fill"></span>
+              <span className="remix ri-add-line"></span>
               插入
             </button>
           </div>

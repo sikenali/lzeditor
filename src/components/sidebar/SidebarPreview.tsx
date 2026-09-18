@@ -23,7 +23,7 @@ export const SidebarPreview: React.FC = () => {
     const fromPct = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
     const toMaxScroll = Math.max(0, to.scrollHeight - to.clientHeight)
     to.scrollTop = fromPct * toMaxScroll
-    setTimeout(() => { syncingRef.current = false }, 80)
+    setTimeout(() => { syncingRef.current = false }, 100)
   }
 
   // ── Sync content on mutation ──

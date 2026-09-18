@@ -95,7 +95,6 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         <div
           className="lfs-combo-dropdown"
           style={{ position: 'fixed', top: portalPos.y, left: portalPos.x, width: portalPos.w, zIndex: 3000 }}
-          onClick={e => e.stopPropagation()}
         >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>

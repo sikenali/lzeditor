@@ -120,9 +120,38 @@ export interface SettingsState {
   accentColor: string
   shortcut: string
   activeGroup: SettingsGroup
+  subTab?: string
+  // ── Editor layout ──
+  editorFont?: string
+  defaultFontSize?: number
   fontSize?: number
-  lineHeight?: number
-  contentWidth?: number
+  lineHeight?: '1.0' | '1.5' | '2.0'
+  contentWidth?: '960' | '1024' | '1200' | '1280'
+  showMarkdownMarkers?: boolean
+  showDiffHighlight?: boolean
+  typewriterMode?: boolean
+  focusMode?: boolean
+  // ── Toolbar ──
+  showAllToolbarButtons?: boolean
+  showToolbarLabels?: boolean
+  // ── Startup / app behavior ──
+  enableTabs?: boolean
+  saveClipboardOnLaunch?: boolean
+  showTrayIcon?: boolean
+  reopenLastDoc?: boolean
+  openInNewWindow?: boolean
+  quitWhenAllWindowsClosed?: boolean
+  // ── Localization ──
+  enableSpellCheck?: boolean
+  spellCheckLang?: string
+  allowMarkdownSymbols?: boolean
+  autoCompleteMarkdownPairs?: boolean
+  smartQuotes?: boolean
+  autoSpaceCJK?: boolean
+  cornerQuotes?: boolean
+  fullwidthSymbols?: boolean
+  showLineNumbers?: boolean
+  // ── Export ──
   exportFormat?: string
   styleSet?: string
   includeTOC?: boolean
@@ -136,11 +165,6 @@ export interface SettingsState {
   devTools?: boolean
   hardwareAccel?: boolean
   logLevel?: string
-  editorFont?: string
-  showMarkdownMarkers?: boolean
-  showDiffHighlight?: boolean
-  typewriterMode?: boolean
-  focusMode?: boolean
 }
 
 export interface ThemeState {

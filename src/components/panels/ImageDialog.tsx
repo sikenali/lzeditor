@@ -129,7 +129,7 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
               onClick={handleInsert}
               disabled={mode === 'url' && !imgUrl.trim()}
             >
-              <span className="remix ri-checkbox-fill"></span>
+              <span className="remix ri-add-line"></span>
               插入
             </button>
           </div>

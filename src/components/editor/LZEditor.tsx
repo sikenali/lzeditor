@@ -9,6 +9,7 @@ import { TableHeader } from '@tiptap/extension-table-header'
 import { TableRow } from '@tiptap/extension-table-row'
 import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import { FloatingToolbar } from './FloatingToolbar'
 import { AIPanel } from './AIPanel'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
@@ -23,6 +24,13 @@ import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { useTheme } from '../../hooks/useTheme'
+
+const CONTENT_WIDTH_MAP: Record<string, string> = {
+  '960': '960px',
+  '1024': '1024px',
+  '1200': '1200px',
+  '1280': '1280px',
+}
 
 const getDocMd = (id: string): string => {
   try {
@@ -55,10 +63,107 @@ export const LZEditor = () => {
 
   useTheme()
 
+  // Editor instance - must be declared before effects that use it
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        link: { openOnClick: false, autolink: true, HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } },
+        codeBlock: false,
+      }),
+      CodeHighlight,
+      Superscript,
+      Subscript,
+      Mathematics,
+      ImageExt,
+      TaskList,
+      TaskItem,
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
+    ],
+    content: (() => {
+      if (activeDocId && docsMd[activeDocId]) {
+        return remark().use(remarkGfm).use(remarkHtml).processSync(docsMd[activeDocId]).toString()
+      }
+      return remark().use(remarkGfm).use(remarkHtml).processSync(getDocMd(activeDocId || 'welcome')).toString()
+    })(),
+    onCreate: ({ editor }: any) => {
+      setEditor(editor)
+      const docId = useEditorStore.getState().activeDocId
+      if (docId) {
+        useEditorStore.getState().setLastEditTime(Date.now())
+        const html = editor.getHTML()
+        const text = editor.getText()
+        setDocHTML(html)
+        setMdContent(htmlToMarkdown(html))
+        setWordCount(text.split(/\s+/).filter(Boolean).length)
+        setCharCount(text.length)
+        takeSnapshot(editor)
+        const key = `lzeditor-doc-${docId}`
+        localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
+      }
+    },
+    onUpdate: ({ editor }: any) => {
+      useEditorStore.getState().setLastEditTime(Date.now())
+      const text = editor.getText()
+      const html = editor.getHTML()
+      setWordCount(text.split(/\s+/).filter(Boolean).length)
+      setCharCount(text.length)
+      setDocHTML(html)
+      setMdContent(htmlToMarkdown(html))
+      const docId = useEditorStore.getState().activeDocId
+      if (docId) {
+        const md = htmlToMarkdown(html)
+        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: md }))
+        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
+      }
+      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
+      snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
+    },
+    onSelectionUpdate: ({ editor }: any) => {
+      const pos = editor.state.selection
+      const line = editor.state.doc.nodeSize > 0
+        ? editor.view.coordsAtPos(pos.from).top
+        : 0
+      setCursorPosition({ line: Math.max(1, Math.floor(line / 22) + 1), column: pos.from })
+    },
+    editable: true,
+  })
+
+  const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastDocIdRef = useRef<string | null>(null)
+
   React.useEffect(() => {
     setEditorRef(editorRef.current)
     setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
   }, [])
+
+  // Apply editor style settings from store
+  const editorFont = useSettingsStore((s) => s.editorFont)
+  const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
+  const lineHeight = useSettingsStore((s) => s.lineHeight)
+  const contentWidth = useSettingsStore((s) => s.contentWidth)
+
+  useEffect(() => {
+    const container = editorRef.current
+    if (!container) return
+    const inner = container.querySelector('.lz-editor-content') as HTMLElement | null
+    if (!inner) return
+    const fw = CONTENT_WIDTH_MAP[contentWidth || '1024'] || '1024px'
+    inner.style.width = fw
+    inner.style.maxWidth = fw
+    if (defaultFontSize) inner.style.fontSize = `${defaultFontSize}px`
+    else inner.style.fontSize = ''
+    if (lineHeight) inner.style.lineHeight = lineHeight
+    else inner.style.lineHeight = ''
+    if (editorFont) {
+      if (editorFont === 'sans-serif') inner.style.fontFamily = 'var(--font-sans)'
+      else if (editorFont === 'serif') inner.style.fontFamily = 'var(--font-sans)'
+      else if (editorFont === 'monospace') inner.style.fontFamily = 'var(--font-mono)'
+      else inner.style.fontFamily = editorFont
+    }
+  }, [editorFont, defaultFontSize, lineHeight, contentWidth])
 
   // Initialize docsMd: merge missing docs from localStorage (never overwrite existing)
   React.useEffect(() => {
@@ -87,88 +192,10 @@ export const LZEditor = () => {
     })
   }, [addVersion])
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        link: { openOnClick: false, autolink: true, HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } },
-        codeBlock: false,
-      }),
-      CodeHighlight,
-      Superscript,
-      Subscript,
-      Mathematics,
-      ImageExt,
-      TaskList,
-      TaskItem,
-      Table.configure({ resizable: false }),
-      TableRow,
-      TableHeader,
-      TableCell,
-    ],
-    content: (() => {
-      if (activeDocId && docsMd[activeDocId]) {
-        return remark().use(remarkGfm).use(remarkHtml).processSync(docsMd[activeDocId]).toString()
-      }
-      try {
-        const s = localStorage.getItem('lzeditor-doc')
-        if (s) {
-          const d = JSON.parse(s)
-          return remark().use(remarkGfm).use(remarkHtml).processSync(d.md || DEFAULT_CONTENT).toString()
-        }
-      } catch {}
-      return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString()
-    })(),
-    onCreate: ({ editor }: any) => {
-      setEditor(editor)
-      if (activeDocId) {
-        useEditorStore.getState().setLastEditTime(Date.now())
-        const html = editor.getHTML()
-        const text = editor.getText()
-        setDocHTML(html)
-        setMdContent(htmlToMarkdown(html))
-        setWordCount(text.split(/\s+/).filter(Boolean).length)
-        setCharCount(text.length)
-        takeSnapshot(editor)
-        // persist
-        if (activeDocId) {
-          const key = `lzeditor-doc-${activeDocId}`
-          localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
-        }
-      }
-    },
-    onUpdate: ({ editor }: any) => {
-      useEditorStore.getState().setLastEditTime(Date.now())
-      const text = editor.getText()
-      const html = editor.getHTML()
-      setWordCount(text.split(/\s+/).filter(Boolean).length)
-      setCharCount(text.length)
-      setDocHTML(html)
-      setMdContent(htmlToMarkdown(html))
-      // persist to docsMd and localStorage
-      if (activeDocId) {
-        const md = htmlToMarkdown(html)
-        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [activeDocId]: md }))
-        localStorage.setItem(`lzeditor-doc-${activeDocId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
-      }
-      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
-      snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
-    },
-    onSelectionUpdate: ({ editor }: any) => {
-      const pos = editor.state.selection
-      const line = editor.state.doc.nodeSize > 0
-        ? editor.view.coordsAtPos(pos.from).top
-        : 0
-      setCursorPosition({ line: Math.max(1, Math.floor(line / 22) + 1), column: pos.from })
-    },
-    editable: true,
-  })
-
-  const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastDocIdRef = useRef<string | null>(null)
-
   // Switch editor content when active doc changes
   useEffect(() => {
-    if (!editor || !activeDocId || activeDocId === lastDocIdRef.current) return
+    if (!editor || !activeDocId) return
+    if (activeDocId === lastDocIdRef.current) return
     lastDocIdRef.current = activeDocId
     const md = docsMd[activeDocId] || getDocMd(activeDocId)
     const html = remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
@@ -181,6 +208,92 @@ export const LZEditor = () => {
       setEditor(null)
       editor?.destroy()
     }
+  }, [editor])
+
+  // Auto-complete markdown symbol pairs
+  const autoCompleteEnabled = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
+  const smartQuotesEnabled = useSettingsStore((s) => s.smartQuotes)
+  const autoSpaceCJKEnabled = useSettingsStore((s) => s.autoSpaceCJK)
+  const cornerQuotesEnabled = useSettingsStore((s) => s.cornerQuotes)
+  const fullwidthSymbolsEnabled = useSettingsStore((s) => s.fullwidthSymbols)
+
+  useEffect(() => {
+    const el = editorRef.current
+    if (!el || !editor) return
+    const handleInput = (e: Event) => {
+      if (!autoCompleteEnabled && !smartQuotesEnabled && !autoSpaceCJKEnabled && !cornerQuotesEnabled && !fullwidthSymbolsEnabled) return
+      const sel = editor.state.selection
+      if (!sel) return
+      const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 4), sel.from, '')
+      const ch = textBefore.slice(-1)
+      if (autoCompleteEnabled) {
+        const pairMap: Record<string, string> = {
+          '(': ')', '[': ']', '{': '}', '〈': '〉', '《': '》', '「': '」',
+          '<': '>', '\u201c': '\u201d', '\u2018': '\u2019',
+        }
+        if (pairMap[ch]) {
+          e.preventDefault()
+          editor.commands.insertContent(pairMap[ch])
+          const newPos = sel.from + 1
+          editor.commands.setTextSelection({ from: newPos, to: newPos })
+          return
+        }
+      }
+      if (smartQuotesEnabled) {
+        const lastTwo = textBefore.slice(-2)
+        if (lastTwo === '""' || lastTwo === "''") {
+          e.preventDefault()
+          editor.commands.insertContent('\u201d')
+          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
+          return
+        }
+      }
+      if (cornerQuotesEnabled) {
+        const afterSel = editor.state.doc.textBetween(sel.to, sel.to + 4, '')
+        if (ch === '"' && afterSel.startsWith('"')) {
+          e.preventDefault()
+          editor.commands.insertContent('「」')
+          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
+          return
+        }
+        if (ch === "'" && afterSel.startsWith("'")) {
+          e.preventDefault()
+          editor.commands.insertContent('『』')
+          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
+          return
+        }
+      }
+      if (fullwidthSymbolsEnabled) {
+        const fullwidthMap: Record<string, string> = { ',': '，', ';': '；' }
+        if (fullwidthMap[ch]) {
+          e.preventDefault()
+          editor.commands.insertContent(fullwidthMap[ch])
+          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
+          return
+        }
+      }
+    }
+    el.addEventListener('input', handleInput as EventListener)
+    return () => el.removeEventListener('input', handleInput as EventListener)
+  }, [editor, autoCompleteEnabled, smartQuotesEnabled, autoSpaceCJKEnabled, cornerQuotesEnabled, fullwidthSymbolsEnabled])
+
+  // Line numbers
+  const showLineNumbers = useSettingsStore((s) => s.showLineNumbers)
+  const [lineCount, setLineCount] = React.useState(1)
+
+  React.useEffect(() => {
+    if (!editor) return
+    let alive = true
+    const updateLines = () => {
+      try {
+        if (!alive || !editor || !editor.state || !editor.state.doc) return
+        const text = editor.getText()
+        setLineCount(text.split('\n').length)
+      } catch {}
+    }
+    updateLines()
+    editor.on('update', updateLines)
+    return () => { alive = false; editor.off('update', updateLines) }
   }, [editor])
 
   const handleToolbarAction = useCallback((action: AIAction) => {
@@ -239,8 +352,17 @@ export const LZEditor = () => {
 
   return (
     <div className="lz-editor" ref={editorRef}>
-      <div className="lz-editor-content">
-        <EditorContent editor={editor} />
+      <div className={`lz-editor-with-lines${showLineNumbers ? ' has-line-numbers' : ''}`}>
+        {showLineNumbers && (
+          <div className="lz-line-numbers">
+            {Array.from({ length: lineCount }, (_, i) => (
+              <span key={i + 1} className="lz-line-number">{i + 1}</span>
+            ))}
+          </div>
+        )}
+        <div className="lz-editor-content">
+          <EditorContent editor={editor} />
+        </div>
       </div>
       <FloatingToolbar
         position={toolbar.position}

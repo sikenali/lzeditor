@@ -211,7 +211,7 @@ export const FormulaDialog: React.FC<FormulaDialogProps> = ({ onClose, onInsert 
               onClick={handleInsert}
               disabled={!formula.trim() || previewError}
             >
-              <span className="remix ri-checkbox-fill"></span>
+              <span className="remix ri-add-line"></span>
               插入
             </button>
           </div>

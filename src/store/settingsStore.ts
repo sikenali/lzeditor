@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   accentColor: 'ink',
   shortcut: 'Ctrl+/',
   activeGroup: 'theme',
+  subTab: '',
   exportFormat: 'pdf',
   styleSet: 'ocean',
   includeTOC: true,
@@ -19,6 +20,36 @@ export const DEFAULT_SETTINGS: SettingsState = {
   includePageNumbers: false,
   paperSize: 'a4',
   orientation: 'portrait',
+  // ── Editor layout defaults ──
+  editorFont: 'sans-serif',
+  defaultFontSize: 17,
+  fontSize: 17,
+  lineHeight: '1.5',
+  contentWidth: '1024',
+  showMarkdownMarkers: true,
+  showDiffHighlight: true,
+  typewriterMode: false,
+  focusMode: false,
+  // ── Toolbar defaults ──
+  showAllToolbarButtons: true,
+  showToolbarLabels: true,
+  // ── Startup / app behavior defaults ──
+  enableTabs: true,
+  saveClipboardOnLaunch: false,
+  showTrayIcon: true,
+  reopenLastDoc: true,
+  openInNewWindow: false,
+  quitWhenAllWindowsClosed: true,
+  // ── Localization defaults ──
+  enableSpellCheck: true,
+  spellCheckLang: 'zh-CN',
+  allowMarkdownSymbols: true,
+  autoCompleteMarkdownPairs: true,
+  smartQuotes: true,
+  autoSpaceCJK: true,
+  cornerQuotes: false,
+  fullwidthSymbols: false,
+  showLineNumbers: false,
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [
@@ -31,6 +62,7 @@ export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [
 
 type SettingsStore = SettingsState & {
   setActiveGroup: (group: SettingsGroup) => void
+  setSubTab: (subTab: string) => void
   updateSetting: (key: keyof SettingsState, value: any) => void
 }
 
@@ -38,6 +70,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   ...DEFAULT_SETTINGS,
 
   setActiveGroup: (activeGroup) => set({ activeGroup }),
+  setSubTab: (subTab) => set({ subTab }),
   updateSetting: (key, value) => set({ [key]: value }),
 }))
 

@@ -21,6 +21,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   mdContent: '',
   readProgress: 0,
   fontSize: 17,
+  readLayout: 'normal' as const,
+  readZoom: 100,
+  readTocOpen: true as const,
   editorRef: null,
   editorContentRef: null,
   editor: null,
@@ -30,7 +33,26 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   // ── Multi-tab ──
   docs: [{ id: 'welcome', title: 'Welcome to LZEditor.md', path: '' }] as Array<{ id: string; title: string; path: string }>,
   activeDocId: 'welcome' as string | null,
-  docsMd: {} as Record<string, string>,
+  docsMd: (() => {
+    const result: Record<string, string> = {}
+    try {
+      // Try new key format first (lzeditor-doc-{id})
+      const s1 = localStorage.getItem('lzeditor-doc-welcome')
+      if (s1) {
+        const d = JSON.parse(s1)
+        if (d.md) result['welcome'] = d.md
+      }
+      // Fallback: old key format (lzeditor-doc)
+      if (!result['welcome']) {
+        const s2 = localStorage.getItem('lzeditor-doc')
+        if (s2) {
+          const d = JSON.parse(s2)
+          if (d.md) result['welcome'] = d.md
+        }
+      }
+    } catch {}
+    return result
+  })(),
   nextUntitledIdx: 1,
 
   setTitle: (title: string) => set({ docTitle: title }),
@@ -50,6 +72,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setMdContent: (mdContent: string) => set({ mdContent }),
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
+  setReadLayout: (readLayout: 'narrow' | 'normal' | 'wide') => set({ readLayout }),
+  setReadZoom: (readZoom: number) => set({ readZoom }),
+  setReadTocOpen: (readTocOpen: boolean) => set({ readTocOpen }),
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
   setEditorContentRef: (ref: HTMLDivElement | null) => set({ editorContentRef: ref }),
   setEditor: (editor: any) => set({ editor }),

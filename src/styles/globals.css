@@ -157,6 +157,36 @@ select.lfs-input:focus-visible, select:focus-visible {
   min-height: 0;
 }
 
+/* ── Line numbers layout ── */
+.lz-editor-with-lines {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.lz-editor-with-lines.has-line-numbers .lz-editor-content {
+  padding-left: 0;
+}
+.lz-line-numbers {
+  flex-shrink: 0;
+  width: 48px;
+  padding: 40px 8px 40px 12px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-muted);
+  opacity: 0.5;
+  overflow-y: auto;
+  user-select: none;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--background-code);
+}
+.lz-line-number {
+  display: block;
+  height: calc(1em * 1.75);
+}
+
 .lz-editor-content.ProseMirror {
   outline: none;
   min-height: 0;
@@ -3081,3 +3111,29 @@ li.ProseMirror-selectednode:after { border: none !important; }
 }
 .settings-cancel-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); transform: translateY(-1px); }
 .settings-cancel-btn:active { transform: scale(0.97); }
+
+/* ── Chart blocks ── */
+.cz-chart {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-code);
+}
+.cz-chart svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+.cz-chart pre {
+  font-family: monospace;
+  font-size: 12px;
+  margin: 0;
+}
+.cz-chart img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}

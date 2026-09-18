@@ -59,8 +59,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   useEffect(() => {
     const load = async () => {
       try {
-        // @vite-ignore
-        const mod = await import(`highlight.js/styles/${themeId}.css`)
+        const mod = await import(/* @vite-ignore */ `highlight.js/styles/${themeId}.css`)
         setThemeCSS((mod as any).default || '')
       } catch {
         setThemeCSS('')
@@ -235,7 +234,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
               onClick={handleInsert}
               disabled={!code.trim()}
             >
-              <span className="remix ri-checkbox-fill"></span>
+              <span className="remix ri-add-line"></span>
               插入
             </button>
           </div>

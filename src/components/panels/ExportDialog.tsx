@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { exportDocument } from '../../services/exportService'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 import { useSettingsStore } from '../../store/settingsStore'
 
 const EXPORT_FORMATS = [
-  { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
-  { id: 'html', name: 'HTML', icon: 'ri-html5-fill', desc: '网页格式' },
-  { id: 'docx', name: 'Word', icon: 'ri-file-word-2-fill', desc: 'Office 文档' },
-  { id: 'epub', name: 'EPUB', icon: 'ri-book-open-fill', desc: '电子书格式' },
-  { id: 'md', name: 'Markdown', icon: 'ri-markdown-fill', desc: '纯文本源码' },
+  { id: 'pdf',  name: 'PDF',     icon: 'ri-file-pdf-fill',      desc: '可打印',       color: '#e74c3c' },
+  { id: 'docx', name: 'DOCX',    icon: 'ri-file-word-fill',     desc: 'Word 文档',    color: '#2980b9' },
+  { id: 'html', name: 'HTML',    icon: 'ri-html5-fill',         desc: '自包含网页',   color: '#e67e22' },
+  { id: 'epub', name: 'EPUB',    icon: 'ri-book-open-fill',     desc: '电子书',       color: '#8e44ad' },
+  { id: 'md',   name: 'MD',      icon: 'ri-markdown-fill',      desc: '源码文本',     color: '#27ae60' },
+  { id: 'png',  name: 'PNG',     icon: 'ri-image-2-fill',       desc: '图片截图',     color: '#16a085' },
+  { id: 'svg',  name: 'SVG',     icon: 'ri-shape-line',         desc: '矢量图表',     color: '#2c3e50' },
+  { id: 'drawio', name: 'DRAWIO', icon: 'ri-flow-chart',        desc: '可编辑图表',   color: '#d35400' },
+  { id: 'xlsx', name: 'XLSX',    icon: 'ri-file-excel-fill',    desc: '电子表格',     color: '#27ae60' },
 ]
 
 const PAPER_SIZES = [
@@ -25,19 +29,25 @@ const ORIENTATIONS = [
   { id: 'landscape', label: '横向' },
 ]
 
+const PAPER_MAP: Record<string, string> = { a4: 'A4', a3: 'A3', a5: 'A5', letter: 'Letter', legal: 'Legal' }
+
 export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const docTitle = useEditorStore((s: any) => s.docTitle)
-  const docHTML = useEditorStore((s: any) => s.docHTML)
-  const mdContent = useEditorStore((s: any) => s.mdContent)
+  const docTitle = useEditorStore(s => s.docTitle)
+  const docHTML = useEditorStore(s => s.docHTML)
+  const mdContent = useEditorStore(s => s.mdContent)
   const state = useSettingsStore.getState()
   const updateSetting = useSettingsStore.getState().updateSetting
-  const [format, setFormat] = useState<'pdf' | 'html' | 'docx' | 'epub' | 'md'>((state.exportFormat as any) || 'pdf')
+
+  const [format, setFormat] = useState<any>((state.exportFormat as any) || 'pdf')
   const [paperSize, setPaperSize] = useState(state.paperSize || 'a4')
   const [orientation, setOrientation] = useState(state.orientation || 'portrait')
+  const [exporting, setExporting] = useState(false)
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
+  const isPrintFormat = ['pdf', 'docx', 'html', 'epub'].includes(format)
 
   const handleExport = async () => {
+    setExporting(true)
     updateSetting('exportFormat', format)
     updateSetting('paperSize', paperSize)
     updateSetting('orientation', orientation)
@@ -48,24 +58,25 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         title: safeTitle,
         content: format === 'md' ? mdContent || html : html,
         format,
-        options: {
+        options: isPrintFormat ? {
           styleSet: state.styleSet || 'ocean',
           includeTOC: state.includeTOC !== false,
           includeLineNumbers: state.includeLineNumbers || false,
           includePageNumbers: state.includePageNumbers || false,
           paperSize,
           orientation,
-        }
+        } : {},
       })
     } catch (err) {
       console.error('export failed', err)
     }
+    setExporting(false)
     onClose()
   }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="export-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -80,100 +91,112 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           </button>
         </div>
 
-        <div className="export-body">
-          {/* Format selector */}
-          <div className="export-section">
-            <div className="export-section-label">导出格式</div>
-            <div className="format-chips">
-              {EXPORT_FORMATS.map(fmt => (
-                <button
-                  key={fmt.id}
-                  className={`format-chip ${format === fmt.id ? 'active' : ''}`}
-                  onClick={() => setFormat(fmt.id as any)}
-                >
-                  <span className={`remix ${fmt.icon}`}></span>
-                  <span>{fmt.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Style set & options */}
-          <div className="export-section">
-            <div className="export-section-label">样式与选项</div>
-            <ToggleRow
-              title="样式集排版"
-              desc="使用主题样式集进行排版"
-              checked={state.styleSet !== 'minimal' && state.styleSet !== 'candy'}
-              onChange={(v) => updateSetting('styleSet', v ? 'ocean' : 'minimal')}
-            />
-            <div className="setting-divider" />
-            <ToggleRow
-              title="包含目录"
-              desc="在开头自动插入文档目录"
-              checked={state.includeTOC !== false}
-              onChange={(v) => updateSetting('includeTOC', v)}
-            />
-            <div className="setting-divider" />
-            <ToggleRow
-              title="代码行号"
-              desc="代码块显示行号"
-              checked={state.includeLineNumbers || false}
-              onChange={(v) => updateSetting('includeLineNumbers', v)}
-            />
-            <div className="setting-divider" />
-            <ToggleRow
-              title="页码"
-              desc="在底部显示当前页 / 总页数"
-              checked={state.includePageNumbers || false}
-              onChange={(v) => updateSetting('includePageNumbers', v)}
-            />
-          </div>
-
-          {/* Paper size & orientation */}
-          <div className="export-section">
-            <div className="export-section-label">页面设置</div>
-            <div className="export-row">
-              <div className="export-field">
-                <label className="export-label">纸张大小</label>
-                <LFSCombo
-                  value={paperSize}
-                  onChange={setPaperSize}
-                  options={PAPER_SIZES.map(p => ({ value: p.id, label: p.label }))}
-                  style={{ minWidth: 120 }}
-                />
-              </div>
-              <div className="export-field">
-                <label className="export-label">方向</label>
-                <LFSCombo
-                  value={orientation}
-                  onChange={setOrientation}
-                  options={ORIENTATIONS.map(o => ({ value: o.id, label: o.label }))}
-                  style={{ minWidth: 120 }}
-                />
+        <div className="export-body export-body-split">
+          {/* Left: Format + Options */}
+          <div className="export-left">
+            {/* Format chips */}
+            <div className="export-section">
+              <div className="export-section-label">导出格式</div>
+              <div className="format-chips-compact">
+                {EXPORT_FORMATS.map(fmt => (
+                  <button
+                    key={fmt.id}
+                    className={`format-chip-compact ${format === fmt.id ? 'active' : ''}`}
+                    style={format === fmt.id ? { borderColor: fmt.color, boxShadow: `0 0 0 1px ${fmt.color}22` } : undefined}
+                    onClick={() => setFormat(fmt.id)}
+                  >
+                    <span className={`remix ${fmt.icon}`} style={{ color: fmt.color }}></span>
+                    <span className="chip-name">{fmt.name}</span>
+                    <span className="chip-desc">{fmt.desc}</span>
+                  </button>
+                ))}
               </div>
             </div>
+
+            {/* Options: only for print/web formats */}
+            {isPrintFormat && (
+              <>
+                {/* Style & toggles */}
+                <div className="export-section">
+                  <div className="export-section-label">样式与选项</div>
+                  <div className="options-grid">
+                    <OptionToggle
+                      title="样式集排版"
+                      checked={state.styleSet !== 'minimal' && state.styleSet !== 'candy'}
+                      onChange={(v) => updateSetting('styleSet', v ? 'ocean' : 'minimal')}
+                    />
+                    <OptionToggle
+                      title="包含目录"
+                      checked={state.includeTOC !== false}
+                      onChange={(v) => updateSetting('includeTOC', v)}
+                    />
+                    <OptionToggle
+                      title="代码行号"
+                      checked={state.includeLineNumbers || false}
+                      onChange={(v) => updateSetting('includeLineNumbers', v)}
+                    />
+                    <OptionToggle
+                      title="页码"
+                      checked={state.includePageNumbers || false}
+                      onChange={(v) => updateSetting('includePageNumbers', v)}
+                    />
+                  </div>
+                </div>
+
+                {/* Paper size & orientation */}
+                <div className="export-section">
+                  <div className="export-section-label">页面设置</div>
+                  <div className="paper-row">
+                    <div className="paper-field">
+                      <label className="paper-label">纸张</label>
+                      <LFSCombo
+                        value={paperSize}
+                        onChange={setPaperSize}
+                        options={PAPER_SIZES.map(p => ({ value: p.id, label: p.label }))}
+                        style={{ minWidth: 90 }}
+                      />
+                    </div>
+                    <div className="paper-field">
+                      <label className="paper-label">方向</label>
+                      <LFSCombo
+                        value={orientation}
+                        onChange={setOrientation}
+                        options={ORIENTATIONS.map(o => ({ value: o.id, label: o.label }))}
+                        style={{ minWidth: 90 }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Preview */}
-          <div className="export-section">
-            <div className="export-section-header">
-              <span className="export-section-label">预览</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                {paperSize.toUpperCase()} · {orientation === 'portrait' ? '纵向' : '横向'}
-              </span>
-            </div>
-            <div className="export-preview-area">
+          {/* Right: Preview */}
+          <div className="export-right">
+            <div className="export-section export-preview-section">
+              <div className="export-section-header">
+                <span className="export-section-label">预览</span>
+                <span className="preview-meta">
+                  {isPrintFormat ? `${PAPER_MAP[paperSize] || paperSize} · ${orientation === 'portrait' ? '纵向' : '横向'}` : selected.name}
+                </span>
+              </div>
+              <div className="export-preview-area">
               <div
                 className="export-preview-page"
-                style={{ aspectRatio: orientation === 'portrait' ? '210/297' : '297/210' }}
+                style={{
+                  aspectRatio: isPrintFormat && orientation === 'landscape' ? '297/210' : isPrintFormat ? '210/297' : undefined,
+                  width: isPrintFormat ? '100%' : 'auto',
+                  minWidth: isPrintFormat ? 100 : undefined,
+                }}
               >
-                <div className="export-preview-content">
-                  <div className="remix ri-file-text-line export-preview-icon"></div>
-                  <div style={{ fontSize: 14, color: '#333', marginTop: 8 }}>{selected.name} 格式</div>
-                  <div style={{ fontSize: 13, color: '#999', marginTop: 4 }}>{docTitle}.md</div>
+                <div className="export-preview-scroll">
+                  <div
+                    className="export-preview-body"
+                    dangerouslySetInnerHTML={{ __html: docHTML || mdContent || '<p style="color:#999">空文档</p>' }}
+                  />
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -182,35 +205,28 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <div className="export-footer">
           <div className="export-hint">
             <span className="remix ri-information-line"></span>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>导出不会修改原文档</span>
+            <span>导出不会修改原文档</span>
           </div>
           <div className="export-actions">
-            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-            <button className="settings-save-btn" onClick={handleExport}>
-              <span className="remix ri-download-2-line"></span>
-              <span>导出 {selected.name}</span>
+            <button className="settings-cancel-btn" onClick={onClose} disabled={exporting}>关闭</button>
+            <button className="settings-save-btn" onClick={handleExport} disabled={exporting}>
+              <span className={`remix ${exporting ? 'ri-loader-4-line ri-spin' : 'ri-download-2-line'}`}></span>
+              <span>{exporting ? '导出中...' : `导出 ${selected.name}`}</span>
             </button>
           </div>
         </div>
       </div>
     </div>
   )
+
+  function safeFilename() {
+    return (docTitle || 'document').replace(/\.[^.]+$/, '')
+  }
 }
 
-const ToggleRow: React.FC<{ title: string; desc: string; checked: boolean; onChange: (v: boolean) => void }> = ({ title, desc, checked, onChange }) => (
-  <div className="toggle-row">
-    <div className="toggle-row-left">
-      <div className="toggle-text">
-        <span className="toggle-title">{title}</span>
-        <span className="toggle-desc">{desc}</span>
-      </div>
-    </div>
-    <Toggle checked={checked} onChange={onChange} />
-  </div>
-)
-
-const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
-  <button className={`toggle-btn ${checked ? 'active' : ''}`} onClick={() => onChange(!checked)}>
-    <span className="toggle-knob" />
-  </button>
+const OptionToggle: React.FC<{ title: string; checked: boolean; onChange: (v: boolean) => void }> = ({ title, checked, onChange }) => (
+  <label className="option-toggle">
+    <span className="option-toggle-label">{title}</span>
+    <span className={`toggle-dot ${checked ? 'on' : ''}`} onClick={() => onChange(!checked)} />
+  </label>
 )
