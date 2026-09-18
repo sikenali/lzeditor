@@ -7,14 +7,26 @@ const DEFAULT_WIDTH = 400
 
 export const SidebarPreview: React.FC = () => {
   const editorRef = useEditorStore((s) => s.editorRef)
-  const editorContentRef = useEditorStore((s) => s.editorContentRef)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
   const previewRef = useRef<HTMLDivElement>(null)
+  const editorContentRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
+
+  // ── Scroll sync helpers ──
   const syncingRef = useRef(false)
 
+  const syncScroll = (from: HTMLElement, to: HTMLElement) => {
+    if (syncingRef.current || !from || !to) return
+    syncingRef.current = true
+    const fromPct = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
+    const toMaxScroll = Math.max(0, to.scrollHeight - to.clientHeight)
+    to.scrollTop = fromPct * toMaxScroll
+    setTimeout(() => { syncingRef.current = false }, 60)
+  }
+
+  // ── Sync content on mutation ──
   const syncContent = () => {
     if (!editorRef || !previewRef.current) return
     const pm = editorRef.querySelector('.ProseMirror')
@@ -25,57 +37,6 @@ export const SidebarPreview: React.FC = () => {
     }
   }
 
-  const setScrollPercent = (from: HTMLElement, to: HTMLElement, preventLoop: () => void) => {
-    const fromRect = from.getBoundingClientRect()
-    const toRect = to.getBoundingClientRect()
-    // Only sync if both are visible and roughly aligned vertically
-    if (fromRect.height < 50 || toRect.height < 50) return
-    const fromPct = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
-    const toMaxScroll = Math.max(0, to.scrollHeight - to.clientHeight)
-    to.scrollTop = fromPct * toMaxScroll
-    preventLoop()
-  }
-
-  // Sync editor → preview
-  useEffect(() => {
-    if (!editorContentRef) return
-    const el = editorContentRef
-    const prevent = () => { syncingRef.current = true; setTimeout(() => { syncingRef.current = false }, 50) }
-    const onScroll = () => {
-      if (syncingRef.current || !previewRef.current) return
-      syncingRef.current = true
-      requestAnimationFrame(() => {
-        if (previewRef.current) {
-          const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
-          previewRef.current.scrollTop = pct * Math.max(0, previewRef.current.scrollHeight - previewRef.current.clientHeight)
-        }
-        setTimeout(() => { syncingRef.current = false }, 50)
-      })
-    }
-    el.addEventListener('scroll', onScroll)
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [editorContentRef])
-
-  // Sync preview → editor
-  useEffect(() => {
-    if (!previewRef.current || !editorContentRef) return
-    const el = previewRef.current
-    const preventEl = editorContentRef
-    const onScroll = () => {
-      if (syncingRef.current) return
-      syncingRef.current = true
-      requestAnimationFrame(() => {
-        if (preventEl) {
-          const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
-          preventEl.scrollTop = pct * Math.max(0, preventEl.scrollHeight - preventEl.clientHeight)
-        }
-        setTimeout(() => { syncingRef.current = false }, 50)
-      })
-    }
-    el.addEventListener('scroll', onScroll)
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [previewRef, editorContentRef])
-
   useEffect(() => {
     syncContent()
     if (!editorRef) return
@@ -84,6 +45,31 @@ export const SidebarPreview: React.FC = () => {
     return () => observer.disconnect()
   }, [editorRef])
 
+  // ── Editor → Preview scroll sync ──
+  useEffect(() => {
+    const el = editorContentRef.current
+    if (!el) return
+    const onScroll = () => {
+      if (syncingRef.current) return
+      syncScroll(el, previewRef.current as HTMLElement)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [editorContentRef])
+
+  // ── Preview → Editor scroll sync ──
+  useEffect(() => {
+    const el = previewRef.current
+    if (!el || !editorContentRef.current) return
+    const onScroll = () => {
+      if (syncingRef.current) return
+      syncScroll(el, editorContentRef.current as HTMLElement)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [previewRef])
+
+  // ── Resize handle ──
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
     setDragging(true)
