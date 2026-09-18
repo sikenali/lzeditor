@@ -29,26 +29,23 @@ jobs:
           node-version: 22
           cache: npm
 
-      # ── macOS: 指定 node-gyp 使用 setup-python 安装的 Python 3.12（含 distutils） ──
+      # ── macOS: 强制 node-gyp 使用 setup-python 安装的 Python 3.12 ──
       - name: Setup Python 3.12 (macOS)
         if: runner.os == 'macOS'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Set Python for node-gyp (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          PY=$(python3 -c 'import sys; print(sys.executable)')
-          echo "NODE_GYP_FORCE_PYTHON=$PY" >> $GITHUB_ENV
-          echo "PYTHON=$PY" >> $GITHUB_ENV
 
-      # ── Windows: 安装 C++ Build Tools + 显式指定 VS 路径 ──
+      # ── Windows: 安装 C++ Build Tools ──
       - name: Setup Visual C++ Build Tools (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
+        env:
+          NODE_GYP_FORCE_PYTHON: ${{ runner.os == 'macOS' && 'python3' || '' }}
+          npm_config_vs_version: ${{ runner.os == 'Windows' && '17.0' || '' }}
 
       - name: Build Vite app
         run: npm run build
