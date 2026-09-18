@@ -91,7 +91,7 @@ export interface EditorStoreState {
   setLastEditTime: (time: number) => void
 }
 
-export type SettingsGroup = 'general' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'
+export type SettingsGroup = 'theme' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'
 
 export interface SettingsState {
   provider: string

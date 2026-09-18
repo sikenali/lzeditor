@@ -36,21 +36,32 @@
   padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
 }
 .settings-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
-.settings-header-actions { display: flex; align-items: center; gap: 12px; }
+.settings-header-actions { display: flex; align-items: center; gap: 8px; }
+
+.settings-action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 13px; color: var(--text-secondary);
+  background: transparent; border: none;
+  cursor: pointer; transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.settings-action-btn:hover { background: var(--toolbar-hover); color: var(--text-heading-2); }
+.settings-action-btn:active { transform: scale(0.97); }
 
 .settings-reset-btn {
   font-size: 13px; color: var(--text-muted);
-  padding: 7px 16px; border-radius: 10px;
-  border: 1px solid var(--border-default); transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
-  letter-spacing: -0.01em;
+  padding: 7px 14px; border-radius: 8px;
+  border: none; background: transparent;
+  cursor: pointer; transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.settings-reset-btn:hover { color: var(--text-heading-2); border-color: var(--accent-border); transform: translateY(-1px); }
+.settings-reset-btn:hover { color: var(--text-heading-2); background: var(--toolbar-hover); }
 .settings-reset-btn:active { transform: scale(0.97); }
 
 .settings-close-btn {
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px; color: var(--text-muted); transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+  border: none; background: transparent; cursor: pointer;
 }
 .settings-close-btn:hover { background: var(--toolbar-hover); color: var(--text-heading-2); transform: scale(1.05); }
 .settings-close-btn:active { transform: scale(0.95); }
@@ -127,10 +138,11 @@
 .settings-cancel-btn {
   padding: 9px 20px; border-radius: 10px;
   font-size: 13px; color: var(--text-secondary);
-  border: 1px solid var(--border-default); transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
-  letter-spacing: -0.01em;
+  border: none; background: transparent;
+  transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+  letter-spacing: -0.01em; cursor: pointer;
 }
-.settings-cancel-btn:hover { border-color: var(--accent-border); color: var(--text-heading-2); transform: translateY(-1px); }
+.settings-cancel-btn:hover { color: var(--text-heading-2); background: var(--toolbar-hover); }
 .settings-cancel-btn:active { transform: scale(0.97); }
 
 .settings-save-btn {
@@ -139,6 +151,7 @@
   background: var(--accent-primary);
   color: var(--text-on-accent); transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
   letter-spacing: -0.01em;
+  border: none; cursor: pointer;
 }
 .settings-save-btn:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .settings-save-btn:active { transform: scale(0.97); }
@@ -485,3 +498,28 @@
   font-weight: 500;
   letter-spacing: -0.01em;
 }
+
+/* ── Theme mode cards (dark/light/system) ── */
+.theme-mode-grid {
+  display: flex; gap: 10px;
+}
+.theme-mode-card {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 12px; border-radius: 12px;
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-code);
+  cursor: pointer; transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.theme-mode-card:hover { border-color: var(--accent-primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.theme-mode-card:active { transform: scale(0.97); }
+.theme-mode-card.active { border-color: var(--accent-primary); background: var(--accent-a5); box-shadow: 0 0 0 1px var(--accent-a20); }
+.theme-mode-icon { font-size: 22px; color: var(--text-muted); transition: color 0.15s; }
+.theme-mode-card:hover .theme-mode-icon,
+.theme-mode-card.active .theme-mode-icon { color: var(--accent-primary); }
+.theme-mode-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); letter-spacing: -0.01em; }
+.theme-mode-card.active .theme-mode-label { color: var(--accent-primary); }
+.theme-mode-check {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 13px; color: var(--accent-primary);
+}
+.theme-mode-card { position: relative; }

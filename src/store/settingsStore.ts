@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   theme: 'light',
   accentColor: 'green',
   shortcut: 'Ctrl+/',
-  activeGroup: 'general',
+  activeGroup: 'theme',
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [

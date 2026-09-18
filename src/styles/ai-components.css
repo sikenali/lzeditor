@@ -40,7 +40,7 @@
 }
 .ai-toolbar-btn:hover { background: var(--toolbar-hover); color: var(--text-primary); }
 .ai-toolbar-btn:active { transform: scale(0.93); }
-.ai-toolbar-btn.active { background: var(--accent-a15); border: 1px solid var(--accent-a40); color: var(--accent-primary); }
+.ai-toolbar-btn.active { background: var(--accent-a15); color: var(--accent-primary); }
 .ai-toolbar-btn svg { width: 16px; height: 16px; }
 
 .ai-toolbar-btn .tooltip {
@@ -65,8 +65,8 @@
               var(--ai-panel-bg);
   backdrop-filter: blur(40px) saturate(220%);
   -webkit-backdrop-filter: blur(40px) saturate(220%);
-  border: 1px solid var(--ai-panel-border);
-  border-radius: 18px;
+  border: 1px solid var(--border-lighter);
+  border-radius: 16px;
   box-shadow: 0 16px 64px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.08);
   overflow: hidden;
   z-index: 1100;
@@ -121,15 +121,15 @@
   padding: 5px 13px;
   border-radius: 20px;
   font-size: 12px; font-weight: 500;
-  border: 1px solid var(--border-default);
-  background: var(--bg-code);
+  border: none;
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer; transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
   letter-spacing: -0.01em;
 }
-.ai-chip:hover { color: var(--text-primary); background: var(--bg-hover); border-color: var(--accent-border); transform: translateY(-1px); box-shadow: 0 2px 8px var(--shadow-sm); }
+.ai-chip:hover { color: var(--text-primary); background: var(--bg-hover); }
 .ai-chip:active { transform: scale(0.95); }
-.ai-chip.active { color: var(--accent-primary); background: var(--accent-a10); border-color: var(--accent-a40); box-shadow: 0 0 0 1px var(--accent-a20); }
+.ai-chip.active { color: var(--accent-primary); background: var(--accent-a10); }
 
 /* Input wrapper */
 .ai-input-wrapper {
@@ -238,10 +238,9 @@
 .ai-action-btn.primary:active { transform: scale(0.96); }
 .ai-action-btn.secondary {
   background: var(--bg-code);
-  border: 1px solid var(--border-default);
   color: var(--text-secondary);
 }
-.ai-action-btn.secondary:hover { border-color: var(--accent-border); color: var(--text-primary); transform: translateY(-1px); }
+.ai-action-btn.secondary:hover { color: var(--text-primary); transform: translateY(-1px); }
 .ai-action-btn.secondary:active { transform: scale(0.96); }
 .ai-action-btn .remix { font-size: 14px; }
 
