@@ -48,19 +48,27 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
   const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
+  const isOpenRef = useRef(false)
+
+  useEffect(() => {
+    isOpenRef.current = open
+  }, [open])
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      if (!isOpenRef.current) releasePortalRoot()
+    }
   }, [])
 
   // Open → compute position → create portal
   useEffect(() => {
     if (!open || !ref.current) {
-      if (open) setPortalNode(null)
+      if (!open) setPortalNode(null)
       return
     }
     const rect = ref.current.getBoundingClientRect()
@@ -80,6 +88,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         type="button"
       >
         <span className="lfs-combo-label">{displayLabel || placeholder}</span>
+        {selected && <span className="remix ri-checkbox-fill lfs-combo-check"></span>}
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
       {open && portalNode && portalPos && ReactDOM.createPortal(
