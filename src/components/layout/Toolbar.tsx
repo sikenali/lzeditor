@@ -256,10 +256,6 @@ export const Toolbar: React.FC = () => {
         setShowEmojiDialog(true)
         return
       }
-      case 'emoji': {
-        setShowEmojiDialog(true)
-        return
-      }
     }
   }
 
@@ -465,7 +461,6 @@ export const Toolbar: React.FC = () => {
       {showCodeDialog && <CodeDialog onClose={() => setShowCodeDialog(false)} onInsert={(code, lang) => { if (!editor) return; editor.chain().focus().insertContent({ type: 'codeBlock', attrs: { language: lang }, content: [{ type: 'text', text: code }] }).run(); }} />}
       {showFormulaDialog && <FormulaDialog onClose={() => setShowFormulaDialog(false)} onInsert={(formula) => { if (!editor) return; editor.chain().focus().insertMath(formula).run(); }} />}
       {showChartDialog && <ChartDialog onClose={() => setShowChartDialog(false)} onInsert={(html, type) => { if (!editor) return; editor.chain().focus().insertContent(html).run(); }} />}
-      {showEmojiDialog && <EmojiDialog onClose={() => setShowEmojiDialog(false)} onInsert={(text) => { if (!editor) return; editor.chain().focus().insertContent(text).run(); }} />}
       {showEmojiDialog && <EmojiDialog onClose={() => setShowEmojiDialog(false)} onInsert={(text) => { if (!editor) return; editor.chain().focus().insertContent(text).run(); }} />}
       {showBeautifyDialog && <BeautifyDialog onClose={() => setShowBeautifyDialog(false)} />}
     </>
