@@ -43,6 +43,7 @@ export const LZEditor = () => {
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
+  const setEditorContentRef = useEditorStore((s: any) => s.setEditorContentRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
   const setEditor = useEditorStore((s: any) => s.setEditor)
@@ -56,6 +57,7 @@ export const LZEditor = () => {
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
+    setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
   }, [])
 
   // Initialize docsMd if not present

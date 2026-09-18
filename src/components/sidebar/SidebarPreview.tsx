@@ -7,15 +7,16 @@ const DEFAULT_WIDTH = 400
 
 export const SidebarPreview: React.FC = () => {
   const editorRef = useEditorStore((s) => s.editorRef)
+  const editorContentRef = useEditorStore((s) => s.editorContentRef)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
   const previewRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
+  const syncingRef = useRef(false)
 
   const syncContent = () => {
     if (!editorRef || !previewRef.current) return
-    // Strip wrapper divs - only copy the ProseMirror content directly
     const pm = editorRef.querySelector('.ProseMirror')
     if (pm) {
       previewRef.current.innerHTML = pm.innerHTML
@@ -23,6 +24,57 @@ export const SidebarPreview: React.FC = () => {
       previewRef.current.innerHTML = editorRef.innerHTML
     }
   }
+
+  const setScrollPercent = (from: HTMLElement, to: HTMLElement, preventLoop: () => void) => {
+    const fromRect = from.getBoundingClientRect()
+    const toRect = to.getBoundingClientRect()
+    // Only sync if both are visible and roughly aligned vertically
+    if (fromRect.height < 50 || toRect.height < 50) return
+    const fromPct = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
+    const toMaxScroll = Math.max(0, to.scrollHeight - to.clientHeight)
+    to.scrollTop = fromPct * toMaxScroll
+    preventLoop()
+  }
+
+  // Sync editor → preview
+  useEffect(() => {
+    if (!editorContentRef) return
+    const el = editorContentRef
+    const prevent = () => { syncingRef.current = true; setTimeout(() => { syncingRef.current = false }, 50) }
+    const onScroll = () => {
+      if (syncingRef.current || !previewRef.current) return
+      syncingRef.current = true
+      requestAnimationFrame(() => {
+        if (previewRef.current) {
+          const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
+          previewRef.current.scrollTop = pct * Math.max(0, previewRef.current.scrollHeight - previewRef.current.clientHeight)
+        }
+        setTimeout(() => { syncingRef.current = false }, 50)
+      })
+    }
+    el.addEventListener('scroll', onScroll)
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [editorContentRef])
+
+  // Sync preview → editor
+  useEffect(() => {
+    if (!previewRef.current || !editorContentRef) return
+    const el = previewRef.current
+    const preventEl = editorContentRef
+    const onScroll = () => {
+      if (syncingRef.current) return
+      syncingRef.current = true
+      requestAnimationFrame(() => {
+        if (preventEl) {
+          const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
+          preventEl.scrollTop = pct * Math.max(0, preventEl.scrollHeight - preventEl.clientHeight)
+        }
+        setTimeout(() => { syncingRef.current = false }, 50)
+      })
+    }
+    el.addEventListener('scroll', onScroll)
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [previewRef, editorContentRef])
 
   useEffect(() => {
     syncContent()

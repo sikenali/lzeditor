@@ -84,6 +84,7 @@ export interface EditorStoreState {
   setFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
+  editorContentRef: HTMLDivElement | null
   setEditor: (editor: any) => void
   addVersion: (version: DocVersion) => void
   clearVersions: () => void

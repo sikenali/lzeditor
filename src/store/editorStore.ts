@@ -22,6 +22,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   readProgress: 0,
   fontSize: 17,
   editorRef: null,
+  editorContentRef: null,
   editor: null,
   versions: [],
   lastEditTime: Date.now(),
@@ -49,6 +50,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
+  setEditorContentRef: (ref: HTMLDivElement | null) => set({ editorContentRef: ref }),
   setEditor: (editor: any) => set({ editor }),
   setLastEditTime: (time: number) => set({ lastEditTime: time }),
   addVersion: (version: DocVersion) => {
