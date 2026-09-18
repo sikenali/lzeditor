@@ -256,13 +256,6 @@ li.ProseMirror-selectednode:after { border: none !important; }
   color: var(--foreground-secondary);
   font-size: 16px;
 }
-.lz-editor-content blockquote:has(> .remix) {
-  display: flex; align-items: flex-start; gap: 12px;
-}
-.lz-editor-content blockquote .remix {
-  color: var(--accent);
-  margin-right: 8px;
-}
 
 .lz-editor-content ul,
 .lz-editor-content ol {
