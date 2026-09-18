@@ -9,8 +9,9 @@
     </filter>
   </defs>
   <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-  <!-- M: 左右各留 12px，完美居中 (14→50, 中心=32) -->
-  <path d="M14,47 L14,21 L32,35 L50,21 L50,47 L56,47 L56,15 L32,33 L8,15 L8,47 Z"
+  <!-- M: 左右各留 12px 边距，完美居中于 viewBox 中心 x=32 -->
+  <!-- 原始路径中心 cx=29，右移 +3 使 cx=32 -->
+  <path d="M20,47 L20,21 L32,35 L44,21 L44,47 L50,47 L50,15 L32,33 L14,15 L14,47 Z"
         fill="white" filter="url(#s)" opacity="0.95"/>
   <!-- AI 徽章: 居中于 M 的 V 槽 (cx=32) -->
   <circle cx="32" cy="31" r="7" fill="white" stroke="#d44638" stroke-width="1.5"/>
