@@ -76,7 +76,17 @@ export const LZEditor = () => {
       TableHeader,
       TableCell,
     ],
-    content: (() => { try { const s = localStorage.getItem('lzeditor-doc'); if (s) { const d = JSON.parse(s); return d.md || DEFAULT_CONTENT; } } catch {} return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(); })(),
+    content: (() => {
+      try {
+        const s = localStorage.getItem('lzeditor-doc')
+        if (s) {
+          const d = JSON.parse(s)
+          // Always ensure HTML format — remark-convert stored markdown
+          return remark().use(remarkGfm).use(remarkHtml).processSync(d.md || DEFAULT_CONTENT).toString()
+        }
+      } catch {}
+      return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString()
+    })(),
     onCreate: ({ editor }: any) => {
       setEditor(editor)
       useEditorStore.getState().setLastEditTime(Date.now())
