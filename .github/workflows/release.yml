@@ -29,7 +29,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      # ── macOS: 修复 node-gyp 使用 homebrew Python 3.14（缺 distutils）问题 ──
+      # ── macOS: 指定 node-gyp 使用 setup-python 安装的 Python 3.12（含 distutils） ──
       - name: Setup Python 3.12 (macOS)
         if: runner.os == 'macOS'
         uses: actions/setup-python@v5
@@ -38,26 +38,17 @@ jobs:
       - name: Set Python for node-gyp (macOS)
         if: runner.os == 'macOS'
         run: |
-          echo "NODE_GYP_FORCE_PYTHON=$(python3 -c 'import sys; print(sys.executable)')" >> $GITHUB_ENV
-          echo "PYTHON=$(python3 -c 'import sys; print(sys.executable)')" >> $GITHUB_ENV
+          PY=$(python3 -c 'import sys; print(sys.executable)')
+          echo "NODE_GYP_FORCE_PYTHON=$PY" >> $GITHUB_ENV
+          echo "PYTHON=$PY" >> $GITHUB_ENV
 
-      # ── Windows: 安装 C++ Build Tools + 修复 VS 2022 版本检测 ──
+      # ── Windows: 安装 C++ Build Tools + 显式指定 VS 路径 ──
       - name: Setup Visual C++ Build Tools (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
-      - name: Set VS version env (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          # VS 2022 is version 17.x; force node-gyp to accept it
-          echo "VSWHERE_PATH=C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" >> $GITHUB_ENV
-          echo "npm_config_vs_version=17.0" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-        env:
-          # macOS: force Python path for node-gyp
-          PYTHON: ${{ runner.os == 'macOS' && 'python3' || '' }}
-          NODE_GYP_FORCE_PYTHON: ${{ runner.os == 'macOS' && 'python3' || '' }}
 
       - name: Build Vite app
         run: npm run build
@@ -84,7 +75,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build LPK
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && hash -t lzc-cli 2>/dev/null
         run: |
           npm install -g @lazycatcloud/lzc-cli
           cd lzc
