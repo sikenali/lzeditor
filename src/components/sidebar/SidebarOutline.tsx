@@ -89,10 +89,10 @@ export const SidebarOutline: React.FC = () => {
 
   const handleJump = (item: OutlineItem) => {
     if (!editor) return
-    const tr = editor.state.tr.setSelection(TextSelection.near(editor.state.doc.resolve(item.pos + 1)))
+    const pos = editor.state.doc.resolve(item.pos + 1)
+    const tr = editor.state.tr.setSelection(TextSelection.near(pos))
     tr.scrollIntoView()
     editor.view.dispatch(tr)
-    editor.commands.focus()
     setActiveId(item.id)
   }
 

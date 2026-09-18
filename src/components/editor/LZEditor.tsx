@@ -62,6 +62,7 @@ export const LZEditor = () => {
     extensions: [
       StarterKit.configure({
         link: { openOnClick: false, autolink: true, HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } },
+        codeBlock: false,
       }),
       CodeHighlight,
       Superscript,
@@ -75,9 +76,10 @@ export const LZEditor = () => {
       TableHeader,
       TableCell,
     ],
-    content: remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(),
+    content: (() => { try { const s = localStorage.getItem('lzeditor-doc'); if (s) { const d = JSON.parse(s); return d.md || DEFAULT_CONTENT; } } catch {} return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString(); })(),
     onCreate: ({ editor }: any) => {
       setEditor(editor)
+      useEditorStore.getState().setLastEditTime(Date.now())
       const html = editor.getHTML()
       const text = editor.getText()
       setDocHTML(html)
@@ -87,12 +89,17 @@ export const LZEditor = () => {
       takeSnapshot(editor)
     },
     onUpdate: ({ editor }: any) => {
+      useEditorStore.getState().setLastEditTime(Date.now())
       const text = editor.getText()
       const html = editor.getHTML()
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
       setDocHTML(html)
       setMdContent(htmlToMarkdown(html))
+      // Auto-save to localStorage
+      try {
+        localStorage.setItem('lzeditor-doc', JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
+      } catch {}
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
       snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
     },

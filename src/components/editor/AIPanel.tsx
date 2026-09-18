@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useAIStore } from '../../store/aiStore'
 import { useAI } from '../../hooks/useAI'
 import type { AIAction } from '../../shared/types'
@@ -13,26 +13,57 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 const ACTION_PLACEHOLDERS: Record<string, string> = {
-  rewrite: '改写为更正式的商务风格...',
-  polish: '润色这段文字，优化表达...',
-  continue: '续写以下内容，保持风格一致...',
-  summarize: '提炼核心观点，生成摘要...',
-  translate: '翻译为中文...',
-  question: '输入你的问题...',
+  rewrite: '改写为更正式的商务风格…',
+  polish: '润色这段文字，优化表达…',
+  continue: '续写以下内容，保持风格一致…',
+  summarize: '提炼核心观点，生成摘要…',
+  translate: '翻译为中文…',
+  question: '输入你的问题…',
 }
 
 const ACTION_ICONS: Record<string, string> = {
-  rewrite: 'ri-pencil-line',
+  rewrite: 'ri-ball-pen-fill',
   polish: 'ri-brush-line',
-  continue: 'ri-terminal-box-line',
-  summarize: 'ri-contract-left-line',
+  continue: 'ri-arrow-right-s-line',
+  summarize: 'ri-article-fill',
   translate: 'ri-translate-2',
   question: 'ri-chat-history-line',
+}
+
+function getActionKey(action: AIAction): string {
+  return action ?? 'question'
+}
+
+const ACTIONS: AIAction[] = ['rewrite', 'polish', 'continue', 'summarize', 'translate', 'question']
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value))
 }
 
 export const AIPanel: React.FC = () => {
   const state = useAIStore()
   const { send, isStreaming, applyToDoc, undo, copyOutput } = useAI()
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  const panelPosition = state.panelPosition ?? { x: window.innerWidth / 2 - 160, y: 120 }
+
+  // Clamp position to viewport on open / resize
+  useEffect(() => {
+    if (!state.panelVisible) return
+    const update = () => {
+      const pw = 360
+      const ph = 420
+      const x = clamp(panelPosition.x, 8, window.innerWidth - pw - 8)
+      const y = clamp(panelPosition.y, 8, window.innerHeight - ph - 8)
+      if (panelRef.current) {
+        panelRef.current.style.left = x + 'px'
+        panelRef.current.style.top = y + 'px'
+      }
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [state.panelVisible, panelPosition.x, panelPosition.y])
 
   const handleSubmit = () => {
     const input = state.panelInput.trim()
@@ -52,12 +83,22 @@ export const AIPanel: React.FC = () => {
 
   if (!state.panelVisible) return null
 
-  const placeholder = ACTION_PLACEHOLDERS[state.panelAction || 'question'] || '输入指令...'
-  const actionLabel = ACTION_LABELS[state.panelAction || 'question'] || 'AI'
-  const actionIcon = ACTION_ICONS[state.panelAction || 'question'] || 'ri-speed-up-line'
+  const placeholder = ACTION_PLACEHOLDERS[getActionKey(state.panelAction)] || '输入指令…'
+  const actionLabel = ACTION_LABELS[getActionKey(state.panelAction)] || 'AI'
+  const actionIcon = ACTION_ICONS[getActionKey(state.panelAction)] || 'ri-speed-up-line'
 
   return (
-    <div className={`ai-panel ${state.panelStatus === 'thinking' ? 'thinking' : ''}`}>
+    <div
+      ref={panelRef}
+      className={`ai-panel ${state.panelStatus === 'thinking' ? 'thinking' : ''}`}
+      style={{
+        position: 'fixed',
+        left: panelPosition.x,
+        top: panelPosition.y,
+        width: 360,
+      }}
+    >
+      {/* Header */}
       <div className="ai-panel-header">
         <span className={`remix ai-panel-icon ${actionIcon}`}></span>
         <span className="ai-panel-title">{actionLabel}</span>
@@ -66,18 +107,24 @@ export const AIPanel: React.FC = () => {
         </button>
       </div>
 
+      {/* Action chips */}
       <div className="ai-chip-group">
-        {(['rewrite', 'polish', 'continue', 'summarize', 'translate', 'question'] as AIAction[]).map((a) => (
+        {ACTIONS.map((a) => (
           <button
             key={a}
             className={`ai-chip ${state.panelAction === a ? 'active' : ''}`}
-            onClick={() => { const pos = state.panelPosition || { x: 0, y: 0 }; useAIStore.getState().showPanel(a, state.panelSelectedText, pos) }}
+            onClick={() => {
+              const sel = state.panelSelectedText
+              const pos = state.panelPosition || { x: window.innerWidth / 2 - 180, y: 120 }
+              useAIStore.getState().showPanel(a, sel, pos)
+            }}
           >
-            {ACTION_LABELS[a as string] || a}
+            {ACTION_LABELS[getActionKey(a)] || a}
           </button>
         ))}
       </div>
 
+      {/* Input area */}
       {(state.panelStatus === 'idle' || state.panelStatus === 'thinking' || state.panelStatus === 'error') && (
         <div className="ai-input-wrapper">
           <textarea
@@ -87,7 +134,7 @@ export const AIPanel: React.FC = () => {
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={isStreaming}
-            rows={2}
+            rows={3}
           />
           <button
             className="ai-send-btn"
@@ -99,13 +146,26 @@ export const AIPanel: React.FC = () => {
         </div>
       )}
 
+      {/* Thinking indicator */}
       {state.panelStatus === 'thinking' && (
         <div className="ai-loading-dots">
           <span></span><span></span><span></span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>AI 思考中...</span>
+          <span className="ai-loading-text">AI 思考中…</span>
         </div>
       )}
 
+      {/* Error message */}
+      {state.panelStatus === 'error' && state.panelError && (
+        <div className="ai-error-msg">
+          <span className="remix ri-error-warning-fill"></span>
+          {state.panelError}
+          <button onClick={() => useAIStore.getState().setPanelError(null)} className="ai-error-close">
+            <span className="remix ri-close-line"></span>
+          </button>
+        </div>
+      )}
+
+      {/* Result */}
       {state.panelStatus === 'result' && state.panelOutput && (
         <>
           <div className="ai-output">
@@ -116,7 +176,7 @@ export const AIPanel: React.FC = () => {
               <span className="remix ri-checkbox-fill"></span> 应用到文档
             </button>
             <button className="ai-action-btn secondary" onClick={undo}>
-              <span className="remix ri-arrow-go-forward-fill"></span> 撤销
+              <span className="remix ri-arrow-go-back-line"></span> 撤销
             </button>
             <button className="ai-action-btn secondary" onClick={copyOutput}>
               <span className="remix ri-file-copy-fill"></span> 复制
@@ -125,18 +185,11 @@ export const AIPanel: React.FC = () => {
         </>
       )}
 
+      {/* Applied confirmation */}
       {state.panelStatus === 'applied' && (
         <div className="ai-applied-bar">
-          <span><span className="remix ri-checkbox-fill"></span>已应用到文档</span>
-          <span style={{ fontSize: 11, opacity: 0.7 }}>{new Date().toLocaleTimeString()}</span>
-        </div>
-      )}
-
-      {state.panelError && (
-        <div className="ai-error-msg">
-          <span className="remix ri-error-warning-fill"></span>
-          {state.panelError}
-          <button onClick={() => useAIStore.getState().setPanelError(null)} style={{ marginLeft: 'auto' }} className="remix ri-close-line"></button>
+          <span><span className="remix ri-checkbox-circle-fill"></span> 已应用到文档</span>
+          <span className="ai-applied-time">{new Date().toLocaleTimeString()}</span>
         </div>
       )}
     </div>

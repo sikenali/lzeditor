@@ -12,6 +12,7 @@ import { FilePanel } from './components/panels/FilePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
 import { SidebarOutline } from './components/sidebar/SidebarOutline'
 import { SidebarPreview } from './components/sidebar/SidebarPreview'
+import { AIPanel } from './components/editor/AIPanel'
 import { useEditorStore } from './store/editorStore'
 import { useTheme } from './hooks/useTheme'
 
@@ -44,6 +45,7 @@ function App() {
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
       {isReadMode && <ReadMode onClose={() => useEditorStore.getState().setReadMode(false)} />}
+      <AIPanel />
     </div>
   )
 }

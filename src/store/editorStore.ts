@@ -16,6 +16,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   openPanel: 'none',
   showOutline: false,
   showPreview: false,
+  previewMode: 'render' as 'render' | 'code',
   previewWidth: 400,
   mdContent: '',
   readProgress: 0,
@@ -23,6 +24,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   editorRef: null,
   editor: null,
   versions: [],
+  lastEditTime: Date.now(),
 
   setTitle: (title: string) => set({ docTitle: title }),
   setDocPath: (path: string) => set({ docPath: path }),
@@ -36,12 +38,14 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setOpenPanel: (panel: EditorStoreState['openPanel']) => set({ openPanel: panel }),
   setShowOutline: (showOutline: boolean) => set({ showOutline }),
   setShowPreview: (showPreview: boolean) => set({ showPreview }),
+  setPreviewMode: (previewMode: 'render' | 'code') => set({ previewMode }),
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setMdContent: (mdContent: string) => set({ mdContent }),
   setReadProgress: (readProgress: number) => set({ readProgress }),
   setFontSize: (fontSize: number) => set({ fontSize }),
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
   setEditor: (editor: any) => set({ editor }),
+  setLastEditTime: (time: number) => set({ lastEditTime: time }),
   addVersion: (version: DocVersion) => {
     const versions = get().versions
     // Skip if content unchanged vs latest snapshot

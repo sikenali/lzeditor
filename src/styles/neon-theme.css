@@ -15,26 +15,36 @@
   --accent-border: rgba(57, 255, 158, 0.2);
   --accent-glow: 0 0 12px rgba(57, 255, 158, 0.2);
 
-  --ai-panel-bg: rgba(13, 19, 25, 0.97);
+  --ai-panel-bg: rgba(13, 19, 25, 0.94);
   --ai-panel-border: rgba(57, 255, 158, 0.3);
-  --ai-panel-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(57, 255, 158, 0.1);
+  --ai-panel-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255,255,255,0.05);
   --ai-loading-dot: rgba(57, 255, 158, 0.6);
 
   --border-default: rgba(51, 64, 76, 1);
   --border-subtle: rgba(29, 39, 49, 1);
+  --border-light: rgba(255,255,255,0.06);
+  --border-lighter: rgba(255,255,255,0.10);
 
-  --toolbar-bg: rgba(13, 19, 25, 1);
+  --toolbar-bg: rgba(13, 19, 25, 0.78);
   --toolbar-hover: rgba(57, 255, 158, 0.08);
   --toolbar-active: rgba(57, 255, 158, 0.15);
 
-  --statusbar-bg: rgba(18, 24, 31, 1);
+  --statusbar-bg: rgba(18, 24, 31, 0.88);
 
   --amber: rgba(255, 228, 92, 1);
   --amber-soft: rgba(255, 228, 92, 0.15);
   --red-soft: rgba(58, 26, 29, 1);
   --green-soft: rgba(18, 51, 38, 1);
 
-  --font-sans: "Source Han Sans", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --shadow-color-1: rgba(0,0,0,0.35);
+  --shadow-color-2: rgba(0,0,0,0.45);
+  --shadow-strong: rgba(0,0,0,0.55);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+
+  --bg-scrim: rgba(0,0,0,0.50);
+
+  --font-sans: "Source Han Sans", "Noto Sans SC", system-ui, -apple-system, "Helvetica Neue", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
 }
 
@@ -54,6 +64,7 @@ html, body, #root {
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  font-optical-sizing: auto;
 }
 
 button {
@@ -62,6 +73,8 @@ button {
   border: none;
   background: none;
   color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 input, textarea {
@@ -69,31 +82,45 @@ input, textarea {
   background: var(--background-code);
   color: var(--foreground);
   border: 1px solid var(--border-default);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  letter-spacing: -0.01em;
 }
 
 input:focus, textarea:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-default);
+  background: rgba(128,128,128,0.25);
   border-radius: 3px;
 }
+::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.45); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+::selection {
+  background: rgba(57, 255, 158, 0.2);
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .toolbar, .ai-panel, .settings-dialog, .export-dialog,
+  .language-selector, .lfs-combo-dropdown, .toolbar-dropdown,
+  .toolbar-submenu {
+    backdrop-filter: none !important;
+    background: var(--bg-overlay) !important;
+  }
 }

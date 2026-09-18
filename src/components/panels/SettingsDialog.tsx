@@ -3,7 +3,7 @@ import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
 import { LANGUAGES } from '../../shared/languages'
-import { THEMES, applyTheme } from '../../styles/themes'
+import { STYLE_SETS, applyStyleSet } from '../../styles/themes'
 import { LFSSelect, LFSInput } from '../../components/ui/LFInput'
 
 const NAV_GROUPS: { id: SettingsGroup; label: string; group: string }[] = [
@@ -170,20 +170,19 @@ function renderGeneralSection() {
           <span className="settings-section-desc">选择界面风格</span>
         </div>
         <div className="theme-grid">
-          {THEMES.map(theme => (
+          {STYLE_SETS.map(s => (
             <button
-              key={theme.id}
-              className={`theme-card ${useSettingsStore.getState().accentColor === theme.colors.accentPrimary ? 'active' : ''}`}
+              key={s.id}
+              className="theme-card"
               onClick={() => {
-                applyTheme(theme.id)
-                useSettingsStore.getState().updateSetting('accentColor', theme.colors.accentPrimary)
+                applyStyleSet(s.id)
               }}
             >
-              <div className="theme-preview" style={{ background: theme.colors.bgPrimary, border: '1px solid ' + theme.colors.borderDefault }}>
-                <div style={{ width: '100%', height: 8, background: theme.colors.accentPrimary, borderRadius: 2, marginBottom: 4 }} />
-                <div style={{ width: '60%', height: 4, background: theme.colors.textMuted, borderRadius: 2 }} />
+              <div className="theme-preview" style={{ background: s.preview.bg }}>
+                <div style={{ width: '100%', height: 8, background: s.preview.accent, borderRadius: 2, marginBottom: 4 }} />
+                <div style={{ width: '60%', height: 4, background: 'rgba(128,128,128,0.3)', borderRadius: 2 }} />
               </div>
-              <span className="theme-name">{theme.name}</span>
+              <span className="theme-name">{s.name}</span>
             </button>
           ))}
         </div>

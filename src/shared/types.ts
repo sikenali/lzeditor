@@ -87,6 +87,8 @@ export interface EditorStoreState {
   setEditor: (editor: any) => void
   addVersion: (version: DocVersion) => void
   clearVersions: () => void
+  lastEditTime: number
+  setLastEditTime: (time: number) => void
 }
 
 export type SettingsGroup = 'general' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'

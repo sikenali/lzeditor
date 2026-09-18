@@ -4,7 +4,9 @@ import { useEditorStore } from '../../store/editorStore'
 export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const docTitle = useEditorStore((s: any) => s.docTitle)
-  const [isCodeMode, setIsCodeMode] = useState(false)
+  const previewMode = useEditorStore((s: any) => s.previewMode)
+  const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
+  const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -20,7 +22,7 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
-              onClick={() => setIsCodeMode(!isCodeMode)}
+              onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
               title="切换源码模式"
             >
               <span className="remix ri-code-line"></span>
