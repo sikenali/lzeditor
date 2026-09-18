@@ -64,6 +64,9 @@ export interface EditorStoreState {
   mdContent: string
   readProgress: number
   fontSize: number
+  readLayout: 'narrow' | 'normal' | 'wide'
+  readZoom: number
+  readTocOpen: boolean
   versions: DocVersion[]
   editor: any
   setTitle: (title: string) => void
@@ -82,6 +85,9 @@ export interface EditorStoreState {
   setMdContent: (md: string) => void
   setReadProgress: (progress: number) => void
   setFontSize: (fontSize: number) => void
+  setReadLayout: (layout: 'narrow' | 'normal' | 'wide') => void
+  setReadZoom: (zoom: number) => void
+  setReadTocOpen: (open: boolean) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
   editorContentRef: HTMLDivElement | null
@@ -122,6 +128,8 @@ export interface SettingsState {
   includeTOC?: boolean
   includeLineNumbers?: boolean
   includePageNumbers?: boolean
+  paperSize?: string
+  orientation?: string
   syncProvider?: string
   backupInterval?: string
   backupKeep?: number

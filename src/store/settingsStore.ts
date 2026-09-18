@@ -12,6 +12,13 @@ export const DEFAULT_SETTINGS: SettingsState = {
   accentColor: 'ink',
   shortcut: 'Ctrl+/',
   activeGroup: 'theme',
+  exportFormat: 'pdf',
+  styleSet: 'ocean',
+  includeTOC: true,
+  includeLineNumbers: false,
+  includePageNumbers: false,
+  paperSize: 'a4',
+  orientation: 'portrait',
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [

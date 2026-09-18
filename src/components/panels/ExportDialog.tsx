@@ -8,6 +8,7 @@ const EXPORT_FORMATS = [
   { id: 'pdf', name: 'PDF', icon: 'ri-file-pdf-fill', desc: '适合打印和分享' },
   { id: 'html', name: 'HTML', icon: 'ri-html5-fill', desc: '网页格式' },
   { id: 'docx', name: 'Word', icon: 'ri-file-word-2-fill', desc: 'Office 文档' },
+  { id: 'epub', name: 'EPUB', icon: 'ri-book-open-fill', desc: '电子书格式' },
   { id: 'md', name: 'Markdown', icon: 'ri-markdown-fill', desc: '纯文本源码' },
 ]
 
@@ -30,14 +31,16 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const mdContent = useEditorStore((s: any) => s.mdContent)
   const state = useSettingsStore.getState()
   const updateSetting = useSettingsStore.getState().updateSetting
-  const [format, setFormat] = useState<'pdf' | 'html' | 'docx' | 'md'>(((state.exportFormat as any) || 'pdf'))
-  const [paperSize, setPaperSize] = useState('a4')
-  const [orientation, setOrientation] = useState('portrait')
+  const [format, setFormat] = useState<'pdf' | 'html' | 'docx' | 'epub' | 'md'>((state.exportFormat as any) || 'pdf')
+  const [paperSize, setPaperSize] = useState(state.paperSize || 'a4')
+  const [orientation, setOrientation] = useState(state.orientation || 'portrait')
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
 
   const handleExport = async () => {
     updateSetting('exportFormat', format)
+    updateSetting('paperSize', paperSize)
+    updateSetting('orientation', orientation)
     const html = docHTML || '<h1>Empty</h1>'
     const safeTitle = (docTitle || 'document').replace(/\.[^.]+$/, '')
     try {
@@ -45,6 +48,14 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         title: safeTitle,
         content: format === 'md' ? mdContent || html : html,
         format,
+        options: {
+          styleSet: state.styleSet || 'ocean',
+          includeTOC: state.includeTOC !== false,
+          includeLineNumbers: state.includeLineNumbers || false,
+          includePageNumbers: state.includePageNumbers || false,
+          paperSize,
+          orientation,
+        }
       })
     } catch (err) {
       console.error('export failed', err)
@@ -73,19 +84,15 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           {/* Format selector */}
           <div className="export-section">
             <div className="export-section-label">导出格式</div>
-            <div className="format-grid">
+            <div className="format-chips">
               {EXPORT_FORMATS.map(fmt => (
                 <button
                   key={fmt.id}
-                  className={`format-card ${format === fmt.id ? 'active' : ''}`}
-                  onClick={() => setFormat(fmt.id as 'pdf' | 'html' | 'docx' | 'md')}
+                  className={`format-chip ${format === fmt.id ? 'active' : ''}`}
+                  onClick={() => setFormat(fmt.id as any)}
                 >
-                  <span className={`remix format-icon ${fmt.icon}`}></span>
-                  <div className="format-info">
-                    <div className="format-name">{fmt.name}</div>
-                    <div className="format-desc">{fmt.desc}</div>
-                  </div>
-                  <div className={`format-radio ${format === fmt.id ? 'checked' : ''}`} />
+                  <span className={`remix ${fmt.icon}`}></span>
+                  <span>{fmt.name}</span>
                 </button>
               ))}
             </div>
