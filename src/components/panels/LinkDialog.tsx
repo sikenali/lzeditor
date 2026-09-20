@@ -36,7 +36,7 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="export-dialog" onClick={e => e.stopPropagation()} style={{ width: 460 }}>
+      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -51,93 +51,69 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="export-body">
-          {/* Mode tabs */}
-          <div className="link-mode-tabs">
+        <div className="insert-dialog-body">
+          <div className="insert-left-nav">
             <button
-              className={`link-mode-tab ${mode === 'external' ? 'active' : ''}`}
+              className={`insert-nav-item ${mode === 'external' ? 'active' : ''}`}
               onClick={() => setMode('external')}
             >
-              <span className="remix ri-global-line"></span>
-              <span>外部网站</span>
+              <span className="remix insert-nav-icon ri-global-line"></span>
+              <span className="insert-nav-name">外部网站</span>
+              <span className="insert-nav-desc">跳转到网页 URL</span>
             </button>
             <button
-              className={`link-mode-tab ${mode === 'document' ? 'active' : ''}`}
+              className={`insert-nav-item ${mode === 'document' ? 'active' : ''}`}
               onClick={() => setMode('document')}
             >
-              <span className="remix ri-file-text-line"></span>
-              <span>文档或章节</span>
+              <span className="remix insert-nav-icon ri-file-text-line"></span>
+              <span className="insert-nav-name">文档或章节</span>
+              <span className="insert-nav-desc">链接到内部标题锚点</span>
             </button>
           </div>
-
-          {/* Link text label */}
-          <div className="export-field">
-            <label className="export-label">链接到（文字）</label>
-            <input
-              className="lfs-input"
-              placeholder="显示的文字"
-              value={linkText}
-              onChange={e => setLinkText(e.target.value)}
-            />
-          </div>
-
-          {mode === 'external' ? (
-            <div className="export-field">
-              <label className="export-label">URL 地址</label>
-              <input
-                className="lfs-input"
-                placeholder="https:// 或 http://"
-                value={linkUrl}
-                onChange={e => setLinkUrl(e.target.value)}
-              />
-              {linkUrl && !linkUrl.match(/^https?:\/\//) && (
-                <span className="link-url-tip">提示：URL 需以 http:// 或 https:// 开头</span>
+          <div className="insert-right-pane">
+            <div className="insert-preview-panel">
+              <div className="export-field">
+                <label className="export-label">显示文字</label>
+                <input className="lfs-input" placeholder="显示的文字" value={linkText} onChange={e => setLinkText(e.target.value)} />
+              </div>
+              {mode === 'external' ? (
+                <div className="export-field">
+                  <label className="export-label">URL 地址</label>
+                  <input className="lfs-input" placeholder="https:// 或 http://" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} />
+                  {linkUrl && !linkUrl.match(/^https?:\/\//) && <span className="link-url-tip">提示：URL 需以 http:// 或 https:// 开头</span>}
+                </div>
+              ) : (
+                <>
+                  <div className="export-field">
+                    <label className="export-label">文档</label>
+                    <LFSCombo
+                      value={docName}
+                      onChange={setDocName}
+                      options={[{ value: 'welcome', label: 'welcome.md' }, { value: 'notes', label: '技术笔记.md' }]}
+                      placeholder="选择文档..."
+                      style={{ minWidth: 200 }}
+                    />
+                  </div>
+                  <div className="export-field">
+                    <label className="export-label">章节</label>
+                    <input className="lfs-input" placeholder="# 标题锚点" value={heading} onChange={e => setHeading(e.target.value)} />
+                  </div>
+                </>
               )}
             </div>
-          ) : (
-            <>
-              <div className="export-field">
-                <label className="export-label">文档</label>
-                <LFSCombo
-                  value={docName}
-                  onChange={setDocName}
-                  options={[
-                    { value: 'welcome', label: 'welcome.md' },
-                    { value: 'notes', label: '技术笔记.md' },
-                  ]}
-                  placeholder="选择文档..."
-                  style={{ minWidth: 200 }}
-                />
+            <div className="insert-dialog-actions">
+              <div className="export-hint">
+                <span className="remix ri-information-line"></span>
+                <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>链接将插入到光标位置</span>
               </div>
-              <div className="export-field">
-                <label className="export-label">章节</label>
-                <input
-                  className="lfs-input"
-                  placeholder="# 标题锚点"
-                  value={heading}
-                  onChange={e => setHeading(e.target.value)}
-                />
+              <div className="export-actions">
+                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+                <button className="settings-save-btn" onClick={handleInsert} disabled={!canInsert}>
+                  <span className="remix ri-add-line"></span>
+                  插入
+                </button>
               </div>
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="export-footer">
-          <div className="export-hint">
-            <span className="remix ri-information-line"></span>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>链接将插入到光标位置</span>
-          </div>
-          <div className="export-actions">
-            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-            <button
-              className="settings-save-btn"
-              onClick={handleInsert}
-              disabled={!canInsert}
-            >
-              <span className="remix ri-add-line"></span>
-              插入
-            </button>
+            </div>
           </div>
         </div>
       </div>

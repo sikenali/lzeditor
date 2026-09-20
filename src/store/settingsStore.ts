@@ -32,8 +32,9 @@ export const DEFAULT_SETTINGS: SettingsState = {
   showDiffHighlight: true,
   typewriterMode: false,
   focusMode: false,
+  previewModeEnabled: true,
   // ── Toolbar defaults ──
-  showAllToolbarButtons: true,
+  showAllToolbarButtons: false,
   showToolbarLabels: true,
   // ── Startup / app behavior defaults ──
   enableTabs: true,

@@ -213,12 +213,18 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
           </div>
         </div>
 
-        <div className="beautify-footer">
-          <button className="settings-cancel-btn" onClick={onClose} disabled={applying}>取消</button>
-          <button className="settings-save-btn" onClick={handleApply} disabled={applying}>
-            <span className={`remix ${applying ? 'ri-loader-4-line ri-spin' : 'ri-magic-line'}`}></span>
-            <span>{applying ? '排版中…' : '应用排版'}</span>
-          </button>
+        <div className="insert-dialog-actions">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>应用后将覆盖当前排版主题</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose} disabled={applying}>取消</button>
+            <button className="settings-save-btn" onClick={handleApply} disabled={applying}>
+              <span className={`remix ${applying ? 'ri-loader-4-line ri-spin' : 'ri-magic-line'}`}></span>
+              <span>{applying ? '排版中…' : '应用排版'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

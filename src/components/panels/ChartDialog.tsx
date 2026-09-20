@@ -18,7 +18,7 @@ const CHART_TYPES: { id: ChartType; label: string; icon: string; desc: string; d
   {
     id: 'plantuml',
     label: 'PlantUML',
-    icon: 'ri-node-tree',
+    icon: 'ri-organization-chart',
     desc: 'UML 类图、时序图、状态图',
     defaultCode: '@startuml\nrectangle "用户" as user\nrectangle "系统" as sys\nuser -> sys : 登录\nsys --> user : 欢迎\n@enduml',
   },
@@ -229,24 +229,19 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
           </button>
         </div>
 
-        {/* Left: chart type selector | Right: code editor + preview */}
         <div className="chart-body">
-          {/* Left panel — type grid */}
-          <div className="chart-type-panel">
-            <div className="chart-type-grid">
-              {CHART_TYPES.map(ct => (
-                <button key={ct.id} className={`chart-type-card ${type === ct.id ? 'active' : ''}`}
-                  onClick={() => setType(ct.id)}
-                  title={`${ct.label}：${ct.desc}`}>
-                  <span className={`remix chart-type-icon ${ct.icon}`}></span>
-                  <span className="chart-type-label">{ct.label}</span>
-                  <span className="chart-type-desc">{ct.desc}</span>
-                </button>
-              ))}
-            </div>
+          <div className="insert-left-nav chart-type-panel">
+            {CHART_TYPES.map(ct => (
+              <button key={ct.id} className={`insert-nav-item ${type === ct.id ? 'active' : ''}`}
+                onClick={() => setType(ct.id)}
+                title={`${ct.label}：${ct.desc}`}>
+                <span className={`remix insert-nav-icon ${ct.icon}`}></span>
+                <span className="insert-nav-name">{ct.label}</span>
+                <span className="insert-nav-desc">{ct.desc}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Right panel — code (top 1/3) + preview (bottom 2/3) */}
           <div className="chart-right-panel">
             {/* Code area — 1/3 */}
             <div className="chart-code-wrap">
@@ -292,12 +287,18 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
             </div>
 
             {/* Action buttons — bottom right */}
-            <div className="export-actions">
-              <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-              <button className="settings-save-btn" onClick={handleInsert} disabled={!code.trim() && type !== 'drawio'}>
-                <span className="remix ri-add-line"></span>
-                <span>插入</span>
-              </button>
+            <div className="insert-dialog-actions">
+              <div className="export-hint">
+                <span className="remix ri-information-line"></span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>图表将插入到当前光标位置</span>
+              </div>
+              <div className="export-actions">
+                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+                <button className="settings-save-btn" onClick={handleInsert} disabled={!code.trim() && type !== 'drawio'}>
+                  <span className="remix ri-add-line"></span>
+                  <span>插入</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

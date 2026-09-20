@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 
 interface TableDropdownProps {
   open: boolean
@@ -6,50 +6,96 @@ interface TableDropdownProps {
   onInsert: (rows: number, cols: number) => void
 }
 
-const TABLE_OPS = [
-  { icon: 'ri-table-2', label: '插入表格', action: 'insert' as const },
-  { sep: true },
-  { icon: 'ri-insert-column-left', label: '插入列', action: 'col' as const },
-  { icon: 'ri-arrow-left-s-line', label: '向左移动列', action: 'moveL' as const },
-  { icon: 'ri-arrow-right-s-line', label: '向右移动列', action: 'moveR' as const },
-  { icon: 'ri-insert-row-bottom', label: '插入行', action: 'row' as const },
-  { icon: 'ri-delete-row', label: '删除行', action: 'delRow' as const },
-  { sep: true },
-  { icon: 'ri-delete-bin-line', label: '删除表格', action: 'delTable' as const },
-  { icon: 'ri-expand-height', label: '自动调整列宽', action: 'autoW' as const },
+const PRESETS = [
+  { id: 'basic', label: '基础表格', desc: '3 x 3 常规内容', icon: 'ri-table-2', rows: 3, cols: 3 },
+  { id: 'compare', label: '对比表格', desc: '适合双列比较', icon: 'ri-layout-column-line', rows: 4, cols: 2 },
+  { id: 'plan', label: '计划表', desc: '任务与进度排期', icon: 'ri-calendar-check-line', rows: 5, cols: 4 },
+  { id: 'data', label: '数据表', desc: '多列结构化数据', icon: 'ri-database-2-line', rows: 6, cols: 5 },
 ]
 
-export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, onInsert }) => (
-  <div className="toolbar-dd-wrap">
-    <button className={`toolbar-btn ${open ? 'active' : ''} toolbar-btn--dd`} onClick={() => onToggle(!open)} title="表格">
-      <span className="remix toolbar-icon ri-table-2"></span>
-      <span className={`toolbar-dd-arrow ${open ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(!open) }} style={{ cursor: 'pointer' }}>▼</span>
-      <span className="toolbar-label">表格</span>
-    </button>
-    {open && (
-      <div className="toolbar-dropdown">
-        {TABLE_OPS.map((op, i) =>
-          op.sep
-            ? <div key={i} className="toolbar-dropdown-sep" />
-            : <button
-                key={i}
-                className="toolbar-dropdown-item"
-                onClick={() => {
-                  if (op.action === 'insert') {
-                    const r = parseInt(prompt('行数:', '3') || '3')
-                    const c = parseInt(prompt('列数:', '3') || '3')
-                    onInsert(r, c)
-                  } else {
-                    // TODO: implement other table ops
-                  }
-                  onToggle(false)
-                }}
+export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, onInsert }) => {
+  const [active, setActive] = useState(PRESETS[0].id)
+  const preset = PRESETS.find(p => p.id === active) || PRESETS[0]
+  const [rows, setRows] = useState(preset.rows)
+  const [cols, setCols] = useState(preset.cols)
+
+  const cells = useMemo(() => (
+    Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => `${r}-${c}`))
+  ), [rows, cols])
+
+  if (!open) return null
+
+  const choosePreset = (id: string) => {
+    const next = PRESETS.find(p => p.id === id) || PRESETS[0]
+    setActive(id)
+    setRows(next.rows)
+    setCols(next.cols)
+  }
+
+  return (
+    <div className="modal-overlay" onClick={() => onToggle(false)}>
+      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
+        <div className="settings-header">
+          <div className="settings-title">
+            <div className="settings-icon"><span className="remix ri-table-2"></span></div>
+            <div>
+              <div className="insert-title">插入表格</div>
+              <div className="insert-desc">{rows} 行 x {cols} 列</div>
+            </div>
+          </div>
+          <button className="settings-close-btn" onClick={() => onToggle(false)}>
+            <span className="remix ri-close-line"></span>
+          </button>
+        </div>
+
+        <div className="insert-dialog-body">
+          <div className="insert-left-nav">
+            {PRESETS.map(item => (
+              <button
+                key={item.id}
+                className={`insert-nav-item ${active === item.id ? 'active' : ''}`}
+                onClick={() => choosePreset(item.id)}
               >
-                {op.icon && <span className={`remix ${op.icon}`}></span>}
-                <span>{op.label}</span>
+                <span className={`remix insert-nav-icon ${item.icon}`}></span>
+                <span className="insert-nav-name">{item.label}</span>
+                <span className="insert-nav-desc">{item.desc}</span>
               </button>
-        )}
+            ))}
+          </div>
+          <div className="insert-right-pane">
+            <div className="insert-top-panel">
+              <div className="table-size-grid">
+                <label className="export-field">
+                  <span className="export-label">行数</span>
+                  <input className="lfs-input" type="number" min={1} max={20} value={rows} onChange={e => setRows(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} />
+                </label>
+                <label className="export-field">
+                  <span className="export-label">列数</span>
+                  <input className="lfs-input" type="number" min={1} max={10} value={cols} onChange={e => setCols(Math.max(1, Math.min(10, Number(e.target.value) || 1)))} />
+                </label>
+              </div>
+            </div>
+            <div className="insert-preview-panel table-preview-panel">
+              <table className="table-insert-preview">
+                <tbody>
+                  {cells.map((row, r) => (
+                    <tr key={r}>
+                      {row.map(cell => <td key={cell}>{r === 0 ? '标题' : '内容'}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="insert-dialog-actions">
+              <button className="settings-cancel-btn" onClick={() => onToggle(false)}>关闭</button>
+              <button className="settings-save-btn" onClick={() => onInsert(rows, cols)}>
+                <span className="remix ri-add-line"></span>
+                插入
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    )}
-  </div>
-)
+    </div>
+  )
+}

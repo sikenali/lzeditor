@@ -19,6 +19,7 @@ import { CodeHighlight } from './extensions/CodeHighlight'
 import { Superscript, Subscript } from './extensions/SupSub'
 import { Mathematics } from './extensions/Mathematics'
 import { ImageExt } from './extensions/ImageExt'
+import { StyledInsertAttributes } from './extensions/StyledInsertAttributes'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
@@ -61,6 +62,8 @@ export const LZEditor = () => {
   const docs = useEditorStore((s: any) => s.docs)
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
+  const codeMode = useEditorStore((s: any) => s.codeMode)
+  const mdContent = useEditorStore((s: any) => s.mdContent || '')
 
   useTheme()
 
@@ -74,6 +77,7 @@ export const LZEditor = () => {
       CodeHighlight,
       Superscript,
       Subscript,
+      StyledInsertAttributes,
       Mathematics,
       ImageExt,
       TaskList,
@@ -465,6 +469,22 @@ export const LZEditor = () => {
     useAIStore.getState().showPanel(action, selectedText, pos)
   }, [editor, toolbar])
 
+  const handleCodeModeChange = useCallback((value: string) => {
+    setMdContent(value)
+    const docId = useEditorStore.getState().activeDocId
+    try {
+      const html = remark().use(remarkGfm).use(remarkHtml).processSync(value || '').toString()
+      setDocHTML(html)
+      if (docId) {
+        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
+        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
+      }
+      editor?.commands.setContent(html, { emitUpdate: false })
+    } catch {
+      if (docId) setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
+    }
+  }, [editor, setDocHTML, setDocsMd, setMdContent])
+
   // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom
   useEffect(() => {
     const el = editorRef.current
@@ -523,8 +543,17 @@ export const LZEditor = () => {
             ))}
           </div>
         )}
-        <div className="lz-editor-content">
-          <EditorContent editor={editor} />
+        <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`}>
+          {codeMode ? (
+            <textarea
+              className="lz-code-mode-textarea"
+              value={mdContent}
+              onChange={e => handleCodeModeChange(e.target.value)}
+              spellCheck={false}
+            />
+          ) : (
+            <EditorContent editor={editor} />
+          )}
         </div>
       </div>
       <SlashCommand

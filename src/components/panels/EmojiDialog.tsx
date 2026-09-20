@@ -6,21 +6,21 @@ interface EmojiDialogProps {
 }
 
 const EMOJI_CATEGORIES = [
-  { id: 'smiley', label: '表情', icon: '😀' },
-  { id: 'gesture', label: '手势', icon: '👍' },
-  { id: 'heart', label: '情感', icon: '❤️' },
-  { id: 'animal', label: '动物', icon: '🐱' },
-  { id: 'food', label: '食物', icon: '🍎' },
-  { id: 'travel', label: '旅行', icon: '✈️' },
-  { id: 'activity', label: '运动', icon: '⚽' },
-  { id: 'object', label: '物品', icon: '💡' },
-  { id: 'symbol', label: '符号', icon: '⭐' },
-  { id: 'flag', label: '旗帜', icon: '🏁' },
+  { id: 'smiley', label: '表情', desc: '笑脸与人物情绪', icon: 'ri-emotion-line' },
+  { id: 'gesture', label: '手势', desc: '手势与互动表达', icon: 'ri-thumb-up-line' },
+  { id: 'heart', label: '情感', desc: '爱心与情绪符号', icon: 'ri-heart-line' },
+  { id: 'animal', label: '动物', desc: '动物与自然生物', icon: 'ri-bear-smile-line' },
+  { id: 'food', label: '食物', desc: '食物与饮品', icon: 'ri-restaurant-line' },
+  { id: 'travel', label: '旅行', desc: '交通与地点', icon: 'ri-plane-line' },
+  { id: 'activity', label: '运动', desc: '活动、奖项、游戏', icon: 'ri-football-line' },
+  { id: 'object', label: '物品', desc: '工具、设备、礼物', icon: 'ri-lightbulb-line' },
+  { id: 'symbol', label: '符号', desc: '标记、形状、状态', icon: 'ri-star-line' },
+  { id: 'flag', label: '旗帜', desc: '国家与旗帜', icon: 'ri-flag-line' },
 ] as const
 
 const EMOJI_DATA: Record<string, string[]> = {
   smiley: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫢','🤫','🤔','🫡','🤐','🤨','😐','😑','😶','🫥','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','🫤','😟','🙁','😮','😯','😲','😳','🥺','🥹','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖'],
-  gesture: ['👍','👎','👊','✊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✌️','🤞','🫰','🤟','🤘','👌','🤌','🤏','👈','👉','👆','🖕','👇','☝️','🫵','👋','🤚','🖐️','🖖','🫱','�2','🫳','🫴','👌','🤏'],
+  gesture: ['👍','👎','👊','✊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✌️','🤞','🫰','🤟','🤘','👌','🤌','🤏','👈','👉','👆','🖕','👇','☝️','🫵','👋','🤚','🖐️','🖖','🫱','🫲','🫳','🫴','👌','🤏'],
   heart: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','🫀','💌','💋'],
   animal: ['🐱','🐶','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐒','🦍','🦧','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🦟','🦗','🕷️','🕸️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐈','🐓','🦃','🦤','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿️','🦔'],
   food: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🫘','🥐','🥖','🍞','🥨','🥯','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🦪','🍤','🍙','🍚','🍛','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽️','🍏','🍐'],
@@ -47,7 +47,7 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog chart-dialog" onClick={e => e.stopPropagation()}>
+      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         <div className="settings-header">
           <div className="settings-title">
             <div className="settings-icon"><span className="remix ri-emotion-line"></span></div>
@@ -63,9 +63,9 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
           </button>
         </div>
 
-        <div className="chart-body">
+        <div className="insert-dialog-body">
           {/* Left panel — category list */}
-          <div className="chart-type-panel">
+          <div className="insert-left-nav">
             <div className="emoji-search-wrap">
               <span className="remix ri-search-line emoji-search-icon"></span>
               <input
@@ -82,30 +82,31 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
                 </button>
               )}
             </div>
-            <div className="chart-type-grid">
+            <div className="emoji-category-list">
               {EMOJI_CATEGORIES.map(cat => (
                 <button
                   key={cat.id}
-                  className={`chart-type-card ${activeCat === cat.id ? 'active' : ''}`}
+                  className={`insert-nav-item ${activeCat === cat.id ? 'active' : ''}`}
                   type="button"
                   onClick={() => { setActiveCat(cat.id as CategoryId); setSearch('') }}
                 >
-                  <span className="chart-type-icon">{cat.icon}</span>
-                  <span className="chart-type-label">{cat.label}</span>
+                  <span className={`remix insert-nav-icon ${cat.icon}`}></span>
+                  <span className="insert-nav-name">{cat.label}</span>
+                  <span className="insert-nav-desc">{cat.desc}</span>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Right panel — emoji grid */}
-          <div className="chart-right-panel">
-            <div className="chart-preview-wrap">
+          <div className="insert-right-pane emoji-right-pane">
+            <div className="insert-preview-panel emoji-preview-panel">
               <div className="chart-preview-label">
                 <span className="remix ri-grid-fill"></span>
                 {EMOJI_CATEGORIES.find(c => c.id === activeCat)?.label || ''}
                 <span className="emoji-count">{filtered.length}</span>
               </div>
-              <div className="chart-preview">
+              <div className="emoji-panel-scroll">
                 {filtered.length === 0 ? (
                   <div className="emoji-empty">没有找到匹配的表情</div>
                 ) : (
@@ -125,8 +126,14 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
                 )}
               </div>
             </div>
-            <div className="export-actions">
+            <div className="insert-dialog-actions">
+              <div className="export-hint">
+                <span className="remix ri-information-line"></span>
+                <span>点击表情后将立即插入</span>
+              </div>
+              <div className="export-actions">
               <button className="settings-cancel-btn" onClick={onClose} type="button">关闭</button>
+              </div>
             </div>
           </div>
         </div>

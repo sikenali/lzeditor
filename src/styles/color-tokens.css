@@ -52,11 +52,43 @@
   --border-light:   rgba(255,255,255,0.05);
   --border-lighter: rgba(255,255,255,0.08);
 
-  /* Surface — glass materials */
-  --toolbar-bg:       rgba(10,12,21,0.92);
-  --toolbar-hover:    rgba(255,255,255,0.05);
-  --toolbar-active:   var(--accent-a15);
-  --statusbar-bg:     rgba(10,12,21,0.90);
+  /* Fixed chrome — isolated from content typography themes */
+  --chrome-toolbar-bg:             rgba(15,12,10,0.85);
+  --chrome-toolbar-hover-bg:       rgba(255,255,255,0.08);
+  --chrome-toolbar-active-bg:      rgba(212,168,67,0.25);
+  --chrome-toolbar-icon:           rgba(245,240,230,0.85);
+  --chrome-toolbar-icon-hover:     rgba(255,255,255,0.95);
+  --chrome-toolbar-label:          rgba(245,240,230,0.65);
+  --chrome-toolbar-label-hover:    rgba(255,255,255,0.85);
+  --chrome-toolbar-active:         #d4a843;
+  --chrome-toolbar-border:         rgba(255,255,255,0.06);
+
+  --chrome-statusbar-bg:           rgba(44,36,22,1);
+  --chrome-statusbar-text:         rgba(212,196,160,1);
+  --chrome-statusbar-muted:        rgba(160,139,106,1);
+  --chrome-statusbar-divider:      rgba(194,168,122,0.3);
+  --chrome-statusbar-seal-bg:      linear-gradient(135deg, #c23a2b, #d4624a);
+  --chrome-statusbar-pill-border:  rgba(194,168,122,0.3);
+  --chrome-statusbar-pill-hover-bg: rgba(194,58,43,0.12);
+  --chrome-statusbar-pill-hover-border: rgba(194,58,43,0.5);
+  --chrome-statusbar-pill-hover-text: rgba(212,168,67,1);
+  --chrome-statusbar-icon-bg:      rgba(61,51,34,1);
+  --chrome-statusbar-icon-text:    rgba(212,196,160,1);
+  --chrome-statusbar-icon-hover:   rgba(194,58,43,0.7);
+  --chrome-statusbar-badge-bg:     rgba(61,51,34,0.6);
+  --chrome-statusbar-badge-border: rgba(194,168,122,0.2);
+
+  /* Toolbar aliases retained for menus and panels that use toolbar hover materials. */
+  --toolbar-bg:          var(--chrome-toolbar-bg);
+  --toolbar-hover:       var(--chrome-toolbar-hover-bg);
+  --toolbar-active:      var(--chrome-toolbar-active-bg);
+  --toolbar-active-bg:   var(--chrome-toolbar-active-bg);
+  --toolbar-icon:        var(--chrome-toolbar-icon);
+  --toolbar-icon-hover:  var(--chrome-toolbar-icon-hover);
+  --toolbar-label:       var(--chrome-toolbar-label);
+  --toolbar-label-hover: var(--chrome-toolbar-label-hover);
+  --toolbar-active-icon: var(--chrome-toolbar-active);
+  --toolbar-border:      var(--chrome-toolbar-border);
   --card:             #111422;
   --card-border:      #1e2440;
 
@@ -172,11 +204,43 @@
   --border-light:   rgba(255,255,255,0.75);
   --border-lighter: rgba(255,255,255,0.92);
 
-  /* Glass surfaces */
-  --toolbar-bg:       rgba(254,243,199,0.94);
-  --toolbar-hover:    rgba(0,0,0,0.05);
-  --toolbar-active:   var(--accent-a15);
-  --statusbar-bg:     rgba(254,243,199,0.90);
+  /* Fixed chrome — isolated from content typography themes */
+  --chrome-toolbar-bg:             rgba(250,246,237,0.88);
+  --chrome-toolbar-hover-bg:       rgba(0,0,0,0.05);
+  --chrome-toolbar-active-bg:      rgba(194,58,43,0.12);
+  --chrome-toolbar-icon:           rgba(44,36,22,0.85);
+  --chrome-toolbar-icon-hover:     rgba(0,0,0,0.95);
+  --chrome-toolbar-label:          rgba(44,36,22,0.65);
+  --chrome-toolbar-label-hover:    rgba(0,0,0,0.85);
+  --chrome-toolbar-active:         #c23a2b;
+  --chrome-toolbar-border:         rgba(0,0,0,0.06);
+
+  --chrome-statusbar-bg:           rgba(245,240,230,1);
+  --chrome-statusbar-text:         rgba(61,43,31,1);
+  --chrome-statusbar-muted:        rgba(100,80,60,1);
+  --chrome-statusbar-divider:      rgba(194,168,122,0.4);
+  --chrome-statusbar-seal-bg:      linear-gradient(135deg, #c23a2b, #d4624a);
+  --chrome-statusbar-pill-border:  rgba(194,168,122,0.5);
+  --chrome-statusbar-pill-hover-bg: rgba(194,58,43,0.06);
+  --chrome-statusbar-pill-hover-border: rgba(194,58,43,0.4);
+  --chrome-statusbar-pill-hover-text: #c23a2b;
+  --chrome-statusbar-icon-bg:      rgba(240,235,225,1);
+  --chrome-statusbar-icon-text:    rgba(61,43,31,1);
+  --chrome-statusbar-icon-hover:   rgba(194,58,43,0.15);
+  --chrome-statusbar-badge-bg:     rgba(240,235,225,1);
+  --chrome-statusbar-badge-border: rgba(194,168,122,0.5);
+
+  /* Toolbar aliases retained for menus and panels that use toolbar hover materials. */
+  --toolbar-bg:          var(--chrome-toolbar-bg);
+  --toolbar-hover:       var(--chrome-toolbar-hover-bg);
+  --toolbar-active:      var(--chrome-toolbar-active-bg);
+  --toolbar-active-bg:   var(--chrome-toolbar-active-bg);
+  --toolbar-icon:        var(--chrome-toolbar-icon);
+  --toolbar-icon-hover:  var(--chrome-toolbar-icon-hover);
+  --toolbar-label:       var(--chrome-toolbar-label);
+  --toolbar-label-hover: var(--chrome-toolbar-label-hover);
+  --toolbar-active-icon: var(--chrome-toolbar-active);
+  --toolbar-border:      var(--chrome-toolbar-border);
   --card:             #ffffff;
   --card-border:      #e0d5c0;
 
@@ -240,6 +304,7 @@
   --danger-text:      rgba(230,217,160,1);
   --accent-seal: #c23a2b;
   --accent-seal-light: #d4624a;
+
 }
 
 /* ── Accent color presets ── */
@@ -254,4 +319,3 @@
 [data-theme="light"][data-accent="red"]    { --accent: #a83232; --accent-foreground: #ffffff; }
 [data-theme="light"][data-accent="gold"]   { --accent: #b8860b; --accent-foreground: #ffffff; }
 [data-theme="light"][data-accent="ink"]    { --accent: #1a1a1a; --accent-foreground: #ffffff; }
-

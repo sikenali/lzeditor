@@ -36,7 +36,7 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="export-dialog" onClick={e => e.stopPropagation()} style={{ width: 440 }}>
+      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -51,87 +51,70 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
           </button>
         </div>
 
-        <div className="export-body">
-          {/* Mode tabs */}
-          <div className="image-mode-tabs">
+        <div className="insert-dialog-body">
+          <div className="insert-left-nav">
             <button
-              className={`image-mode-tab ${mode === 'local' ? 'active' : ''}`}
+              className={`insert-nav-item ${mode === 'local' ? 'active' : ''}`}
               onClick={() => setMode('local')}
             >
-              <span className="remix ri-upload-cloud-2-line"></span>
-              <span>本地图片</span>
+              <span className="remix insert-nav-icon ri-upload-cloud-2-line"></span>
+              <span className="insert-nav-name">本地图片</span>
+              <span className="insert-nav-desc">上传或拖入图片文件</span>
             </button>
             <button
-              className={`image-mode-tab ${mode === 'url' ? 'active' : ''}`}
+              className={`insert-nav-item ${mode === 'url' ? 'active' : ''}`}
               onClick={() => setMode('url')}
             >
-              <span className="remix ri-global-line"></span>
-              <span>图床地址</span>
+              <span className="remix insert-nav-icon ri-global-line"></span>
+              <span className="insert-nav-name">图床地址</span>
+              <span className="insert-nav-desc">使用 http 或 https 链接</span>
             </button>
           </div>
-
-          {/* Local upload */}
-          {mode === 'local' && (
-            <div
-              className={`image-drop-zone ${dragOver ? 'drag-over' : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-            >
-              <span className="remix ri-image-add-line" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}></span>
-              <div className="image-drop-text">拖拽图片到此处，或</div>
-              <label className="image-drop-btn">
-                <span className="remix ri-folder-open-line"></span>
-                选择文件
-                <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-              </label>
+          <div className="insert-right-pane">
+            <div className="insert-preview-panel">
+              {mode === 'local' && (
+                <div
+                  className={`image-drop-zone ${dragOver ? 'drag-over' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                >
+                  <span className="remix ri-image-add-line" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}></span>
+                  <div className="image-drop-text">拖拽图片到此处，或</div>
+                  <label className="image-drop-btn">
+                    <span className="remix ri-folder-open-line"></span>
+                    选择文件
+                    <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                  </label>
+                </div>
+              )}
+              {mode === 'url' && (
+                <div className="image-url-fields">
+                  <div className="export-field">
+                    <label className="export-label">图片地址</label>
+                    <input className="lfs-input" placeholder="https:// 或 http://" value={imgUrl} onChange={e => setImgUrl(e.target.value)} />
+                    {imgUrl && !imgUrl.match(/^https?:\/\//) && <span className="image-url-tip">提示：URL 需以 http:// 或 https:// 开头</span>}
+                  </div>
+                  <div className="export-field">
+                    <label className="export-label">替代文字（可选）</label>
+                    <input className="lfs-input" placeholder="图片描述" value={imgAlt} onChange={e => setImgAlt(e.target.value)} />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* URL input */}
-          {mode === 'url' && (
-            <div className="image-url-fields">
-              <div className="export-field">
-                <label className="export-label">图片地址</label>
-                <input
-                  className="lfs-input"
-                  placeholder="https:// 或 http://"
-                  value={imgUrl}
-                  onChange={e => setImgUrl(e.target.value)}
-                />
-                {imgUrl && !imgUrl.match(/^https?:\/\//) && (
-                  <span className="image-url-tip">提示：URL 需以 http:// 或 https:// 开头</span>
-                )}
+            <div className="insert-dialog-actions">
+              <div className="export-hint">
+                <span className="remix ri-information-line"></span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>插入后图片将显示在光标位置</span>
               </div>
-              <div className="export-field">
-                <label className="export-label">替代文字（可选）</label>
-                <input
-                  className="lfs-input"
-                  placeholder="图片描述"
-                  value={imgAlt}
-                  onChange={e => setImgAlt(e.target.value)}
-                />
+              <div className="export-actions">
+                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+                <button className="settings-save-btn" onClick={handleInsert} disabled={mode === 'url' && !imgUrl.trim()}>
+                  <span className="remix ri-add-line"></span>
+                  插入
+                </button>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="export-footer">
-          <div className="export-hint">
-            <span className="remix ri-information-line"></span>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>插入后图片将显示在光标位置</span>
-          </div>
-          <div className="export-actions">
-            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-            <button
-              className="settings-save-btn"
-              onClick={handleInsert}
-              disabled={mode === 'url' && !imgUrl.trim()}
-            >
-              <span className="remix ri-add-line"></span>
-              插入
-            </button>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 
-const MAX_VERSIONS = 30
+const MAX_VERSIONS = 10
 
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
   docTitle: 'Welcome to LZEditor',
@@ -14,8 +14,13 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   isReadMode: false,
   syncStatus: 'synced',
   openPanel: 'none',
+  insertPanel: 'none' as const,
   showOutline: false,
   showPreview: false,
+  showLibrary: true,
+  codeMode: false,
+  docLibraries: [{ id: 'default', name: 'Default' }],
+  activeLibraryId: 'default',
   previewMode: 'render' as 'render' | 'code',
   previewWidth: 400,
   mdContent: '',
@@ -31,7 +36,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   lastEditTime: Date.now(),
 
   // ── Multi-tab ──
-  docs: [{ id: 'welcome', title: 'Welcome to LZEditor.md', path: '' }] as Array<{ id: string; title: string; path: string }>,
+  docs: [{ id: 'welcome', title: 'Welcome to LZEditor.md', path: 'Default', libraryId: 'default' }] as Array<{ id: string; title: string; path: string; libraryId?: string }>,
   activeDocId: 'welcome' as string | null,
   docsMd: (() => {
     const result: Record<string, string> = {}
@@ -65,8 +70,22 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setReadMode: (isReadMode: boolean) => set({ isReadMode }),
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => set({ syncStatus: status }),
   setOpenPanel: (panel: EditorStoreState['openPanel']) => set({ openPanel: panel }),
+  setInsertPanel: (panel: EditorStoreState['insertPanel']) => set({ insertPanel: panel }),
   setShowOutline: (showOutline: boolean) => set({ showOutline }),
   setShowPreview: (showPreview: boolean) => set({ showPreview }),
+  setShowLibrary: (showLibrary: boolean) => set({ showLibrary }),
+  setCodeMode: (codeMode: boolean) => set({ codeMode }),
+  createLibrary: (name: string) => {
+    const title = (name || '').trim() || `Library ${get().docLibraries.length + 1}`
+    const id = `lib-${Date.now()}`
+    set((s: any) => ({
+      docLibraries: [...s.docLibraries, { id, name: title }],
+      activeLibraryId: id,
+      showLibrary: true,
+    }))
+    return id
+  },
+  setActiveLibrary: (id: string) => set({ activeLibraryId: id }),
   setPreviewMode: (previewMode: 'render' | 'code') => set({ previewMode }),
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setMdContent: (mdContent: string) => set({ mdContent }),
@@ -87,16 +106,19 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   clearVersions: () => set({ versions: [] }),
 
   // ── Tab actions ──
-  createDoc: (title?: string, path = '') => {
-    const { docs, nextUntitledIdx: idx } = get()
+  createDoc: (title?: string, path = '', libraryId?: string) => {
+    const { docs, nextUntitledIdx: idx, activeLibraryId, docLibraries } = get()
+    const targetLibraryId = libraryId || activeLibraryId || 'default'
+    const library = docLibraries.find((lib: any) => lib.id === targetLibraryId) || docLibraries[0]
     const name = title || `Untitled-${idx}.md`
     const id = String(Date.now())
-    const newDoc = { id, title: name, path }
+    const newDoc = { id, title: name, path: path || library?.name || 'Default', libraryId: targetLibraryId }
     set({
       docs: [...docs, newDoc],
       activeDocId: id,
       docTitle: name,
-      docPath: path,
+      docPath: newDoc.path,
+      activeLibraryId: targetLibraryId,
       lastEditTime: Date.now(),
       nextUntitledIdx: idx + 1,
     })
@@ -120,5 +142,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       ...(s.activeDocId === id ? { docTitle: title } : {}),
     }))
   },
-  setDocsMd: (mds: Record<string, string>) => set({ docsMd: mds }),
+  setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
+    docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,
+  })),
 }))

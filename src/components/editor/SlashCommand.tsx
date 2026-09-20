@@ -40,6 +40,14 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   { id: 'table-insert', icon: 'ri-table-2', label: '表格', keywords: '表格 table', group: '表格', dialog: true },
 ]
 
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
 interface SlashCommandProps {
   position: { x: number; y: number }
   visible: boolean
@@ -49,6 +57,7 @@ interface SlashCommandProps {
 
 export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, filter, onClose }) => {
   const editor = useEditorStore((s) => s.editor)
+  const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
@@ -77,7 +86,17 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
     node?.scrollIntoView({ block: 'nearest' })
   }, [selectedIndex])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const removeSlashQuery = useCallback(() => {
+    if (!editor) return
+    const from = editor.state.selection.from
+    const textBefore = editor.state.doc.textBetween(Math.max(0, from - 40), from, '')
+    const match = textBefore.match(/\/([^\s]*)$/)
+    if (!match) return
+    editor.chain().focus().deleteRange({ from: from - match[0].length, to: from }).run()
+  }, [editor])
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!visible) return
     const cols = 3
     if (e.key === 'ArrowRight') {
       e.preventDefault()
@@ -95,14 +114,26 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
       e.preventDefault()
       const cmd = filtered[selectedIndex]
       if (cmd) executeCommand(cmd)
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      const cmd = filtered[selectedIndex]
+      if (cmd) executeCommand(cmd)
     } else if (e.key === 'Escape') {
+      e.preventDefault()
       onClose()
     }
-  }, [filtered, selectedIndex, onClose])
+  }, [filtered, selectedIndex, onClose, visible])
+
+  useEffect(() => {
+    if (!visible) return
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [visible, handleKeyDown])
 
   const executeCommand = useCallback((cmd: SlashCommandItem) => {
     onClose()
     if (!editor) return
+    removeSlashQuery()
     const chain = editor.chain().focus()
 
     switch (cmd.id) {
@@ -129,33 +160,32 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
           return true
         })
         const tocBody = headings.length > 0
-          ? headings.map(h => `<p>${h}</p>`).join('')
+          ? headings.map(h => `<p>${escapeHtml(h)}</p>`).join('')
           : '<p>暂无标题</p>'
-        chain.insertContent(`<div data-toc><p><strong>目录</strong></p>${tocBody}</div><p></p>`).run()
+        chain.insertContent(`<blockquote class="lz-insert lz-insert-toc" data-insert="toc"><p><strong>目录</strong></p>${tocBody}</blockquote><p></p>`).run()
         break
       }
       case 'quote': {
         const sel = editor.state.selection
         const text = sel && sel.from !== sel.to ? editor.state.doc.textBetween(sel.from, sel.to) : '引用内容'
-        chain.insertContent(`<blockquote><p>${text}</p></blockquote>`).run()
+        chain.insertContent(`<blockquote class="lz-insert lz-insert-quote" data-insert="quote"><p>${escapeHtml(text)}</p></blockquote>`).run()
         break
       }
-      case 'footnote': chain.insertContent('<sup>[^1]</sup>').run(); break
+      case 'footnote': chain.insertContent('<sup class="lz-insert-footnote-ref" data-insert="footnote">[^1]</sup>').run(); break
       case 'blockquote': chain.toggleBlockquote().run(); break
-      case 'link': setOpenPanel('link'); break
-      case 'image': setOpenPanel('image'); break
-      case 'emoji': setOpenPanel('emoji'); break
-      case 'chart': setOpenPanel('chart'); break
-      case 'code': setOpenPanel('code'); break
-      case 'math': setOpenPanel('formula'); break
+      case 'link': setInsertPanel('link'); break
+      case 'image': setInsertPanel('image'); break
+      case 'emoji': setInsertPanel('emoji'); break
+      case 'chart': setInsertPanel('chart'); break
+      case 'code': setInsertPanel('code'); break
+      case 'math': setInsertPanel('formula'); break
       case 'table-insert': {
-        const r = parseInt(prompt('行数:', '3') || '3')
-        const c = parseInt(prompt('列数:', '3') || '3')
-        if (r > 0 && c > 0) chain.insertTable({ rows: r, cols: c, withHeaderRow: true }).run()
+        setInsertPanel('table')
         break
       }
+      case 'table': setInsertPanel('table'); break
     }
-  }, [editor, onClose, setOpenPanel])
+  }, [editor, onClose, removeSlashQuery, setInsertPanel, setOpenPanel])
 
   if (!visible) return null
 
@@ -167,7 +197,6 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
     <div
       className="slash-command"
       style={{ left: clampedX, top: clampedY }}
-      onKeyDown={handleKeyDown}
     >
       <div ref={listRef} className="slash-command-grid">
         {filtered.length === 0 ? (

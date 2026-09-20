@@ -77,6 +77,7 @@ export function useScrollSync(
   const channelRef = React.useRef<ScrollSyncChannel | null>(null);
   const editorScrollTimer = React.useRef<number | null>(null);
   const previewScrollTimer = React.useRef<number | null>(null);
+  const programmaticRef = React.useRef<ScrollSource | null>(null);
 
   if (!channelRef.current && enabled) {
     channelRef.current = createScrollSyncChannel();
@@ -95,6 +96,10 @@ export function useScrollSync(
     };
 
     const onEditorScroll = () => {
+      if (programmaticRef.current === 'editor') {
+        programmaticRef.current = null;
+        return;
+      }
       if (!channel.canDrive('editor')) return;
       const max = editorEl.scrollHeight - editorEl.clientHeight;
       const pos = computePosition(editorEl, max);
@@ -107,11 +112,16 @@ export function useScrollSync(
         const s = channel.state;
         if (!channel.shouldFollow('preview')) return;
         const previewMax = previewEl.scrollHeight - previewEl.clientHeight;
+        programmaticRef.current = 'preview';
         previewEl.scrollTop = s.position * previewMax;
       });
     };
 
     const onPreviewScroll = () => {
+      if (programmaticRef.current === 'preview') {
+        programmaticRef.current = null;
+        return;
+      }
       if (!channel.canDrive('preview')) return;
       const max = previewEl.scrollHeight - previewEl.clientHeight;
       const pos = computePosition(previewEl, max);
@@ -123,6 +133,7 @@ export function useScrollSync(
         const s = channel.state;
         if (!channel.shouldFollow('editor')) return;
         const editorMax = editorEl.scrollHeight - editorEl.clientHeight;
+        programmaticRef.current = 'editor';
         editorEl.scrollTop = s.position * editorMax;
       });
     };

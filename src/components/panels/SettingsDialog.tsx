@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor, DEFAULT_SETTINGS } from '../../store/settingsStore'
+import { useEditorStore } from '../../store/editorStore'
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
 import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography-themes'
@@ -20,10 +21,10 @@ type SubTab = { id: string; label: string; icon: string }
 
 /* ── Sub-tab definitions per category ── */
 const THEME_SUBS: SubTab[] = [
-  { id: 'mode',          label: '主题模式', icon: 'ri-sun-fill' },
-  { id: 'typography',    label: '排版样式', icon: 'ri-font-size' },
-  { id: 'code-theme',    label: '代码样式', icon: 'ri-code-box-line' },
-  { id: 'accent',        label: '图标颜色', icon: 'ri-circle-fill' },
+  { id: 'mode',          label: '界面主题', icon: 'ri-sun-fill' },
+  { id: 'typography',    label: '内容样式', icon: 'ri-font-size' },
+  { id: 'code-theme',    label: '代码高亮', icon: 'ri-code-box-line' },
+  { id: 'accent',        label: '强调色', icon: 'ri-circle-fill' },
 ]
 const EDITOR_SUBS: SubTab[] = [
   { id: 'general',   label: '通用设置', icon: 'ri-settings-3-line' },
@@ -108,29 +109,6 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
              : activeGroup === 'sync'      ? SYNC_SUBS
              : []
 
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const subnavRef = useRef<HTMLDivElement>(null)
-
-  // Measure and set column widths based on longest label
-  useEffect(() => {
-    const measureWidth = (items: { label: string }[], padding = 56) => {
-      if (!items.length) return 0
-      const span = document.createElement('span')
-      span.style.cssText = 'position:absolute;top:-9999px;left:-9999px;font-size:14px;font-family:var(--font-sans);white-space:nowrap;'
-      document.body.appendChild(span)
-      const maxW = Math.max(...items.map(it => {
-        span.textContent = it.label
-        return span.offsetWidth
-      }))
-      document.body.removeChild(span)
-      return maxW + padding
-    }
-    const sw = sidebarRef.current
-    const nw = subnavRef.current
-    if (sw) sw.style.width = measureWidth(NAV_ITEMS, 56) + 'px'
-    if (nw) nw.style.width = measureWidth(subs, 56) + 'px'
-  }, [activeGroup, subTab])
-
   // Set subTab to first tab on mount, or when switching categories
   const mountedRef = useRef(false)
   useEffect(() => {
@@ -159,6 +137,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
   const currentProvider = getProvider(useSettingsStore.getState().provider)
   const models: AIModel[] = currentProvider?.models || []
+  const activeSubIndex = Math.max(0, subs.findIndex(t => t.id === subTab))
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -187,43 +166,47 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
         <div className="settings-body">
           {/* ── Left: main nav ── */}
-          <div className="settings-sidebar" ref={sidebarRef}>
+          <div className="settings-sidebar">
             {NAV_ITEMS.map(item => (
               <div
                 key={item.id}
                 className={`settings-nav-item ${activeGroup === item.id ? 'active' : ''}`}
-                onClick={() => { setActiveGroup(item.id); setSubTab(subs[0]?.id ?? 'mode'); }}
+                onClick={() => setActiveGroup(item.id)}
               >
                 <span className={`remix nav-item-icon ${item.icon}`}></span>
-                <span>{item.label}</span>
+                <span className="settings-nav-name">{item.label}</span>
               </div>
             ))}
           </div>
 
-          {/* ── Middle: sub-tabs ── */}
-          {activeGroup !== 'about' && (
-            <div className="settings-subnav" ref={subnavRef}>
-              {subs.map(tab => (
-                <button
-                  key={tab.id}
-                  className={`settings-subtab-btn ${subTab === tab.id ? 'active' : ''}`}
-                  onClick={() => setSubTab(tab.id)}
-                >
-                  <span className={`subtab-icon remix nav-item-icon ${tab.icon}`}></span>
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="settings-main">
+            {activeGroup !== 'about' && (
+              <div
+                className="settings-top-tabs"
+                style={{ ['--active-tab' as any]: activeSubIndex, ['--tab-count' as any]: Math.max(1, subs.length) }}
+              >
+                <div className="settings-tab-slider" />
+                {subs.map(tab => (
+                  <button
+                    key={tab.id}
+                    className={`settings-subtab-btn ${subTab === tab.id ? 'active' : ''}`}
+                    onClick={() => setSubTab(tab.id)}
+                  >
+                    <span className={`subtab-icon remix nav-item-icon ${tab.icon}`}></span>
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {/* ── Right: content ── */}
-          <div className="settings-content">
-            {activeGroup === 'theme' && renderThemeContent(subTab)}
-            {activeGroup === 'editor' && renderEditorContent(subTab)}
-            {activeGroup === 'ai'      && renderAIContent(subTab, models, apiKeyVisible, setApiKeyVisible, customBaseUrl, setCustomBaseUrl, customModelId, setCustomModelId, customName, setCustomName)}
-            {activeGroup === 'shortcut' && renderShortcutContent(subTab)}
-            {activeGroup === 'sync'    && renderSyncContent(subTab)}
-            {activeGroup === 'about'   && renderAboutSection()}
+            <div className="settings-content">
+              {activeGroup === 'theme' && renderThemeContent(subTab)}
+              {activeGroup === 'editor' && renderEditorContent(subTab)}
+              {activeGroup === 'ai'      && renderAIContent(subTab, models, apiKeyVisible, setApiKeyVisible, customBaseUrl, setCustomBaseUrl, customModelId, setCustomModelId, customName, setCustomName)}
+              {activeGroup === 'shortcut' && renderShortcutContent(subTab)}
+              {activeGroup === 'sync'    && renderSyncContent(subTab)}
+              {activeGroup === 'about'   && renderAboutSection()}
+            </div>
           </div>
         </div>
 
@@ -255,7 +238,10 @@ function renderThemeContent(tab: string) {
 
   if (tab === 'mode') return (
     <div className="settings-section">
-      <div className="settings-section-title"><span>主题模式</span></div>
+      <div className="settings-section-title">
+        <span>界面主题</span>
+        <span className="settings-section-desc">浅色 / 深色只影响应用界面，不影响文档排版样式</span>
+      </div>
       <div className="theme-mode-grid">
         {([
           { id: 'light', label: '浅色', icon: 'ri-sun-fill' },
@@ -276,7 +262,7 @@ function renderThemeContent(tab: string) {
     const activeId = useSettingsStore.getState().typographyTheme || 'classic'
     return (
       <div className="settings-section">
-        <div className="settings-section-title"><span>排版样式</span><span className="settings-section-desc">文章内容的视觉风格，影响预览与导出</span></div>
+        <div className="settings-section-title"><span>内容样式</span><span className="settings-section-desc">文章内容、插入块、预览与导出的视觉风格</span></div>
         <div className="theme-grid">
           {TYPOGRAPHY_THEMES.map(t => (
             <button
@@ -310,7 +296,7 @@ function renderThemeContent(tab: string) {
     const update = useSettingsStore.getState().updateSetting
     return (
       <div className="settings-section">
-        <div className="settings-section-title"><span>代码样式</span><span className="settings-section-desc">代码块的高亮主题</span></div>
+        <div className="settings-section-title"><span>代码高亮</span><span className="settings-section-desc">仅影响文档中的代码块，不改变工具栏与状态栏</span></div>
         <div className="theme-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
           {CODE_THEMES.map(t => (
             <button
@@ -346,7 +332,7 @@ function renderThemeContent(tab: string) {
 
   return (
     <div className="settings-section">
-      <div className="settings-section-title"><span>图标颜色</span><span className="settings-section-desc">选中态、主按钮与高亮</span></div>
+      <div className="settings-section-title"><span>强调色</span><span className="settings-section-desc">用于选中态、主按钮和焦点反馈，不控制工具栏文字</span></div>
       <div className="color-picker-row">
         {ACCENT_PRESETS.map(p => (
           <button key={p.id} className={`color-swatch ${accent === p.id ? 'active' : ''}`} onClick={() => update('accentColor', p.id)} title={p.name}>
@@ -473,7 +459,7 @@ function renderGeneralSection(s: any, u: any) {
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
-        <ToggleRow icon="ri-apps-2-fill" title="显示所有工具栏按钮" desc="关闭后仅显示：格式、图片、链接、插入" checked={s.showAllToolbarButtons !== false} onChange={v => u('showAllToolbarButtons', v)} />
+        <ToggleRow icon="ri-apps-2-fill" title="精简工具栏" desc="开启后中间仅显示：格式、图片、链接、表格、插入；右侧隐藏 AI" checked={s.showAllToolbarButtons || false} onChange={v => u('showAllToolbarButtons', v)} />
         <div className="setting-divider" />
         <ToggleRow icon="ri-text" title="显示工具栏按钮标题" desc="关闭后仅显示图标，不显示文字" checked={s.showToolbarLabels !== false} onChange={v => u('showToolbarLabels', v)} />
       </div>
@@ -566,6 +552,11 @@ function renderEditModeSection(s: any, u: any) {
         <ToggleRow icon="ri-cursor-fill" title="打字机模式" desc="光标始终居中垂直位置" checked={s.typewriterMode || false} onChange={v => u('typewriterMode', v)} />
         <div className="setting-divider" />
         <ToggleRow icon="ri-focus-3" title="专注模式" desc="仅高亮当前段落，其余淡化" checked={s.focusMode || false} onChange={v => u('focusMode', v)} />
+        <div className="setting-divider" />
+        <ToggleRow icon="ri-eye-line" title="预览模式" desc="编辑模式与代码模式下默认显示右侧预览" checked={s.previewModeEnabled !== false} onChange={v => {
+          u('previewModeEnabled', v)
+          useEditorStore.getState().setShowPreview(v)
+        }} />
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>效果预览</span><span className="settings-section-desc">当前编辑器配置预览</span></div>
@@ -584,6 +575,7 @@ function renderEditModeSection(s: any, u: any) {
           <span className={`edit-mode-tag ${s.showMarkdownMarkers !== false ? 'tag-on' : 'tag-off'}`}>Markdown 标记: {s.showMarkdownMarkers !== false ? '开启' : '关闭'}</span>
           <span className={`edit-mode-tag ${s.typewriterMode ? 'tag-on' : 'tag-off'}`}>打字机: {s.typewriterMode ? '开启' : '关闭'}</span>
           <span className={`edit-mode-tag ${s.focusMode ? 'tag-on' : 'tag-off'}`}>专注模式: {s.focusMode ? '开启' : '关闭'}</span>
+          <span className={`edit-mode-tag ${s.previewModeEnabled !== false ? 'tag-on' : 'tag-off'}`}>预览模式: {s.previewModeEnabled !== false ? '开启' : '关闭'}</span>
         </div>
       </div>
     </>

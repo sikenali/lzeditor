@@ -101,10 +101,8 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           </button>
         </div>
 
-        <div className="export-body export-body-split">
-          {/* Left: Format + Options */}
+        <div className="export-body export-body-split export-body-redesigned">
           <div className="export-left">
-            {/* Format chips */}
             <div className="export-section">
               <div className="export-section-label">导出格式</div>
               <div className="format-chips-compact">
@@ -122,62 +120,34 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Options: only for print/web formats */}
+          <div className="export-right">
             {isPrintFormat && (
-              <>
-                {/* Style & toggles */}
-                <div className="export-section">
+              <div className="export-options-band">
+                <div className="export-section export-options-card">
                   <div className="export-section-label">样式与选项</div>
                   <div className="options-grid">
-                  <OptionToggle
-                    title="包含目录"
-                      checked={state.includeTOC !== false}
-                      onChange={(v) => updateSetting('includeTOC', v)}
-                    />
-                    <OptionToggle
-                      title="代码行号"
-                      checked={state.includeLineNumbers || false}
-                      onChange={(v) => updateSetting('includeLineNumbers', v)}
-                    />
-                    <OptionToggle
-                      title="页码"
-                      checked={state.includePageNumbers || false}
-                      onChange={(v) => updateSetting('includePageNumbers', v)}
-                    />
+                    <OptionToggle title="包含目录" checked={state.includeTOC !== false} onChange={(v) => updateSetting('includeTOC', v)} />
+                    <OptionToggle title="代码行号" checked={state.includeLineNumbers || false} onChange={(v) => updateSetting('includeLineNumbers', v)} />
+                    <OptionToggle title="页码" checked={state.includePageNumbers || false} onChange={(v) => updateSetting('includePageNumbers', v)} />
                   </div>
                 </div>
-
-                {/* Paper size & orientation */}
-                <div className="export-section">
+                <div className="export-section export-options-card">
                   <div className="export-section-label">页面设置</div>
                   <div className="paper-row">
                     <div className="paper-field">
                       <label className="paper-label">纸张</label>
-                      <LFSCombo
-                        value={paperSize}
-                        onChange={setPaperSize}
-                        options={PAPER_SIZES.map(p => ({ value: p.id, label: p.label }))}
-                        style={{ minWidth: 90 }}
-                      />
+                      <LFSCombo value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.id, label: p.label }))} style={{ minWidth: 90 }} />
                     </div>
                     <div className="paper-field">
                       <label className="paper-label">方向</label>
-                      <LFSCombo
-                        value={orientation}
-                        onChange={setOrientation}
-                        options={ORIENTATIONS.map(o => ({ value: o.id, label: o.label }))}
-                        style={{ minWidth: 90 }}
-                      />
+                      <LFSCombo value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.id, label: o.label }))} style={{ minWidth: 90 }} />
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
             )}
-          </div>
-
-          {/* Right: Preview */}
-          <div className="export-right">
             <div className="export-section export-preview-section">
               <div className="export-section-header">
                 <span className="export-section-label">预览</span>

@@ -10,6 +10,8 @@
 
 .app-main {
   flex: 1;
+  display: flex;
+  min-height: 0;
   overflow: hidden;
   position: relative;
   /* Warm parchment texture like momowuwen — subtle paper gradient */

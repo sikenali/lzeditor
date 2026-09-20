@@ -58,8 +58,13 @@ export interface EditorStoreState {
   isReadMode: boolean
   syncStatus: 'synced' | 'saving' | 'error'
   openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export'
+  insertPanel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart'
   showOutline: boolean
   showPreview: boolean
+  showLibrary: boolean
+  codeMode: boolean
+  docLibraries: Array<{ id: string; name: string }>
+  activeLibraryId: string
   previewWidth: number
   mdContent: string
   readProgress: number
@@ -79,8 +84,13 @@ export interface EditorStoreState {
   setReadMode: (isReadMode: boolean) => void
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
+  setInsertPanel: (panel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart') => void
   setShowOutline: (showOutline: boolean) => void
   setShowPreview: (showPreview: boolean) => void
+  setShowLibrary: (showLibrary: boolean) => void
+  setCodeMode: (codeMode: boolean) => void
+  createLibrary: (name: string) => string
+  setActiveLibrary: (id: string) => void
   setPreviewWidth: (width: number) => void
   setMdContent: (md: string) => void
   setReadProgress: (progress: number) => void
@@ -97,14 +107,14 @@ export interface EditorStoreState {
   lastEditTime: number
   setLastEditTime: (time: number) => void
   // multi-tab
-  docs: Array<{ id: string; title: string; path: string }>
+  docs: Array<{ id: string; title: string; path: string; libraryId?: string }>
   activeDocId: string | null
-  createDoc: (title: string, path?: string) => string
+  createDoc: (title?: string, path?: string, libraryId?: string) => string
   switchDoc: (id: string) => void
   closeDoc: (id: string) => void
   renameDoc: (id: string, title: string) => void
   docsMd: Record<string, string>
-  setDocsMd: (mds: Record<string, string>) => void
+  setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void
 }
 
 export type SettingsGroup = 'theme' | 'editor' | 'appearance' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'
@@ -131,6 +141,7 @@ export interface SettingsState {
   showDiffHighlight?: boolean
   typewriterMode?: boolean
   focusMode?: boolean
+  previewModeEnabled?: boolean
   // ── Toolbar ──
   showAllToolbarButtons?: boolean
   showToolbarLabels?: boolean

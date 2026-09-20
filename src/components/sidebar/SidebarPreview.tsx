@@ -37,7 +37,7 @@ export const SidebarPreview: React.FC = () => {
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
   const setMdContent = useEditorStore((s) => s.setMdContent)
   const setDocHTML = useEditorStore((s) => s.setDocHTML)
-  const previewRef = useRef<HTMLDivElement>(null)
+  const [previewEl, setPreviewEl] = useState<HTMLDivElement | null>(null)
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -45,10 +45,10 @@ export const SidebarPreview: React.FC = () => {
   const previewHtml = useMemo(() => mdToPreviewHtml(mdContent), [mdContent])
 
   useEffect(() => {
-    if (!previewRef.current) return
+    if (!previewEl) return
     const theme = getTypographyTheme(typographyTheme || 'classic')
-    previewRef.current.innerHTML = previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
-    previewRef.current.style.cssText = ''
+    previewEl.innerHTML = previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
+    previewEl.style.cssText = ''
     if (theme) {
       // Apply typography theme inline styles to key elements
       const css = theme.css
@@ -62,26 +62,26 @@ export const SidebarPreview: React.FC = () => {
       el.textContent = css
       document.head.appendChild(el)
     }
-  }, [previewHtml, typographyTheme])
+  }, [previewHtml, typographyTheme, previewEl])
 
   // Also update on editor mutations (keep in sync when ProseMirror updates)
   useEffect(() => {
     if (!editorRef) return
     const observer = new MutationObserver(() => {
       requestAnimationFrame(() => {
-        if (previewRef.current) {
-          previewRef.current.innerHTML = previewHtml || ''
+        if (previewEl) {
+          previewEl.innerHTML = previewHtml || ''
         }
       })
     })
     observer.observe(editorRef, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
-  }, [editorRef, previewHtml])
+  }, [editorRef, previewHtml, previewEl])
 
   // ── Scroll sync via hook (non-React, no re-renders)
   useScrollSync(
     { current: editorContentRef },
-    { current: previewRef.current },
+    { current: previewEl },
     true,
   )
 
@@ -112,8 +112,8 @@ export const SidebarPreview: React.FC = () => {
 
   // ── Copy as WeChat rich text
   const handleCopyWechat = async () => {
-    if (!previewRef.current) return
-    const html = previewRef.current.innerHTML
+    if (!previewEl) return
+    const html = previewEl.innerHTML
     const ok = await copyRichText(html)
     if (ok) {
       setCopied(true)
@@ -140,7 +140,14 @@ export const SidebarPreview: React.FC = () => {
           </button>
         </div>
         <div className="sidebar-scroll">
-          <div className="preview-doc" ref={previewRef} />
+          <div className="preview-phone-frame">
+            <div
+              className="preview-doc"
+               ref={(node) => {
+                 setPreviewEl(node)
+               }}
+            />
+          </div>
         </div>
       </div>
       <div

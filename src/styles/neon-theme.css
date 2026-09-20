@@ -25,11 +25,14 @@
   --border-light: rgba(255,255,255,0.06);
   --border-lighter: rgba(255,255,255,0.10);
 
-  --toolbar-bg: rgba(13, 19, 25, 0.78);
-  --toolbar-hover: rgba(57, 255, 158, 0.08);
-  --toolbar-active: rgba(57, 255, 158, 0.15);
+  --chrome-toolbar-bg: rgba(13, 19, 25, 0.78);
+  --chrome-toolbar-hover-bg: rgba(57, 255, 158, 0.08);
+  --chrome-toolbar-active-bg: rgba(57, 255, 158, 0.15);
+  --toolbar-bg: var(--chrome-toolbar-bg);
+  --toolbar-hover: var(--chrome-toolbar-hover-bg);
+  --toolbar-active: var(--chrome-toolbar-active-bg);
 
-  --statusbar-bg: rgba(18, 24, 31, 0.88);
+  --chrome-statusbar-bg: rgba(18, 24, 31, 0.88);
 
   --amber: rgba(255, 228, 92, 1);
   --amber-soft: rgba(255, 228, 92, 0.15);

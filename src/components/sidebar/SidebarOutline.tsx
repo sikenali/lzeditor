@@ -93,6 +93,11 @@ export const SidebarOutline: React.FC = () => {
     const tr = editor.state.tr.setSelection(TextSelection.near(pos))
     tr.scrollIntoView()
     editor.view.dispatch(tr)
+    requestAnimationFrame(() => {
+      const dom = editor.view.nodeDOM(item.pos) as HTMLElement | null
+      const target = dom?.nodeType === Node.ELEMENT_NODE ? dom : dom?.parentElement
+      target?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    })
     setActiveId(item.id)
   }
 

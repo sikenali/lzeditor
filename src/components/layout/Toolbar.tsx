@@ -2,14 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useAIStore } from '../../store/aiStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { LinkDialog } from '../panels/LinkDialog'
-import { ImageDialog } from '../panels/ImageDialog'
-import { CodeDialog } from '../panels/CodeDialog'
-import { FormulaDialog } from '../panels/FormulaDialog'
-import { ChartDialog } from '../panels/ChartDialog'
-import { EmojiDialog } from '../panels/EmojiDialog'
 import { BeautifyDialog } from '../panels/BeautifyDialog'
-import { exportDocument } from '../../services/exportService'
 
 type MenuKey = 'format' | 'table' | 'insert' | 'supsub' | 'preview' | 'export' | null
 
@@ -34,8 +27,8 @@ const FORMAT_ITEMS = [
 const INSERT_ITEMS = [
   { icon: 'ri-menu-line', label: '目录', action: 'toc' },
   { icon: 'ri-double-quotes-l', label: '引言', action: 'quote' },
-  { icon: 'ri-footprint-line', label: '脚注', action: 'footnote' },
-  { icon: 'ri-flow-chart', label: '图表', action: 'chart' },
+  { icon: 'ri-superscript', label: '脚注', action: 'footnote' },
+  { icon: 'ri-bar-chart-2-line', label: '图表', action: 'chart' },
   { icon: 'ri-emotion-line', label: '表情图标', action: 'emoji' },
   { sep: true },
   { icon: 'ri-separator', label: '分割线', action: 'hr' },
@@ -67,35 +60,39 @@ const SUPSUB_ITEMS = [
 ]
 
 const PREVIEW_ITEMS = [
-  { icon: 'ri-eye-line', label: '即时预览', action: 'instant' },
-  { icon: 'ri-file-code-line', label: '预览 · 排版', action: 'full' },
-  { icon: 'ri-code-s-line', label: '预览 · 源码', action: 'code' },
+  { icon: 'ri-edit-2-line', label: '编辑模式', action: 'edit' },
+  { icon: 'ri-code-s-line', label: '代码模式', action: 'code' },
+  { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
 ]
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 
 export const Toolbar: React.FC = () => {
   const openPanel = useEditorStore((s: any) => s.openPanel)
+  const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
   const showOutline = useEditorStore((s: any) => s.showOutline)
   const showPreview = useEditorStore((s: any) => s.showPreview)
+  const showLibrary = useEditorStore((s: any) => s.showLibrary)
   const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
   const setShowPreview = useEditorStore((s: any) => s.setShowPreview)
+  const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
   const setReadMode = useEditorStore((s: any) => s.setReadMode)
+  const codeMode = useEditorStore((s: any) => s.codeMode)
+  const setCodeMode = useEditorStore((s: any) => s.setCodeMode)
   const editor = useEditorStore((s: any) => s.editor)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
-  const setTitle = useEditorStore((s: any) => s.setTitle)
-  const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
-  const isReadMode = useEditorStore((s: any) => s.isReadMode)
   const createDoc = useEditorStore((s: any) => s.createDoc)
-  const showAllToolbarButtons = useSettingsStore((s) => s.showAllToolbarButtons)
+  const compactToolbar = useSettingsStore((s) => s.showAllToolbarButtons)
   const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
 
-   const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
-   const [showLinkDialog, setShowLinkDialog] = useState(false)
-   const [showImageDialog, setShowImageDialog] = useState(false)
-   const [showCodeDialog, setShowCodeDialog] = useState(false)
-   const [showFormulaDialog, setShowFormulaDialog] = useState(false)
-   const [showChartDialog, setShowChartDialog] = useState(false)
-   const [showEmojiDialog, setShowEmojiDialog] = useState(false)
-   const [showBeautifyDialog, setShowBeautifyDialog] = useState(false)
+    const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
+    const [showBeautifyDialog, setShowBeautifyDialog] = useState(false)
    const menuRef = useRef<HTMLDivElement>(null)
    const menuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -134,24 +131,12 @@ export const Toolbar: React.FC = () => {
   const handleNewFile = React.useCallback(() => {
     // createDoc handles naming automatically (Untitled-1.md, Untitled-2.md, ...)
     const id = createDoc()
-    const editor = useEditorStore.getState().editor
-    if (editor) {
-      editor.chain().focus().clearContent().run()
+    const currentEditor = useEditorStore.getState().editor
+    if (currentEditor) {
+      currentEditor.chain().focus().clearContent().run()
     }
     useEditorStore.getState().setLastEditTime(Date.now())
   }, [createDoc])
-
-  const insertImageFromUrl = (url: string, alt: string) => {
-    if (!editor) return
-    editor.chain().focus().insertImage({ src: url, alt }).run()
-  }
-
-  const handleImageUpload = (file: File) => {
-    if (!editor) return
-    const reader = new FileReader()
-    reader.onload = (ev) => insertImageFromUrl(ev.target?.result as string, file.name)
-    reader.readAsDataURL(file)
-  }
 
   const handleFormatAction = (action: string) => {
     setMenuOpen(null)
@@ -173,13 +158,13 @@ export const Toolbar: React.FC = () => {
         chain.setHorizontalRule().run()
         break
       case 'link':
-        setShowLinkDialog(true)
+        setInsertPanel('link')
         return
       case 'image':
-        setShowImageDialog(true)
+        setInsertPanel('image')
         return
       case 'chart':
-        setShowChartDialog(true)
+        setInsertPanel('chart')
         return
       case 'ol':
         chain.toggleOrderedList().run()
@@ -213,21 +198,21 @@ export const Toolbar: React.FC = () => {
           return true
         })
         const tocBody = headings.length > 0
-          ? headings.map(h => `<p>${h}</p>`).join('')
+          ? headings.map(h => `<p>${escapeHtml(h)}</p>`).join('')
           : '<p>暂无标题</p>'
         chain.insertContent(
-          `<div data-toc><p><strong>目录</strong></p>${tocBody}</div><p></p>`
+          `<blockquote class="lz-insert lz-insert-toc" data-insert="toc"><p><strong>目录</strong></p>${tocBody}</blockquote><p></p>`
         ).run()
         break
       }
       case 'quote': {
         const sel = editor.state.selection
         const text = sel && sel.from !== sel.to ? editor.state.doc.textBetween(sel.from, sel.to) : '引用内容'
-        chain.insertContent(`<blockquote><p>${text}</p></blockquote>`).run()
+        chain.insertContent(`<blockquote class="lz-insert lz-insert-quote" data-insert="quote"><p>${escapeHtml(text)}</p></blockquote>`).run()
         break
       }
       case 'footnote':
-        chain.insertContent('<sup>[^1]</sup>').run()
+        chain.insertContent('<sup class="lz-insert-footnote-ref" data-insert="footnote">[^1]</sup>').run()
         break
       case 'hr':
         chain.setHorizontalRule().run()
@@ -236,19 +221,19 @@ export const Toolbar: React.FC = () => {
         chain.toggleBlockquote().run()
         break
       case 'code': {
-        setShowCodeDialog(true)
+        setInsertPanel('code')
         return
       }
       case 'math': {
-        setShowFormulaDialog(true)
+        setInsertPanel('formula')
         return
       }
       case 'chart': {
-        setShowChartDialog(true)
+        setInsertPanel('chart')
         return
       }
       case 'emoji': {
-        setShowEmojiDialog(true)
+        setInsertPanel('emoji')
         return
       }
     }
@@ -260,9 +245,7 @@ export const Toolbar: React.FC = () => {
     const chain = editor.chain().focus()
     switch (action) {
       case 'insert': {
-        const r = parseInt(prompt('行数:', '3') || '3')
-        const c = parseInt(prompt('列数:', '3') || '3')
-        if (r > 0 && c > 0) chain.insertTable({ rows: r, cols: c, withHeaderRow: true }).run()
+        setInsertPanel('table')
         break
       }
       case 'colBefore':
@@ -301,16 +284,19 @@ export const Toolbar: React.FC = () => {
   const handlePreviewAction = (action: string) => {
     setMenuOpen(null)
     switch (action) {
-      case 'instant':
-        setShowPreview((v: boolean) => !v)
-        break
-      case 'full':
-        setPreviewMode('render')
-        setOpenPanel(openPanel === 'preview' ? 'none' : 'preview')
+      case 'edit':
+        setCodeMode(false)
+        setReadMode(false)
+        setShowPreview(useSettingsStore.getState().previewModeEnabled !== false)
         break
       case 'code':
-        setPreviewMode('code')
-        setOpenPanel('preview')
+        setCodeMode(true)
+        setReadMode(false)
+        setShowPreview(useSettingsStore.getState().previewModeEnabled !== false)
+        break
+      case 'read':
+        setCodeMode(false)
+        setReadMode(true)
         break
     }
   }
@@ -345,7 +331,7 @@ export const Toolbar: React.FC = () => {
        <div className="toolbar">
          {/* ── Left ── */}
          <div className="toolbar-group">
-           <button className={`toolbar-btn ${openPanel === 'library' ? 'active' : ''}`} onClick={() => setOpenPanel(openPanel === 'library' ? 'none' : 'library')}>
+           <button className={`toolbar-btn ${showLibrary ? 'active' : ''}`} onClick={() => setShowLibrary(!showLibrary)}>
              <span className="remix toolbar-icon ri-archive-2-line"></span>
              <span className="toolbar-label">文档库</span>
            </button>
@@ -358,9 +344,9 @@ export const Toolbar: React.FC = () => {
              <span className="toolbar-label">大纲</span>
            </button>
              <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('preview')} onMouseLeave={closeMenu}>
-               <button className={`toolbar-btn ${showPreview ? 'active' : ''}`}>
+               <button className={`toolbar-btn ${showPreview || codeMode ? 'active' : ''}`}>
                  <span className="remix toolbar-icon ri-eye-2-fill"></span>
-                 <span className="toolbar-label">预览</span>
+                 <span className="toolbar-label">模式</span>
                  <span className="toolbar-menu-dot"></span>
                </button>
                <SubMenu menuKey="preview" items={PREVIEW_ITEMS} onAction={handlePreviewAction} />
@@ -369,11 +355,13 @@ export const Toolbar: React.FC = () => {
 
           {/* ── Middle ── */}
           <div className="toolbar-group toolbar-group--middle">
-            <button className="toolbar-btn" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>粗体</span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>斜体</span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('underline')}><span className="remix toolbar-icon ri-underline"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>下划线</span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>删除线</span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('toggleHighlight')}><span className="remix toolbar-icon ri-mark-pen-fill"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>高亮</span></button>
+            {!compactToolbar && <>
+              <button className="toolbar-btn" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>粗体</span></button>
+              <button className="toolbar-btn" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>斜体</span></button>
+              <button className="toolbar-btn" onClick={() => applyCmd('underline')}><span className="remix toolbar-icon ri-underline"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>下划线</span></button>
+              <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>删除线</span></button>
+              <button className="toolbar-btn" onClick={() => applyCmd('toggleHighlight')}><span className="remix toolbar-icon ri-mark-pen-fill"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>高亮</span></button>
+            </>}
 
             <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('format')} onMouseLeave={closeMenu}>
               <button className="toolbar-btn">
@@ -384,11 +372,29 @@ export const Toolbar: React.FC = () => {
               <SubMenu menuKey="format" items={FORMAT_ITEMS} onAction={handleFormatAction} />
             </div>
 
-            <button className="toolbar-btn" onClick={() => setShowImageDialog(true)}><span className="remix toolbar-icon ri-image-line"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>图片</span></button>
-            <button className="toolbar-btn" onClick={() => setShowEmojiDialog(true)}><span className="remix toolbar-icon ri-emotion-line"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>表情</span></button>
-            <button className="toolbar-btn" onClick={() => setShowLinkDialog(true)}><span className="remix toolbar-icon ri-link"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>链接</span></button>
+            <button className="toolbar-btn" onClick={() => setInsertPanel('image')}><span className="remix toolbar-icon ri-image-line"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>图片</span></button>
+            <button className="toolbar-btn" onClick={() => setInsertPanel('link')}><span className="remix toolbar-icon ri-link"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>链接</span></button>
 
-            {showAllToolbarButtons && <>
+            <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('table')} onMouseLeave={closeMenu}>
+              <button className="toolbar-btn">
+                <span className="remix toolbar-icon ri-table-2"></span>
+                <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>表格</span>
+                <span className="toolbar-menu-dot"></span>
+              </button>
+              <SubMenu menuKey="table" items={TABLE_ITEMS} onAction={handleTableAction} />
+            </div>
+
+            <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('insert')} onMouseLeave={closeMenu}>
+              <button className="toolbar-btn">
+                <span className="remix toolbar-icon ri-add-circle-line"></span>
+                <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>插入</span>
+                <span className="toolbar-menu-dot"></span>
+              </button>
+              <SubMenu menuKey="insert" items={INSERT_ITEMS} onAction={handleInsertAction} />
+            </div>
+
+            {!compactToolbar && <>
+              <button className="toolbar-btn" onClick={() => setInsertPanel('emoji')}><span className="remix toolbar-icon ri-emotion-line"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>表情</span></button>
               <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('supsub')} onMouseLeave={closeMenu}>
                 <button className="toolbar-btn">
                   <span className="remix toolbar-icon ri-superscript"></span>
@@ -397,37 +403,15 @@ export const Toolbar: React.FC = () => {
                 </button>
                 <SubMenu menuKey="supsub" items={SUPSUB_ITEMS} onAction={(a) => { handleFormatAction(a); setMenuOpen(null) }} />
               </div>
-
-              <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('table')} onMouseLeave={closeMenu}>
-                <button className="toolbar-btn">
-                  <span className="remix toolbar-icon ri-table-2"></span>
-                  <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>表格</span>
-                  <span className="toolbar-menu-dot"></span>
-                </button>
-                <SubMenu menuKey="table" items={TABLE_ITEMS} onAction={handleTableAction} />
-              </div>
-
-              <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('insert')} onMouseLeave={closeMenu}>
-                <button className="toolbar-btn">
-                  <span className="remix toolbar-icon ri-add-circle-line"></span>
-                  <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>插入</span>
-                  <span className="toolbar-menu-dot"></span>
-                </button>
-                <SubMenu menuKey="insert" items={INSERT_ITEMS} onAction={handleInsertAction} />
-              </div>
             </>}
           </div>
 
          {/* ── Right ── */}
          <div className="toolbar-group">
-           <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })}>
+           {!compactToolbar && <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })}>
              <span className="remix toolbar-icon ri-openai-fill"></span>
              <span className="toolbar-label">AI</span>
-           </button>
-           <button className={`toolbar-btn ${isReadMode ? 'active' : ''}`} onClick={() => setReadMode((v: boolean) => !v)}>
-             <span className="remix toolbar-icon ri-book-open-fill"></span>
-             <span className="toolbar-label">阅读</span>
-           </button>
+           </button>}
            <button className={`toolbar-btn ${openPanel === 'history' ? 'active' : ''}`} onClick={() => setOpenPanel(openPanel === 'history' ? 'none' : 'history')}>
              <span className="remix toolbar-icon ri-history-fill"></span>
              <span className="toolbar-label">历史</span>
@@ -443,12 +427,6 @@ export const Toolbar: React.FC = () => {
          </div>
        </div>
 
-      {showLinkDialog && <LinkDialog onClose={() => setShowLinkDialog(false)} />}
-      {showImageDialog && <ImageDialog onClose={() => setShowImageDialog(false)} onInsert={insertImageFromUrl} onUpload={handleImageUpload} />}
-      {showCodeDialog && <CodeDialog onClose={() => setShowCodeDialog(false)} onInsert={(code, lang) => { if (!editor) return; editor.chain().focus().insertContent({ type: 'codeBlock', attrs: { language: lang }, content: [{ type: 'text', text: code }] }).run(); }} />}
-      {showFormulaDialog && <FormulaDialog onClose={() => setShowFormulaDialog(false)} onInsert={(formula) => { if (!editor) return; editor.chain().focus().insertMath(formula).run(); }} />}
-      {showChartDialog && <ChartDialog onClose={() => setShowChartDialog(false)} onInsert={(html, type) => { if (!editor) return; editor.chain().focus().insertContent(html).run(); }} />}
-      {showEmojiDialog && <EmojiDialog onClose={() => setShowEmojiDialog(false)} onInsert={(text) => { if (!editor) return; editor.chain().focus().insertContent(text).run(); }} />}
       {showBeautifyDialog && <BeautifyDialog onClose={() => setShowBeautifyDialog(false)} />}
     </>
   )
