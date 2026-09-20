@@ -543,7 +543,7 @@ export const LZEditor = () => {
             ))}
           </div>
         )}
-        <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`}>
+        <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`} style={codeMode ? { display: 'none' } : undefined}>
           {codeMode ? (
             <textarea
               className="lz-code-mode-textarea"

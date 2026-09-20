@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { TextSelection } from '@tiptap/pm/state'
+import { useScrollSpy } from '../../hooks/useScrollSpy'
 
 interface OutlineItem {
   id: string
@@ -8,10 +9,6 @@ interface OutlineItem {
   text: string
   pos: number
   number: string
-}
-
-interface NumberingState {
-  counters: number[]
 }
 
 /** Walk the ProseMirror doc, collect headings with 1 / 1.1 / 1.1.1 numbering. */
@@ -87,19 +84,51 @@ export const SidebarOutline: React.FC = () => {
     }
   }, [editor, refresh])
 
-  const handleJump = (item: OutlineItem) => {
+  // Build scroll-spy items from DOM headings (same approach as ReadMode)
+  const editorContentRef = useEditorStore((s: any) => s.editorContentRef)
+  const outlineItemsForSpy = useMemo(() => {
+    if (!editorContentRef) return []
+    const container = editorContentRef as HTMLElement
+    const domHeadings = container.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    return Array.from(domHeadings).map((el, i) => {
+      const level = parseInt((el as HTMLElement).tagName[1])
+      // Find matching OutlineItem by text content (headings are unique in order)
+      const matchingItem = items.find(item => item.level === level && item.text === el.textContent?.trim())
+      return {
+        id: matchingItem?.id || `dom-h-${i}`,
+        text: el.textContent?.trim() || '',
+        el: el as HTMLElement,
+      }
+    })
+  }, [items, editorContentRef])
+
+  const { scrollTo: scrollSpyTo } = useScrollSpy({
+    items: outlineItemsForSpy,
+    activeId,
+    setActiveId,
+    container: editorContentRef as HTMLElement | null,
+  })
+
+  // Scroll spy to current active heading when items change
+  useEffect(() => {
+    if (editorContentRef && activeId) scrollSpyTo(activeId)
+  }, [outlineItemsForSpy])
+
+  const handleJump = useCallback((item: OutlineItem) => {
     if (!editor) return
     const pos = editor.state.doc.resolve(item.pos + 1)
     const tr = editor.state.tr.setSelection(TextSelection.near(pos))
     tr.scrollIntoView()
     editor.view.dispatch(tr)
-    requestAnimationFrame(() => {
-      const dom = editor.view.nodeDOM(item.pos) as HTMLElement | null
-      const target = dom?.nodeType === Node.ELEMENT_NODE ? dom : dom?.parentElement
-      target?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    })
     setActiveId(item.id)
-  }
+    // Also scroll the DOM heading into view
+    const container = editorContentRef as HTMLElement | null
+    if (container) {
+      const domHeadings = container.querySelectorAll('h1,h2,h3,h4,h5,h6')
+      const matchingEl = Array.from(domHeadings).find(el => el.textContent?.trim() === item.text)
+      matchingEl?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [editor, editorContentRef, scrollSpyTo])
 
   const toggleCollapse = (number: string) => {
     setCollapsed((prev) => ({ ...prev, [number]: !prev[number] }))

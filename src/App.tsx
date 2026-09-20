@@ -7,6 +7,7 @@ import { SettingsDialog } from './components/panels/SettingsDialog'
 import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { ReadMode } from './components/panels/ReadMode'
+import { CodeMode } from './components/panels/CodeMode'
 import { LibraryPanel } from './components/panels/LibraryPanel'
 import { FilePanel } from './components/panels/FilePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
@@ -28,6 +29,7 @@ function App() {
   const openPanel = useEditorStore(s => s.openPanel)
   const insertPanel = useEditorStore(s => s.insertPanel)
   const isReadMode = useEditorStore(s => s.isReadMode)
+  const codeMode = useEditorStore(s => s.codeMode)
   const showOutline = useEditorStore(s => s.showOutline)
   const showPreview = useEditorStore(s => s.showPreview)
   const showLibrary = useEditorStore(s => s.showLibrary)
@@ -95,6 +97,7 @@ function App() {
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
       {isReadMode && <ReadMode onClose={() => useEditorStore.getState().setReadMode(false)} />}
+      {codeMode && <CodeMode onClose={() => useEditorStore.getState().setCodeMode(false)} />}
       <AIPanel />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} />}

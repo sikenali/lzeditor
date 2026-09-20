@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES, getTypographyTheme } from '../../styles/typography-themes'
+import { useScrollSpy } from '../../hooks/useScrollSpy'
 
 type Layout = 'narrow' | 'normal' | 'wide'
 const LAYOUTS: Layout[] = ['narrow', 'normal', 'wide']
@@ -68,23 +69,19 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [docHTML, typographyTheme])
 
   // ── Scroll spy for active heading ──
+  const tocItemsForSpy = useMemo(() =>
+    tocItems.map(item => ({ id: item.id, text: item.text, el: document.getElementById(item.id) })),
+    [tocItems]
+  )
+  const { scrollTo: scrollSpyTo } = useScrollSpy({
+    items: tocItemsForSpy,
+    activeId: activeTocId,
+    setActiveId: setActiveTocId,
+    container: bodyRef.current,
+  })
   useEffect(() => {
-    const el = bodyRef.current
-    if (!el || tocItems.length === 0) return
-    const onScroll = () => {
-      const rect = el.getBoundingClientRect()
-      let active = tocItems[0]?.id || ''
-      for (const item of tocItems) {
-        const target = document.getElementById(item.id)
-        if (!target) continue
-        const r = target.getBoundingClientRect()
-        if (r.top <= rect.top + 80) active = item.id
-      }
-      setActiveTocId(active)
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [tocItems])
+    if (bodyRef.current) scrollSpyTo(activeTocId)
+  }, [tocItemsForSpy])
 
   // ── Position memory: save on close, restore on open ──
   useEffect(() => {
@@ -134,13 +131,13 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     setActiveTocId(tocItems[0]?.id || '')
   }
 
-  const scrollToHeading = (id: string) => {
+  const scrollToHeading = useCallback((id: string) => {
     const el = document.getElementById(id)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       setActiveTocId(id)
     }
-  }
+  }, [setActiveTocId])
 
   const handleCopyCode = useCallback((e: React.MouseEvent) => {
     const btn = e.currentTarget as HTMLElement

@@ -204,20 +204,20 @@
   --border-lighter: rgba(255,255,255,0.92);
 
   /* Fixed chrome — isolated from content typography themes */
-  --chrome-toolbar-bg:             rgba(245,240,232,0.92);
+  --chrome-toolbar-bg:             transparent;
   --chrome-toolbar-hover-bg:       rgba(0,0,0,0.05);
-  --chrome-toolbar-active-bg:      rgba(196,58,43,0.12);
-  --chrome-toolbar-icon:           rgba(61,50,38,0.85);
+  --chrome-toolbar-active-bg:      rgba(196,58,43,0.10);
+  --chrome-toolbar-icon:           rgba(61,50,38,0.80);
   --chrome-toolbar-icon-hover:     rgba(0,0,0,0.95);
-  --chrome-toolbar-label:          rgba(61,50,38,0.65);
+  --chrome-toolbar-label:          rgba(61,50,38,0.60);
   --chrome-toolbar-label-hover:    rgba(0,0,0,0.85);
   --chrome-toolbar-active:         #c43a31;
   --chrome-toolbar-border:         rgba(0,0,0,0.06);
 
-  --chrome-statusbar-bg:           rgba(245,240,230,1);
-  --chrome-statusbar-text:         rgba(61,43,31,1);
-  --chrome-statusbar-muted:        rgba(100,80,60,1);
-  --chrome-statusbar-divider:      rgba(194,168,122,0.4);
+  --chrome-statusbar-bg:           transparent;
+  --chrome-statusbar-text:         rgba(61,43,31,0.70);
+  --chrome-statusbar-muted:        rgba(100,80,60,0.60);
+  --chrome-statusbar-divider:      rgba(194,168,122,0.35);
   --chrome-statusbar-seal-bg:      linear-gradient(135deg, #c23a2b, #d4624a);
   --chrome-statusbar-pill-border:  rgba(194,168,122,0.5);
   --chrome-statusbar-pill-hover-bg: rgba(194,58,43,0.06);
