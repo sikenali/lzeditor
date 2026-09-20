@@ -224,11 +224,6 @@
   padding: 16px;
   overflow: auto;
 }
-.insert-dialog-actions {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 16px 24px;
-  border-top: 1px solid var(--border-subtle); flex-shrink: 0;
-}
 .table-size-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 360px; }
 .table-preview-panel { display: flex; align-items: center; justify-content: center; }
 .table-insert-preview { width: min(100%, 520px); border-collapse: collapse; background: var(--bg-primary); }

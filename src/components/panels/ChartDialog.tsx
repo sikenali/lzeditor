@@ -287,7 +287,7 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
             </div>
 
             {/* Action buttons — bottom right */}
-            <div className="insert-dialog-actions">
+            <div className="export-footer">
               <div className="export-hint">
                 <span className="remix ri-information-line"></span>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>图表将插入到当前光标位置</span>

@@ -213,7 +213,7 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
           </div>
         </div>
 
-        <div className="insert-dialog-actions">
+        <div className="export-footer">
           <div className="export-hint">
             <span className="remix ri-information-line"></span>
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>应用后将覆盖当前排版主题</span>

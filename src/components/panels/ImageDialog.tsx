@@ -102,7 +102,7 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
                 </div>
               )}
             </div>
-            <div className="insert-dialog-actions">
+            <div className="export-footer">
               <div className="export-hint">
                 <span className="remix ri-information-line"></span>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>插入后图片将显示在光标位置</span>

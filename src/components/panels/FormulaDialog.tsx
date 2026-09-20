@@ -157,7 +157,7 @@ export const FormulaDialog: React.FC<FormulaDialogProps> = ({ onClose, onInsert 
                 <span className="formula-placeholder">在此输入公式查看预览...</span>
               )}
             </div>
-            <div className="insert-dialog-actions">
+            <div className="export-footer">
               <div className="export-hint">
                 <span className="remix ri-information-line"></span>
                 <span>点击左侧公式可同步到代码与预览</span>

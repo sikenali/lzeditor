@@ -126,7 +126,7 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
                 )}
               </div>
             </div>
-            <div className="insert-dialog-actions">
+            <div className="export-footer">
               <div className="export-hint">
                 <span className="remix ri-information-line"></span>
                 <span>点击表情后将立即插入</span>

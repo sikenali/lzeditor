@@ -211,13 +211,13 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         </div>
 
         {/* Footer */}
-        <div className="settings-footer">
-          <div className="settings-footer-left">
+        <div className="export-footer">
+          <div className="export-hint">
             <span className="remix ri-information-line"></span>
             <span>修改将立即生效</span>
           </div>
-          <div className="settings-footer-right">
-            <button className="settings-action-btn" onClick={onClose}>取消</button>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose}>取消</button>
             <button className="settings-save-btn" onClick={handleSave}>
               <span className="remix ri-check-line"></span><span>完成</span>
             </button>

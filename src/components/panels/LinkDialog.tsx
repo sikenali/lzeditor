@@ -101,7 +101,7 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </>
               )}
             </div>
-            <div className="insert-dialog-actions">
+            <div className="export-footer">
               <div className="export-hint">
                 <span className="remix ri-information-line"></span>
                 <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>链接将插入到光标位置</span>
