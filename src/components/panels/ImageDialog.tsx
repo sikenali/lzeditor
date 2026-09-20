@@ -58,16 +58,16 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
               onClick={() => setMode('local')}
             >
               <span className="remix insert-nav-icon ri-upload-cloud-2-line"></span>
-              <span className="insert-nav-name">本地图片</span>
-              <span className="insert-nav-desc">上传或拖入图片文件</span>
+              <span className="chip-name">本地图片</span>
+              <span className="chip-desc">上传或拖入图片文件</span>
             </button>
             <button
               className={`insert-nav-item ${mode === 'url' ? 'active' : ''}`}
               onClick={() => setMode('url')}
             >
               <span className="remix insert-nav-icon ri-global-line"></span>
-              <span className="insert-nav-name">图床地址</span>
-              <span className="insert-nav-desc">使用 http 或 https 链接</span>
+              <span className="chip-name">图床地址</span>
+              <span className="chip-desc">使用 http 或 https 链接</span>
             </button>
           </div>
           <div className="insert-right-pane">

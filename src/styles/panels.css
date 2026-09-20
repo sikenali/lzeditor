@@ -151,7 +151,7 @@
   width: 100%;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
-  grid-template-areas: "icon name";
+  grid-template-areas: "icon name" "icon desc";
   align-items: center;
   justify-items: start;
   column-gap: 10px;
@@ -172,7 +172,7 @@
   font-size: 18px;
   line-height: 1;
 }
-.insert-nav-item > span:nth-child(2):not(.insert-nav-desc) {
+.insert-nav-item > span:nth-child(2):not(.chip-desc) {
   grid-area: name;
   font-size: 13px;
   font-weight: 600;
@@ -188,7 +188,7 @@
   color: var(--accent-primary);
   line-height: 1;
 }
-.insert-nav-name {
+.insert-nav-item .chip-name {
   grid-area: name;
   font-size: 13px;
   font-weight: 600;
@@ -199,14 +199,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.insert-nav-desc {
+.insert-nav-item .chip-desc {
   grid-area: desc;
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.3;
   min-width: 0;
 }
-.insert-nav-item.active .insert-nav-name,
+.insert-nav-item.active .chip-name,
 .insert-nav-item.active .insert-nav-icon { color: var(--accent-primary); }
 .insert-right-pane {
   min-width: 0;

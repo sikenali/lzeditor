@@ -91,8 +91,8 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
                   onClick={() => { setActiveCat(cat.id as CategoryId); setSearch('') }}
                 >
                   <span className={`remix insert-nav-icon ${cat.icon}`}></span>
-                  <span className="insert-nav-name">{cat.label}</span>
-                  <span className="insert-nav-desc">{cat.desc}</span>
+                  <span className="chip-name">{cat.label}</span>
+                  <span className="chip-desc">{cat.desc}</span>
                 </button>
               ))}
             </div>

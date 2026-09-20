@@ -9,13 +9,13 @@ import { LFSInput } from '../../components/ui/LFInput'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 
 /* ── Nav categories ── */
-const NAV_ITEMS: { id: SettingsGroup; label: string; icon: string }[] = [
-  { id: 'theme',     label: '主题设置', icon: 'ri-palette-fill' },
-  { id: 'editor',    label: '编辑设置', icon: 'ri-edit-2-fill' },
-  { id: 'ai',        label: 'AI 设置',  icon: 'ri-openai-fill' },
-  { id: 'shortcut',  label: '快捷键设置', icon: 'ri-keyboard-fill' },
-  { id: 'sync',      label: '同步备份', icon: 'ri-refresh-line' },
-  { id: 'about',     label: '关于',     icon: 'ri-information-fill' },
+const NAV_ITEMS: { id: SettingsGroup; label: string; desc: string; icon: string }[] = [
+  { id: 'theme',     label: '主题设置', desc: '界面、内容与强调色', icon: 'ri-palette-fill' },
+  { id: 'editor',    label: '编辑设置', desc: '编辑器行为与本地化', icon: 'ri-edit-2-fill' },
+  { id: 'ai',        label: 'AI 设置',  desc: '模型供应商与连接', icon: 'ri-openai-fill' },
+  { id: 'shortcut',  label: '快捷键设置', desc: '文档、编辑与应用操作', icon: 'ri-keyboard-fill' },
+  { id: 'sync',      label: '同步备份', desc: '网络与 NAS 备份', icon: 'ri-refresh-line' },
+  { id: 'about',     label: '关于',     desc: '版本与项目信息', icon: 'ri-information-fill' },
 ]
 type SubTab = { id: string; label: string; icon: string }
 
@@ -174,7 +174,8 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 onClick={() => setActiveGroup(item.id)}
               >
                 <span className={`remix nav-item-icon ${item.icon}`}></span>
-                <span className="settings-nav-name">{item.label}</span>
+                <span className="chip-name">{item.label}</span>
+                <span className="chip-desc">{item.desc}</span>
               </div>
             ))}
           </div>

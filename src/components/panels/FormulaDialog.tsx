@@ -118,8 +118,8 @@ export const FormulaDialog: React.FC<FormulaDialogProps> = ({ onClose, onInsert 
                   onClick={() => setGroupId(group.id)}
                 >
                   <span className={`remix insert-nav-icon ${group.icon}`}></span>
-                  <span className="insert-nav-name">{group.name}</span>
-                  <span className="insert-nav-desc">{group.desc}</span>
+                  <span className="chip-name">{group.name}</span>
+                  <span className="chip-desc">{group.desc}</span>
                 </button>
                 {groupId === group.id && (
                   <div className="formula-quick-list">

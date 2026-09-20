@@ -236,8 +236,8 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
                 onClick={() => setType(ct.id)}
                 title={`${ct.label}：${ct.desc}`}>
                 <span className={`remix insert-nav-icon ${ct.icon}`}></span>
-                <span className="insert-nav-name">{ct.label}</span>
-                <span className="insert-nav-desc">{ct.desc}</span>
+                <span className="chip-name">{ct.label}</span>
+                <span className="chip-desc">{ct.desc}</span>
               </button>
             ))}
           </div>

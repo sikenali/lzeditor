@@ -58,16 +58,16 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               onClick={() => setMode('external')}
             >
               <span className="remix insert-nav-icon ri-global-line"></span>
-              <span className="insert-nav-name">外部网站</span>
-              <span className="insert-nav-desc">跳转到网页 URL</span>
+              <span className="chip-name">外部网站</span>
+              <span className="chip-desc">跳转到网页 URL</span>
             </button>
             <button
               className={`insert-nav-item ${mode === 'document' ? 'active' : ''}`}
               onClick={() => setMode('document')}
             >
               <span className="remix insert-nav-icon ri-file-text-line"></span>
-              <span className="insert-nav-name">文档或章节</span>
-              <span className="insert-nav-desc">链接到内部标题锚点</span>
+              <span className="chip-name">文档或章节</span>
+              <span className="chip-desc">链接到内部标题锚点</span>
             </button>
           </div>
           <div className="insert-right-pane">

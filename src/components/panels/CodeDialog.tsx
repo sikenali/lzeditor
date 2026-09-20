@@ -103,8 +103,8 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
                 onClick={() => setThemeId(theme.id)}
               >
                 <span className={`remix insert-nav-icon ${theme.icon}`}></span>
-                <span className="insert-nav-name">{theme.name}</span>
-                <span className="insert-nav-desc">{theme.desc}</span>
+                <span className="chip-name">{theme.name}</span>
+                <span className="chip-desc">{theme.desc}</span>
               </button>
             ))}
           </div>

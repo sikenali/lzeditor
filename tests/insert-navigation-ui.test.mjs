@@ -26,12 +26,22 @@ for (const [name, source] of Object.entries(sources)) {
 for (const name of ['ImageDialog', 'LinkDialog', 'TableDropdown', 'ChartDialog', 'EmojiDialog', 'CodeDialog', 'FormulaDialog']) {
   const source = sources[name]
   assert.match(source, /insert-nav-icon/, `${name} left navigation should use a dedicated icon slot`)
-  assert.match(source, /insert-nav-name/, `${name} left navigation should use a dedicated name slot`)
-  assert.match(source, /insert-nav-desc/, `${name} left navigation should use a dedicated description slot`)
+  assert.match(source, /chip-name/, `${name} left navigation should use the export chip name slot`)
+  assert.match(source, /chip-desc/, `${name} left navigation should use the export chip description slot`)
+  assert.doesNotMatch(source, /insert-nav-name|insert-nav-desc/, `${name} should not keep insert-specific text slot classes`)
 }
 
 assert.match(panelsCss, /\.insert-nav-item\s*\{[\s\S]*grid-template-areas:\s*"icon name" "icon desc"/, 'Insert left nav should match export compact chip layout')
 assert.match(settingsCss, /\.settings-nav-item\s*\{[\s\S]*grid-template-areas:\s*"icon name" "icon desc"/, 'Settings left nav should match export compact chip layout')
+assert.match(panelsCss, /\.insert-nav-item \.chip-name/, 'Insert left nav should style the shared chip name slot')
+assert.match(panelsCss, /\.insert-nav-item \.chip-desc/, 'Insert left nav should style the shared chip description slot')
+assert.doesNotMatch(panelsCss, /insert-nav-name|insert-nav-desc/, 'Insert left nav styles should not keep insert-specific text slot classes')
 assert.match(settingsDialog, /desc:/, 'Settings nav items should include descriptions like export format chips')
+assert.match(settingsDialog, /chip-name/, 'Settings left nav should use the export chip name slot')
+assert.match(settingsDialog, /chip-desc/, 'Settings left nav should use the export chip description slot')
+assert.match(settingsCss, /\.settings-nav-item \.chip-name/, 'Settings left nav should style the shared chip name slot')
+assert.match(settingsCss, /\.settings-nav-item \.chip-desc/, 'Settings left nav should style the shared chip description slot')
+assert.doesNotMatch(settingsDialog, /settings-nav-name|settings-nav-desc/, 'Settings left nav should not keep settings-specific text slot classes')
+assert.doesNotMatch(settingsCss, /settings-nav-name|settings-nav-desc/, 'Settings left nav styles should not keep settings-specific text slot classes')
 
 console.log('insert navigation UI checks passed')

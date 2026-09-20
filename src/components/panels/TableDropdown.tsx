@@ -57,8 +57,8 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                 onClick={() => choosePreset(item.id)}
               >
                 <span className={`remix insert-nav-icon ${item.icon}`}></span>
-                <span className="insert-nav-name">{item.label}</span>
-                <span className="insert-nav-desc">{item.desc}</span>
+                <span className="chip-name">{item.label}</span>
+                <span className="chip-desc">{item.desc}</span>
               </button>
             ))}
           </div>
