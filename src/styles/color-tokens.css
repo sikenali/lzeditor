@@ -204,14 +204,14 @@
   --border-lighter: rgba(255,255,255,0.92);
 
   /* Fixed chrome — isolated from content typography themes */
-  --chrome-toolbar-bg:             rgba(250,246,237,0.88);
+  --chrome-toolbar-bg:             rgba(245,240,232,0.92);
   --chrome-toolbar-hover-bg:       rgba(0,0,0,0.05);
-  --chrome-toolbar-active-bg:      rgba(194,58,43,0.12);
-  --chrome-toolbar-icon:           rgba(44,36,22,0.85);
+  --chrome-toolbar-active-bg:      rgba(196,58,43,0.12);
+  --chrome-toolbar-icon:           rgba(61,50,38,0.85);
   --chrome-toolbar-icon-hover:     rgba(0,0,0,0.95);
-  --chrome-toolbar-label:          rgba(44,36,22,0.65);
+  --chrome-toolbar-label:          rgba(61,50,38,0.65);
   --chrome-toolbar-label-hover:    rgba(0,0,0,0.85);
-  --chrome-toolbar-active:         #c23a2b;
+  --chrome-toolbar-active:         #c43a31;
   --chrome-toolbar-border:         rgba(0,0,0,0.06);
 
   --chrome-statusbar-bg:           rgba(245,240,230,1);
