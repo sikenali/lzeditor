@@ -141,7 +141,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -167,17 +167,23 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         <div className="export-body export-body-split export-body-redesigned settings-body">
           {/* ── Left: main nav ── */}
           <div className="export-left settings-sidebar">
-            {NAV_ITEMS.map(item => (
-              <div
-                key={item.id}
-                className={`settings-nav-item ${activeGroup === item.id ? 'active' : ''}`}
-                onClick={() => setActiveGroup(item.id)}
-              >
-                <span className={`remix nav-item-icon ${item.icon}`}></span>
-                <span className="chip-name">{item.label}</span>
-                <span className="chip-desc">{item.desc}</span>
+            <div className="export-section">
+              <div className="export-section-label">设置分类</div>
+              <div className="format-chips-compact settings-format-list">
+                {NAV_ITEMS.map(item => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`format-chip-compact ${activeGroup === item.id ? 'active' : ''}`}
+                    onClick={() => setActiveGroup(item.id)}
+                  >
+                    <span className={`remix ${item.icon}`}></span>
+                    <span className="chip-name">{item.label}</span>
+                    <span className="chip-desc">{item.desc}</span>
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
 
           <div className="export-right settings-main">
@@ -212,7 +218,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         </div>
 
         {/* Footer */}
-        <div className="export-footer">
+        <div className="export-footer settings-export-footer">
           <div className="export-hint">
             <span className="remix ri-information-line"></span>
             <span>修改将立即生效</span>

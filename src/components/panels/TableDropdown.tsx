@@ -34,7 +34,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
 
   return (
     <div className="modal-overlay" onClick={() => onToggle(false)}>
-      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         <div className="export-header">
           <div className="export-title">
             <span className="remix export-icon ri-table-2"></span>
@@ -86,19 +86,19 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                 </tbody>
               </table>
             </div>
-            <div className="export-footer">
-              <div className="export-hint">
-                <span className="remix ri-information-line"></span>
-                <span>表格将插入到当前光标位置</span>
-              </div>
-              <div className="export-actions">
-                <button className="settings-cancel-btn" onClick={() => onToggle(false)}>关闭</button>
-                <button className="settings-save-btn" onClick={() => onInsert(rows, cols)}>
-                  <span className="remix ri-add-line"></span>
-                  插入
-                </button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="export-footer">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span>表格将插入到当前光标位置</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={() => onToggle(false)}>关闭</button>
+            <button className="settings-save-btn" onClick={() => onInsert(rows, cols)}>
+              <span className="remix ri-add-line"></span>
+              插入
+            </button>
           </div>
         </div>
       </div>

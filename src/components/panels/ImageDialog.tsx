@@ -34,9 +34,14 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
     }
   }
 
+  const handleOpenImageHost = () => {
+    const opened = window.open('https://imgant.com', '_blank', 'noopener,noreferrer')
+    if (opened) opened.opener = null
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -95,6 +100,10 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
                     <input className="lfs-input" placeholder="https:// 或 http://" value={imgUrl} onChange={e => setImgUrl(e.target.value)} />
                     {imgUrl && !imgUrl.match(/^https?:\/\//) && <span className="image-url-tip">提示：URL 需以 http:// 或 https:// 开头</span>}
                   </div>
+                  <button className="settings-cancel-btn image-host-btn" type="button" onClick={handleOpenImageHost}>
+                    <span className="remix ri-external-link-line"></span>
+                    <span>生成图床地址</span>
+                  </button>
                   <div className="export-field">
                     <label className="export-label">替代文字（可选）</label>
                     <input className="lfs-input" placeholder="图片描述" value={imgAlt} onChange={e => setImgAlt(e.target.value)} />
@@ -102,19 +111,19 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
                 </div>
               )}
             </div>
-            <div className="export-footer">
-              <div className="export-hint">
-                <span className="remix ri-information-line"></span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>插入后图片将显示在光标位置</span>
-              </div>
-              <div className="export-actions">
-                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-                <button className="settings-save-btn" onClick={handleInsert} disabled={mode === 'url' && !imgUrl.trim()}>
-                  <span className="remix ri-add-line"></span>
-                  插入
-                </button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="export-footer">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span>插入后图片将显示在光标位置</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+            <button className="settings-save-btn" onClick={handleInsert} disabled={mode === 'url' && !imgUrl.trim()}>
+              <span className="remix ri-add-line"></span>
+              插入
+            </button>
           </div>
         </div>
       </div>

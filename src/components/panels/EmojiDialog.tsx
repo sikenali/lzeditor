@@ -47,7 +47,7 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         <div className="export-header">
           <div className="export-title">
             <span className="remix export-icon ri-emotion-line"></span>
@@ -126,15 +126,15 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
                 )}
               </div>
             </div>
-            <div className="export-footer">
-              <div className="export-hint">
-                <span className="remix ri-information-line"></span>
-                <span>点击表情后将立即插入</span>
-              </div>
-              <div className="export-actions">
-              <button className="settings-cancel-btn" onClick={onClose} type="button">关闭</button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="export-footer">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span>点击表情后将立即插入</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose} type="button">关闭</button>
           </div>
         </div>
       </div>

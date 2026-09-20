@@ -80,7 +80,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         <div className="export-header">
           <div className="export-title">
             <span className="remix export-icon ri-code-box-line"></span>
@@ -151,19 +151,19 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
               )}
             </div>
 
-            <div className="export-footer">
-              <div className="export-hint">
-                <span className="remix ri-information-line"></span>
-                <span>代码块将插入到当前光标位置</span>
-              </div>
-              <div className="export-actions">
-                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-                <button className="settings-save-btn" onClick={handleInsert} disabled={!code.trim()}>
-                  <span className="remix ri-add-line"></span>
-                  插入
-                </button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="export-footer">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span>代码块将插入到当前光标位置</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+            <button className="settings-save-btn" onClick={handleInsert} disabled={!code.trim()}>
+              <span className="remix ri-add-line"></span>
+              插入
+            </button>
           </div>
         </div>
       </div>

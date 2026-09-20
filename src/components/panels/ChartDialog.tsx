@@ -215,7 +215,7 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog chart-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog chart-dialog" onClick={e => e.stopPropagation()}>
         <div className="export-header">
           <div className="export-title">
             <span className="remix export-icon ri-bar-chart-2-fill"></span>
@@ -286,20 +286,19 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
               </div>
             </div>
 
-            {/* Action buttons — bottom right */}
-            <div className="export-footer">
-              <div className="export-hint">
-                <span className="remix ri-information-line"></span>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>图表将插入到当前光标位置</span>
-              </div>
-              <div className="export-actions">
-                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-                <button className="settings-save-btn" onClick={handleInsert} disabled={!code.trim() && type !== 'drawio'}>
-                  <span className="remix ri-add-line"></span>
-                  <span>插入</span>
-                </button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="export-footer">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span>图表将插入到当前光标位置</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+            <button className="settings-save-btn" onClick={handleInsert} disabled={!code.trim() && type !== 'drawio'}>
+              <span className="remix ri-add-line"></span>
+              <span>插入</span>
+            </button>
           </div>
         </div>
       </div>

@@ -160,23 +160,22 @@
   --danger-text:      rgba(230,217,160,1);
 }
 
-/* ── Light theme (msst parchment gradient) ── */
-/* Homepage: linear-gradient(135deg, rgba(254,243,199,1) 0%, rgba(255,251,235,1) 50%, rgba(254,243,199,1) 100%) */
+/* ── Light theme (bid-assistant warm cream palette) ── */
 [data-theme="light"] {
-  --background:           #fef3c7;
-  --background-card:      #fdf6e3;
+  --background:           #f5f0e8;
+  --background-card:      #fdf9f0;
   --background-elevated:  #ffffff;
-  --background-hover:     #f5efe0;
-  --background-input:     #f0ebe0;
-  --background-code:      #f5efe0;
-  --background-quote:     #f2ede3;
-  --background-muted:     #f5f0e4;
+  --background-hover:     #efe9dc;
+  --background-input:     #ede7d8;
+  --background-code:      #f0ebe0;
+  --background-quote:     #efeae0;
+  --background-muted:     #f2ede3;
 
-  /* Text — ink black & warm brown */
-  --foreground:           #1a1a1a;
+  /* Text — warm brown (bid-assistant palette) */
+  --foreground:           #3d3226;
   --foreground-secondary: #3d2b1f;
   --foreground-muted:     #8b7355;
-  --foreground-heading:   #0f0f0f;
+  --foreground-heading:   #1a1510;
   --foreground-heading-2: #3d2b1f;
 
   /* Accent — jade */
@@ -194,11 +193,11 @@
   --accent-a40: rgba(59,168,115,0.40);
   --accent-a60: rgba(59,168,115,0.60);
 
-  /* Borders — tan/parchment */
-  --border:        #e0d5c0;
-  --border-default:#e0d5c0;
+  /* Borders — warm tan (bid-assistant palette) */
+  --border:        #e8d5c0;
+  --border-default:#e8d5c0;
   --border-subtle: #e8dfd2;
-  --border-input:  #e0d5c0;
+  --border-input:  #e0d0b8;
 
   /* Apple-style light borders */
   --border-light:   rgba(255,255,255,0.75);

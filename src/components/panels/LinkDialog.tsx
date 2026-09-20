@@ -36,7 +36,7 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
+      <div className="export-dialog export-dialog-split settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="export-header">
           <div className="export-title">
@@ -101,19 +101,19 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </>
               )}
             </div>
-            <div className="export-footer">
-              <div className="export-hint">
-                <span className="remix ri-information-line"></span>
-                <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>链接将插入到光标位置</span>
-              </div>
-              <div className="export-actions">
-                <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-                <button className="settings-save-btn" onClick={handleInsert} disabled={!canInsert}>
-                  <span className="remix ri-add-line"></span>
-                  插入
-                </button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="export-footer">
+          <div className="export-hint">
+            <span className="remix ri-information-line"></span>
+            <span>链接将插入到光标位置</span>
+          </div>
+          <div className="export-actions">
+            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
+            <button className="settings-save-btn" onClick={handleInsert} disabled={!canInsert}>
+              <span className="remix ri-add-line"></span>
+              插入
+            </button>
           </div>
         </div>
       </div>

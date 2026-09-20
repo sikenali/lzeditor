@@ -996,7 +996,7 @@
 }
 
 /* Export-dialog layout alignment for settings. */
-.settings-dialog {
+.settings-dialog.export-dialog {
   width: min(1080px, 94vw);
   height: min(720px, 88vh);
   max-height: 88vh;
@@ -1051,4 +1051,94 @@
 .settings-body.export-body-redesigned .settings-nav-desc,
 .settings-body.export-body-redesigned .settings-nav-item .chip-desc {
   display: none;
+}
+
+.settings-body.export-body-redesigned .settings-format-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.settings-body.export-body-redesigned .settings-format-list .format-chip-compact {
+  min-width: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-areas: "icon name" "icon desc";
+  align-items: center;
+  justify-items: start;
+  column-gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--bg-code);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.settings-body.export-body-redesigned .settings-format-list .format-chip-compact:hover {
+  border-color: var(--accent-border);
+  background: var(--bg-hover);
+  transform: translateX(2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-body.export-body-redesigned .settings-format-list .format-chip-compact.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-a5);
+  color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-a20);
+}
+
+.settings-body.export-body-redesigned .settings-format-list .format-chip-compact .remix {
+  grid-area: icon;
+  font-size: 20px;
+  line-height: 1;
+  color: currentColor;
+}
+
+.settings-body.export-body-redesigned .settings-format-list .format-chip-compact .chip-name {
+  grid-area: name;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: currentColor;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-body.export-body-redesigned .settings-format-list .format-chip-compact .chip-desc {
+  grid-area: desc;
+  min-width: 0;
+  display: block;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+.settings-export-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle);
+  gap: 12px;
+}
+
+.settings-export-footer .export-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.settings-export-footer .export-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
 }
