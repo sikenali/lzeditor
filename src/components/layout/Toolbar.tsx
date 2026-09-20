@@ -93,28 +93,80 @@ export const Toolbar: React.FC = () => {
 
     const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
     const [showBeautifyDialog, setShowBeautifyDialog] = useState(false)
-   const menuRef = useRef<HTMLDivElement>(null)
-   const menuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const menuRef = useRef<HTMLDivElement>(null)
+    const menuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-   // Close menu on outside click
-   useEffect(() => {
-     const handler = (e: MouseEvent) => {
-       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-         setMenuOpen(null)
-       }
-     }
-     document.addEventListener('mousedown', handler)
-     return () => document.removeEventListener('mousedown', handler)
-   }, [])
+    // Refs for each menu trigger button — used to position submenu in left nav mode
+    const previewBtnRef = useRef<HTMLButtonElement>(null)
+    const formatBtnRef = useRef<HTMLButtonElement>(null)
+    const tableBtnRef = useRef<HTMLButtonElement>(null)
+    const insertBtnRef = useRef<HTMLButtonElement>(null)
+    const supsubBtnRef = useRef<HTMLButtonElement>(null)
 
-   const openMenu = (key: MenuKey) => {
-     if (menuTimerRef.current) clearTimeout(menuTimerRef.current)
-     setMenuOpen(key)
+    // Close menu on outside click
+    useEffect(() => {
+      const handler = (e: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+          setMenuOpen(null)
+        }
+      }
+      document.addEventListener('mousedown', handler)
+      return () => document.removeEventListener('mousedown', handler)
+    }, [])
+
+    // Position submenu to the right of trigger in left nav mode
+    const navMode = useSettingsStore((s) => s.navMode)
+    useEffect(() => {
+      if (navMode !== 'left' || !menuOpen || !menuRef.current) {
+        // Reset inline styles when not in left mode or menu closed
+        if (menuRef.current) {
+          menuRef.current.style.position = ''
+          menuRef.current.style.left = ''
+          menuRef.current.style.top = ''
+        }
+        return
+      }
+      const triggerMap: Record<string, React.RefObject<HTMLButtonElement | null>> = {
+        preview: previewBtnRef, format: formatBtnRef, table: tableBtnRef,
+        insert: insertBtnRef, supsub: supsubBtnRef,
+      }
+      const trigger = triggerMap[menuOpen]?.current
+      if (!trigger) return
+      const rect = trigger.getBoundingClientRect()
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      // Measure menu size after making it visible but off-screen
+      const el = menuRef.current
+      el.style.position = 'fixed'
+      el.style.left = '-9999px'
+      el.style.top = '-9999px'
+      requestAnimationFrame(() => {
+        const mw = el.offsetWidth || 180
+        const mh = el.offsetHeight || 240
+        const left = Math.min(rect.right + 4, vw - mw - 8)
+        const top = Math.min(rect.top, vh - mh - 8)
+        el.style.left = `${left}px`
+        el.style.top = `${top}px`
+      })
+    }, [menuOpen, navMode])
+
+    // Clear inline styles when menu closes
+    useEffect(() => {
+      if (!menuOpen && menuRef.current) {
+        menuRef.current.style.position = ''
+        menuRef.current.style.left = ''
+        menuRef.current.style.top = ''
+      }
+    }, [menuOpen])
+
+    const openMenu = (key: MenuKey) => {
+      if (menuTimerRef.current) clearTimeout(menuTimerRef.current)
+      setMenuOpen(key)
+    }
+
+   const closeMenu = () => {
+     menuTimerRef.current = setTimeout(() => setMenuOpen(null), 200)
    }
-
-  const closeMenu = () => {
-    menuTimerRef.current = setTimeout(() => setMenuOpen(null), 400)
-  }
 
   const applyCmd = (cmd: string) => {
     if (!editor) return
@@ -309,7 +361,7 @@ export const Toolbar: React.FC = () => {
     }
   }
 
-  // Submenu component
+  // Submenu component — rendered inline; position overridden by JS in left nav mode
   const SubMenu: React.FC<{ menuKey: MenuKey; items: { label?: string; action?: string; icon?: string; sep?: boolean }[]; onAction: (a: string) => void }> = ({ menuKey, items, onAction }) => {
     if (menuOpen !== menuKey) return null
     return (
@@ -343,14 +395,14 @@ export const Toolbar: React.FC = () => {
              <span className="remix toolbar-icon ri-list-unordered"></span>
              <span className="toolbar-label">大纲</span>
            </button>
-             <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('preview')} onMouseLeave={closeMenu}>
-               <button className={`toolbar-btn ${showPreview || codeMode ? 'active' : ''}`}>
-                 <span className="remix toolbar-icon ri-eye-2-fill"></span>
-                 <span className="toolbar-label">模式</span>
-                 <span className="toolbar-menu-dot"></span>
-               </button>
-               <SubMenu menuKey="preview" items={PREVIEW_ITEMS} onAction={handlePreviewAction} />
-             </div>
+              <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('preview')} onMouseLeave={closeMenu}>
+                <button ref={previewBtnRef} className={`toolbar-btn ${showPreview || codeMode ? 'active' : ''}`}>
+                  <span className="remix toolbar-icon ri-eye-2-fill"></span>
+                  <span className="toolbar-label">模式</span>
+                  <span className="toolbar-menu-dot"></span>
+                </button>
+                <SubMenu menuKey="preview" items={PREVIEW_ITEMS} onAction={handlePreviewAction} />
+              </div>
          </div>
 
           {/* ── Middle ── */}
@@ -364,7 +416,7 @@ export const Toolbar: React.FC = () => {
             </>}
 
             <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('format')} onMouseLeave={closeMenu}>
-              <button className="toolbar-btn">
+              <button ref={formatBtnRef} className="toolbar-btn">
                 <span className="remix toolbar-icon ri-text-wrap"></span>
                 <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>格式</span>
                 <span className="toolbar-menu-dot"></span>
@@ -376,7 +428,7 @@ export const Toolbar: React.FC = () => {
             <button className="toolbar-btn" onClick={() => setInsertPanel('link')}><span className="remix toolbar-icon ri-link"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>链接</span></button>
 
             <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('table')} onMouseLeave={closeMenu}>
-              <button className="toolbar-btn">
+              <button ref={tableBtnRef} className="toolbar-btn">
                 <span className="remix toolbar-icon ri-table-2"></span>
                 <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>表格</span>
                 <span className="toolbar-menu-dot"></span>
@@ -385,7 +437,7 @@ export const Toolbar: React.FC = () => {
             </div>
 
             <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('insert')} onMouseLeave={closeMenu}>
-              <button className="toolbar-btn">
+              <button ref={insertBtnRef} className="toolbar-btn">
                 <span className="remix toolbar-icon ri-add-circle-line"></span>
                 <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>插入</span>
                 <span className="toolbar-menu-dot"></span>
@@ -396,7 +448,7 @@ export const Toolbar: React.FC = () => {
             {!compactToolbar && <>
               <button className="toolbar-btn" onClick={() => setInsertPanel('emoji')}><span className="remix toolbar-icon ri-emotion-line"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>表情</span></button>
               <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('supsub')} onMouseLeave={closeMenu}>
-                <button className="toolbar-btn">
+                <button ref={supsubBtnRef} className="toolbar-btn">
                   <span className="remix toolbar-icon ri-superscript"></span>
                   <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>角标</span>
                   <span className="toolbar-menu-dot"></span>

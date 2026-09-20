@@ -8,6 +8,39 @@
   background: var(--bg-primary);
 }
 
+.app.nav-mode-left {
+  flex-direction: row;
+}
+
+.app-layout-left {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-left-toolbar {
+  width: 52px;
+  flex-shrink: 0;
+  background: var(--toolbar-bg, var(--bg-code));
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.app-left-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .app-main {
   flex: 1;
   display: flex;

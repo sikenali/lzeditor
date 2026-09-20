@@ -22,6 +22,7 @@ import { TableDropdown } from './components/panels/TableDropdown'
 import { EmojiDialog } from './components/panels/EmojiDialog'
 import { ChartDialog } from './components/panels/ChartDialog'
 import { useEditorStore } from './store/editorStore'
+import { useSettingsStore } from './store/settingsStore'
 import { useTheme } from './hooks/useTheme'
 
 function App() {
@@ -34,6 +35,8 @@ function App() {
   const showPreview = useEditorStore(s => s.showPreview)
   const showLibrary = useEditorStore(s => s.showLibrary)
   const editor = useEditorStore(s => s.editor)
+  const navMode = useSettingsStore(s => s.navMode || 'top')
+  const updateSetting = useSettingsStore(s => s.updateSetting)
 
   const closePanel = () => useEditorStore.getState().setOpenPanel('none')
   const closeInsert = () => useEditorStore.getState().setInsertPanel('none')
@@ -76,8 +79,8 @@ function App() {
     closeInsert()
   }
 
-  return (
-    <div className="app">
+  const topLayout = (
+    <>
       <Toolbar />
       <DocumentMetaBar />
       <div className="app-main">
@@ -89,6 +92,32 @@ function App() {
         </div>
       </div>
       <StatusBar />
+    </>
+  )
+
+  const leftLayout = (
+    <div className="app-layout-left" style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      <div className="app-left-toolbar">
+        <Toolbar />
+      </div>
+      <div className="app-left-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <DocumentMetaBar />
+        <div className="app-main" style={{ flex: 1, minHeight: 0 }}>
+          <div className="app-layout">
+            {showLibrary && <LibraryPanel sidebar />}
+            {showOutline && <SidebarOutline />}
+            <LZEditor />
+            {showPreview && <SidebarPreview />}
+          </div>
+        </div>
+        <StatusBar />
+      </div>
+    </div>
+  )
+
+  return (
+    <div className={`app${navMode === 'left' ? ' nav-mode-left' : ''}`} style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      {navMode === 'left' ? leftLayout : topLayout}
 
       {openPanel === 'settings' && <SettingsDialog onClose={closePanel} />}
       {openPanel === 'export' && <ExportDialog onClose={closePanel} />}

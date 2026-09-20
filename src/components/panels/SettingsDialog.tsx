@@ -25,6 +25,7 @@ const THEME_SUBS: SubTab[] = [
   { id: 'typography',    label: '内容样式', icon: 'ri-font-size' },
   { id: 'code-theme',    label: '代码高亮', icon: 'ri-code-box-line' },
   { id: 'accent',        label: '强调色', icon: 'ri-circle-fill' },
+  { id: 'nav',           label: '导航样式', icon: 'ri-layout-top-fill' },
 ]
 const EDITOR_SUBS: SubTab[] = [
   { id: 'general',   label: '通用设置', icon: 'ri-settings-3-line' },
@@ -337,6 +338,8 @@ function renderThemeContent(tab: string) {
     )
   }
 
+  if (tab === 'nav') return renderNavModeContent()
+
   return (
     <div className="settings-section">
       <div className="settings-section-title"><span>强调色</span><span className="settings-section-desc">用于选中态、主按钮和焦点反馈，不控制工具栏文字</span></div>
@@ -369,6 +372,79 @@ function renderThemeContent(tab: string) {
         <span className="color-current-hex" style={{ color: getAccentColor(accent) || accent }}>
           {ACCENT_PRESETS.find(p => p.id === accent)?.name || accent}
         </span>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   NAV MODE
+═══════════════════════════════════════════ */
+function renderNavModeContent() {
+  const navMode = useSettingsStore.getState().navMode || 'top'
+  const update = useSettingsStore.getState().updateSetting
+  return (
+    <div className="settings-section">
+      <div className="settings-section-title"><span>导航样式</span><span className="settings-section-desc">选择编辑器整体布局模式</span></div>
+      <div className="nav-mode-grid">
+        {([
+          { id: 'top', label: '顶栏模式', icon: 'ri-layout-top-fill', desc: '工具栏在顶部，状态栏在底部，经典布局' },
+          { id: 'left', label: '左侧模式', icon: 'ri-layout-left-fill', desc: '工具栏固定在左侧，编辑器居中，右侧预览' },
+        ] as const).map(m => (
+          <button
+            key={m.id}
+            className={`nav-mode-card ${navMode === m.id ? 'active' : ''}`}
+            onClick={() => update('navMode', m.id)}
+          >
+            {/* Preview window */}
+            <div className="nav-mode-preview">
+              {m.id === 'top' ? (
+                <div className="nav-preview-top">
+                  <div className="np-toolbar">
+                    <span className="np-dot np-dot-r" />
+                    <span className="np-dot np-dot-y" />
+                    <span className="np-dot np-dot-g" />
+                    <span className="np-toolbar-label">工具栏</span>
+                  </div>
+                  <div className="np-editor">
+                    <div className="np-editor-line np-editor-line-short" />
+                    <div className="np-editor-line" />
+                    <div className="np-editor-line" />
+                    <div className="np-editor-line np-editor-line-short" />
+                  </div>
+                  <div className="np-statusbar">
+                    <span className="np-status-item">1,234 字</span>
+                    <span className="np-status-item">行 12 · 列 34</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="nav-preview-left">
+                  <div className="np-leftbar">
+                    <div className="np-leftbar-spacer" />
+                    <div className="np-leftbar-sep" />
+                    <div className="np-leftbar-spacer" />
+                    <div className="np-leftbar-sep" />
+                    <div className="np-leftbar-status">
+                      <span className="np-status-item">已保存</span>
+                    </div>
+                  </div>
+                  <div className="np-editor-wide">
+                    <div className="np-editor-line np-editor-line-short" />
+                    <div className="np-editor-line" />
+                    <div className="np-editor-line" />
+                    <div className="np-editor-line np-editor-line-short" />
+                    <div className="np-editor-line" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="nav-mode-info">
+              <span className="nav-mode-label">{m.label}</span>
+              <span className="nav-mode-desc">{m.desc}</span>
+            </div>
+            {navMode === m.id && <span className="remix nav-mode-check ri-check-line"></span>}
+          </button>
+        ))}
       </div>
     </div>
   )

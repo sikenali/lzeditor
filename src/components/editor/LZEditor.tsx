@@ -24,6 +24,7 @@ import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
+import { cleanContentHtml } from '../../utils/cleanContent'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
 
@@ -32,6 +33,7 @@ const CONTENT_WIDTH_MAP: Record<string, string> = {
   '1024': '1024px',
   '1200': '1200px',
   '1280': '1280px',
+  'full': '100%',
 }
 
 const getDocMd = (id: string): string => {
@@ -98,7 +100,8 @@ export const LZEditor = () => {
       const docId = useEditorStore.getState().activeDocId
       if (docId) {
         useEditorStore.getState().setLastEditTime(Date.now())
-        const html = editor.getHTML()
+        let html = editor.getHTML()
+        html = cleanContentHtml(html)
         const text = editor.getText()
         setDocHTML(html)
         setMdContent(htmlToMarkdown(html))
@@ -112,7 +115,8 @@ export const LZEditor = () => {
     onUpdate: ({ editor }: any) => {
       useEditorStore.getState().setLastEditTime(Date.now())
       const text = editor.getText()
-      const html = editor.getHTML()
+      let html = editor.getHTML()
+      html = cleanContentHtml(html)
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
       setDocHTML(html)
@@ -158,7 +162,7 @@ export const LZEditor = () => {
     if (!inner) return
     const fw = CONTENT_WIDTH_MAP[contentWidth || '1024'] || '1024px'
     inner.style.width = fw
-    inner.style.maxWidth = fw
+    inner.style.maxWidth = fw === '100%' ? 'none' : fw
     if (defaultFontSize) inner.style.fontSize = `${defaultFontSize}px`
     else inner.style.fontSize = ''
     if (lineHeight) inner.style.lineHeight = lineHeight

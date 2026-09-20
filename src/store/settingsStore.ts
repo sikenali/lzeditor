@@ -33,6 +33,9 @@ export const DEFAULT_SETTINGS: SettingsState = {
   typewriterMode: false,
   focusMode: false,
   previewModeEnabled: true,
+  navMode: 'top' as 'top' | 'left',
+  toolbarCollapsed: false,
+  toolbarWidth: 220,
   // ── Toolbar defaults ──
   showAllToolbarButtons: false,
   showToolbarLabels: true,

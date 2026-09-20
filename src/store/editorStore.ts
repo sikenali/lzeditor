@@ -3,6 +3,22 @@ import type { EditorStoreState, DocVersion } from '../shared/types'
 
 const MAX_VERSIONS = 10
 
+/** Load persisted layout state from localStorage. */
+function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLibrary: boolean } {
+  try {
+    const raw = localStorage.getItem('lzeditor-layout')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return {
+        showOutline: typeof parsed.showOutline === 'boolean' ? parsed.showOutline : false,
+        showPreview: typeof parsed.showPreview === 'boolean' ? parsed.showPreview : false,
+        showLibrary: typeof parsed.showLibrary === 'boolean' ? parsed.showLibrary : true,
+      }
+    }
+  } catch {}
+  return { showOutline: false, showPreview: false, showLibrary: true }
+}
+
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
   docTitle: 'Welcome to LZEditor',
   docPath: '',
@@ -71,9 +87,18 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => set({ syncStatus: status }),
   setOpenPanel: (panel: EditorStoreState['openPanel']) => set({ openPanel: panel }),
   setInsertPanel: (panel: EditorStoreState['insertPanel']) => set({ insertPanel: panel }),
-  setShowOutline: (showOutline: boolean) => set({ showOutline }),
-  setShowPreview: (showPreview: boolean) => set({ showPreview }),
-  setShowLibrary: (showLibrary: boolean) => set({ showLibrary }),
+  setShowOutline: (showOutline: boolean) => {
+    set({ showOutline })
+    try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showOutline })) } catch {}
+  },
+  setShowPreview: (showPreview: boolean) => {
+    set({ showPreview })
+    try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showPreview })) } catch {}
+  },
+  setShowLibrary: (showLibrary: boolean) => {
+    set({ showLibrary })
+    try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showLibrary })) } catch {}
+  },
   setCodeMode: (codeMode: boolean) => set({ codeMode }),
   createLibrary: (name: string) => {
     const title = (name || '').trim() || `Library ${get().docLibraries.length + 1}`

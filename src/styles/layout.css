@@ -125,11 +125,20 @@
 
 /* ── Dropdown wrapper: needs relative positioning for absolute submenu ── */
 .toolbar-menu-btn { position: relative; display: inline-flex; align-items: center; }
+.toolbar-menu-btn::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+}
 
 /* ── Submenu (inline dropdown) ── */
 .toolbar-submenu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% - 2px);
   left: 0;
   z-index: 500;
   min-width: 160px; max-width: 220px;

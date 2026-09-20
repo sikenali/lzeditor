@@ -142,6 +142,10 @@ export interface SettingsState {
   typewriterMode?: boolean
   focusMode?: boolean
   previewModeEnabled?: boolean
+  // ── Navigation layout ──
+  navMode?: 'top' | 'left'
+  toolbarCollapsed?: boolean
+  toolbarWidth?: number
   // ── Toolbar ──
   showAllToolbarButtons?: boolean
   showToolbarLabels?: boolean
