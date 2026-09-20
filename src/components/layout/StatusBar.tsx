@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { STYLE_SETS, applyStyleSet, getActiveStyleSetName } from '../../styles/themes'
+import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography-themes'
 
 export const StatusBar: React.FC = () => {
   const wordCount = useEditorStore(s => s.wordCount)
@@ -12,9 +12,9 @@ export const StatusBar: React.FC = () => {
   const setShowPreview = useEditorStore(s => s.setShowPreview)
   const lastEditTime = useEditorStore(s => s.lastEditTime)
 
-  const [styleIdx, setStyleIdx] = useState(() => {
-    const name = getActiveStyleSetName()
-    const idx = STYLE_SETS.findIndex(s => s.name === name)
+  const typographyTheme = useSettingsStore(s => s.typographyTheme || 'classic')
+  const [themeIdx, setThemeIdx] = useState(() => {
+    const idx = TYPOGRAPHY_THEMES.findIndex(t => t.id === typographyTheme)
     return idx >= 0 ? idx : 0
   })
   const [elapsed, setElapsed] = useState(0)
@@ -28,10 +28,17 @@ export const StatusBar: React.FC = () => {
     return () => clearInterval(timer)
   }, [lastEditTime])
 
-  const cycleStyle = () => {
-    const nextIdx = (styleIdx + 1) % STYLE_SETS.length
-    setStyleIdx(nextIdx)
-    applyStyleSet(STYLE_SETS[nextIdx].name)
+  useEffect(() => {
+    const idx = TYPOGRAPHY_THEMES.findIndex(t => t.id === typographyTheme)
+    if (idx >= 0) setThemeIdx(idx)
+  }, [typographyTheme])
+
+  const cycleTheme = () => {
+    const nextIdx = (themeIdx + 1) % TYPOGRAPHY_THEMES.length
+    setThemeIdx(nextIdx)
+    const nextId = TYPOGRAPHY_THEMES[nextIdx].id
+    applyTypographyTheme(nextId)
+    useSettingsStore.getState().updateSetting('typographyTheme', nextId)
   }
 
   const handleCollapse = () => {
@@ -40,46 +47,54 @@ export const StatusBar: React.FC = () => {
     else { setShowOutline(true); setShowPreview(false) }
   }
 
-  const editingText = elapsed < 60 ? 'just now'
-    : elapsed < 3600 ? `${Math.floor(elapsed / 60)} min ago`
-    : `${Math.floor(elapsed / 3600)}h ${Math.floor((elapsed % 3600) / 60)}m ago`
+  const editingText = elapsed < 60 ? '刚刚'
+    : elapsed < 3600 ? `${Math.floor(elapsed / 60)} 分钟前`
+    : `${Math.floor(elapsed / 3600)}小时${Math.floor((elapsed % 3600) / 60)}分钟前`
 
   return (
     <div className="statusbar">
+      {/* Left: seal + doc stats */}
       <div className="statusbar-left">
-        <div className="statusbar-item" title="字数统计">
+        <div className="statusbar-seal" title="LZEditor">
+          <span className="remix ri-quill-pen-line"></span>
+        </div>
+        <div className="statusbar-item">
           <span className="remix ri-text"></span>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Words: {wordCount.toLocaleString()}</span>
+          <span>{wordCount.toLocaleString()} 字</span>
         </div>
-        <div className="statusbar-item" title="预计阅读时间">
+        <div className="statusbar-divider" />
+        <div className="statusbar-item">
           <span className="remix ri-timer-line"></span>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Read: {readTime} min</span>
+          <span>约 {readTime} 分钟</span>
         </div>
       </div>
+
+      {/* Center: theme toggle + panel toggle */}
       <div className="statusbar-center">
-        <button className="statusbar-style-btn" onClick={cycleStyle} title={`切换样式集（当前: ${STYLE_SETS[styleIdx]?.name}）`}>
-          <span className="remix ri-palette-fill"></span>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Style Set:</span>
-          <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 500 }}>{STYLE_SETS[styleIdx]?.name}</span>
+        <button className="statusbar-pill" onClick={cycleTheme} title={`切换排版样式（当前: ${TYPOGRAPHY_THEMES[themeIdx]?.name}）`}>
+          <span className="remix ri-font-size"></span>
+          <span>{TYPOGRAPHY_THEMES[themeIdx]?.name}</span>
         </button>
-        <button className="statusbar-collapse-btn" onClick={handleCollapse} title="切换面板显示">
+        <button className="statusbar-pill" onClick={handleCollapse} title="切换面板显示">
           <span className="remix ri-booklet-fill"></span>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-            {showOutline || showPreview ? '收起' : '展开'}
-          </span>
+          <span>{showOutline || showPreview ? '收起' : '展开'}</span>
         </button>
-        <span className="statusbar-divider" />
       </div>
+
+      {/* Right: edit time + cursor + copyright-like */}
       <div className="statusbar-right">
-        <div className="statusbar-item" title={`距上次编辑 ${editingText}`}>
+        <div className="statusbar-item">
           <span className="remix ri-edit-fill"></span>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Editing: {editingText}</span>
+          <span>{editingText}</span>
         </div>
-        <div className="statusbar-badge" title={`行 ${cursorPosition.line}，列 ${cursorPosition.column}`}>
-          <span>Ln {cursorPosition.line}, Col {cursorPosition.column}</span>
+        <div className="statusbar-divider" />
+        <div className="statusbar-badge">
+          Ln {cursorPosition.line}, Col {cursorPosition.column}
         </div>
+        <button className="statusbar-icon-btn" title="LZEditor" onClick={() => window.open('https://github.com/sikenali/lzeditor', '_blank')}>
+          <span className="remix ri-github-fill"></span>
+        </button>
       </div>
     </div>
   )
 }
-

@@ -61,11 +61,6 @@ const TABLE_ITEMS = [
   { icon: 'ri-expand-left-right-line', label: '修复表格布局', action: 'autoW' },
 ]
 
-const EXPORT_ITEMS = [
-  { icon: 'ri-file-download-line', label: '导出文件', action: 'export' },
-  { icon: 'ri-magic-line', label: '一键美化', action: 'beautify' },
-]
-
 const SUPSUB_ITEMS = [
   { icon: 'ri-superscript', label: '上角标', action: 'sup' },
   { icon: 'ri-subscript', label: '下角标', action: 'sub' },
@@ -73,7 +68,7 @@ const SUPSUB_ITEMS = [
 
 const PREVIEW_ITEMS = [
   { icon: 'ri-eye-line', label: '即时预览', action: 'instant' },
-  { icon: 'ri-file-code-line', label: '预览 · 样式集', action: 'full' },
+  { icon: 'ri-file-code-line', label: '预览 · 排版', action: 'full' },
   { icon: 'ri-code-s-line', label: '预览 · 源码', action: 'code' },
 ]
 
@@ -322,10 +317,6 @@ export const Toolbar: React.FC = () => {
 
   const handleExportAction = async (action: string) => {
     setMenuOpen(null)
-    if (action === 'export') {
-      setOpenPanel(openPanel === 'export' ? 'none' : 'export')
-      return
-    }
     if (action === 'beautify') {
       setShowBeautifyDialog(true)
       return
@@ -441,14 +432,10 @@ export const Toolbar: React.FC = () => {
              <span className="remix toolbar-icon ri-history-fill"></span>
              <span className="toolbar-label">历史</span>
            </button>
-            <div className="toolbar-menu-btn" onMouseEnter={() => openMenu('export')} onMouseLeave={closeMenu}>
-               <button className={`toolbar-btn ${openPanel === 'export' ? 'active' : ''}`}>
-                 <span className="remix toolbar-icon ri-download-2-line"></span>
-                 <span className="toolbar-label">导出</span>
-                 <span className="toolbar-menu-dot"></span>
-               </button>
-               <SubMenu menuKey="export" items={EXPORT_ITEMS} onAction={handleExportAction} />
-             </div>
+            <button className={`toolbar-btn ${openPanel === 'export' ? 'active' : ''}`} onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
+              <span className="remix toolbar-icon ri-download-2-line"></span>
+              <span className="toolbar-label">导出</span>
+            </button>
            <button className={`toolbar-btn ${openPanel === 'settings' ? 'active' : ''}`} onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')}>
              <span className="remix toolbar-icon ri-settings-3-fill"></span>
              <span className="toolbar-label">设置</span>

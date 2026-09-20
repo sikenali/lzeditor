@@ -3,6 +3,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { exportDocument } from '../../services/exportService'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 import { useSettingsStore } from '../../store/settingsStore'
+import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
 
 const EXPORT_FORMATS = [
   { id: 'pdf',  name: 'PDF',     icon: 'ri-file-pdf-fill',      desc: '可打印',       color: '#e74c3c' },
@@ -59,7 +60,9 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         content: format === 'md' ? mdContent || html : html,
         format,
         options: isPrintFormat ? {
-          styleSet: state.styleSet || 'ocean',
+          typographyTheme: state.typographyTheme || 'classic',
+          codeTheme: state.codeTheme || 'atom-one-dark',
+          macCodeBlock: state.macCodeBlock || false,
           includeTOC: state.includeTOC !== false,
           includeLineNumbers: state.includeLineNumbers || false,
           includePageNumbers: state.includePageNumbers || false,
@@ -127,13 +130,8 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                 <div className="export-section">
                   <div className="export-section-label">样式与选项</div>
                   <div className="options-grid">
-                    <OptionToggle
-                      title="样式集排版"
-                      checked={state.styleSet !== 'minimal'}
-                      onChange={(v) => updateSetting('styleSet', v ? 'ocean' : 'minimal')}
-                    />
-                    <OptionToggle
-                      title="包含目录"
+                  <OptionToggle
+                    title="包含目录"
                       checked={state.includeTOC !== false}
                       onChange={(v) => updateSetting('includeTOC', v)}
                     />

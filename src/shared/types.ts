@@ -159,7 +159,9 @@ export interface SettingsState {
   blockquoteBackground?: string
   // ── Export ──
   exportFormat?: string
-  styleSet?: string
+  typographyTheme?: string
+  codeTheme?: string
+  macCodeBlock?: boolean
   includeTOC?: boolean
   includeLineNumbers?: boolean
   includePageNumbers?: boolean

@@ -1,53 +1,66 @@
-/* ── Modal Overlay — Apple dimming scrim ── */
+/* ── Modal Overlay — msst liquid glass scrim ── */
 .modal-overlay {
   position: fixed; inset: 0;
-  background: var(--bg-scrim);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  background: rgba(0, 0, 0, 0.4);
   display: flex; align-items: center; justify-content: center;
   z-index: 2000;
-  animation: modal-fade-in 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  animation: modal-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @keyframes modal-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* ── Settings Dialog — Apple thick glass material ── */
+/* ── Settings Dialog — msst liquid glass material ── */
 .settings-dialog {
-  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%),
-              var(--bg-overlay);
-  backdrop-filter: blur(40px) saturate(220%);
-  -webkit-backdrop-filter: blur(40px) saturate(220%);
-  border: 1px solid var(--border-lighter);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 18px;
   width: 820px;
   height: 680px;
   display: flex; flex-direction: column;
-  box-shadow: 0 32px 100px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.07);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.06),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.6);
   overflow: hidden;
-  animation: dialog-spring-in 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  animation: dialog-spring-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dialog-spring-in {
+  from { opacity: 0; transform: scale(0.88) translateY(30px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 @media (max-height: 720px) {
   .settings-dialog { height: 95vh; }
 }
-@keyframes dialog-spring-in {
-  from { opacity: 0; transform: scale(0.96) translateY(12px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+
+/* Dark mode variant for settings dialog */
+[data-theme="dark"] .settings-dialog {
+  background: rgba(17, 20, 34, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.50),
+    0 8px 16px rgba(0, 0, 0, 0.30),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
+
 .settings-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
+  padding: 12px 16px 0 16px; flex-shrink: 0;
 }
-.settings-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
-.settings-header-actions { display: flex; align-items: center; gap: 8px; }
+.settings-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.settings-header-actions { display: flex; align-items: center; gap: 4px; }
 
 .settings-action-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: 8px;
   font-size: 14px; color: var(--text-secondary);
   background: transparent; border: none;
-  cursor: pointer; transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+  cursor: pointer; transition: background 0.2s;
 }
 .settings-action-btn:hover { background: var(--toolbar-hover); color: var(--text-heading-2); }
 .settings-action-btn:active { transform: scale(0.97); }
@@ -56,18 +69,21 @@
   font-size: 14px; color: var(--text-muted);
   padding: 7px 14px; border-radius: 8px;
   border: none; background: transparent;
-  cursor: pointer; transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+  cursor: pointer; transition: background 0.2s;
 }
 .settings-reset-btn:hover { color: var(--text-heading-2); background: var(--toolbar-hover); }
 .settings-reset-btn:active { transform: scale(0.97); }
 
+/* ── msst circular close button ── */
 .settings-close-btn {
-  width: 32px; height: 32px;
+  width: 28px; height: 28px;
+  border-radius: 9999px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; color: var(--text-muted); transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+  color: var(--text-muted); transition: background 0.2s;
   border: none; background: transparent; cursor: pointer;
 }
-.settings-close-btn:hover { background: var(--toolbar-hover); color: var(--text-heading-2); transform: scale(1.05); }
+.settings-close-btn:hover { background: rgba(0, 0, 0, 0.05); color: var(--text-primary); }
+[data-theme="dark"] .settings-close-btn:hover { background: rgba(255, 255, 255, 0.06); }
 .settings-close-btn:active { transform: scale(0.95); }
 
 .settings-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
@@ -88,14 +104,13 @@
   padding: 9px 12px; border-radius: 10px;
   font-size: 14px; color: var(--text-secondary);
   background: transparent; border: none; cursor: pointer;
-  transition: all 0.1s cubic-bezier(0.32, 0.72, 0, 1);
-  letter-spacing: -0.01em; width: 100%; text-align: left;
+  transition: all 0.15s; letter-spacing: -0.01em; width: 100%; text-align: left;
 }
 .settings-subtab-btn:hover { background: var(--toolbar-hover); color: var(--text-heading-2); }
 .settings-subtab-btn.active { background: var(--accent-tint-bg); color: var(--accent-primary); font-weight: 500; }
 .settings-subtab-btn .subtab-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; opacity: 0.7; }
 .settings-subtab-btn.active .subtab-icon { color: var(--accent-primary); }
-.settings-content { flex: 1; padding: 24px; overflow-y: auto; min-height: 0; }
+.settings-content { flex: 1; padding: 12px 16px 16px; overflow-y: auto; min-height: 0; }
 .settings-nav-group { margin-bottom: 16px; }
 .settings-nav-label {
   font-size: 11px; color: var(--text-muted);
@@ -106,8 +121,7 @@
   display: flex; align-items: center; gap: 8px;
   padding: 9px 12px; border-radius: 10px;
   font-size: 14px; color: var(--text-secondary);
-  cursor: pointer; transition: all 0.1s cubic-bezier(0.32, 0.72, 0, 1);
-  letter-spacing: -0.01em;
+  cursor: pointer; transition: all 0.15s; letter-spacing: -0.01em;
 }
 .settings-nav-item:hover { background: var(--toolbar-hover); color: var(--text-heading-2); }
 .settings-nav-item:active { transform: scale(0.98); }
@@ -115,6 +129,8 @@
 
 .settings-nav-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border-subtle); }
 .settings-section:last-child { margin-bottom: 0; }
+
+/* ── msst amber divider ── */
 .settings-section-title {
   font-size: 14px; font-weight: 600; color: var(--text-heading-2);
   margin-bottom: 16px; padding-bottom: 10px;
@@ -129,7 +145,7 @@
 }
 .setting-hint { font-size: 12px; color: var(--text-muted); }
 
-/* ── Segmented Control — Apple pill style ── */
+/* ── Segmented Control ── */
 .segmented-control {
   display: flex; background: var(--bg-code);
   border-radius: 10px; padding: 4px; gap: 4px;
@@ -147,31 +163,39 @@
 
 .settings-footer {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; border-top: 1px solid var(--border-subtle); flex-shrink: 0;
+  padding: 12px 16px 16px; border-top: 1px solid var(--border-subtle); flex-shrink: 0;
 }
 .settings-footer-left  { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
 .settings-footer-right { display: flex; gap: 10px; }
 
 .settings-cancel-btn {
-  padding: 9px 20px; border-radius: 10px;
+  padding: 9px 20px; border-radius: 8px;
   font-size: 14px; color: var(--text-secondary);
-  border: none; background: transparent;
-  transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
-  letter-spacing: -0.01em; cursor: pointer;
+  border: 1px solid var(--border-default); background: var(--bg-code);
+  transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  cursor: pointer;
 }
-.settings-cancel-btn:hover { color: var(--text-heading-2); background: var(--toolbar-hover); }
-.settings-cancel-btn:active { transform: scale(0.97); }
+.settings-cancel-btn:hover { background: var(--bg-hover); border-color: var(--border-default); }
 
 .settings-save-btn {
-  padding: 9px 24px; border-radius: 10px;
-  font-size: 14px; font-weight: 500;
-  background: var(--accent-primary);
-  color: var(--text-on-accent); transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
-  letter-spacing: -0.01em;
+  padding: 9px 24px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; color: #fff;
   border: none; cursor: pointer;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  letter-spacing: -0.01em;
 }
-.settings-save-btn:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.settings-save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35); }
 .settings-save-btn:active { transform: scale(0.97); }
+
+[data-theme="dark"] .settings-save-btn {
+  background: linear-gradient(135deg, #3ba873 0%, #2d8a5e 100%);
+  box-shadow: 0 4px 12px rgba(59, 168, 115, 0.30);
+}
+[data-theme="dark"] .settings-save-btn:hover {
+  box-shadow: 0 6px 16px rgba(59, 168, 115, 0.40);
+}
 
 /* ── Slider — Apple track style ── */
 .slider-track {
@@ -703,4 +727,23 @@
 .edit-mode-tag.tag-off {
   background: var(--bg-hover); border-color: var(--border-subtle);
   color: var(--text-muted);
+}
+
+/* ── Typography theme preview ── */
+.typography-preview {
+  min-height: 72px;
+  overflow: hidden;
+}
+
+.theme-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+/* ── Code theme preview ── */
+.code-theme-preview {
+  min-height: 72px;
+  overflow: hidden;
+  font-family: monospace;
 }

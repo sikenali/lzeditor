@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react'
+import React, { useRef, useEffect, useCallback, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TaskList from '@tiptap/extension-task-list'
@@ -11,6 +11,7 @@ import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { FloatingToolbar } from './FloatingToolbar'
+import { SlashCommand } from './SlashCommand'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT } from './constants'
@@ -133,6 +134,7 @@ export const LZEditor = () => {
 
   const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastDocIdRef = useRef<string | null>(null)
+  const pmDomRef = useRef<HTMLElement | null>(null)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
@@ -290,7 +292,88 @@ export const LZEditor = () => {
     }
   }, [editor])
 
-  // Auto-complete markdown symbol pairs
+  // ── Slash command palette ──
+  const [slashVisible, setSlashVisible] = useState(false)
+  const [slashPosition, setSlashPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const [slashFilter, setSlashFilter] = useState('')
+  const slashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const hideSlash = useCallback(() => {
+    if (slashTimerRef.current) clearTimeout(slashTimerRef.current)
+    slashTimerRef.current = setTimeout(() => setSlashVisible(false), 120)
+  }, [])
+
+  const showSlashPalette = useCallback(() => {
+    if (!editor) return
+    const sel = editor.state.selection
+    const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 4), sel.from, '')
+    if (textBefore.slice(-1) !== '/') return
+    const view = editor.view
+    const coords = view.coordsAtPos(sel.from)
+    setSlashPosition({ x: coords.right + 4, y: coords.top - 4 })
+    setSlashFilter('')
+    setSlashVisible(true)
+  }, [editor])
+
+  useEffect(() => {
+    try {
+      if (editor?.view?.dom) pmDomRef.current = editor.view.dom as HTMLElement
+    } catch {}
+  }, [editor])
+
+  const slashFilterRef = useRef('')
+  useEffect(() => { slashFilterRef.current = '' }, [slashVisible])
+
+  useEffect(() => {
+    const pm = pmDomRef.current
+    if (!pm) return
+    let slashPending = false
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/') slashPending = true
+    }
+    const onInput = (e: Event) => {
+      const raw = (e as InputEvent)
+      if (raw.inputType === 'insertText' && raw.data === '/') {
+        e.preventDefault()
+        slashPending = false
+        const sel = editor?.state?.selection
+        if (!sel) return
+        const coords = editor.view.coordsAtPos(sel.from)
+        setSlashPosition({ x: coords.right + 4, y: coords.top - 4 })
+        slashFilterRef.current = ''
+        setSlashFilter('')
+        setSlashVisible(true)
+        return
+      }
+      if (!slashVisible) {
+        slashPending = false
+        return
+      }
+      const sel = editor?.state?.selection
+      if (!sel) return
+      const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 20), sel.from, '')
+      const match = textBefore.match(/\/([^\s]*)$/)
+      slashFilterRef.current = match ? match[1] : ''
+      if (match) setSlashFilter(match[1])
+      else hideSlash()
+    }
+    pm.addEventListener('keydown', onKeyDown)
+    pm.addEventListener('input', onInput)
+    return () => {
+      pm.removeEventListener('keydown', onKeyDown)
+      pm.removeEventListener('input', onInput)
+    }
+  }, [editor])
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('.slash-command')) return
+      hideSlash()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [hideSlash])
   const autoCompleteEnabled = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
   const smartQuotesEnabled = useSettingsStore((s) => s.smartQuotes)
   const autoSpaceCJKEnabled = useSettingsStore((s) => s.autoSpaceCJK)
@@ -444,6 +527,12 @@ export const LZEditor = () => {
           <EditorContent editor={editor} />
         </div>
       </div>
+      <SlashCommand
+        position={slashPosition}
+        visible={slashVisible}
+        filter={slashFilter}
+        onClose={hideSlash}
+      />
       <FloatingToolbar
         position={toolbar.position}
         visible={toolbar.visible}

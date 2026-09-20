@@ -348,3 +348,86 @@
   font-size: 12px; color: var(--text-muted);
   letter-spacing: -0.01em;
 }
+
+/* ── Slash Command Palette ── */
+.slash-command {
+  position: absolute;
+  width: 260px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%),
+              var(--bg-overlay);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid var(--border-lighter);
+  border-radius: 14px;
+  box-shadow: 0 16px 64px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.07);
+  z-index: 1000;
+  padding: 8px;
+  animation: slash-in 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@keyframes slash-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.slash-command-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.slash-command-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  outline: none;
+  min-width: 0;
+}
+.slash-command-cell:hover,
+.slash-command-cell.active {
+  background: var(--toolbar-hover);
+}
+.slash-command-cell.active {
+  color: var(--text-primary);
+}
+
+.slash-command-icon {
+  font-size: 20px;
+  color: var(--text-muted);
+  line-height: 1;
+  transition: color 0.1s;
+}
+.slash-command-cell:hover .slash-command-icon,
+.slash-command-cell.active .slash-command-icon {
+  color: var(--accent-primary);
+}
+
+.slash-command-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  transition: color 0.1s;
+}
+.slash-command-cell:hover .slash-command-label,
+.slash-command-cell.active .slash-command-label {
+  color: var(--text-primary);
+}
+
+.slash-command-empty {
+  grid-column: 1 / -1;
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}

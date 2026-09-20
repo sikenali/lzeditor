@@ -1,5 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import { remark } from 'remark'
+import remarkGfm from 'remark-gfm'
+import remarkHtml from 'remark-html'
 import { useEditorStore } from '../../store/editorStore'
+import { copyRichText } from '../../clipboard'
 
 export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
@@ -7,6 +11,25 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const previewMode = useEditorStore((s: any) => s.previewMode)
   const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
   const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
+  const [copied, setCopied] = useState(false)
+
+  const renderedHtml = useMemo(() => {
+    if (!mdContent) return ''
+    try {
+      return remark().use(remarkGfm).use(remarkHtml).processSync(mdContent).toString()
+    } catch {
+      return mdContent
+    }
+  }, [mdContent])
+
+  const handleCopyWechat = async () => {
+    if (!renderedHtml) return
+    const ok = await copyRichText(renderedHtml)
+    if (ok) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -20,6 +43,14 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              className="sidebar-wechat-btn"
+              onClick={handleCopyWechat}
+              title="一键复制为公众号可用富文本"
+            >
+              <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
+              {copied ? '已复制' : '公众号'}
+            </button>
             <button
               className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
               onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
@@ -42,7 +73,7 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           ) : (
             <div
               className="preview-content"
-              dangerouslySetInnerHTML={{ __html: mdContent || '<p style="color:var(--text-muted);text-align:center;padding:40px;">暂无内容，请先编辑文档</p>' }}
+              dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px;">暂无内容，请先编辑文档</p>' }}
             />
           )}
         </div>

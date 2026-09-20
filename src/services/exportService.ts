@@ -5,7 +5,9 @@ export interface ExportOptions {
   content: string
   format: 'pdf' | 'html' | 'docx' | 'epub' | 'md' | 'png' | 'svg' | 'drawio' | 'xlsx'
   options?: {
-    styleSet?: string
+    typographyTheme?: string
+    codeTheme?: string
+    macCodeBlock?: boolean
     includeTOC?: boolean
     includeLineNumbers?: boolean
     includePageNumbers?: boolean
@@ -30,15 +32,22 @@ const PAPER_HEIGHTS: Record<string, string> = {
   a4: '297mm', a3: '420mm', a5: '210mm', letter: '279mm', legal: '356mm',
 }
 
-const THEME_VARS: Record<string, Record<string, string>> = {
-  ocean:      { primary: '#4fc3f7', text: '#e0e6ed', muted: '#7a8a9a', heading: '#f0f4f8', code: '#1a2634', overlay: '#0d1b2a', border: '#2a3a4a', amber: '#ffb347' },
-  'neon-dark':{ primary: '#39ff9e', text: '#e8f5e9', muted: '#6d9b7a', heading: '#f1f8e9', code: '#1a2e1a', overlay: '#0f1a0f', border: '#2a4a2a', amber: '#ffeb3b' },
-  graphite:   { primary: '#ff9800', text: '#eceff1', muted: '#90a4ae', heading: '#fafafa', code: '#263238', overlay: '#1c2833', border: '#37474f', amber: '#ffcc02' },
-  sakura:     { primary: '#f48fb1', text: '#37474f', muted: '#78909c', heading: '#263238', code: '#fce4ec', overlay: '#fff0f5', border: '#f8bbd0', amber: '#ff8f00' },
-  mint:       { primary: '#4caf50', text: '#263238', muted: '#607d8b', heading: '#1b5e20', code: '#e8f5e9', overlay: '#f1f8e9', border: '#c8e6c9', amber: '#ff9800' },
-  minimal:    { primary: '#2196f3', text: '#212121', muted: '#757575', heading: '#0d47a1', code: '#f5f5f5', overlay: '#fafafa', border: '#e0e0e0', amber: '#f57c00' },
+const TYPOGRAPHY_THEME_VARS: Record<string, Record<string, string>> = {
+  classic:    { primary: '#333333', text: '#2b2b2b', muted: '#647d96', heading: '#1a1a1a', code: '#f6f8fa', overlay: '#ffffff', border: '#e1e4e8', amber: '#d02f55' },
+  'wechat-green': { primary: '#07c160', text: '#1f1f1f', muted: '#52705f', heading: '#067f42', code: '#f0f8f0', overlay: '#f5faf5', border: '#d4ecc8', amber: '#0a8f4d' },
+  'tech-blue': { primary: '#1e6bb8', text: '#14508c', muted: '#4a6a85', heading: '#14508c', code: '#f0f6fb', overlay: '#f8faff', border: '#d3e5f3', amber: '#1a63aa' },
+  lanying:    { primary: '#3aa1f0', text: '#0e6fd0', muted: '#4f6b83', heading: '#0e6fd0', code: '#f0f8ff', overlay: '#f8faff', border: '#c5e2f8', amber: '#0d67c2' },
+  'orange-heart': { primary: '#ef7060', text: '#e05442', muted: '#595959', heading: '#e05442', code: '#fef8f6', overlay: '#fff8fa', border: '#f6ddd8', amber: '#d95948' },
+  violet:     { primary: '#8e44ad', text: '#6d3487', muted: '#6f5680', heading: '#6d3487', code: '#faf7fc', overlay: '#fbf8ff', border: '#e7d8ef', amber: '#83429f' },
+  ink:        { primary: '#576b95', text: '#40464f', muted: '#666e7e', heading: '#2f353d', code: '#f6f7f9', overlay: '#ffffff', border: '#dfe3ea', amber: '#4f608a' },
+  'chinese-red': { primary: '#c0392b', text: '#a93226', muted: '#7a5750', heading: '#a93226', code: '#fef8f6', overlay: '#fff8fa', border: '#f0d5d0', amber: '#b03425' },
+  bamboo:     { primary: '#0e9285', text: '#0b7268', muted: '#4f6f6b', heading: '#0e9285', code: '#f0f8f6', overlay: '#f8faff', border: '#b9e2dc', amber: '#0b7268' },
+  magazine:   { primary: '#1a1a1a', text: '#2b2b2b', muted: '#6b6b6b', heading: '#1a1a1a', code: '#faf7ef', overlay: '#ffffff', border: '#e6dfd0', amber: '#8a6d1d' },
+  night:      { primary: '#7aa2f7', text: '#c6cade', muted: '#565f89', heading: '#7aa2f7', code: '#24283b', overlay: '#1a1b26', border: '#414868', amber: '#ff9e64' },
+  sakura:     { primary: '#e8618c', text: '#2f2f2f', muted: '#8a6470', heading: '#d8577f', code: '#fdf6f9', overlay: '#fff8fa', border: '#f5d9e2', amber: '#d8577f' },
+  minimal:    { primary: '#3d3d3d', text: '#3d3d3d', muted: '#8c8c8c', heading: '#1f1f1f', code: '#f5f5f5', overlay: '#ffffff', border: '#e0e0e0', amber: '#595959' },
 }
-const DEFAULT_VARS = THEME_VARS.ocean
+const DEFAULT_THEME_VARS = TYPOGRAPHY_THEME_VARS.classic
 
 function hexToRgb(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -47,8 +56,8 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`
 }
 
-function getCSSVars(styleSetName: string): string {
-  const v = THEME_VARS[styleSetName] || DEFAULT_VARS
+function getCSSVars(typographyThemeId: string): string {
+  const v = TYPOGRAPHY_THEME_VARS[typographyThemeId] || DEFAULT_THEME_VARS
   const rgb = hexToRgb(v.primary)
   return [
     `--accent-primary: ${v.primary};`,
@@ -155,7 +164,7 @@ function generateHeadingCSS(headingStyles: Record<string, string>, accent: strin
 function buildStyledHTML(title: string, content: string, opts: any): string {
   const pageW = PAPER_SIZES[opts.paperSize] || '210mm'
   const pageH = PAPER_HEIGHTS[opts.paperSize] || '297mm'
-  const v = THEME_VARS[opts.styleSet] || THEME_VARS.ocean
+  const v = TYPOGRAPHY_THEME_VARS[opts.typographyTheme] || DEFAULT_THEME_VARS
   const container = document.createElement('div')
   const fs = opts.fontSize ?? 14
   const lh = opts.lineHeight ?? '1.8'
@@ -193,13 +202,13 @@ function buildStyledHTML(title: string, content: string, opts: any): string {
 
 export async function exportDocument(options: ExportOptions): Promise<void> {
   const { title, content, format, options: expOpts = {} } = options
-  const styleSet = expOpts.styleSet || 'ocean'
+  const typographyTheme = expOpts.typographyTheme || 'classic'
   const includeTOC = expOpts.includeTOC !== false
   const includeLineNumbers = expOpts.includeLineNumbers || false
   const includePageNumbers = expOpts.includePageNumbers || false
   const paperSize = expOpts.paperSize || 'a4'
   const orientation = expOpts.orientation || 'portrait'
-  const cssVars = getCSSVars(styleSet)
+  const cssVars = getCSSVars(typographyTheme)
   const typoOpts = {
     fontSize: expOpts.fontSize,
     lineHeight: expOpts.lineHeight,
@@ -209,23 +218,26 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
     linkColor: expOpts.linkColor,
     blockquoteBackground: expOpts.blockquoteBackground,
     headingStyles: expOpts.headingStyles,
+    typographyTheme,
+    codeTheme: expOpts.codeTheme,
+    macCodeBlock: expOpts.macCodeBlock,
   }
 
   switch (format) {
     case 'html':
-      exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
+      exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'md':
       exportMarkdown(title, content)
       break
     case 'pdf':
-      await exportPDF(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
+      await exportPDF(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'docx':
-      exportDOCX(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
+      exportDOCX(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'epub':
-      await exportEPUB(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, styleSet, ...typoOpts })
+      await exportEPUB(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'png':
       exportPNG(title, content)
@@ -245,7 +257,7 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
 function exportHTML(title: string, content: string, opts: any): void {
   const processed = opts.includeLineNumbers ? addLineNumbers(content) : content
   const finalContent = opts.includePageNumbers ? addPageNumbers(processed, opts.paperSize, opts.orientation) : processed
-  const html = buildStyledHTML(title, finalContent, { ...opts, styleSet: opts.styleSet || 'ocean' })
+  const html = buildStyledHTML(title, finalContent, { ...opts, typographyTheme: opts.typographyTheme || 'classic' })
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { TYPOGRAPHY_THEMES, getTypographyTheme } from '../../styles/typography-themes'
 
 type Layout = 'narrow' | 'normal' | 'wide'
 const LAYOUTS: Layout[] = ['narrow', 'normal', 'wide']
@@ -17,6 +19,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const docPath = useEditorStore((s) => s.docPath)
   const docHTML = useEditorStore((s) => s.docHTML)
   const wordCount = useEditorStore((s) => s.wordCount)
+  const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const readProgress = useEditorStore((s) => s.readProgress)
   const fontSize = useEditorStore((s) => s.fontSize)
   const readLayout = useEditorStore((s) => s.readLayout)
@@ -48,7 +51,21 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
     })
     setTocItems(items)
-  }, [docHTML])
+
+    // Apply typography theme CSS to read mode body
+    const theme = getTypographyTheme(typographyTheme || 'classic')
+    if (theme && el) {
+      el.style.cssText = ''
+      const css = theme.css
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.(lz-editor-content|read-article-body|preview-doc|export-preview-body)/g, '.read-article-body')
+      const styleEl = document.getElementById('lz-readmode-typography-css') as HTMLStyleElement | null
+      if (styleEl) styleEl.remove()
+      const el2 = document.createElement('style')
+      el2.id = 'lz-readmode-typography-css'
+      el2.textContent = css
+      document.head.appendChild(el2)
+    }
+  }, [docHTML, typographyTheme])
 
   // ── Scroll spy for active heading ──
   useEffect(() => {

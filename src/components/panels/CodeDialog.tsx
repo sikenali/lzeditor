@@ -3,6 +3,7 @@ import hljs from 'highlight.js'
 import 'highlight.js/styles/atom-one-dark.css'
 import 'highlight.js/styles/github.css'
 import 'highlight.js/styles/monokai.css'
+import { CODE_THEMES, getSampleCode } from '../../styles/code-themes'
 
 // Top 20 most popular languages (TIOBE + GitHub + Stack Overflow 2024)
 const LANGUAGES = [
@@ -35,9 +36,12 @@ const DEFAULTS: Record<string, string> = {
 }
 
 const THEMES = [
-  { id: 'atom-one-dark', name: 'VS Code Dark' },
-  { id: 'github', name: 'GitHub Light' },
+  { id: 'atom-one-dark', name: 'Atom One 暗' },
+  { id: 'github', name: 'GitHub 亮' },
   { id: 'monokai', name: 'Monokai' },
+  { id: 'atom-one-light', name: 'Atom One 亮' },
+  { id: 'vs2015', name: 'VS 2015' },
+  { id: 'xcode', name: 'Xcode' },
 ]
 
 interface CodeDialogProps {
@@ -52,6 +56,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   const [previewHtml, setPreviewHtml] = useState('')
   const [showBeautify, setShowBeautify] = useState(false)
   const [themeCSS, setThemeCSS] = useState('')
+  const [macCodeBlock, setMacCodeBlock] = useState(false)
   const themeStyleRef = useRef<HTMLStyleElement | null>(null)
   const beautifyRef = useRef<HTMLDivElement>(null)
 
@@ -111,6 +116,8 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
     onInsert(code.trim(), language)
     onClose()
   }
+
+  const ct = CODE_THEMES.find(c => c.id === themeId) || CODE_THEMES[0]
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -181,10 +188,28 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
                     {t.name}
                   </button>
                 ))}
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  <span className={`beautify-toggle ${macCodeBlock ? 'on' : ''}`} onClick={() => setMacCodeBlock(!macCodeBlock)} style={{ width: 16, height: 16 }} />
+                  Mac
+                </label>
               </div>
             </div>
             <div className="code-preview" style={{ marginTop: 8 }}>
-              <pre><code className="hljs" dangerouslySetInnerHTML={{ __html: previewHtml }} /></pre>
+              {macCodeBlock ? (
+                <pre className="mac-code-block" style={{ background: ct.macBg, borderRadius: 10, overflow: 'hidden', margin: 0, border: 'none' }}>
+                  <div className="mac-code-bar">
+                    <span className="mac-code-dot red" />
+                    <span className="mac-code-dot yellow" />
+                    <span className="mac-code-dot green" />
+                    <span className="mac-code-lang">{language}</span>
+                  </div>
+                  <div className="mac-code-body">
+                    <code className="hljs" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                  </div>
+                </pre>
+              ) : (
+                <pre><code className="hljs" dangerouslySetInnerHTML={{ __html: previewHtml }} /></pre>
+              )}
             </div>
           </div>
         </div>
@@ -206,22 +231,36 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
                 <div className="beautify-content">
                   <div className="beautify-group-title">选择代码高亮主题</div>
                   <div className="beautify-grid">
-                    {THEMES.map(t => (
-                      <button
-                        key={t.id}
-                        className={`beautify-card ${themeId === t.id ? 'active' : ''}`}
-                        onClick={() => { setThemeId(t.id); setShowBeautify(false); }}
-                      >
-                        <div className="beautify-card-preview" style={{ background: t.id === 'github' ? '#f6f8fa' : t.id === 'atom-one-dark' ? '#282c34' : '#272822' }}>
-                          <code className="hljs" style={{ fontSize: 10, padding: 6, display: 'block', fontFamily: 'Consolas, monospace' }}>
-                            {t.id === 'github' ? 'print("hello")'
-                             : t.id === 'atom-one-dark' ? 'console.log("hi")'
-                             : 'puts "hello"'}
-                          </code>
-                        </div>
-                        <span className="beautify-card-name">{t.name}</span>
-                      </button>
-                    ))}
+                    {THEMES.map(t => {
+                      const ct = CODE_THEMES.find(c => c.id === t.id)!
+                      return (
+                        <button
+                          key={t.id}
+                          className={`beautify-card ${themeId === t.id ? 'active' : ''}`}
+                          onClick={() => { setThemeId(t.id); setShowBeautify(false); }}
+                        >
+                          <div className="beautify-card-preview" style={{ background: ct.macBg, padding: 0, overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 10px 5px', background: 'rgba(128,128,128,0.12)', borderBottom: '1px solid rgba(128,128,128,0.15)' }}>
+                              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+                              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
+                              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+                              <span style={{ marginLeft: 6, fontSize: 9, color: 'rgba(128,128,128,0.6)', fontFamily: 'monospace' }}>{t.id}</span>
+                            </div>
+                            <code style={{ fontSize: 9, padding: '6px 10px', display: 'block', fontFamily: 'Consolas, monospace', color: ct.swatch[1] }}>
+                              <span style={{ color: ct.swatch[2] }}>def</span> <span style={{ color: ct.swatch[3] }}>hello</span>():<br/>
+                              &nbsp;&nbsp;<span style={{ color: ct.swatch[4] }}>return</span> <span style={{ color: ct.swatch[5] }}>"hi"</span>
+                            </code>
+                          </div>
+                          <span className="beautify-card-name">{t.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <label className="beautify-toggle-row">
+                      <span className="beautify-toggle-label">Mac 风格窗口装饰</span>
+                      <span className={`beautify-toggle ${macCodeBlock ? 'on' : ''}`} onClick={() => setMacCodeBlock(!macCodeBlock)} />
+                    </label>
                   </div>
                 </div>
               </div>

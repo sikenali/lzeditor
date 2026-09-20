@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor, DEFAULT_SETTINGS } from '../../store/settingsStore'
 import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup } from '../../shared/types'
-import { STYLE_SETS, applyStyleSet } from '../../styles/themes'
+import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography-themes'
+import { CODE_THEMES, getCodeTheme } from '../../styles/code-themes'
 import { LFSInput } from '../../components/ui/LFInput'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 
@@ -19,11 +20,11 @@ type SubTab = { id: string; label: string; icon: string }
 
 /* ── Sub-tab definitions per category ── */
 const THEME_SUBS: SubTab[] = [
-  { id: 'mode',      label: '主题模式', icon: 'ri-sun-fill' },
-  { id: 'styles',    label: '样式集',   icon: 'ri-palette-fill' },
-  { id: 'accent',    label: '强调色',   icon: 'ri-circle-fill' },
+  { id: 'mode',          label: '主题模式', icon: 'ri-sun-fill' },
+  { id: 'typography',    label: '排版样式', icon: 'ri-font-size' },
+  { id: 'code-theme',    label: '代码样式', icon: 'ri-code-box-line' },
+  { id: 'accent',        label: '图标颜色', icon: 'ri-circle-fill' },
 ]
-
 const EDITOR_SUBS: SubTab[] = [
   { id: 'general',   label: '通用设置', icon: 'ri-settings-3-line' },
   { id: 'local',     label: '本地化',   icon: 'ri-translate-2' },
@@ -271,26 +272,81 @@ function renderThemeContent(tab: string) {
     </div>
   )
 
-  if (tab === 'styles') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>样式集</span><span className="settings-section-desc">界面风格</span></div>
-      <div className="theme-grid">
-        {STYLE_SETS.map(s => (
-          <button key={s.id} className="theme-card" onClick={() => applyStyleSet(s.id)}>
-            <div className="theme-preview" style={{ background: s.preview.bg }}>
-              <div style={{ width: '100%', height: 8, background: s.preview.accent, borderRadius: 2, marginBottom: 4 }} />
-              <div style={{ width: '60%', height: 4, background: 'rgba(128,128,128,0.3)', borderRadius: 2 }} />
-            </div>
-            <span className="theme-name">{s.name}</span>
-          </button>
-        ))}
+  if (tab === 'typography') {
+    const activeId = useSettingsStore.getState().typographyTheme || 'classic'
+    return (
+      <div className="settings-section">
+        <div className="settings-section-title"><span>排版样式</span><span className="settings-section-desc">文章内容的视觉风格，影响预览与导出</span></div>
+        <div className="theme-grid">
+          {TYPOGRAPHY_THEMES.map(t => (
+            <button
+              key={t.id}
+              className={`theme-card ${activeId === t.id ? 'active' : ''}`}
+              onClick={() => { applyTypographyTheme(t.id); useSettingsStore.getState().updateSetting('typographyTheme', t.id) }}
+            >
+              <div
+                className="theme-preview typography-preview"
+                style={{ background: t.id === 'night' ? '#1a1b26' : t.id === 'magazine' || t.id === 'ink' ? '#fff' : '#fafafa', minHeight: 80 }}
+              >
+                <div style={{ padding: '6px 8px', fontSize: 9, lineHeight: 1.5, color: t.id === 'night' ? '#c6cade' : '#333' }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: t.color, marginBottom: 2 }}>标题示例</div>
+                  <div style={{ fontSize: 8, color: 'rgba(128,128,128,0.7)', borderBottom: `1px solid ${t.color}33`, paddingBottom: 2, marginBottom: 2 }}>二级标题装饰线</div>
+                  <div style={{ fontSize: 8, color: 'rgba(128,128,128,0.6)' }}>正文文字 · <code style={{ background: `${t.color}18`, color: t.color, padding: '0 3px', borderRadius: 2, fontSize: 7 }}>行内代码</code></div>
+                  <div style={{ fontSize: 8, color: 'rgba(128,128,128,0.5)', marginTop: 2 }}>引用文字样例</div>
+                </div>
+              </div>
+              <span className="theme-name">{t.name}</span>
+              <span className="theme-tag" style={{ color: t.color, fontSize: 10 }}>{t.tag}</span>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  if (tab === 'code-theme') {
+    const activeId = useSettingsStore.getState().codeTheme || 'atom-one-dark'
+    const activeMac = useSettingsStore.getState().macCodeBlock || false
+    const update = useSettingsStore.getState().updateSetting
+    return (
+      <div className="settings-section">
+        <div className="settings-section-title"><span>代码样式</span><span className="settings-section-desc">代码块的高亮主题</span></div>
+        <div className="theme-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          {CODE_THEMES.map(t => (
+            <button
+              key={t.id}
+              className={`theme-card ${activeId === t.id ? 'active' : ''}`}
+              onClick={() => update('codeTheme', t.id)}
+            >
+              <div className="theme-preview code-theme-preview" style={{ background: t.macBg, padding: '8px 10px' }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+                </div>
+                <code style={{ fontSize: 8, fontFamily: 'monospace', color: t.swatch[1], display: 'block' }}>
+                  <span style={{ color: t.swatch[2] }}>def</span> <span style={{ color: t.swatch[3] }}>hello</span>():
+                  {'\n'}  <span style={{ color: t.swatch[4] }}>return</span> <span style={{ color: t.swatch[5] }}>"hi"</span>
+                </code>
+              </div>
+              <span className="theme-name">{t.name}</span>
+              <span className="theme-tag" style={{ fontSize: 10 }}>{t.dark ? '暗色' : '亮色'}</span>
+            </button>
+          ))}
+        </div>
+        <div style={{ marginTop: 20 }}>
+          <div className="setting-row" style={{ alignItems: 'center' }}>
+            <div className="setting-label"><span>Mac 风格窗口</span><span className="setting-hint">代码块添加红黄绿三点装饰栏</span></div>
+            <span className={`beautify-toggle ${activeMac ? 'on' : ''}`} onClick={() => update('macCodeBlock', !activeMac)} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="settings-section">
-      <div className="settings-section-title"><span>强调色</span><span className="settings-section-desc">选中态、主按钮与高亮</span></div>
+      <div className="settings-section-title"><span>图标颜色</span><span className="settings-section-desc">选中态、主按钮与高亮</span></div>
       <div className="color-picker-row">
         {ACCENT_PRESETS.map(p => (
           <button key={p.id} className={`color-swatch ${accent === p.id ? 'active' : ''}`} onClick={() => update('accentColor', p.id)} title={p.name}>

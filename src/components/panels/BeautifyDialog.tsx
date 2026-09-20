@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { STYLE_SETS, applyStyleSet } from '../../styles/themes'
+import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
+import { CODE_THEMES } from '../../styles/code-themes'
 
 const FONT_OPTIONS = [
   { value: 'sans-serif', label: '无衬线' },
@@ -33,11 +34,12 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const [fontSize, setFontSize] = useState<number>(state.defaultFontSize || 17)
   const [lineHeight, setLineHeight] = useState(state.lineHeight || '1.75')
   const [contentWidth, setContentWidth] = useState<'960' | '1024' | '1200' | '1280'>(state.contentWidth || '1024')
-  const [styleSet, setStyleSet] = useState(state.styleSet || 'ocean')
+  const [typographyTheme, setTypographyTheme] = useState(state.typographyTheme || 'classic')
+  const [codeTheme, setCodeTheme] = useState(state.codeTheme || 'atom-one-dark')
   const [showLineNumbers, setShowLineNumbers] = useState(state.showLineNumbers || false)
   const [useIndent, setUseIndent] = useState(false)
   const [useJustify, setUseJustify] = useState(false)
-  const [macCodeBlock, setMacCodeBlock] = useState(false)
+  const [macCodeBlock, setMacCodeBlock] = useState(state.macCodeBlock || false)
   const [applying, setApplying] = useState(false)
 
   const handleApply = async () => {
@@ -46,8 +48,9 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     updateSetting('defaultFontSize', fontSize)
     updateSetting('lineHeight', lineHeight)
     updateSetting('contentWidth', contentWidth)
-    updateSetting('styleSet', styleSet)
-    applyStyleSet(styleSet)
+    updateSetting('typographyTheme', typographyTheme)
+    updateSetting('codeTheme', codeTheme)
+    updateSetting('macCodeBlock', macCodeBlock)
     try {
       const prettier = await import('prettier')
       const currentMd = useEditorStore.getState().mdContent || ''
@@ -73,7 +76,7 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     onClose()
   }
 
-  const currentTheme = STYLE_SETS.find(s => s.id === styleSet) || STYLE_SETS[0]
+  const currentTheme = TYPOGRAPHY_THEMES.find(t => t.id === typographyTheme) || TYPOGRAPHY_THEMES[0]
   const previewFont = fontFamily === 'sans-serif' ? 'var(--font-sans)'
     : fontFamily === 'monospace' ? 'var(--font-mono)'
     : fontFamily
@@ -90,24 +93,31 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         </div>
 
         <div className="beautify-body">
-          {/* 主题风格 */}
+          {/* 排版样式 */}
           <div className="beautify-section">
-            <div className="beautify-section-title">主题风格</div>
+            <div className="beautify-section-title">排版样式</div>
             <div className="beautify-theme-grid">
-              {STYLE_SETS.map(s => (
+              {TYPOGRAPHY_THEMES.map(t => (
                 <button
-                  key={s.id}
-                  className={`beautify-theme-card ${styleSet === s.id ? 'active' : ''}`}
-                  onClick={() => setStyleSet(s.id)}
+                  key={t.id}
+                  className={`beautify-theme-card ${typographyTheme === t.id ? 'active' : ''}`}
+                  onClick={() => setTypographyTheme(t.id)}
                 >
-                  <div className="beautify-theme-preview" style={{ background: s.preview.bg }}>
-                    <div className="beautify-theme-bar" style={{ background: s.preview.accent }} />
-                    <div className="beautify-theme-lines">
-                      <div className="beautify-theme-line" style={{ width: '70%' }} />
-                      <div className="beautify-theme-line" style={{ width: '50%' }} />
+                  <div
+                    className="beautify-theme-preview"
+                    style={{
+                      background: t.id === 'night' ? '#1a1b26' : t.id === 'magazine' || t.id === 'ink' ? '#fff' : '#f8f8f8',
+                      minHeight: 56,
+                      padding: '4px 6px',
+                    }}
+                  >
+                    <div style={{ fontSize: 8, lineHeight: 1.4, color: t.id === 'night' ? '#c6cade' : '#333' }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: t.color }}>标题</div>
+                      <div style={{ fontSize: 7, color: 'rgba(128,128,128,0.6)' }}>正文文字</div>
                     </div>
                   </div>
-                  <span className="beautify-theme-name">{s.name}</span>
+                  <span className="beautify-theme-name">{t.name}</span>
+                  <span style={{ fontSize: 9, color: t.color }}>{t.tag}</span>
                 </button>
               ))}
             </div>
@@ -153,6 +163,26 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
             <div className="beautify-section-title">代码块</div>
             <ToggleOption title="显示行号" checked={showLineNumbers} onChange={setShowLineNumbers} />
             <ToggleOption title="Mac 风格窗口" checked={macCodeBlock} onChange={setMacCodeBlock} />
+            <div className="beautify-row" style={{ marginTop: 8 }}>
+              <label className="beautify-label">代码样式</label>
+              <div className="beautify-size-chips" style={{ flexWrap: 'wrap' }}>
+                {CODE_THEMES.map(ct => (
+                  <button
+                    key={ct.id}
+                    className={`beautify-size-chip ${codeTheme === ct.id ? 'active' : ''}`}
+                    onClick={() => setCodeTheme(ct.id)}
+                    style={{ gap: 4, paddingRight: 8 }}
+                  >
+                    <span style={{ display: 'inline-flex', gap: 2 }}>
+                      {ct.swatch.slice(0, 3).map((c, i) => (
+                        <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: c, display: 'inline-block' }} />
+                      ))}
+                    </span>
+                    {ct.name}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 文本对齐 */}

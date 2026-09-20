@@ -189,7 +189,12 @@ LZEditor 支持多种导出格式，满足不同场景需求：
 
 ---
 
-*END OF DOCUMENT*
+ *END OF DOCUMENT*
+ `
+
+export const NEW_DOC_TEMPLATE = `# 新建文档
+
+开始写作吧…
 `
 
 export const DEFAULT_DOC_TITLE = 'Welcome to LZEditor'

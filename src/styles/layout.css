@@ -226,46 +226,72 @@
 .meta-tab-new:hover { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--accent-a5); }
 .meta-info { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-/* ── Status Bar — glass material ── */
+/* ── Status Bar — momowuwen footer-section style ── */
 .statusbar {
   display: flex; align-items: center; justify-content: space-between;
-  height: 44px; padding: 0 28px;
-  background: linear-gradient(0deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%),
-              var(--statusbar-bg);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-light);
-  font-size: 12px; color: var(--text-muted);
-  flex-shrink: 0; gap: 24px;
+  height: 42px; padding: 0 20px;
+  /* Dark warm ink background like momowuwen footer */
+  background: #2c2416;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 12px; color: rgba(160,139,106,1);
+  flex-shrink: 0; gap: 20px;
   position: sticky; bottom: 0; z-index: 100;
 }
-.statusbar-left  { display: flex; align-items: center; gap: 8px; width: 360px; flex-shrink: 0; }
-.statusbar-center { display: flex; align-items: center; gap: 12px; flex: 1; justify-content: center; }
-.statusbar-right  { display: flex; align-items: center; gap: 20px; width: 360px; justify-content: flex-end; flex-shrink: 0; }
-.statusbar-item { display: flex; align-items: center; gap: 8px; }
-.statusbar-divider { width: 4px; height: 3px; background: var(--border-default); border-radius: 2px; }
+.statusbar-left  { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.statusbar-center { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; }
+.statusbar-right  { display: flex; align-items: center; gap: 16px; justify-content: flex-end; flex-shrink: 0; }
+
+/* Seal icon on left (like momowuwen footer seal) */
+.statusbar-seal {
+  width: 22px; height: 22px;
+  background: linear-gradient(135deg, #c23a2b, #d4624a);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px; flex-shrink: 0;
+}
+.statusbar-item { display: flex; align-items: center; gap: 6px; }
+.statusbar-divider { width: 1px; height: 18px; background: rgba(194,168,122,0.3); border-radius: 1px; }
+
+/* Pill buttons in statusbar (like nav-item) */
+.statusbar-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 14px; border-radius: 999px;
+  background: transparent; border: 1px solid rgba(194,168,122,0.25);
+  cursor: pointer; font-size: 12px;
+  color: rgba(160,139,106,1);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.statusbar-pill:hover {
+  border-color: rgba(194,58,43,0.5);
+  color: rgba(212,168,67,1);
+  background: rgba(194,58,43,0.08);
+}
+.statusbar-pill .remix { font-size: 13px; }
+
+/* Social-like icon buttons (right side, like footer social icons) */
+.statusbar-icon-btn {
+  width: 26px; height: 26px;
+  background: rgba(61,51,34,1);
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(212,196,160,1); font-size: 12px;
+  border: none; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.statusbar-icon-btn:hover {
+  background: rgba(194,58,43,0.7);
+  transform: translateY(-1px);
+}
+
+/* Badge / stat pill */
 .statusbar-badge {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 10px; background: var(--bg-code);
-  border-radius: 20px; font-size: 11px; color: var(--amber);
-  border: 1px solid var(--border-subtle);
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 11px; color: rgba(212,196,160,1);
+  background: rgba(61,51,34,0.6);
+  border: 1px solid rgba(194,168,122,0.2);
 }
-.statusbar-style-btn, .statusbar-collapse-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 8px;
-  background: transparent; border: none; cursor: pointer;
-  font-size: 12px; color: var(--text-secondary);
-  transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
-}
-.statusbar-style-btn:hover, .statusbar-collapse-btn:hover {
-  background: var(--bg-code); color: var(--text-primary);
-}
-.statusbar-style-btn:active, .statusbar-collapse-btn:active {
-  transform: scale(0.96);
-}
-.statusbar-style-btn .remix { font-size: 13px; color: var(--accent-primary); }
-.statusbar-collapse-btn .remix { font-size: 13px; }
 
 /* ── Sidebar outline (numbered + collapsible) ── */
 .sidebar-outline .outline-node { width: 100%; }

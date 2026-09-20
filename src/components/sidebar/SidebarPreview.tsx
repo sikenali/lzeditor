@@ -1,114 +1,91 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
+import { remark } from 'remark'
+import remarkGfm from 'remark-gfm'
+import remarkHtml from 'remark-html'
 import { useEditorStore } from '../../store/editorStore'
+import { useScrollSync } from '../../hooks/useScrollSync'
+import { copyRichText } from '../../clipboard'
+import { getTypographyTheme } from '../../styles/typography-themes'
+import { useSettingsStore } from '../../store/settingsStore'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
 const DEFAULT_WIDTH = 400
 
+/** Convert ProseMirror HTML → Markdown → rendered HTML for the preview. */
+function mdToPreviewHtml(mdContent: string): string {
+  if (!mdContent) return ''
+  try {
+    const result = remark()
+      .use(remarkGfm)
+      .use(remarkHtml)
+      .processSync(mdContent)
+    return result.toString()
+  } catch {
+    return mdContent
+  }
+}
+
 export const SidebarPreview: React.FC = () => {
   const editorRef = useEditorStore((s) => s.editorRef)
   const editorContentRef = useEditorStore((s) => s.editorContentRef)
+  const docHTML = useEditorStore((s) => s.docHTML || '')
+  const mdContent = useEditorStore((s) => s.mdContent || '')
+  const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
+  const setMdContent = useEditorStore((s) => s.setMdContent)
+  const setDocHTML = useEditorStore((s) => s.setDocHTML)
   const previewRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  // ── Scroll sync helpers ──
-  const syncingRef = useRef(false)
-
-  const syncScroll = (from: HTMLElement, to: HTMLElement) => {
-    if (syncingRef.current || !from || !to) return
-    syncingRef.current = true
-    const fromPct = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight)
-    const toMaxScroll = Math.max(0, to.scrollHeight - to.clientHeight)
-    to.scrollTop = fromPct * toMaxScroll
-    setTimeout(() => { syncingRef.current = false }, 100)
-  }
-
-  // ── Sync content on mutation ──
-  const syncContent = () => {
-    if (!editorRef || !previewRef.current) return
-    const pm = editorRef.querySelector('.ProseMirror')
-    if (pm) {
-      previewRef.current.innerHTML = pm.innerHTML
-    } else {
-      previewRef.current.innerHTML = editorRef.innerHTML
-    }
-  }
+  // ── Render Markdown via remark into the preview container
+  const previewHtml = useMemo(() => mdToPreviewHtml(mdContent), [mdContent])
 
   useEffect(() => {
-    syncContent()
+    if (!previewRef.current) return
+    const theme = getTypographyTheme(typographyTheme || 'classic')
+    previewRef.current.innerHTML = previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
+    previewRef.current.style.cssText = ''
+    if (theme) {
+      // Apply typography theme inline styles to key elements
+      const css = theme.css
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.\lz-editor-content/g, '.preview-doc')
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.read-article-body/g, '.preview-doc')
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.export-preview-body/g, '.preview-doc')
+      const styleEl = document.getElementById('lz-sidebar-typography-css') as HTMLStyleElement | null
+      if (styleEl) styleEl.remove()
+      const el = document.createElement('style')
+      el.id = 'lz-sidebar-typography-css'
+      el.textContent = css
+      document.head.appendChild(el)
+    }
+  }, [previewHtml, typographyTheme])
+
+  // Also update on editor mutations (keep in sync when ProseMirror updates)
+  useEffect(() => {
     if (!editorRef) return
-    const observer = new MutationObserver(() => requestAnimationFrame(syncContent))
+    const observer = new MutationObserver(() => {
+      requestAnimationFrame(() => {
+        if (previewRef.current) {
+          previewRef.current.innerHTML = previewHtml || ''
+        }
+      })
+    })
     observer.observe(editorRef, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
-  }, [editorRef])
+  }, [editorRef, previewHtml])
 
-  // ── Wheel-based scroll sync (primary for mouse wheel) ──
-  useEffect(() => {
-    const el = editorContentRef
-    if (!el) return
-    const onWheel = (e: WheelEvent) => {
-      if (syncingRef.current || !previewRef.current) return
-      const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
-      syncingRef.current = true
-      requestAnimationFrame(() => {
-        const target = previewRef.current
-        if (target) {
-          const maxScroll = Math.max(0, target.scrollHeight - target.clientHeight)
-          target.scrollTop = pct * maxScroll
-        }
-        setTimeout(() => { syncingRef.current = false }, 100)
-      })
-    }
-    el.addEventListener('wheel', onWheel, { passive: true })
-    return () => el.removeEventListener('wheel', onWheel)
-  }, [editorContentRef])
+  // ── Scroll sync via hook (non-React, no re-renders)
+  useScrollSync(
+    { current: editorContentRef },
+    { current: previewRef.current },
+    true,
+  )
 
-  useEffect(() => {
-    const el = previewRef.current
-    if (!el || !editorContentRef) return
-    const onWheel = (e: WheelEvent) => {
-      if (syncingRef.current) return
-      const pct = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
-      syncingRef.current = true
-      requestAnimationFrame(() => {
-        if (editorContentRef) {
-          const maxScroll = Math.max(0, editorContentRef.scrollHeight - editorContentRef.clientHeight)
-          editorContentRef.scrollTop = pct * maxScroll
-        }
-        setTimeout(() => { syncingRef.current = false }, 100)
-      })
-    }
-    el.addEventListener('wheel', onWheel, { passive: true })
-    return () => el.removeEventListener('wheel', onWheel)
-  }, [previewRef, editorContentRef])
-
-  // ── Scroll event sync (fallback for drag-scroll, etc.) ──
-  useEffect(() => {
-    const el = editorContentRef
-    if (!el) return
-    const onScroll = () => {
-      if (syncingRef.current || !previewRef.current) return
-      syncScroll(el, previewRef.current)
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [editorContentRef])
-
-  useEffect(() => {
-    const el = previewRef.current
-    if (!el || !editorContentRef) return
-    const onScroll = () => {
-      if (syncingRef.current) return
-      syncScroll(el, editorContentRef)
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [previewRef])
-
-  // ── Resize handle ──
+  // ── Resize handle
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
     setDragging(true)
@@ -116,9 +93,9 @@ export const SidebarPreview: React.FC = () => {
 
   useEffect(() => {
     if (!dragging) return
+    const wrapper = document.querySelector('.sidebar-preview-wrapper') as HTMLElement | null
+    if (!wrapper) return
     const handleMouseMove = (e: MouseEvent) => {
-      const wrapper = (document.querySelector('.sidebar-preview-wrapper') as HTMLElement | null)
-      if (!wrapper) return
       const rect = wrapper.getBoundingClientRect()
       const newWidth = rect.right - e.clientX
       const clamped = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth))
@@ -133,12 +110,31 @@ export const SidebarPreview: React.FC = () => {
     }
   }, [dragging, setPreviewWidth])
 
+  // ── Copy as WeChat rich text
+  const handleCopyWechat = async () => {
+    if (!previewRef.current) return
+    const html = previewRef.current.innerHTML
+    const ok = await copyRichText(html)
+    if (ok) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   return (
     <div className="sidebar-preview-wrapper" style={{ width: previewWidth }}>
       <div className="sidebar-preview">
         <div className="sidebar-header">
           <span className="remix sidebar-header-icon ri-eye-2-fill"></span>
           <span className="sidebar-header-title">预览</span>
+          <button
+            className="sidebar-wechat-btn"
+            onClick={handleCopyWechat}
+            title="一键复制为公众号可用富文本"
+          >
+            <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
+            {copied ? '已复制' : '公众号'}
+          </button>
           <button className="sidebar-close-btn" onClick={() => setShowPreview(false)}>
             <span className="remix ri-close-line"></span>
           </button>

@@ -12,5 +12,11 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  background: var(--bg-primary);
+  /* Warm parchment texture like momowuwen — subtle paper gradient */
+  background: linear-gradient(180deg,
+    rgba(250,246,237,0.5) 0%,
+    rgba(252,249,240,0.8) 50%,
+    rgba(250,246,237,0.5) 100%
+  ),
+  var(--bg-primary);
 }
