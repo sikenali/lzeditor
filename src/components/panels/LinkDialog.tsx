@@ -51,8 +51,8 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="insert-dialog-body">
-          <div className="insert-left-nav">
+        <div className="export-body export-body-split export-body-redesigned insert-dialog-body">
+          <div className="export-left insert-left-nav">
             <button
               className={`insert-nav-item ${mode === 'external' ? 'active' : ''}`}
               onClick={() => setMode('external')}
@@ -70,7 +70,7 @@ export const LinkDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <span className="chip-desc">链接到内部标题锚点</span>
             </button>
           </div>
-          <div className="insert-right-pane">
+          <div className="export-right insert-right-pane">
             <div className="insert-preview-panel">
               <div className="export-field">
                 <label className="export-label">显示文字</label>

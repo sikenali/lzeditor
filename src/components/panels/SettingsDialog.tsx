@@ -143,9 +143,9 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     <div className="modal-overlay" onClick={onClose}>
       <div className="settings-dialog" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="settings-header">
-          <div className="settings-title">
-            <div className="settings-icon"><span className="remix ri-settings-3-fill"></span></div>
+        <div className="export-header">
+          <div className="export-title">
+            <span className="remix export-icon ri-settings-3-fill"></span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-heading)' }}>设置</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>
@@ -164,9 +164,9 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
           </div>
         </div>
 
-        <div className="settings-body">
+        <div className="export-body export-body-split export-body-redesigned settings-body">
           {/* ── Left: main nav ── */}
-          <div className="settings-sidebar">
+          <div className="export-left settings-sidebar">
             {NAV_ITEMS.map(item => (
               <div
                 key={item.id}
@@ -180,7 +180,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
             ))}
           </div>
 
-          <div className="settings-main">
+          <div className="export-right settings-main">
             {activeGroup !== 'about' && (
               <div
                 className="settings-top-tabs"
@@ -334,21 +334,31 @@ function renderThemeContent(tab: string) {
   return (
     <div className="settings-section">
       <div className="settings-section-title"><span>强调色</span><span className="settings-section-desc">用于选中态、主按钮和焦点反馈，不控制工具栏文字</span></div>
-      <div className="color-picker-row">
+      <div className="color-card-row">
         {ACCENT_PRESETS.map(p => (
-          <button key={p.id} className={`color-swatch ${accent === p.id ? 'active' : ''}`} onClick={() => update('accentColor', p.id)} title={p.name}>
-            <span className="color-swatch-bg" style={{ background: p.color }} />
-            {accent === p.id && <span className="remix color-swatch-check ri-check-line"></span>}
+          <button
+            key={p.id}
+            className={`color-card ${accent === p.id ? 'active' : ''}`}
+            onClick={() => update('accentColor', p.id)}
+          >
+            <span className="color-card-dot" style={{ background: p.color }} />
+            <span className="color-card-name">{p.name}</span>
+            {accent === p.id && <span className="remix color-card-check ri-check-line"></span>}
           </button>
         ))}
-        <button className="color-swatch color-swatch-custom" title="自定义颜色" onClick={() => {
-          const c = prompt('输入颜色值 (如 #FF0000):')
-          if (c) update('accentColor', c.startsWith('#') ? c : '#' + c)
-        }}>
-          <span className="remix ri-add-line"></span>
+        <button
+          className="color-card color-card-custom"
+          title="自定义颜色"
+          onClick={() => {
+            const c = prompt('输入颜色值 (如 #FF0000):')
+            if (c) update('accentColor', c.startsWith('#') ? c : '#' + c)
+          }}
+        >
+          <span className="remix color-card-icon ri-add-line"></span>
+          <span className="color-card-name">自定义</span>
         </button>
       </div>
-      <div className="color-current-value" style={{ marginTop: 8 }}>
+      <div className="color-current-value" style={{ marginTop: 10 }}>
         <span className="color-current-label">当前</span>
         <span className="color-current-hex" style={{ color: getAccentColor(accent) || accent }}>
           {ACCENT_PRESETS.find(p => p.id === accent)?.name || accent}

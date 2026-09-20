@@ -35,9 +35,9 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
   return (
     <div className="modal-overlay" onClick={() => onToggle(false)}>
       <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
-        <div className="settings-header">
-          <div className="settings-title">
-            <div className="settings-icon"><span className="remix ri-table-2"></span></div>
+        <div className="export-header">
+          <div className="export-title">
+            <span className="remix export-icon ri-table-2"></span>
             <div>
               <div className="insert-title">插入表格</div>
               <div className="insert-desc">{rows} 行 x {cols} 列</div>
@@ -48,8 +48,8 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
           </button>
         </div>
 
-        <div className="insert-dialog-body">
-          <div className="insert-left-nav">
+        <div className="export-body export-body-split export-body-redesigned insert-dialog-body">
+          <div className="export-left insert-left-nav">
             {PRESETS.map(item => (
               <button
                 key={item.id}
@@ -62,7 +62,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
               </button>
             ))}
           </div>
-          <div className="insert-right-pane">
+          <div className="export-right insert-right-pane">
             <div className="insert-top-panel">
               <div className="table-size-grid">
                 <label className="export-field">

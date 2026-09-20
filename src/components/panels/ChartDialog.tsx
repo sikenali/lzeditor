@@ -216,9 +216,9 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="settings-dialog chart-dialog" onClick={e => e.stopPropagation()}>
-        <div className="settings-header">
-          <div className="settings-title">
-            <div className="settings-icon"><span className="remix ri-bar-chart-2-fill"></span></div>
+        <div className="export-header">
+          <div className="export-title">
+            <span className="remix export-icon ri-bar-chart-2-fill"></span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-heading)' }}>插入图表</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>{CHART_TYPES.find(t => t.id === type)?.label || ''}</div>
@@ -229,8 +229,8 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
           </button>
         </div>
 
-        <div className="chart-body">
-          <div className="insert-left-nav chart-type-panel">
+        <div className="export-body export-body-split export-body-redesigned chart-body">
+          <div className="export-left insert-left-nav chart-type-panel">
             {CHART_TYPES.map(ct => (
               <button key={ct.id} className={`insert-nav-item ${type === ct.id ? 'active' : ''}`}
                 onClick={() => setType(ct.id)}
@@ -242,7 +242,7 @@ export const ChartDialog: React.FC<ChartDialogProps> = ({ onClose, onInsert }) =
             ))}
           </div>
 
-          <div className="chart-right-panel">
+          <div className="export-right chart-right-panel">
             {/* Code area — 1/3 */}
             <div className="chart-code-wrap">
               <div className="chart-code-label">

@@ -1581,6 +1581,143 @@
   max-height: 100%;
 }
 
+/* ── Export-style layout for all insert/library dialogs ── */
+.settings-dialog.insert-dialog,
+.settings-dialog.chart-dialog,
+.export-dialog.library-dialog-split {
+  width: min(1080px, 94vw);
+  height: min(720px, 88vh);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.export-body-redesigned.insert-dialog-body,
+.export-body-redesigned.chart-body,
+.export-body-redesigned.library-dialog-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0;
+  border-top: none;
+}
+
+.export-body-redesigned .insert-left-nav,
+.export-body-redesigned .library-dialog-left {
+  width: auto;
+  min-width: 0;
+  padding: 16px;
+  border-right: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.18);
+  overflow: auto;
+}
+
+[data-theme="dark"] .export-body-redesigned .insert-left-nav,
+[data-theme="dark"] .export-body-redesigned .library-dialog-left {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.export-body-redesigned .insert-nav-item {
+  border-color: var(--border-default);
+  background: var(--bg-code);
+  transition:
+    border-color 0.12s cubic-bezier(0.32, 0.72, 0, 1),
+    background 0.12s cubic-bezier(0.32, 0.72, 0, 1),
+    color 0.12s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.12s cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.export-body-redesigned .insert-nav-item:hover {
+  border-color: var(--accent-border);
+  background: var(--bg-hover);
+  transform: translateX(2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.export-body-redesigned .insert-nav-item.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-a5);
+  color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-a20);
+}
+
+.export-body-redesigned .insert-right-pane,
+.export-body-redesigned .library-dialog-right {
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  border-left: none;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.export-body-redesigned .insert-right-pane:has(.insert-top-panel) {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.export-body-redesigned .code-insert-pane {
+  grid-template-rows: auto minmax(130px, 0.55fr) minmax(0, 1fr) auto;
+}
+
+.export-body-redesigned .chart-right-panel {
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  border-left: none;
+  display: grid;
+  grid-template-rows: minmax(160px, 0.42fr) minmax(0, 1fr) auto;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.export-body-redesigned .chart-code-wrap,
+.export-body-redesigned .chart-preview-wrap,
+.export-body-redesigned .insert-top-panel,
+.export-body-redesigned .insert-preview-panel,
+.export-body-redesigned .library-content {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-code);
+  overflow: auto;
+}
+
+.export-body-redesigned .chart-code-wrap,
+.export-body-redesigned .chart-preview-wrap {
+  flex: none;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.export-body-redesigned .library-content {
+  padding: 16px;
+}
+
+.export-body-redesigned .export-footer {
+  margin: 0 -16px -16px;
+  padding: 16px 24px;
+  background: var(--bg-overlay);
+}
+
+.export-body-redesigned .export-hint {
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.export-body-redesigned .export-actions {
+  flex-shrink: 0;
+}
+
 .export-preview-scroll {
   max-height: none;
   height: 100%;

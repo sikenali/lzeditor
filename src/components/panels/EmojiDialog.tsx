@@ -48,9 +48,9 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
-        <div className="settings-header">
-          <div className="settings-title">
-            <div className="settings-icon"><span className="remix ri-emotion-line"></span></div>
+        <div className="export-header">
+          <div className="export-title">
+            <span className="remix export-icon ri-emotion-line"></span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-heading)' }}>插入表情</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>
@@ -63,9 +63,9 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
           </button>
         </div>
 
-        <div className="insert-dialog-body">
+        <div className="export-body export-body-split export-body-redesigned insert-dialog-body">
           {/* Left panel — category list */}
-          <div className="insert-left-nav">
+          <div className="export-left insert-left-nav">
             <div className="emoji-search-wrap">
               <span className="remix ri-search-line emoji-search-icon"></span>
               <input
@@ -99,7 +99,7 @@ export const EmojiDialog: React.FC<EmojiDialogProps> = ({ onClose, onInsert }) =
           </div>
 
           {/* Right panel — emoji grid */}
-          <div className="insert-right-pane emoji-right-pane">
+          <div className="export-right insert-right-pane emoji-right-pane">
             <div className="insert-preview-panel emoji-preview-panel">
               <div className="chart-preview-label">
                 <span className="remix ri-grid-fill"></span>

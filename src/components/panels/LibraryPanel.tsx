@@ -141,8 +141,8 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
           </button>
         </div>
 
-        <div className="library-dialog-body">
-          <div className="library-dialog-left">
+        <div className="export-body export-body-split export-body-redesigned library-dialog-body">
+          <div className="export-left library-dialog-left">
             <div className="format-chips-compact library-format-list">
               {CATEGORIES.map(c => (
                 <button
@@ -158,7 +158,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
             </div>
           </div>
 
-          <div className="library-dialog-right">
+          <div className="export-right library-dialog-right">
             <div className="library-content">
               {category === 'docs' && (
                 <div className="library-list">

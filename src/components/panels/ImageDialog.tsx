@@ -51,8 +51,8 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
           </button>
         </div>
 
-        <div className="insert-dialog-body">
-          <div className="insert-left-nav">
+        <div className="export-body export-body-split export-body-redesigned insert-dialog-body">
+          <div className="export-left insert-left-nav">
             <button
               className={`insert-nav-item ${mode === 'local' ? 'active' : ''}`}
               onClick={() => setMode('local')}
@@ -70,7 +70,7 @@ export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onU
               <span className="chip-desc">使用 http 或 https 链接</span>
             </button>
           </div>
-          <div className="insert-right-pane">
+          <div className="export-right insert-right-pane">
             <div className="insert-preview-panel">
               {mode === 'local' && (
                 <div

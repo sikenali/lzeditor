@@ -81,9 +81,9 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
-        <div className="settings-header">
-          <div className="settings-title">
-            <div className="settings-icon"><span className="remix ri-code-box-line"></span></div>
+        <div className="export-header">
+          <div className="export-title">
+            <span className="remix export-icon ri-code-box-line"></span>
             <div>
               <div className="insert-title">插入代码块</div>
               <div className="insert-desc">{language} · {THEME_OPTIONS.find(t => t.id === themeId)?.name}</div>
@@ -94,8 +94,8 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
           </button>
         </div>
 
-        <div className="insert-dialog-body">
-          <div className="insert-left-nav">
+        <div className="export-body export-body-split export-body-redesigned insert-dialog-body">
+          <div className="export-left insert-left-nav">
             {THEME_OPTIONS.map(theme => (
               <button
                 key={theme.id}
@@ -109,7 +109,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
             ))}
           </div>
 
-          <div className="insert-right-pane code-insert-pane">
+          <div className="export-right insert-right-pane code-insert-pane">
             <div className="insert-top-panel code-insert-controls">
               <label className="export-field">
                 <span className="export-label">代码语言</span>
