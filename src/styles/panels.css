@@ -1,16 +1,13 @@
-/* ── Export Dialog — Apple glass panel ── */
+/* ── Export Dialog — solid white material ── */
 .export-dialog {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%),
-              var(--bg-overlay);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid var(--border-lighter);
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 16px;
   width: 600px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 24px 80px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.07);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.12);
   overflow: hidden;
 }
 
@@ -392,17 +389,14 @@
   box-shadow: 0 0 0 1px var(--accent-a20);
 }
 
-/* ── Export Dialog (duplicate, unified) ── */
+/* ── Export Dialog (duplicate, unified) — solid white ── */
 .export-dialog {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%),
-              var(--bg-overlay);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid var(--border-lighter);
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 16px;
   width: 560px;
   display: flex; flex-direction: column;
-  box-shadow: 0 24px 80px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.07);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.12);
   overflow: hidden;
 }
 .export-header {
@@ -582,15 +576,12 @@
 
 /* ── Preview Panel (modal) ── */
 .preview-panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%),
-              var(--bg-overlay);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid var(--border-lighter);
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 16px;
   width: 640px; max-height: 80vh;
   display: flex; flex-direction: column;
-  box-shadow: 0 24px 80px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.12);
   overflow: hidden;
   animation: dialog-spring-in 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -1710,13 +1701,10 @@
 .history-panel {
   width: min(1040px, 94vw);
   height: min(700px, 88vh);
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%),
-              var(--bg-overlay);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid var(--border-lighter);
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 16px;
-  box-shadow: 0 24px 80px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.07);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.12);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -2049,7 +2037,7 @@
 }
 
 /* ── Editable table preview ── */
-.table-info-row {
+.table-top-bar {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 8px; font-size: 12px; color: var(--text-muted);
 }
@@ -2080,10 +2068,10 @@
 }
 .table-drag-col:active { cursor: grabbing; }
 .table-drag-col .remix {
-  font-size: 14px; color: var(--text-muted); opacity: 0;
+  font-size: 14px; color: var(--text-muted); opacity: 0.45;
   transition: opacity 0.12s; line-height: 1; padding: 8px 0;
 }
-.table-editable-row:hover .table-drag-col .remix { opacity: 0.6; }
+.table-editable-row:hover .table-drag-col .remix { opacity: 0.8; }
 .table-drag-col .remix:hover { opacity: 1 !important; color: var(--accent-primary); }
 
 /* Editable cells */

@@ -4,6 +4,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
+import { DEFAULT_CONTENT } from '../../components/editor/constants'
 
 interface CursorPos {
   line: number
@@ -39,7 +40,7 @@ export const CodeMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       } catch {}
     }
     // Use DEFAULT_CONTENT as last resort
-    return ''
+    return DEFAULT_CONTENT
   }, [activeDocId])
 
   const [text, setText] = useState(() => {
@@ -58,7 +59,7 @@ export const CodeMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         if (d.md) return d.md
       } catch {}
     }
-    return mdContent
+    return mdContent || DEFAULT_CONTENT
   })
   const [cursor, setCursor] = useState<CursorPos>({ line: 1, column: 1 })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -66,7 +67,8 @@ export const CodeMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   useEffect(() => {
     if (mdContent && mdContent !== text) setText(mdContent)
-  }, [mdContent])
+    else if (!mdContent && !text) setText(initialMd)
+  }, [mdContent, initialMd])
 
   const updateCursor = useCallback((el: HTMLTextAreaElement) => {
     const pos = el.selectionStart

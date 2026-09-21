@@ -188,12 +188,18 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
 
           {/* Right: table preview */}
           <div className="export-right insert-right-pane">
-            {/* Info row */}
-            <div className="table-info-row">
+            {/* Top bar: spec badge + shortcuts */}
+            <div className="table-top-bar">
               <span className="table-spec-badge">
                 <span className="remix ri-table-2"></span>
                 {cols} 列 · {rows} 行
               </span>
+              <div className="table-shortcut-hints">
+                <span className="shortcut-item"><kbd>Tab</kbd><span>下一列</span></span>
+                <span className="shortcut-item"><kbd>⇧ Tab</kbd><span>上一列</span></span>
+                <span className="shortcut-item"><kbd>Enter</kbd><span>单元格内换行</span></span>
+                <span className="shortcut-item"><kbd>Esc</kbd><span>退出编辑</span></span>
+              </div>
             </div>
 
             {/* Table wrapper */}
@@ -268,14 +274,6 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                   </tr>
                 </tbody>
               </table>
-            </div>
-
-            {/* Shortcut hints */}
-            <div className="table-shortcut-hints">
-              <span className="shortcut-item"><kbd>Tab</kbd><span>下一列</span></span>
-              <span className="shortcut-item"><kbd>⇧ Tab</kbd><span>上一列</span></span>
-              <span className="shortcut-item"><kbd>Enter</kbd><span>单元格内换行</span></span>
-              <span className="shortcut-item"><kbd>Esc</kbd><span>退出编辑</span></span>
             </div>
           </div>
         </div>

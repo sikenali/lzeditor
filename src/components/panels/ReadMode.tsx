@@ -44,6 +44,37 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [activeTocId, setActiveTocId] = useState<string>('')
   const [savedScroll, setSavedScroll] = useState<number>(0)
 
+  // ── Content fallback: store → localStorage → DEFAULT_CONTENT ──
+  const initialHtml = useMemo(() => {
+    if (docHTML) return docHTML
+    try {
+      const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
+      if (raw) {
+        const d = JSON.parse(raw)
+        if (d.html) return d.html
+      }
+      const old = localStorage.getItem('lzeditor-doc')
+      if (old) {
+        const d = JSON.parse(old)
+        if (d.html) return d.html
+      }
+    } catch {}
+    return ''
+  }, [docHTML, activeDocId])
+
+  const defaultHtml = useMemo(() => {
+    try {
+      return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString()
+    } catch {
+      return DEFAULT_CONTENT
+    }
+  }, [])
+
+  const [effectiveHtml, setEffectiveHtml] = useState(initialHtml || defaultHtml)
+  useEffect(() => {
+    setEffectiveHtml(docHTML || initialHtml || defaultHtml)
+  }, [docHTML, initialHtml, defaultHtml])
+
   // ── Generate TOC from HTML headings ──
   useEffect(() => {
     const el = bodyRef.current
@@ -70,7 +101,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       el2.textContent = css
       document.head.appendChild(el2)
     }
-  }, [docHTML, typographyTheme])
+  }, [docHTML, typographyTheme, effectiveHtml])
 
   // ── Scroll spy for active heading ──
   const tocItemsForSpy = useMemo(() =>
@@ -174,44 +205,8 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       })
       pre.insertBefore(header, pre.firstChild)
     })
-  }, [docHTML])
+   }, [effectiveHtml])
 
-   // ── Fallback: if docHTML is empty, read from localStorage, then DEFAULT_CONTENT ──
-   const initialHtml = useMemo(() => {
-     if (docHTML) return docHTML
-     try {
-       const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
-       if (raw) {
-         const d = JSON.parse(raw)
-         if (d.html) return d.html
-       }
-       const old = localStorage.getItem('lzeditor-doc')
-       if (old) {
-         const d = JSON.parse(old)
-         if (d.html) return d.html
-       }
-     } catch {}
-     return ''
-   }, [docHTML, activeDocId])
-
-  // For initial mount when store has nothing yet, fall back to DEFAULT_CONTENT HTML
-  const defaultHtml = useMemo(() => {
-    try {
-      return remark()
-        .use(remarkGfm)
-        .use(remarkHtml)
-        .processSync(DEFAULT_CONTENT)
-        .toString()
-    } catch {
-      return DEFAULT_CONTENT
-    }
-  }, [])
-
-  // Also watch store updates for docHTML changes
-  const [effectiveHtml, setEffectiveHtml] = useState(initialHtml || defaultHtml)
-  useEffect(() => {
-    setEffectiveHtml(docHTML || initialHtml || defaultHtml)
-  }, [docHTML, initialHtml, defaultHtml])
   const zoomScale = readZoom / 100
   const maxW = LAYOUT_MAX_W[readLayout]
 
