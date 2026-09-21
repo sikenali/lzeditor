@@ -694,3 +694,196 @@
 }
 .library-add-folder-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
 .library-empty-state.compact { padding: 18px 10px; }
+
+/* ── Left nav mode ── */
+.app-layout-left {
+  display: flex; flex-direction: row; height: 100%; overflow: hidden;
+}
+.app.nav-mode-left > .app-layout-left { flex: 1; min-width: 0; overflow: hidden; }
+
+/* Left toolbar */
+.app-left-toolbar {
+  display: flex; flex-direction: column; flex-shrink: 0;
+  background: var(--chrome-toolbar-bg);
+  border-right: 1px solid var(--chrome-toolbar-border);
+  position: relative; z-index: 100;
+}
+.app-left-toolbar.collapsed { width: 56px !important; }
+
+/* Toolbar in left mode — vertical, no backdrop-filter (fixes submenu clipping) */
+.app-left-toolbar .toolbar {
+  flex-direction: column; height: auto; padding: 6px 4px;
+  position: static; border: none; box-shadow: none; gap: 0;
+  overflow-y: auto; overflow-x: visible;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.app-left-toolbar .toolbar::-webkit-scrollbar { width: 4px; }
+.app-left-toolbar .toolbar::-webkit-scrollbar-track { background: transparent; }
+.app-left-toolbar .toolbar::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+.app-left-toolbar:hover .toolbar { scrollbar-color: var(--border-default) transparent; }
+
+/* Toolbar groups — vertical stack */
+.app-left-toolbar .toolbar-group {
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 1px; width: 100%; position: relative;
+}
+.app-left-toolbar .toolbar-group:not(:last-child)::after {
+  content: ''; position: absolute; bottom: 0; left: 4px; right: 4px;
+  height: 1px; background: var(--chrome-toolbar-border);
+}
+.app-left-toolbar .toolbar-group--middle { flex: 1; }
+
+/* Buttons — icon left, text right */
+.app-left-toolbar .toolbar-btn {
+  display: flex; flex-direction: row; align-items: center;
+  gap: 8px; padding: 7px 8px; border-radius: 8px;
+  white-space: nowrap; position: relative; text-align: left; width: 100%;
+}
+.app-left-toolbar .toolbar-btn:hover { background: var(--chrome-toolbar-hover-bg); }
+.app-left-toolbar .toolbar-btn.active { background: var(--chrome-toolbar-active-bg); }
+.app-left-toolbar .toolbar-btn.active::after {
+  content: ''; position: absolute; right: 0; top: 15%; bottom: 15%;
+  width: 3px; border-radius: 2px; background: var(--chrome-toolbar-active);
+}
+.app-left-toolbar .toolbar-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.app-left-toolbar .toolbar-label { font-size: 11px; color: var(--chrome-toolbar-label); line-height: 1.2; }
+
+/* Menu dot on right side */
+.app-left-toolbar .toolbar-menu-dot {
+  display: block; position: absolute; right: 6px; top: 50%;
+  transform: translateY(-50%); width: 4px; height: 4px;
+  border-radius: 50%; background: currentColor; opacity: 0.35;
+  pointer-events: none; transition: opacity 0.12s;
+}
+.app-left-toolbar .toolbar-btn:hover .toolbar-menu-dot { opacity: 0.7; }
+.app-left-toolbar .toolbar-menu-btn { position: relative; }
+
+/* Submenu — fixed in left nav mode, absolute in top mode */
+.app-left-toolbar .toolbar-submenu,
+.app-left-toolbar .toolbar-dropdown {
+  position: absolute;
+  left: auto !important; top: auto !important;
+  z-index: 9999;
+  min-width: 180px; max-width: 260px;
+}
+/* When JS sets fixed position, ensure it breaks out of any containers */
+.app-left-toolbar .toolbar-submenu[style*="fixed"],
+.app-left-toolbar .toolbar-dropdown[style*="fixed"] {
+  position: fixed !important;
+}
+
+/* Collapsed state — icon-only vertical column */
+.app-left-toolbar.collapsed .toolbar { padding: 4px 0; gap: 0; }
+.app-left-toolbar.collapsed .toolbar-group { flex-direction: column; gap: 1px; }
+.app-left-toolbar.collapsed .toolbar-group:not(:last-child)::after { content: none; }
+.app-left-toolbar.collapsed .toolbar-group--middle { flex: 1; }
+.app-left-toolbar.collapsed .toolbar-btn {
+  flex-direction: row; justify-content: center; padding: 10px 0;
+  min-width: 0; border-radius: 0; gap: 0; width: 100%;
+}
+.app-left-toolbar.collapsed .toolbar-btn:hover { background: var(--chrome-toolbar-hover-bg); }
+.app-left-toolbar.collapsed .toolbar-btn.active { background: var(--chrome-toolbar-active-bg); }
+.app-left-toolbar.collapsed .toolbar-btn.active::after { display: none; }
+.app-left-toolbar.collapsed .toolbar-icon { font-size: 18px; }
+.app-left-toolbar.collapsed .toolbar-label { display: none; }
+.app-left-toolbar.collapsed .toolbar-menu-dot { display: none; }
+.app-left-toolbar.collapsed .toolbar-menu-btn { width: 100%; }
+.app-left-toolbar.collapsed .toolbar-menu-btn > .toolbar-btn { justify-content: center; }
+
+/* Resize handle — right edge vertical strip */
+.app-toolbar-resize-handle {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 4px; cursor: col-resize; display: flex;
+  align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--text-muted);
+  opacity: 0; transition: opacity 0.15s; z-index: 10;
+}
+.app-toolbar-resize-handle::after {
+  content: ''; width: 2px; height: 32px; border-radius: 2px;
+  background: currentColor; opacity: 0.3;
+  transition: opacity 0.15s, height 0.15s;
+}
+.app-toolbar-resize-handle:hover::after { opacity: 0.7; height: 48px; }
+.app-left-toolbar:hover .app-toolbar-resize-handle { opacity: 1; }
+.app-left-toolbar.collapsed .app-toolbar-resize-handle { opacity: 0.5; }
+.app-left-toolbar.collapsed .app-toolbar-resize-handle:hover { opacity: 1; }
+
+/* Collapse button */
+.app-toolbar-collapse-btn {
+  width: 100%; height: 28px; display: flex;
+  align-items: center; justify-content: center;
+  border: none; background: transparent; cursor: pointer;
+  color: var(--text-muted); font-size: 16px; flex-shrink: 0;
+  border-top: 1px solid var(--chrome-toolbar-border);
+  transition: all 0.12s;
+}
+.app-toolbar-collapse-btn:hover { background: var(--chrome-toolbar-hover-bg); color: var(--text-primary); }
+
+/* Main area in left mode */
+.app-left-main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.app.nav-mode-left .document-meta-bar { display: none; }
+.app.nav-mode-left .app-main { flex: 1; overflow: hidden; }
+
+/* Vertical statusbar (right side) */
+.statusbar-vertical {
+  width: 52px; flex-shrink: 0; display: flex; flex-direction: column;
+  align-items: center; height: 100%;
+  background: var(--chrome-toolbar-bg);
+  border-left: 1px solid var(--chrome-toolbar-border);
+  padding: 8px 0; gap: 0; overflow-y: auto; overflow-x: hidden; z-index: 100;
+}
+.statusbar-logo-wrap { padding: 2px 0 6px; display: flex; align-items: center; justify-content: center; }
+.statusbar-logo-wrap .statusbar-logo { width: 20px; height: 20px; opacity: 0.6; }
+.statusbar-v-section {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 2px; font-size: 9px;
+  color: var(--chrome-statusbar-muted, var(--text-muted));
+  white-space: nowrap; width: 100%; cursor: default;
+}
+.statusbar-v-section .remix { font-size: 15px; flex-shrink: 0; }
+.statusbar-v-divider {
+  width: calc(100% - 8px); height: 1px;
+  background: var(--chrome-toolbar-border); margin: 2px 4px; flex-shrink: 0;
+}
+.statusbar-pill {
+  display: inline-flex; align-items: center; gap: 4px; padding: 5px 2px;
+  border-radius: 6px; border: none; background: transparent; cursor: pointer;
+  font-size: 9px; color: var(--chrome-statusbar-muted, var(--text-muted));
+  transition: all 0.12s; width: 100%; justify-content: center;
+  flex-direction: column; gap: 2px;
+}
+.statusbar-pill .remix { font-size: 15px; flex-shrink: 0; }
+.statusbar-pill:hover { background: var(--chrome-toolbar-hover-bg); color: var(--text-primary); }
+.statusbar-pill.active { background: var(--accent-a10); color: var(--accent-primary); }
+.statusbar-action {
+  display: inline-flex; align-items: center; gap: 4px; padding: 5px 2px;
+  border-radius: 6px; border: none; background: transparent; cursor: pointer;
+  font-size: 9px; color: var(--chrome-statusbar-muted, var(--text-muted));
+  transition: all 0.12s; width: 100%; justify-content: center;
+  flex-direction: column; gap: 2px;
+}
+.statusbar-action:hover { background: var(--chrome-toolbar-hover-bg); color: var(--text-primary); }
+.statusbar-action .remix { font-size: 15px; flex-shrink: 0; }
+.statusbar-badge {
+  display: inline-flex; align-items: center; gap: 3px; padding: 4px 2px;
+  border-radius: 999px; font-size: 8px;
+  color: var(--chrome-statusbar-muted, var(--text-muted));
+  background: var(--chrome-statusbar-badge-bg, var(--bg-code));
+  border: 1px solid var(--chrome-statusbar-badge-border, var(--border-subtle));
+  width: calc(100% - 8px); margin: 2px 4px; justify-content: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.statusbar-navmode-group {
+  display: flex; flex-direction: column; align-items: center;
+  width: 100%; padding: 4px 0;
+}
+.statusbar-navmode-label {
+  font-size: 8px; color: var(--chrome-statusbar-muted, var(--text-muted));
+  font-family: var(--font-sans); padding: 2px 0;
+}
+.statusbar-navmode-toggle {
+  display: flex; flex-direction: column;
+  background: var(--chrome-statusbar-badge-bg, var(--bg-code));
+  border: 1px solid var(--chrome-statusbar-badge-border, var(--border-subtle));
+  border-radius: 6px; padding: 2px; gap: 2px;
+}
