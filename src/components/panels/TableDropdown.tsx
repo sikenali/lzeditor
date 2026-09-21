@@ -13,12 +13,12 @@ const PRESETS = [
   { id: 'data', label: '数据表', desc: '多列结构化数据', icon: 'ri-database-2-line', rows: 6, cols: 5 },
 ]
 
-function makeCells(rows: number, cols: number, defaults?: string[][]): string[][] {
+function makeCells(rows: number, cols: number): string[][] {
   const data: string[][] = []
   for (let r = 0; r < rows; r++) {
     const row: string[] = []
     for (let c = 0; c < cols; c++) {
-      row.push(defaults?.[r]?.[c] ?? (r === 0 ? '标题' : '内容'))
+      row.push(r === 0 ? '标题' : '内容')
     }
     data.push(row)
   }
@@ -82,29 +82,20 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     }
   }, [cols, rows, focusCell])
 
+  // ── Drag reorder handlers ──
   const handleDragStart = useCallback((e: React.DragEvent, r: number) => {
     dragSrcIdx.current = r
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', String(r))
     const tr = (e.currentTarget as HTMLElement).closest('tr')
-    if (tr) {
-      tr.classList.add('dragging')
-      dragRowEl.current = tr
-    }
+    if (tr) { tr.classList.add('dragging'); dragRowEl.current = tr }
   }, [])
 
   const handleDragOver = useCallback((e: React.DragEvent, r: number) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     const tr = (e.currentTarget as HTMLElement).closest('tr')
-    if (tr && dragRowEl.current !== tr) {
-      tr.classList.add('drag-over')
-    }
-  }, [])
-
-  const handleDragLeaveRow = useCallback((e: React.DragEvent, r: number) => {
-    const tr = (e.currentTarget as HTMLElement).closest('tr')
-    if (tr) tr.classList.remove('drag-over')
+    if (tr && dragRowEl.current !== tr) tr.classList.add('drag-over')
   }, [])
 
   const handleDrop = useCallback((e: React.DragEvent, targetR: number) => {
@@ -122,21 +113,15 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
   }, [])
 
   const clearDragStyles = useCallback(() => {
-    document.querySelectorAll('.table-editable-row').forEach(tr => {
-      tr.classList.remove('dragging', 'drag-over')
-    })
+    document.querySelectorAll('.table-editable-row').forEach(tr => tr.classList.remove('dragging', 'drag-over'))
     dragRowEl.current = null
   }, [])
-
-  const handleDragEnd = useCallback(() => {
-    clearDragStyles()
-  }, [clearDragStyles])
 
   // ── Column actions ──
   const handleAddCol = useCallback(() => {
     const next = cols + 1
     if (next > 10) return
-    setCells(prev => prev.map(row => [...row, row.length > 0 ? '标题' : '内容']))
+    setCells(prev => prev.map(row => [...row, '内容']))
     setCols(next)
   }, [cols])
 
@@ -176,7 +161,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
             <span className="remix export-icon ri-table-2"></span>
             <div>
               <div className="insert-title">插入表格</div>
-              <div className="insert-desc">{cols} 列 · {rows} 行</div>
+              <div className="insert-desc">在光标处插入表格并编辑内容</div>
             </div>
           </div>
           <button className="settings-close-btn" onClick={() => onToggle(false)}>
@@ -201,9 +186,21 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
             ))}
           </div>
 
-          {/* Right */}
+          {/* Right: table preview */}
           <div className="export-right insert-right-pane">
-            {/* Editable table preview */}
+            {/* Info row */}
+            <div className="table-info-row">
+              <span className="table-hint">
+                <span className="remix ri-information-line"></span>
+                双击单元格输入内容 · Tab 切换下一列 · Esc 退出编辑
+              </span>
+              <span className="table-spec-badge">
+                <span className="remix ri-table-2"></span>
+                {cols} 列 · {rows} 行
+              </span>
+            </div>
+
+            {/* Table wrapper */}
             <div className="table-editable-wrapper">
               <table className="table-editable">
                 <tbody>
@@ -214,17 +211,17 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                       draggable
                       onDragStart={e => handleDragStart(e, r)}
                       onDragOver={e => handleDragOver(e, r)}
-                      onDragLeave={e => handleDragLeaveRow(e, r)}
                       onDrop={e => handleDrop(e, r)}
-                      onDragEnd={handleDragEnd}
+                      onDragEnd={clearDragStyles}
                     >
-                      {/* Drag handle */}
-                      <td className="table-drag-handle">
-                        <span className="remix ri-draggable ri-grip-vertical" title="拖拽排序"></span>
+                      {/* Drag handle column */}
+                      <td className="table-drag-col">
+                        <span className="remix ri-draggable ri-grip-vertical"></span>
                       </td>
-                      {/* Cells */}
+
+                      {/* Data cells */}
                       {row.map((cell, c) => {
-                        const isHovered = hoveredCell?.r === r && hoveredCell?.c === c
+                        const isH = hoveredCell?.r === r && hoveredCell?.c === c
                         return (
                           <td
                             key={c}
@@ -232,13 +229,13 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                             onMouseEnter={() => setHoveredCell({ r, c })}
                             onMouseLeave={() => setHoveredCell(null)}
                           >
-                            {/* Delete col btn on last column hover */}
-                            {c === cols - 1 && (
+                            {/* Delete column button — shows on hover on last column header */}
+                            {c === cols - 1 && r === 0 && (
                               <button
                                 className="table-col-del-btn"
                                 onClick={() => handleDeleteCol(c)}
                                 title="删除列"
-                                style={{ display: isHovered && !r ? '' : 'none' }}
+                                style={{ display: isH ? '' : 'none' }}
                               >
                                 <span className="remix ri-close-line"></span>
                               </button>
@@ -253,13 +250,12 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                               onFocus={() => setActiveCell({ r, c })}
                               onKeyDown={e => handleKeyDown(e, r, c)}
                             />
-                            {/* Delete row btn on drag handle hover */}
-                            {isHovered && r > 0 && (
+                            {/* Delete row button — shows on drag handle hover */}
+                            {isH && r > 0 && (
                               <button
                                 className="table-row-del-btn"
                                 onClick={() => handleDeleteRow(r)}
                                 title="删除行"
-                                style={{ display: '' }}
                               >
                                 <span className="remix ri-close-line"></span>
                               </button>
@@ -267,35 +263,36 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                           </td>
                         )
                       })}
+
                       {/* Add column button */}
-                      <td className="table-col-add-cell">
-                        <button
-                          className="table-col-add-btn"
-                          onClick={handleAddCol}
-                          title="添加列"
-                        >
+                      <td className="table-col-add-col">
+                        <button className="table-col-add-btn" onClick={handleAddCol} title="添加列">
                           <span className="remix ri-add-line"></span>
                         </button>
                       </td>
                     </tr>
                   ))}
-                  {/* Add row button */}
+
+                  {/* Add row row */}
                   <tr className="table-add-row-trigger">
-                    <td className="table-drag-handle"></td>
-                    <td colSpan={cols}>
+                    <td className="table-drag-col"></td>
+                    <td colSpan={cols + 1}>
                       <button className="table-add-row-btn" onClick={handleAddRow} title="添加行">
                         <span className="remix ri-add-line"></span>
                         <span>添加行</span>
                       </button>
                     </td>
-                    <td className="table-col-add-cell">
-                      <button className="table-col-add-btn" onClick={handleAddCol} title="添加列">
-                        <span className="remix ri-add-line"></span>
-                      </button>
-                    </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            {/* Shortcut hints */}
+            <div className="table-shortcut-hints">
+              <span className="shortcut-item"><kbd>Tab</kbd><span>下一列</span></span>
+              <span className="shortcut-item"><kbd>⇧ Tab</kbd><span>上一列</span></span>
+              <span className="shortcut-item"><kbd>Enter</kbd><span>单元格内换行</span></span>
+              <span className="shortcut-item"><kbd>Esc</kbd><span>退出编辑</span></span>
             </div>
           </div>
         </div>

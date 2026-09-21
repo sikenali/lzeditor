@@ -1137,36 +1137,6 @@
   overflow-y: auto; max-height: 380px;
   scrollbar-width: thin; scrollbar-color: var(--border-default) transparent;
 }
-.export-preview-body {
-  padding: 20px 16px 32px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
-  font-size: 11px; line-height: 1.75; color: #1a1a1a;
-  background: #fff;
-}
-.export-preview-body h1 { font-size: 17px; font-weight: 700; color: #111; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 2px solid #333; letter-spacing: -0.01em; }
-.export-preview-body h2 { font-size: 14px; font-weight: 600; color: #222; margin: 20px 0 8px; padding-left: 10px; border-left: 3px solid var(--accent-primary); }
-.export-preview-body h3 { font-size: 12px; font-weight: 600; color: #333; margin: 14px 0 6px; }
-.export-preview-body h4 { font-size: 11px; font-weight: 600; color: #444; margin: 12px 0 4px; }
-.export-preview-body p { margin: 0 0 10px; color: #333; text-align: justify; }
-.export-preview-body ul, .export-preview-body ol { padding-left: 20px; margin: 8px 0; }
-.export-preview-body li { margin: 3px 0; color: #333; line-height: 1.6; }
-.export-preview-body a { color: var(--accent-primary); text-decoration: none; border-bottom: 1px solid currentColor; }
-.export-preview-body a:hover { opacity: 0.7; }
-.export-preview-body strong { font-weight: 600; color: #111; }
-.export-preview-body em { font-style: italic; color: #555; }
-.export-preview-body code { background: #f5f5f5; padding: 1px 5px; border-radius: 3px; font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 10px; color: #c7254e; border: 1px solid #e8e8e8; }
-.export-preview-body pre { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 12px; overflow-x: auto; margin: 10px 0; font-size: 10px; line-height: 1.5; }
-.export-preview-body pre code { background: none; padding: 0; border: none; color: #24292e; font-size: 10px; }
-.export-preview-body blockquote { border-left: 3px solid var(--accent-primary); padding: 6px 12px; margin: 10px 0; background: var(--accent-a3); border-radius: 0 6px 6px 0; color: #555; font-style: italic; }
-.export-preview-body blockquote p { margin: 0; }
-.export-preview-body table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10px; }
-.export-preview-body th, .export-preview-body td { border: 1px solid #d0d7de; padding: 5px 8px; text-align: left; }
-.export-preview-body th { background: #f6f8fa; font-weight: 600; color: #24292e; }
-.export-preview-body tr:nth-child(even) td { background: #fafbfc; }
-.export-preview-body img { max-width: 100%; border-radius: 4px; border: 1px solid #e1e4e8; }
-.export-preview-body hr { border: none; border-top: 1px solid #d0d7de; margin: 16px 0; }
-.export-preview-body .task-list-item { list-style: none; margin-left: -20px; }
-.export-preview-body .task-list-item input { margin-right: 6px; }
 
 /* ── Export Dialog Split Layout ── */
 .export-dialog-split {
@@ -2078,13 +2048,12 @@
   opacity: 0.7;
 }
 
-/* ── Editable table preview (enhanced) ── */
-.table-insert-top { margin-bottom: 12px; }
-.table-editable-info {
+/* ── Editable table preview ── */
+.table-info-row {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 8px; font-size: 12px; color: var(--text-muted);
 }
-.table-editable-hint { display: flex; align-items: center; gap: 6px; }
+.table-hint { display: flex; align-items: center; gap: 6px; }
 .table-spec-badge {
   display: flex; align-items: center; gap: 5px; padding: 3px 10px;
   border-radius: 6px; background: var(--accent-a5); color: var(--accent-primary);
@@ -2104,18 +2073,18 @@
 .table-editable-row.drag-over { box-shadow: inset 0 2px 0 var(--accent-primary); }
 
 /* Drag handle column */
-.table-drag-handle {
+.table-drag-col {
   width: 28px; min-width: 28px; padding: 0; text-align: center;
   vertical-align: middle; cursor: grab; user-select: none;
   background: transparent;
 }
-.table-drag-handle:active { cursor: grabbing; }
-.table-drag-handle .remix {
+.table-drag-col:active { cursor: grabbing; }
+.table-drag-col .remix {
   font-size: 14px; color: var(--text-muted); opacity: 0;
   transition: opacity 0.12s; line-height: 1; padding: 8px 0;
 }
-.table-editable-row:hover .table-drag-handle .remix { opacity: 0.6; }
-.table-drag-handle .remix:hover { opacity: 1 !important; color: var(--accent-primary); }
+.table-editable-row:hover .table-drag-col .remix { opacity: 0.6; }
+.table-drag-col .remix:hover { opacity: 1 !important; color: var(--accent-primary); }
 
 /* Editable cells */
 .table-editable-cell {
@@ -2140,19 +2109,29 @@
   content: attr(data-placeholder); color: var(--text-muted); opacity: 0.4;
 }
 
-/* Last column: delete button on hover */
+/* Delete column btn (last header cell hover) */
 .table-col-del-btn {
   position: absolute; top: 2px; right: 2px; z-index: 2;
   width: 20px; height: 20px; border-radius: 4px; border: none;
   background: var(--bg-overlay); color: var(--text-muted);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 12px; transition: all 0.1s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  font-size: 12px; transition: all 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 .table-col-del-btn:hover { background: #ff7a7a; color: #fff; }
 
-/* Add column button (rightmost cell) */
-.table-col-add-cell {
+/* Delete row btn (on drag handle hover) */
+.table-row-del-btn {
+  position: absolute; top: 50%; right: 2px; transform: translateY(-50%); z-index: 3;
+  width: 20px; height: 20px; border-radius: 4px; border: none;
+  background: var(--bg-overlay); color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  transition: all 0.1s;
+}
+.table-row-del-btn:hover { background: #ff7a7a; color: #fff; }
+
+/* Add column button */
+.table-col-add-col {
   width: 36px; min-width: 36px; padding: 0;
   vertical-align: middle; text-align: center;
 }
@@ -2167,16 +2146,15 @@
   border-color: var(--accent-primary); border-style: solid;
 }
 
-/* Add row area */
-.table-add-row-area {
-  border-top: 1px dashed var(--border-subtle);
-  padding: 4px 8px;
-}
+/* Add row trigger row */
+.table-add-row-trigger td { padding: 0 !important; background: transparent !important; border: none !important; }
+.table-add-row-trigger .table-editable-cell { border: none !important; padding: 0 !important; }
 .table-add-row-btn {
-  display: flex; align-items: center; gap: 8px; width: 100%;
-  padding: 8px 12px; border: none; border-radius: 6px;
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  padding: 8px 12px; border: none; border-radius: 0;
   background: transparent; color: var(--text-muted);
   font-size: 13px; cursor: pointer; transition: all 0.12s;
+  text-align: left;
 }
 .table-add-row-btn:hover { background: var(--accent-a5); color: var(--accent-primary); }
 
@@ -2193,26 +2171,3 @@
   color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; line-height: 1;
 }
 .insert-key-hint { margin-left: 6px; font-size: 11px; color: var(--text-muted); opacity: 0.7; }
-
-/* Row delete button (appears on drag handle hover) */
-.table-row-del-btn {
-  position: absolute; top: 50%; right: 2px; transform: translateY(-50%); z-index: 3;
-  width: 20px; height: 20px; border-radius: 4px; border: none;
-  background: var(--bg-overlay); color: var(--text-muted);
-  cursor: pointer; display: none; align-items: center; justify-content: center;
-  font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-  transition: all 0.1s;
-}
-.table-row-del-btn:hover { background: #ff7a7a; color: #fff; }
-
-/* Add row trigger row */
-.table-add-row-trigger td { padding: 0 !important; background: transparent !important; border: none !important; }
-.table-add-row-trigger .table-editable-cell { border: none !important; padding: 0 !important; }
-.table-add-row-btn {
-  display: flex; align-items: center; gap: 6px; width: 100%;
-  padding: 8px 12px; border: none; border-radius: 0;
-  background: transparent; color: var(--text-muted);
-  font-size: 13px; cursor: pointer; transition: all 0.12s;
-  text-align: left;
-}
-.table-add-row-btn:hover { background: var(--accent-a5); color: var(--accent-primary); }
