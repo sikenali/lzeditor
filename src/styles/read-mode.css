@@ -557,18 +557,29 @@
   }
 }
 
-/* ── Code Mode ── */
+/* ── Code Mode Modal (centered, same as ReadMode) ── */
 .code-mode-overlay {
   position: fixed; inset: 0;
-  background: var(--bg-scrim);
+  background: rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   z-index: 1500;
   display: flex; flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
 }
+
 .code-mode-container {
   display: flex; flex-direction: column;
-  height: 100%;
+  width: min(1180px, 96vw);
+  height: min(780px, 92vh);
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%),
+              var(--bg-overlay);
+  border: 1px solid var(--border-lighter);
+  box-shadow: 0 24px 80px var(--shadow-strong), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 /* ── Top bar ── */
@@ -678,6 +689,23 @@
   font-family: var(--font-sans);
 }
 .code-mode-status-right .code-mode-dot { width: 3px; height: 3px; }
+
+/* ── Code Mode Responsive ── */
+@media (max-width: 960px) {
+  .code-mode-overlay {
+    padding: 12px;
+  }
+
+  .code-mode-container {
+    width: 100%;
+    height: 94vh;
+  }
+
+  .code-mode-center,
+  .code-mode-label {
+    display: none;
+  }
+}
 
 /* ── Exit button ── */
 .code-mode-exit-btn {

@@ -131,7 +131,7 @@ function App() {
   )
 
   return (
-    <div className={`app${navMode === 'left' ? ' nav-mode-left' : ''}`} style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <div className={`app${navMode === 'left' ? ' nav-mode-left' : ''}`} style={{ display: 'flex', flexDirection: navMode === 'left' ? 'row' : 'column', height: '100vh', overflow: 'hidden' }}>
       {navMode === 'left' ? leftLayout : topLayout}
 
       {openPanel === 'settings' && <SettingsDialog onClose={closePanel} />}

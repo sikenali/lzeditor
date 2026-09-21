@@ -7,10 +7,24 @@ import { useScrollSync } from '../../hooks/useScrollSync'
 import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
+import { DEFAULT_CONTENT } from '../../components/editor/constants'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
 const DEFAULT_WIDTH = 400
+
+function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
+  if (storeMd) return storeMd
+  if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
+  try {
+    const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
+    if (raw) {
+      const d = JSON.parse(raw)
+      if (d.md) return d.md
+    }
+  } catch {}
+  return ''
+}
 
 /** Convert ProseMirror HTML → Markdown → rendered HTML for the preview. */
 function mdToPreviewHtml(mdContent: string): string {
@@ -31,6 +45,8 @@ export const SidebarPreview: React.FC = () => {
   const editorContentRef = useEditorStore((s) => s.editorContentRef)
   const docHTML = useEditorStore((s) => s.docHTML || '')
   const mdContent = useEditorStore((s) => s.mdContent || '')
+  const docsMd = useEditorStore((s) => s.docsMd || {})
+  const activeDocId = useEditorStore((s) => s.activeDocId)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
@@ -41,8 +57,10 @@ export const SidebarPreview: React.FC = () => {
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  const effectiveMd = useMemo(() => getEffectiveMd(activeDocId, mdContent, docsMd), [activeDocId, mdContent, docsMd])
+
   // ── Render Markdown via remark into the preview container
-  const previewHtml = useMemo(() => mdToPreviewHtml(mdContent), [mdContent])
+  const previewHtml = useMemo(() => mdToPreviewHtml(effectiveMd), [effectiveMd])
 
   useEffect(() => {
     if (!previewEl) return
@@ -140,11 +158,11 @@ export const SidebarPreview: React.FC = () => {
           </button>
         </div>
         <div className="sidebar-scroll">
-          <div className="preview-phone-frame">
+          <div className="preview-article-card">
             <div
               className="preview-doc"
                ref={(node) => {
-                 setPreviewEl(node)
+                  setPreviewEl(node)
                }}
             />
           </div>

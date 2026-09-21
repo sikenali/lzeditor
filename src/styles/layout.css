@@ -11,20 +11,95 @@
 .sync-status.error .sync-dot  { background: var(--red); }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ── Toolbar — Mica glass card ── */
+/* ── Toolbar — 82px tall, light solid bar, 3-group space-between ── */
 .toolbar {
-  display: flex; align-items: center;
-  height: 52px; padding: 0 16px;
-  background: var(--chrome-toolbar-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--chrome-toolbar-border);
-  gap: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 82px; padding: 0 32px;
+  background: #EDEDED;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  gap: 0; flex-shrink: 0;
   position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.15);
 }
-.toolbar-group { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.toolbar-group--middle { flex: 1; justify-content: center; }
+[data-theme="dark"] .toolbar {
+  background: #2A2A2A;
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+.tb-group {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.tb-group--mid { flex: 1; justify-content: center; }
+
+/* ── Toolbar Button — 76px wide, vertical icon+label ── */
+.tb-btn-wrap { position: relative; display: inline-flex; }
+.tb-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  width: 76px; height: 56px; gap: 4px; padding: 0;
+  border: none; background: transparent; cursor: pointer;
+  border-radius: 8px; transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tb-btn:hover { background: rgba(0,0,0,0.06); }
+[data-theme="dark"] .tb-btn:hover { background: rgba(255,255,255,0.08); }
+.tb-btn.active { background: rgba(0,0,0,0.08); }
+[data-theme="dark"] .tb-btn.active { background: rgba(255,255,255,0.10); }
+.tb-btn-icon {
+  display: flex; align-items: center; justify-content: center;
+  height: 24px; gap: 2px; line-height: 1;
+}
+.tb-btn-label {
+  font-size: 12px; color: rgba(58,58,58,1); white-space: nowrap;
+  font-family: "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+[data-theme="dark"] .tb-btn-label { color: rgba(245,240,230,0.80); }
+.tb-btn .remix { font-size: 21px; line-height: 1; color: rgba(58,58,58,1); transition: color 0.12s; }
+[data-theme="dark"] .tb-btn .remix { color: rgba(245,240,230,0.85); }
+.tb-btn:hover .remix { color: rgba(30,30,30,1); }
+[data-theme="dark"] .tb-btn:hover .remix { color: rgba(255,255,255,0.95); }
+.tb-btn.active .remix { color: var(--chrome-toolbar-active, #c43a2b); }
+.tb-dd-arrow {
+  font-size: 13px; color: rgba(58,58,58,1); line-height: 1;
+  transition: color 0.12s;
+}
+[data-theme="dark"] .tb-dd-arrow { color: rgba(245,240,230,0.70); }
+.tb-btn:hover .tb-dd-arrow { color: rgba(30,30,30,1); }
+[data-theme="dark"] .tb-btn:hover .tb-dd-arrow { color: rgba(255,255,255,0.90); }
+.tb-format-a {
+  font-size: 19px; font-weight: 600; color: rgba(58,58,58,1);
+  font-family: "Source Han Sans SC", system-ui, sans-serif; line-height: 1;
+}
+[data-theme="dark"] .tb-format-a { color: rgba(245,240,230,0.85); }
+
+/* ── Submenu (dropdown) ── */
+.tb-submenu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 500;
+  min-width: 160px; max-width: 220px;
+  background: #ffffff; border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 6px; display: flex; flex-direction: column; gap: 2px;
+  animation: dd-in 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-theme="dark"] .tb-submenu {
+  background: #1e1e2a; border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.40);
+}
+.tb-submenu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border: none; background: none;
+  border-radius: 6px; cursor: pointer;
+  font-size: 13px; color: rgba(58,58,58,1); width: 100%; text-align: left;
+  transition: background 0.1s, color 0.1s; outline: none;
+}
+[data-theme="dark"] .tb-submenu-item { color: rgba(245,240,230,0.80); }
+.tb-submenu-item:hover { background: rgba(0,0,0,0.06); color: rgba(30,30,30,1); }
+[data-theme="dark"] .tb-submenu-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.95); }
+.tb-submenu-item .remix { font-size: 16px; color: rgba(58,58,58,0.60); flex-shrink: 0; transition: color 0.1s; }
+[data-theme="dark"] .tb-submenu-item .remix { color: rgba(245,240,230,0.60); }
+.tb-submenu-sep { height: 1px; background: rgba(0,0,0,0.06); margin: 4px 0; }
+[data-theme="dark"] .tb-submenu-sep { background: rgba(255,255,255,0.06); }
+
+/* ── Dropdown wrapper needs relative for absolute submenu ── */
+.toolbar-menu-btn { position: relative; display: inline-flex; align-items: center; }
 
 /* ── Toolbar Button ── */
 .toolbar-btn {
@@ -903,4 +978,20 @@
   background: var(--chrome-statusbar-badge-bg, var(--bg-code));
   border: 1px solid var(--chrome-statusbar-badge-border, var(--border-subtle));
   border-radius: 6px; padding: 2px; gap: 2px;
+}
+
+/* ── Left nav mode: new toolbar (.tb-*) styles ── */
+.app-left-toolbar .tb-group {
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 2px; width: 100%;
+}
+.app-left-toolbar .tb-btn {
+  width: 100%; height: auto; min-height: 44px;
+  flex-direction: row; justify-content: flex-start; padding: 8px 10px;
+}
+.app-left-toolbar .tb-btn-icon { height: auto; }
+.app-left-toolbar .tb-btn-label { text-align: left; }
+.app-left-toolbar .tb-submenu {
+  position: fixed !important; left: auto !important; top: auto !important;
+  z-index: 9999; min-width: 180px; max-width: 260px;
 }

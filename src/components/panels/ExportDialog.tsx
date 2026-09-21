@@ -1,9 +1,25 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { exportDocument } from '../../services/exportService'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 import { useSettingsStore } from '../../store/settingsStore'
-import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
+import { getTypographyTheme } from '../../styles/typography-themes'
+import { remark } from 'remark'
+import remarkGfm from 'remark-gfm'
+import remarkHtml from 'remark-html'
+
+function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
+  if (storeMd) return storeMd
+  if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
+  try {
+    const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
+    if (raw) {
+      const d = JSON.parse(raw)
+      if (d.md) return d.md
+    }
+  } catch {}
+  return ''
+}
 
 const EXPORT_FORMATS = [
   { id: 'pdf',  name: 'PDF',     icon: 'ri-file-pdf-fill',      desc: '可打印',       color: '#e74c3c' },
@@ -36,6 +52,9 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const docTitle = useEditorStore(s => s.docTitle)
   const docHTML = useEditorStore(s => s.docHTML)
   const mdContent = useEditorStore(s => s.mdContent)
+  const docsMd = useEditorStore(s => s.docsMd || {})
+  const activeDocId = useEditorStore(s => s.activeDocId)
+  const typographyTheme = useSettingsStore(s => s.typographyTheme)
   const state = useSettingsStore.getState()
   const updateSetting = useSettingsStore.getState().updateSetting
 
@@ -46,6 +65,29 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
   const isPrintFormat = ['pdf', 'docx', 'html', 'epub'].includes(format)
+
+  const previewHtml = React.useMemo(() => {
+    const md = getEffectiveMd(activeDocId, mdContent, docsMd)
+    if (!md) return ''
+    try {
+      return remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
+    } catch {
+      return md
+    }
+  }, [activeDocId, mdContent, docsMd])
+
+  useEffect(() => {
+    const el = document.getElementById('lz-export-typography-css')
+    if (el) el.remove()
+    const theme = getTypographyTheme(typographyTheme || 'classic')
+    if (theme) {
+      const styleEl = document.createElement('style')
+      styleEl.id = 'lz-export-typography-css'
+      styleEl.textContent = theme.css
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.(lz-editor-content|read-article-body|preview-doc|export-preview-body)/g, '.export-preview-body')
+      document.head.appendChild(styleEl)
+    }
+  }, [typographyTheme, previewHtml])
 
   const handleExport = async () => {
     setExporting(true)
@@ -167,7 +209,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                 <div className="export-preview-scroll">
                   <div
                     className="export-preview-body"
-                    dangerouslySetInnerHTML={{ __html: docHTML || mdContent || '<p style="color:#999">空文档</p>' }}
+                    dangerouslySetInnerHTML={{ __html: previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>' }}
                   />
                 </div>
               </div>
