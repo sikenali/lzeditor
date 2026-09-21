@@ -644,6 +644,23 @@
 .statusbar-action:hover,
 .statusbar-pill.active { background: var(--chrome-statusbar-pill-hover-bg, var(--accent-a5)); color: var(--chrome-statusbar-pill-hover-text, var(--accent-primary)); }
 
+.preview-article-card {
+  width: 100%;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  overflow: visible;
+}
+.preview-article-card .preview-doc {
+  min-height: 100%;
+  background: transparent;
+  border-radius: 0;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
 .preview-phone-frame {
   width: min(100%, 390px);
   min-height: 100%;

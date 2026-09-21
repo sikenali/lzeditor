@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react'
+import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { remark } from 'remark'
@@ -19,14 +19,53 @@ export const CodeMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const setDocHTML = useEditorStore((s) => s.setDocHTML)
   const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
   const activeDocId = useEditorStore((s) => s.activeDocId)
+  const docHTML = useEditorStore((s) => s.docHTML || '')
 
-  const [text, setText] = useState(mdContent)
+  // Fallback: read initial markdown from localStorage if store is empty
+  const initialMd = useMemo(() => {
+    const cached = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
+    if (cached) {
+      try {
+        const d = JSON.parse(cached)
+        if (d.md) return d.md
+      } catch {}
+    }
+    // Also check legacy key
+    const legacy = localStorage.getItem('lzeditor-doc')
+    if (legacy) {
+      try {
+        const d = JSON.parse(legacy)
+        if (d.md) return d.md
+      } catch {}
+    }
+    // Use DEFAULT_CONTENT as last resort
+    return ''
+  }, [activeDocId])
+
+  const [text, setText] = useState(() => {
+    // Initialize from localStorage directly to avoid blank flash
+    const cached = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
+    if (cached) {
+      try {
+        const d = JSON.parse(cached)
+        if (d.md) return d.md
+      } catch {}
+    }
+    const legacy = localStorage.getItem('lzeditor-doc')
+    if (legacy) {
+      try {
+        const d = JSON.parse(legacy)
+        if (d.md) return d.md
+      } catch {}
+    }
+    return mdContent
+  })
   const [cursor, setCursor] = useState<CursorPos>({ line: 1, column: 1 })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setText(mdContent)
+    if (mdContent && mdContent !== text) setText(mdContent)
   }, [mdContent])
 
   const updateCursor = useCallback((el: HTMLTextAreaElement) => {

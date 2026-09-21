@@ -172,8 +172,31 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     })
   }, [docHTML])
 
-  const maxW = LAYOUT_MAX_W[readLayout]
+  // ── Fallback: if docHTML is empty, read from localStorage ──
+  const initialHtml = useMemo(() => {
+    if (docHTML) return docHTML
+    try {
+      const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
+      if (raw) {
+        const d = JSON.parse(raw)
+        if (d.html) return d.html
+      }
+      const old = localStorage.getItem('lzeditor-doc')
+      if (old) {
+        const d = JSON.parse(old)
+        if (d.html) return d.html
+      }
+    } catch {}
+    return ''
+  }, [docHTML, activeDocId])
+
+  // Also watch store updates for docHTML changes
+  const [effectiveHtml, setEffectiveHtml] = useState(initialHtml)
+  useEffect(() => {
+    setEffectiveHtml(docHTML || initialHtml)
+  }, [docHTML, initialHtml])
   const zoomScale = readZoom / 100
+  const maxW = LAYOUT_MAX_W[readLayout]
 
   return (
     <div className="read-mode-overlay" onClick={onClose}>
@@ -314,7 +337,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div
                 className="read-article-body"
                 style={{ fontSize: `${fontSize * zoomScale}px`, lineHeight: '1.9' }}
-                dangerouslySetInnerHTML={{ __html: docHTML }}
+                dangerouslySetInnerHTML={{ __html: effectiveHtml }}
               />
 
               {/* Footer */}
