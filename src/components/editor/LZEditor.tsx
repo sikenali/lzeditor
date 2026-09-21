@@ -238,6 +238,27 @@ export const LZEditor = () => {
     return () => { editor!.off('update', applyFocus) }
   }, [editor])
 
+  // ── Strip read-frog extension injected nodes from ProseMirror DOM ──
+  useEffect(() => {
+    const el = editorRef.current
+    if (!el) return
+    const pm = el.querySelector('.ProseMirror') as HTMLElement | null
+    if (!pm) return
+    const observer = new MutationObserver(mutations => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (!(node instanceof HTMLElement)) continue
+          if (node.dataset.readFrogWalked || node.className?.includes('read-frog') || node.className?.includes('notranslate')) {
+            node.remove()
+          }
+          node.querySelectorAll('[data-read-frog-], .read-frog-translated-content-wrapper, .read-frog-translated-inline-content, span.notranslate[data-translate-ignore]').forEach((n: any) => n.remove())
+        }
+      }
+    })
+    observer.observe(pm, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [])
+
   // ── Markdown markers: show ### etc. in editor ──
   const showMarkdownMarkers = useSettingsStore((s) => s.showMarkdownMarkers)
   useEffect(() => {

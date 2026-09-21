@@ -3492,3 +3492,15 @@ li.ProseMirror-selectednode:after { border: none !important; }
   50% { stroke-dasharray: 100, 200; stroke-dashoffset: -50; }
   100% { stroke-dasharray: 100, 200; stroke-dashoffset: -126; }
 }
+
+/* ── ReadFrog extension: hide injected translation spans ── */
+[data-read-frog-],
+.read-frog-translated-content-wrapper,
+.read-frog-translated-inline-content,
+span.notranslate[data-translate-ignore],
+.ProseMirror span.read-frog-translated-content-wrapper,
+.ProseMirror span.read-frog-translated-inline-content {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

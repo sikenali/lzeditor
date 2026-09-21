@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { LoadingSpinner } from './components/ui/LoadingSpinner'
 import { LZEditor } from './components/editor/LZEditor'
 import { Toolbar } from './components/layout/Toolbar'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
@@ -27,6 +28,17 @@ import { useTheme } from './hooks/useTheme'
 
 function App() {
   useTheme()
+  const [appReady, setAppReady] = useState(false)
+
+  useEffect(() => {
+    // Simulate brief init delay so spinner is visible on cold start
+    const timer = setTimeout(() => setAppReady(true), 300)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (!appReady) {
+    return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}><LoadingSpinner size={40} fullScreen /></div>
+  }
   const openPanel = useEditorStore(s => s.openPanel)
   const insertPanel = useEditorStore(s => s.insertPanel)
   const isReadMode = useEditorStore(s => s.isReadMode)

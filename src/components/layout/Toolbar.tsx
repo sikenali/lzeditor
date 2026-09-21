@@ -165,7 +165,7 @@ export const Toolbar: React.FC = () => {
     }
 
    const closeMenu = () => {
-     menuTimerRef.current = setTimeout(() => setMenuOpen(null), 200)
+     menuTimerRef.current = setTimeout(() => setMenuOpen(null), 150)
    }
 
   const applyCmd = (cmd: string) => {
