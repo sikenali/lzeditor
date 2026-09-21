@@ -73,9 +73,24 @@ function App() {
     editor.chain().focus().insertContent(text).run()
     closeInsert()
   }
-  const insertTable = (rows: number, cols: number) => {
+  const insertTable = (rows: number, cols: number, data?: string[][]) => {
     if (!editor || rows <= 0 || cols <= 0) return
     editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run()
+    // Populate cells if data provided
+    if (data && data.length > 0) {
+      const ed = useEditorStore.getState().editor
+      if (ed) {
+        let pos = 0
+        for (let r = 0; r < data.length; r++) {
+          for (let c = 0; c < cols && c < data[r].length; c++) {
+            ed.chain().focus().insertTableContent(data[r][c]).run()
+            pos++
+            if (c < cols - 1) ed.chain().focus().goToNextCell().run()
+          }
+          if (r < data.length - 1) ed.chain().focus().goToNextRow().run()
+        }
+      }
+    }
     closeInsert()
   }
 
