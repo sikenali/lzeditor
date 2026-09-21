@@ -106,18 +106,16 @@ export const StatusBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Center: outline toggle */}
-      <div className="statusbar-center">
-        <div className="statusbar-divider" />
-        <button className="statusbar-pill" onClick={cycleTheme} title={`切换排版样式（当前: ${TYPOGRAPHY_THEMES[themeIdx]?.name}）`}>
-          <span className="remix ri-font-size"></span>
-          <span>{TYPOGRAPHY_THEMES[themeIdx]?.name}</span>
-        </button>
-        <button className={`statusbar-pill ${showOutline ? 'active' : ''}`} onClick={handleCollapse} title="显示/隐藏大纲">
-          <span className="remix ri-list-unordered"></span>
-          <span>大纲</span>
-        </button>
-      </div>
+       {/* Center: outline toggle */}
+       <div className="statusbar-center">
+         <div className="statusbar-divider" />
+         <button className="statusbar-pill" onClick={cycleTheme} title={`切换排版样式（当前: ${TYPOGRAPHY_THEMES[themeIdx]?.name}）`}>
+           <span className="remix ri-font-size"></span>
+         </button>
+         <button className={`statusbar-pill ${showOutline ? 'active' : ''}`} onClick={handleCollapse} title="显示/隐藏大纲">
+           <span className="remix ri-list-unordered"></span>
+         </button>
+       </div>
 
       {/* Right: search + preview + line/col */}
       <div className="statusbar-right">
