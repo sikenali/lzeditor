@@ -50,7 +50,7 @@ function App() {
   useEffect(() => {
     const hasPanel = openPanel !== 'none' || insertPanel !== 'none' || showSearch
     if (hasPanel && editor) {
-      editor.commands.blur()
+      try { editor.commands.blur() } catch {}
     }
   }, [openPanel, insertPanel, showSearch, editor])
 
