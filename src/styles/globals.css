@@ -3759,9 +3759,7 @@ span.notranslate[data-translate-ignore],
   justify-content: center;
 }
 .read-mode-meta {
-  font-size: 13px;
-  color: var(--text-muted);
-  white-space: nowrap;
+  display: none;
 }
 .read-mode-exit-btn {
   display: flex;
@@ -3886,7 +3884,6 @@ span.notranslate[data-translate-ignore],
 .read-views-text { font-size: 12px; color: var(--text-muted); font-family: var(--font-sans); }
 .read-article-body {
   font-family: var(--font-serif, "Noto Serif SC", serif);
-  font-size: 17px;
   line-height: 1.9;
   color: var(--text-primary);
 }
