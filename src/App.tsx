@@ -180,7 +180,7 @@ function App() {
         {showOutline && !showPreview && <SidebarOutline />}
         {showLibrary && <LibraryPanel sidebar />}
         {centerContent}
-        {(showPreview || (showOutline && showPreview)) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
+        {(showPreview) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
       </div>
       <StatusBar />
     </>
