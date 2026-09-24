@@ -158,7 +158,7 @@ function App() {
 
   // ── 右侧面板内容 ──
   const rightPanelContent = (() => {
-    if (appMode === 'history') return <HistoryPanel inline />
+    if (appMode === 'history') return <HistoryPanel onClose={() => setAppMode('edit')} />
     if (appMode === 'style') return <StyleMainPanel />
     if (showOutline) return <SidebarOutline />
     if (showPreview) return <SidebarPreview />
@@ -174,7 +174,7 @@ function App() {
       return <LZEditor />
     }
     if (appMode === 'history') {
-      return <HistoryPanel inline />
+      return <HistoryPanel onClose={() => setAppMode('edit')} />
     }
     if (appMode === 'style') {
       return <StyleMainPanel />
@@ -222,9 +222,9 @@ function App() {
       </div>
 
       {/* 右面板 */}
-      {(showRightPanel || showPreview) && (
+      {(showRightPanel || showPreview || appMode === 'history') && (
         <div className="app-right-panel">
-          {appMode === 'history' && <HistoryPanel inline />}
+          {appMode === 'history' && <HistoryPanel onClose={() => setAppMode('edit')} />}
           {appMode === 'style' && <StyleMainPanel />}
           {showPreview && <SidebarPreview />}
         </div>

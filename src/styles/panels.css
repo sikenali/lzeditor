@@ -3328,3 +3328,149 @@
   vertical-align: -0.15em;
   display: block;
 }
+
+/* ── History Main Panel (full-height, like StyleMainPanel) ── */
+.history-main-panel {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.history-scroll-area {
+  flex: 1; min-height: 0;
+  overflow-y: auto;
+  background: var(--background);
+}
+
+.history-empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px;
+  padding: 80px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.history-empty-state .remix { font-size: 40px; opacity: 0.3; }
+
+.history-version-list {
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--chrome-surface);
+  flex-shrink: 0;
+}
+
+.history-version-row {
+  display: flex; align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+  width: 100%; text-align: left;
+}
+.history-version-row:hover { background: var(--bg-hover); }
+.history-version-row.active { background: var(--accent-a5); }
+
+.history-version-num {
+  font-size: 13px; font-weight: 700;
+  color: var(--text-muted);
+  min-width: 36px; text-align: center;
+  flex-shrink: 0;
+}
+.history-version-row.active .history-version-num {
+  color: var(--accent-primary);
+}
+
+.history-version-info { flex: 1; min-width: 0; }
+.history-version-date {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+}
+.history-version-desc {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 2px; overflow: hidden;
+  white-space: nowrap; text-overflow: ellipsis;
+}
+.history-version-changes {
+  font-size: 11px; color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.history-preview-area {
+  padding: 24px 32px 40px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.history-preview-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted);
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.history-preview-header .remix { font-size: 14px; }
+.history-preview-sep { opacity: 0.4; margin: 0 4px; }
+.history-preview-doc {
+  font-size: 14px; line-height: 1.8;
+  color: var(--text-primary);
+}
+.history-preview-doc h1,
+.history-preview-doc h2,
+.history-preview-doc h3 { color: var(--text-heading); margin: 16px 0 8px; }
+.history-preview-doc p { margin: 0 0 12px; }
+.history-preview-doc ul, .history-preview-doc ol { padding-left: 20px; margin: 8px 0; }
+.history-preview-doc blockquote {
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 12px; color: var(--text-muted);
+  margin: 8px 0;
+}
+.history-preview-empty {
+  color: var(--text-muted); font-size: 13px;
+  text-align: center; padding: 24px;
+}
+
+/* ── Bottom toolbar (matches style-panel visual treatment) ── */
+.history-bottom-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--chrome-surface);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  flex-shrink: 0;
+  gap: 12px;
+}
+.history-toolbar-info {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-secondary);
+}
+.history-toolbar-info .remix { color: var(--accent-primary); font-size: 15px; }
+.history-sep { opacity: 0.4; }
+
+.history-toolbar-actions { display: flex; gap: 8px; }
+.history-action-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
+  background: var(--background-elevated);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.history-action-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+.history-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.history-action-btn .remix { font-size: 14px; }
+.history-action-btn--primary {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+}
+.history-action-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #fff;
+}
