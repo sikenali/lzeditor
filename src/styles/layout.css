@@ -38,6 +38,8 @@
 .toolbar-btn:active { transform: scale(0.97); transition: transform 80ms ease-out; }
 .toolbar-btn.active { background: rgba(0,0,0,0.08); }
 [data-theme="dark"] .toolbar-btn.active { background: rgba(255,255,255,0.10); }
+.toolbar-btn.active:hover { background: rgba(0,0,0,0.05); transition: background 0.15s; }
+[data-theme="dark"] .toolbar-btn.active:hover { background: rgba(255,255,255,0.06); transition: background 0.15s; }
 .toolbar-btn.menu-open { background: rgba(0,0,0,0.08); }
 [data-theme="dark"] .toolbar-btn.menu-open { background: rgba(255,255,255,0.10); }
 .toolbar-icon { font-size: 21px; color: rgba(58,58,58,1); line-height: 1; }
@@ -804,6 +806,11 @@
   border-color: var(--accent-a30);
   box-shadow: none;
 }
+.app-left-toolbar .toolbar-btn.active:hover {
+  background: var(--accent-a8);
+  border-color: var(--accent-primary);
+  transition: background 0.15s, border-color 0.15s;
+}
 .app-left-toolbar .toolbar-icon { font-size: 18px; line-height: 1; flex-shrink: 0; color: var(--glass-text); }
 .app-left-toolbar .toolbar-label { font-size: 12px; color: var(--glass-text-dim); line-height: 1.2; text-align: left; }
 .app-left-toolbar .toolbar-btn.active .toolbar-icon { color: var(--accent-primary); }
@@ -845,6 +852,11 @@
   background: var(--accent-a10);
   border-color: var(--accent-a30);
   box-shadow: none;
+}
+.app-left-toolbar.collapsed .toolbar-btn.active:hover {
+  background: var(--accent-a8);
+  border-color: var(--accent-primary);
+  transition: background 0.15s, border-color 0.15s;
 }
 .app-left-toolbar.collapsed .toolbar-btn.active::after { display: none; }
 .app-left-toolbar.collapsed .toolbar-icon { font-size: 18px; color: var(--glass-text); }
@@ -997,6 +1009,11 @@
   border-color: var(--accent-a30);
   box-shadow: none;
 }
+.app-left-toolbar .toolbar-btn.active:hover {
+  background: var(--accent-a8);
+  border-color: var(--accent-primary);
+  transition: background 0.15s, border-color 0.15s;
+}
 .app-left-toolbar .toolbar-btn.active::after { display: none; }
 .app-left-toolbar .toolbar-icon { font-size: 18px; line-height: 1; flex-shrink: 0; color: var(--glass-text); }
 .app-left-toolbar .toolbar-label { font-size: 12px; color: var(--glass-text-dim); line-height: 1.2; text-align: left; }
@@ -1034,6 +1051,11 @@
   background: var(--accent-a10);
   border-color: var(--accent-a30);
   box-shadow: none;
+}
+.app-left-toolbar.collapsed .toolbar-btn.active:hover {
+  background: var(--accent-a8);
+  border-color: var(--accent-primary);
+  transition: background 0.15s, border-color 0.15s;
 }
 .app-left-toolbar.collapsed .toolbar-btn.active::after { display: none; }
 .app-left-toolbar.collapsed .toolbar-icon { font-size: 18px; color: var(--glass-text); }
