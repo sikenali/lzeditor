@@ -57,6 +57,11 @@ export const SidebarPreview: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current) }
+  }, [])
 
   const effectiveMd = useMemo(() => getEffectiveMd(activeDocId, mdContent, docsMd), [activeDocId, mdContent, docsMd])
 
@@ -139,7 +144,7 @@ export const SidebarPreview: React.FC = () => {
     const ok = await copyRichText(html)
     if (ok) {
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
     }
   }
 

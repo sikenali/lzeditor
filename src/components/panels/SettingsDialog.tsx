@@ -657,6 +657,12 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
   const [keyVisible, setKeyVisible] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [testId, setTestId] = useState<string | null>(null)
+  const testTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const testTimerRef2 = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => { if (testTimerRef.current) clearTimeout(testTimerRef.current); if (testTimerRef2.current) clearTimeout(testTimerRef2.current) }
+  }, [])
   const [testResult, setTestResult] = useState<Record<string, 'success' | 'failed'>>({})
 
   const s = useSettingsStore.getState()
@@ -707,8 +713,8 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
       const resp = await fetch(url, { method: 'GET', headers })
       setTestResult(prev => ({ ...prev, [key.id]: resp.ok ? 'success' : 'failed' }))
     } catch { setTestResult(prev => ({ ...prev, [key.id]: 'failed' })) }
-    setTimeout(() => setTestId(null), 2000)
-    setTimeout(() => setTestResult(prev => { const n = { ...prev }; delete n[key.id]; return n }), 4000)
+    testTimerRef.current = setTimeout(() => setTestId(null), 2000)
+    testTimerRef2.current = setTimeout(() => { setTestResult(prev => { const n = { ...prev }; delete n[key.id]; return n }) }, 4000)
   }
 
   const startEdit = (key: ApiKeyEntry) => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
@@ -28,6 +28,11 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
   const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
   const [copied, setCopied] = useState(false)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current) }
+  }, [])
 
   const effectiveMd = useMemo(() => getEffectiveMd(activeDocId, mdContent, docsMd), [activeDocId, mdContent, docsMd])
 
@@ -45,7 +50,7 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     const ok = await copyRichText(renderedHtml)
     if (ok) {
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
     }
   }
 
