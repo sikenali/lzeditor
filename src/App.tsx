@@ -177,18 +177,25 @@ function App() {
       <Toolbar />
       <DocumentMetaBar />
       <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+        {showOutline && !showPreview && <SidebarOutline />}
         {showLibrary && <LibraryPanel sidebar />}
         {centerContent}
-        {showOutline && !showPreview && <SidebarOutline />}
-        {(showPreview || showOutline) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
+        {(showPreview || (showOutline && showPreview)) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
       </div>
       <StatusBar />
     </>
   )
 
-  // ── 左侧布局：左导航 + 中编辑区 + 右面板 ──
+  // ── 左侧布局：大纲 + 左导航 + 中编辑区 + 右面板 ──
   const leftLayout = (
     <div className="app-left-layout">
+      {/* 大纲面板 */}
+      {showOutline && !showPreview && (
+        <div className="app-outline-panel">
+          <SidebarOutline />
+        </div>
+      )}
+
       {/* 左导航 */}
       <div className="app-left-nav">
         <LeftNav />
@@ -204,11 +211,10 @@ function App() {
       </div>
 
       {/* 右面板 */}
-      {(showRightPanel || showOutline || showPreview) && (
+      {(showRightPanel || showPreview) && (
         <div className="app-right-panel">
           {appMode === 'history' && <HistoryPanel inline />}
           {appMode === 'style' && <StyleMainPanel />}
-          {showOutline && !showPreview && <SidebarOutline />}
           {showPreview && <SidebarPreview />}
         </div>
       )}
