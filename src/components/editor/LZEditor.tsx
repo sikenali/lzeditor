@@ -175,7 +175,13 @@ export const LZEditor = () => {
         html = cleanContentHtml(html)
         const text = editor.getText()
         setDocHTML(html)
-        setMdContent(htmlToMarkdown(html))
+        // welcome 文档不往返转换：直接用原始 Markdown，避免 htmlToMarkdown 破坏代码块格式
+        if (docId === 'welcome') {
+          const rawMd = getDocMd(docId)
+          setMdContent(rawMd)
+        } else {
+          setMdContent(htmlToMarkdown(html))
+        }
         setWordCount(text.split(/\s+/).filter(Boolean).length)
         setCharCount(text.length)
         takeSnapshot(editor)
@@ -218,6 +224,13 @@ export const LZEditor = () => {
   React.useEffect(() => {
     setEditorRef(editorRef.current)
     setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
+  }, [])
+
+  // 每次挂载清除 welcome 的 localStorage 旧 HTML，确保始终从 welcome.md 文件读取干净内容
+  React.useEffect(() => {
+    if (activeDocId === 'welcome') {
+      localStorage.removeItem('lzeditor-doc-welcome')
+    }
   }, [])
 
   // Apply editor style settings from store
