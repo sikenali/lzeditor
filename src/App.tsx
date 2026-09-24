@@ -3,6 +3,7 @@ import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { Toolbar } from './components/layout/Toolbar'
+import { LeftNav } from './components/layout/LeftNav'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
 import { StatusBar } from './components/layout/StatusBar'
 import { SettingsDialog } from './components/panels/SettingsDialog'
@@ -40,11 +41,12 @@ function App() {
   const showOutline = useEditorStore(s => s.showOutline)
   const showPreview = useEditorStore(s => s.showPreview)
   const showLibrary = useEditorStore(s => s.showLibrary)
+  const showRightPanel = useEditorStore(s => s.showRightPanel)
   const editor = useEditorStore(s => s.editor)
   const navMode = useSettingsStore(s => s.navMode || 'top')
   const showSearch = useEditorStore(s => s.showSearch)
 
-  // 面板打开时让编辑器失去焦点，防止键盘事件穿透到编辑器
+  // 面板打开时让编辑器失去焦点
   useEffect(() => {
     const hasPanel = openPanel !== 'none' || insertPanel !== 'none' || showSearch
     if (hasPanel && editor) {
@@ -143,41 +145,76 @@ function App() {
     closeInsert()
   }
 
-  const mainArea = (
-    <div className="app-main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-      <div className={`app-layout ${codeMode ? 'code-mode-active' : ''}`} style={{ flex: 1, minHeight: 0 }}>
-        {showLibrary && <LibraryPanel sidebar />}
-        {showOutline && <SidebarOutline />}
-        {appMode === 'edit' && <><LZEditor />{showPreview && <SidebarPreview />}</>}
-        {appMode === 'code' && <><LZEditor />{showPreview && <SidebarPreview />}</>}
-        {appMode === 'style' && <StyleMainPanel />}
-        {appMode === 'history' && <HistoryPanel inline />}
-      </div>
-    </div>
-  )
+  // ── 右侧面板内容 ──
+  const rightPanelContent = (() => {
+    if (appMode === 'history') return <HistoryPanel inline />
+    if (appMode === 'style') return <StyleMainPanel />
+    if (showOutline) return <SidebarOutline />
+    if (showPreview) return <SidebarPreview />
+    return null
+  })()
 
+  // ── 中心内容 ──
+  const centerContent = (() => {
+    if (appMode === 'edit' || appMode === 'code') {
+      return (
+        <>
+          <LZEditor />
+           {showPreview && <SidebarPreview />}
+        </>
+      )
+    }
+    if (appMode === 'read') {
+      return <LZEditor />
+    }
+    if (appMode === 'history') {
+      return <HistoryPanel inline />
+    }
+    if (appMode === 'style') {
+      return <StyleMainPanel />
+    }
+    return <LZEditor />
+  })()
+
+  // ── 顶部布局 ──
   const topLayout = (
     <>
       <Toolbar />
       <DocumentMetaBar />
-      {mainArea}
+      <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+        {showLibrary && <LibraryPanel sidebar />}
+        {centerContent}
+        {showOutline && !showPreview && <SidebarOutline />}
+        {(showPreview || showOutline) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
+      </div>
       <StatusBar />
     </>
   )
 
+  // ── 左侧布局：左导航 + 中编辑区 + 右面板 ──
   const leftLayout = (
-    <>
-    <div className="app-layout-left" style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-      <div className="app-left-toolbar">
-        <Toolbar />
+    <div className="app-left-layout">
+      {/* 左导航 */}
+      <div className="app-left-nav">
+        <LeftNav />
       </div>
-      <div className="app-left-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+
+      {/* 中编辑区 */}
+      <div className="app-center">
         <DocumentMetaBar />
-        {mainArea}
+        <div className="app-editor-area">
+          {centerContent}
+        </div>
+        <StatusBar />
       </div>
+
+      {/* 右面板 */}
+      {showRightPanel && (
+        <div className="app-right-panel">
+          {rightPanelContent}
+        </div>
+      )}
     </div>
-    <StatusBar />
-    </>
   )
 
   return (
@@ -191,12 +228,11 @@ function App() {
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
       {useEditorStore(s => s.showSearch) && <SearchPanel onClose={() => useEditorStore.getState().setShowSearch(false)} />}
-      
-      
+
       <AIPanel />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
-      {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} /> }
+      {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
       {insertPanel === 'code' && <CodeDialog onClose={closeInsert} onInsert={insertCode} />}
       {insertPanel === 'formula' && <FormulaDialog onClose={closeInsert} onInsert={insertFormula} />}
       {insertPanel === 'table' && (

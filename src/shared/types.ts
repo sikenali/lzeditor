@@ -80,10 +80,11 @@ export interface EditorStoreState {
   openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export'
   insertPanel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart'
   panelOpen: boolean
-  showOutline: boolean
-  showPreview: boolean
-  showLibrary: boolean
-  showSearch: boolean
+   showOutline: boolean
+   showPreview: boolean
+   showLibrary: boolean
+   showRightPanel: boolean
+   showSearch: boolean
   codeMode: boolean
   appMode: 'edit' | 'code' | 'style' | 'history' | 'read'
   codeModeCursor: number
@@ -110,10 +111,11 @@ export interface EditorStoreState {
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
   setInsertPanel: (panel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart') => void
   setPanelOpen: (open: boolean) => void
-  setShowOutline: (showOutline: boolean) => void
-  setShowPreview: (showPreview: boolean) => void
-  setShowLibrary: (showLibrary: boolean) => void
-  setShowSearch: (showSearch: boolean) => void
+   setShowOutline: (showOutline: boolean) => void
+   setShowPreview: (showPreview: boolean) => void
+   setShowLibrary: (showLibrary: boolean) => void
+   setShowRightPanel: (showRightPanel: boolean) => void
+   setShowSearch: (showSearch: boolean) => void
   setCodeMode: (codeMode: boolean) => void
   setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void
   setCodeModeCursor: (offset: number) => void

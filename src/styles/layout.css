@@ -1637,3 +1637,71 @@
   border-color: var(--accent-a30);
   color: var(--accent-primary);
 }
+
+/* ── Left-nav three-panel layout ── */
+.app-left-layout {
+  display: flex; flex: 1; min-height: 0; overflow: hidden;
+  background: var(--background);
+}
+
+/* 左导航栏 */
+.app-left-nav {
+  width: 200px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: var(--chrome-surface);
+  border-right: 1px solid var(--glass-border);
+  padding: 8px 6px; gap: 2px;
+  overflow-y: auto; overflow-x: hidden;
+  z-index: 50;
+}
+.app-left-nav::-webkit-scrollbar { width: 3px; }
+.app-left-nav::-webkit-scrollbar-track { background: transparent; }
+.app-left-nav::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+
+.left-nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 8px 10px;
+  border: none; background: transparent;
+  border-radius: 8px; cursor: pointer;
+  text-align: left; font-size: 13px;
+  color: var(--glass-text-dim);
+  transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.left-nav-btn:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--glass-text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+.left-nav-btn.active {
+  background: var(--accent-a10);
+  border-color: var(--accent-a30);
+  color: var(--accent-primary);
+}
+.left-nav-icon { font-size: 16px; flex-shrink: 0; }
+.left-nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.left-nav-sep {
+  height: 1px; margin: 4px 2px;
+  background: var(--chrome-toolbar-border);
+}
+
+/* 中编辑区 */
+.app-center {
+  flex: 1; display: flex; flex-direction: column;
+  min-width: 0; overflow: hidden;
+}
+.app-editor-area {
+  flex: 1; display: flex; min-height: 0; overflow: hidden;
+  position: relative;
+}
+
+/* 右面板 */
+.app-right-panel {
+  width: 360px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: var(--chrome-surface);
+  border-left: 1px solid var(--glass-border);
+  overflow: hidden;
+  z-index: 50;
+}
+.app-right-panel > * { flex: 1; min-height: 0; display: flex; flex-direction: column; }

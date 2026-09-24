@@ -34,6 +34,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   showOutline: false,
   showPreview: false,
   showLibrary: false,
+  showRightPanel: false,
   showSearch: false,
   codeMode: false,
   codeModeCursor: 0,
@@ -116,6 +117,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showPreview })) } catch {}
   },
   setShowSearch: (showSearch: boolean) => set({ showSearch }),
+  setShowRightPanel: (showRightPanel: boolean) => set({ showRightPanel }),
   setShowLibrary: (showLibrary: boolean) => {
     set({ showLibrary })
     try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showLibrary })) } catch {}
