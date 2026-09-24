@@ -28,6 +28,10 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     onClose?.()
   }
 
+  const handleBarClick = (id: string) => {
+    setSelectedVersion(id)
+  }
+
   return (
     <div className="history-main-panel">
       {/* ── 上部：版本预览 ── */}
@@ -60,44 +64,32 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         )}
       </div>
 
-      {/* ── 下部：时间线柱状图 ── */}
+      {/* ── 下部：时间线柱状图（点击切换版本） ── */}
       {sortedVersions.length > 0 && (
         <div className="history-timeline-bar">
           <div className="history-timeline">
             {sortedVersions.map((v, i) => {
               const isActive = i === currentIndex
-              const barH = Math.max((v.changes / maxChanges) * 64, 6)
+              const barH = Math.max((v.changes / maxChanges) * 56, 4)
               return (
-                <div key={v.id} className={`history-bar${isActive ? ' active' : ''}`}>
+                <div
+                  key={v.id}
+                  className={`history-bar${isActive ? ' active' : ''}`}
+                  onClick={() => handleBarClick(v.id)}
+                >
                   <div
                     className="history-bar-body"
-                    style={{ height: `${barH}px`, background: isActive ? 'var(--accent-primary)' : undefined, borderColor: isActive ? 'var(--accent-primary)' : undefined }}
+                    style={{ height: `${barH}px` }}
                   >
                     <div
                       className="history-bar-base"
-                      style={{ height: isActive ? `${barH * 0.35}px` : '8px', background: isActive ? 'var(--accent-primary)' : undefined }}
+                      style={{ height: '100%' }}
                     />
                   </div>
-                  <span className={`history-bar-label${isActive ? ' active' : ''}`}>{sortedVersions.length - i}</span>
+                  <span className="history-bar-label">{sortedVersions.length - i}</span>
                 </div>
               )
             })}
-          </div>
-          {/* ── 底部操作栏 ── */}
-          <div className="history-bottom-actions">
-            <button className="history-action-btn" onClick={() => onClose?.()} title="关闭">
-              <span className="remix ri-close-line"></span>
-              <span>关闭</span>
-            </button>
-            <button
-              className="history-action-btn history-action-btn--primary"
-              onClick={handleRollback}
-              disabled={!selected}
-              title="回滚到此版本"
-            >
-              <span className="remix ri-rewind-back-fill"></span>
-              <span>回滚到此版本</span>
-            </button>
           </div>
         </div>
       )}
