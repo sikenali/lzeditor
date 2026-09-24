@@ -770,15 +770,27 @@ export const LZEditor = () => {
             <>
               {!codeMode && <EditorContent editor={editor} />}
               {codeMode && (
-                <textarea
-                  className="lz-code-mode-textarea"
-                  value={mdContent}
-                  onChange={e => handleCodeModeChange(e.target.value)}
-                  onFocus={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
-                  onClick={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
-                  onKeyUp={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
-                  spellCheck={false}
-                />
+                <div className="code-mode-wrapper">
+                  <div className="code-mode-toolbar">
+                    <span className="remix ri-code-s-line" style={{ fontSize: 14, color: 'var(--text-muted)' }}></span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Markdown 源码</span>
+                    <button className="code-mode-switch-btn" onClick={() => setAppMode('edit')} title="切换回编辑模式">
+                      <span className="remix ri-edit-2-line"></span>
+                      <span>切换编辑模式</span>
+                    </button>
+                  </div>
+                  <div className="code-mode-textarea-wrap">
+                    <textarea
+                      className="lz-code-mode-textarea"
+                      value={mdContent}
+                      onChange={e => handleCodeModeChange(e.target.value)}
+                      onFocus={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
+                      onClick={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
+                      onKeyUp={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
+                      spellCheck={false}
+                    />
+                  </div>
+                </div>
               )}
               {!codeMode && editor && (
                 <BubbleMenu editor={editor}>
