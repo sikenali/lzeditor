@@ -29,6 +29,7 @@ declare module 'echarts-for-react' {
   class EChartsReact extends React.Component<EChartsReactProps> {}
   export default EChartsReact
 }
+
 declare module 'plantuml-encoder' {
   function encode(text: string): string
   function decode(encoded: string): string
