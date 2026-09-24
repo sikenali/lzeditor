@@ -21,15 +21,21 @@ export const StyleMainPanel: React.FC = () => {
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const activeDocId = useEditorStore((s) => s.activeDocId)
+  const setMdContent = useEditorStore((s) => s.setMdContent)
+  const setDocsMd = useEditorStore((s) => s.setDocsMd)
+  const setDocHTML = useEditorStore((s) => s.setDocHTML)
+  const updateDoc = useEditorStore((s) => s.updateDoc)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const fontSize = useEditorStore((s) => s.fontSize)
-  const previewMode = useEditorStore((s: any) => s.previewMode)
-  const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
+  const appMode = useEditorStore((s) => s.appMode)
   const setAppMode = useEditorStore((s) => s.setAppMode)
+  const codeMode = useEditorStore((s) => s.codeMode)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState('default')
-  const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
+  const [isCodeMode, setIsCodeMode] = useState(false)
+
+  useEffect(() => { setIsCodeMode(appMode === 'code') }, [appMode])
 
   const effectiveMd = useMemo(() => {
     if (mdContent) return mdContent
@@ -115,7 +121,22 @@ export const StyleMainPanel: React.FC = () => {
               </div>
             </div>
             {isCodeMode ? (
-              <pre className="style-code-block"><code>{effectiveMd || '# Welcome to LZEditor\n\n请切换到编辑模式后查看预览内容...'}</code></pre>
+              <div className="style-code-block">
+                <textarea
+                  className="style-code-textarea"
+                  value={effectiveMd || '# Welcome to LZEditor\n\n请切换到编辑模式后查看预览内容...'}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setMdContent(value)
+                    const docId = activeDocId
+                    try {
+                      const html = remark().use(remarkGfm).use(remarkHtml).processSync(value).toString()
+                      updateDoc({ md: value, html, docsMd: docId ? { [docId]: value } : undefined })
+                    } catch {}
+                  }}
+                  spellCheck={false}
+                />
+              </div>
             ) : (
               <div
                 className="read-article-body"
@@ -147,12 +168,12 @@ export const StyleMainPanel: React.FC = () => {
                 <span>导出</span>
               </button>
               <button
-                className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
-                onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
+                className={`style-action-btn${isCodeMode ? ' active' : ''}`}
+                onClick={() => setAppMode(appMode === 'code' ? 'edit' : 'code')}
                 title="切换源码模式"
               >
                 <span className="remix ri-code-s-line"></span>
-                <span>源码</span>
+                <span>代码</span>
               </button>
               <div style={{ flex: 1 }} />
               <button className="style-action-btn" onClick={() => setAppMode('edit')} title="关闭">
@@ -197,7 +218,7 @@ export const StyleMainPanel: React.FC = () => {
       </div>
 
       {/* ── Fixed floating nav — always visible at bottom center ── */}
-      <div className="main-nav-float" style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)' }}>
+      <div className="main-nav-float">
         <button className="nav-float-btn" title="上一页">
           <span className="remix ri-arrow-left-s-line"></span>
         </button>

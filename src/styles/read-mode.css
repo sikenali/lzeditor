@@ -1233,6 +1233,10 @@
 
 /* ── Floating Nav Buttons ── */
 .main-nav-float {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 6px;

@@ -20,7 +20,11 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const docTitle = useEditorStore((s: any) => s.docTitle)
   const previewMode = useEditorStore((s: any) => s.previewMode)
   const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
+  const togglePreviewMode = useEditorStore((s: any) => s.togglePreviewMode)
   const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
+
+  useEffect(() => { setIsCodeMode(previewMode === 'code') }, [previewMode])
+
   const [copied, setCopied] = useState(false)
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -60,7 +64,7 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
       </button>
       <button
         className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
-        onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
+        onClick={() => togglePreviewMode()}
         title="切换源码模式"
       >
         <span className="remix ri-code-s-line"></span>

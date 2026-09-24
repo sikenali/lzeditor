@@ -124,6 +124,7 @@ export interface EditorStoreState {
   setActiveLibrary: (id: string) => void
   setPreviewWidth: (width: number) => void
   setPreviewMode: (previewMode: "render" | "code") => void
+  togglePreviewMode: () => void
   setMdContent: (md: string) => void
   setReadProgress: (progress: number) => void
   setFontSize: (fontSize: number) => void

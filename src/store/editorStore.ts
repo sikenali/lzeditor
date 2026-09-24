@@ -122,6 +122,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     docLibraries: s.docLibraries.map((lib: any) => lib.id === id ? { ...lib, name } : lib),
   })),
   setPreviewMode: (previewMode: 'render' | 'code') => set({ previewMode }),
+  togglePreviewMode: () => set((s: any) => ({ previewMode: s.previewMode === 'code' ? 'render' : 'code' })),
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setMdContent: (mdContent: string) => set({ mdContent }),
   setReadProgress: (readProgress: number) => set({ readProgress }),
