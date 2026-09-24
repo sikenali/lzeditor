@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
@@ -63,6 +63,17 @@ function App() {
     if (appMode === 'edit' && codeMode) setCodeMode(false)
   }, [appMode, codeMode, setCodeMode])
 
+  const [libraryClosing, setLibraryClosing] = useState(false)
+  const prevShowLibrary = useRef(showLibrary)
+  useEffect(() => {
+    if (!showLibrary && prevShowLibrary.current) {
+      setLibraryClosing(true)
+      const t = setTimeout(() => setLibraryClosing(false), 200)
+      return () => clearTimeout(t)
+    }
+    setLibraryClosing(false)
+    prevShowLibrary.current = showLibrary
+  }, [showLibrary])
   const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
     if (!editor) return
     editor.chain().focus().insertImage({ src: url, alt, align }).run()
@@ -178,7 +189,7 @@ function App() {
       <DocumentMetaBar />
       <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
         {showOutline && !showPreview && <SidebarOutline />}
-        {showLibrary && <LibraryPanel sidebar />}
+        {showLibrary && <LibraryPanel sidebar className={libraryClosing ? 'closing' : ''} />}
         {centerContent}
         {(showPreview) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
       </div>

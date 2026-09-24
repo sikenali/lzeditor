@@ -33,6 +33,8 @@
 }
 .toolbar-btn:hover { background: rgba(0,0,0,0.06); }
 [data-theme="dark"] .toolbar-btn:hover { background: rgba(255,255,255,0.08); }
+.toolbar-btn.format-btn:hover { background: transparent; }
+[data-theme="dark"] .toolbar-btn.format-btn:hover { background: transparent; }
 .toolbar-btn:active { transform: scale(0.97); transition: transform 80ms ease-out; }
 .toolbar-btn.active { background: rgba(0,0,0,0.08); }
 [data-theme="dark"] .toolbar-btn.active { background: rgba(255,255,255,0.10); }
@@ -1089,7 +1091,10 @@
 .sidebar-outline {
   animation: slideInLeft 0.25s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.sidebar-outline.closing {
+.sidebar-library {
+  animation: slideInLeft 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.sidebar-outline.closing, .sidebar-library.closing {
   animation: slideOutLeft 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 .sidebar-preview-wrapper {

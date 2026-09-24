@@ -415,7 +415,7 @@ export const Toolbar: React.FC = () => {
           </>}
 
           <div className="toolbar-menu-btn" onClick={() => openMenu('format')}>
-            <button ref={formatBtnRef} className={`toolbar-btn ${menuOpen === 'format' ? 'menu-open' : ''}`}>
+            <button ref={formatBtnRef} className={`toolbar-btn format-btn ${menuOpen === 'format' ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-text-wrap"></span>
               <span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>格式</span>
               <span className="toolbar-menu-dot"></span>

@@ -4,7 +4,7 @@ import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
 import { LibraryTree, buildTree } from './LibraryTree'
 import { ImportButtons, CATEGORIES } from './ImportButtons'
 
-export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }> = ({ onClose, sidebar }) => {
+export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; className?: string }> = ({ onClose, sidebar, className }) => {
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
   const docs = useEditorStore((s) => s.docs)
@@ -90,7 +90,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
   // Sidebar mode
   if (sidebar) {
     return (
-      <div className="sidebar-library">
+      <div className={`sidebar-library${className ? ` ${className}` : ''}`}>
         <div className="sidebar-library-inner">
           <div className="sidebar-library-head">
             <div className="sidebar-library-title">
