@@ -79,7 +79,8 @@ export const LZEditor = () => {
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
     const docId = activeDocId || 'welcome'
-    return docsMd?.[docId] || getDocMd(docId) || DEFAULT_CONTENT
+    if (docsMd?.[docId]) return docsMd[docId]
+    return getDocMd(docId) || (docId === 'welcome' ? DEFAULT_CONTENT : '')
   }, [activeDocId, docsMd])
 
   // 同步 mdContent 到 store
@@ -93,7 +94,7 @@ export const LZEditor = () => {
   const readContent = useMemo(() => {
     if (docHTML) return docHTML
     const docId = activeDocId || 'welcome'
-    const md = docsMd?.[docId] || getDocMd(docId) || DEFAULT_CONTENT
+    const md = docsMd?.[docId] || getDocMd(docId)
     if (md && md.trim()) {
       try {
         const html = remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
@@ -102,7 +103,7 @@ export const LZEditor = () => {
         return md
       }
     }
-    return DEFAULT_CONTENT
+    return docId === 'welcome' ? DEFAULT_CONTENT : ''
   }, [docHTML, docsMd, activeDocId])
 
   const LAYOUTS = ['narrow', 'normal', 'wide'] as const
@@ -163,7 +164,9 @@ export const LZEditor = () => {
       if (activeDocId && docsMd[activeDocId]) {
         return remark().use(remarkGfm).use(remarkHtml).processSync(docsMd[activeDocId]).toString()
       }
-      return remark().use(remarkGfm).use(remarkHtml).processSync(getDocMd(activeDocId || 'welcome')).toString()
+      const md = getDocMd(activeDocId || 'welcome') || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
+      if (!md) return ''
+      return remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
     })(),
     onCreate: ({ editor }: any) => {
       editorInitialized.current = true
@@ -401,15 +404,15 @@ export const LZEditor = () => {
     if (!editor || !activeDocId) return
     if (activeDocId === lastDocIdRef.current) return
     lastDocIdRef.current = activeDocId
-    const md = docsMd[activeDocId] || getDocMd(activeDocId)
-    const html = remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
+    const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
+    const html = md ? remark().use(remarkGfm).use(remarkHtml).processSync(md).toString() : ''
     editor.commands.setContent(html)
   }, [activeDocId, editor, docsMd])
 
   // Sync mdContent when entering code mode
   useEffect(() => {
     if (!codeMode || !activeDocId) return
-    const md = docsMd[activeDocId] || getDocMd(activeDocId) || DEFAULT_CONTENT
+    const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
     if (md && md !== mdContent) setMdContent(md)
   }, [codeMode, activeDocId])
 

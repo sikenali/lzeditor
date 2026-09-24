@@ -9,7 +9,7 @@ export function getDocMd(id: string): string {
       if (d.md) return d.md
     }
   } catch {}
-  return DEFAULT_CONTENT
+  return ''
 }
 
 export function getDocHtml(id: string): string {
