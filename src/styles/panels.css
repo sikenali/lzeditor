@@ -3428,28 +3428,33 @@
   text-align: center; padding: 24px;
 }
 
-/* ── Bottom toolbar (matches style-panel visual treatment) ── */
+/* ── Bottom toolbar (matches style-panel visual treatment exactly) ── */
 .history-bottom-toolbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 16px;
+  padding: 8px 16px;
   border-top: 1px solid var(--border-subtle);
   background: var(--chrome-surface);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   flex-shrink: 0;
   gap: 12px;
 }
-.history-toolbar-info {
-  display: flex; align-items: center; gap: 6px;
+.history-label-group {
+  display: flex; align-items: center; gap: 8px;
   font-size: 13px; color: var(--text-secondary);
+  min-width: 0; flex: 1;
 }
-.history-toolbar-info .remix { color: var(--accent-primary); font-size: 15px; }
-.history-sep { opacity: 0.4; }
-
-.history-toolbar-actions { display: flex; gap: 8px; }
+.history-label-icon {
+  font-size: 15px; color: var(--accent-primary); flex-shrink: 0;
+}
+.history-label-text {
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-action-btns { display: flex; gap: 8px; flex-shrink: 0; }
 .history-action-btn {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 6px 12px;
-  border-radius: 7px;
+  padding: 5px 10px;
+  border-radius: 6px;
   border: 1px solid var(--border-subtle);
   background: var(--background-elevated);
   color: var(--text-secondary);
@@ -3458,8 +3463,7 @@
   transition: all 0.12s;
 }
 .history-action-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--border-default);
+  border-color: var(--accent-border);
   color: var(--text-primary);
 }
 .history-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
