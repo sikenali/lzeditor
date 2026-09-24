@@ -21,9 +21,21 @@ export const LeftNav: React.FC = () => {
   const setAppMode = useEditorStore(s => s.setAppMode)
   const setShowRightPanel = useEditorStore(s => s.setShowRightPanel)
 
-  const toggleLibrary = useCallback(() => setShowLibrary(!showLibrary), [showLibrary, setShowLibrary])
-  const toggleOutline = useCallback(() => setShowOutline(!showOutline), [showOutline, setShowOutline])
-  const togglePreview = useCallback(() => setShowPreview(!showPreview), [showPreview, setShowPreview])
+  const toggleLibrary = useCallback(() => {
+    const next = !showLibrary
+    setShowLibrary(next)
+    if (next) setShowRightPanel(true)
+  }, [showLibrary, setShowLibrary, setShowRightPanel])
+  const toggleOutline = useCallback(() => {
+    const next = !showOutline
+    setShowOutline(next)
+    if (next) setShowRightPanel(true)
+  }, [showOutline, setShowOutline, setShowRightPanel])
+  const togglePreview = useCallback(() => {
+    const next = !showPreview
+    setShowPreview(next)
+    if (next) setShowRightPanel(true)
+  }, [showPreview, setShowPreview, setShowRightPanel])
   const switchMode = useCallback((mode: 'edit' | 'code' | 'read' | 'history' | 'style') => {
     const next = appMode === mode ? 'edit' : mode
     setAppMode(next)

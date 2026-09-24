@@ -145,6 +145,47 @@ function App() {
     closeInsert()
   }
 
+  // ── 右侧面板内容 ──
+  const rightPanelContent = (() => {
+    if (appMode === 'history') return <HistoryPanel inline />
+    if (appMode === 'style') return <StyleMainPanel />
+    if (showOutline) return <SidebarOutline />
+    if (showPreview) return <SidebarPreview />
+    return null
+  })()
+
+  // ── 中心内容 ──
+  const centerContent = (() => {
+    if (appMode === 'edit' || appMode === 'code') {
+      return <LZEditor />
+    }
+    if (appMode === 'read') {
+      return <LZEditor />
+    }
+    if (appMode === 'history') {
+      return <HistoryPanel inline />
+    }
+    if (appMode === 'style') {
+      return <StyleMainPanel />
+    }
+    return <LZEditor />
+  })()
+
+  // ── 顶部布局 ──
+  const topLayout = (
+    <>
+      <Toolbar />
+      <DocumentMetaBar />
+      <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+        {showLibrary && <LibraryPanel sidebar />}
+        {centerContent}
+        {showOutline && !showPreview && <SidebarOutline />}
+        {(showPreview || showOutline) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
+      </div>
+      <StatusBar />
+    </>
+  )
+
   // ── 左侧布局：左导航 + 中编辑区 + 右面板 ──
   const leftLayout = (
     <div className="app-left-layout">
