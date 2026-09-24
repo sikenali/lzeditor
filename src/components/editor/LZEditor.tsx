@@ -83,12 +83,17 @@ export const LZEditor = () => {
     return getDocMd(docId) || (docId === 'welcome' ? DEFAULT_CONTENT : '')
   }, [activeDocId, docsMd])
 
-  // 同步 mdContent 到 store
+  // 同步 mdContent 到 store：优先使用 docsMd，其次用 getDocMd 兜底
   useEffect(() => {
-    if (defaultMd && (!mdContent || mdContent === '')) {
-      setMdContent(defaultMd)
+    const docId = activeDocId || 'welcome'
+    const mdFromDocsMd = docsMd?.[docId] || ''
+    const mdFromSource = getDocMd(docId)
+    // docsMd 有内容时优先用 docsMd（避免对 welcome 做 htmlToMarkdown 往返）
+    const targetMd = mdFromDocsMd || mdFromSource || ''
+    if (targetMd && mdContent !== targetMd) {
+      setMdContent(targetMd)
     }
-  }, [defaultMd])
+  }, [defaultMd, docsMd, activeDocId])
 
   // 确保阅读模式有内容：如果 docHTML 为空，从 docsMd 生成
   const readContent = useMemo(() => {
@@ -412,9 +417,12 @@ export const LZEditor = () => {
   // Sync mdContent when entering code mode
   useEffect(() => {
     if (!codeMode || !activeDocId) return
-    const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
-    if (md && md !== mdContent) setMdContent(md)
-  }, [codeMode, activeDocId])
+    const docId = activeDocId
+    const mdFromDocsMd = docsMd?.[docId] || ''
+    const mdFromSource = getDocMd(docId)
+    const targetMd = mdFromDocsMd || mdFromSource || (docId === 'welcome' ? DEFAULT_CONTENT : '')
+    if (targetMd && mdContent !== targetMd) setMdContent(targetMd)
+  }, [codeMode, activeDocId, docsMd])
 
   useEffect(() => {
     return () => {
