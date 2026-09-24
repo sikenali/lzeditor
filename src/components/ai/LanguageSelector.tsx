@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { LANGUAGES } from '../../shared/languages'
 import type { LanguageCode } from '../../shared/languages'
 import { LFSInput } from '../ui/LFInput'
@@ -14,6 +14,22 @@ interface LanguageSelectorProps {
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, onSelect, onClose }) => {
   const [search, setSearch] = useState('')
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if ((target as HTMLElement)?.closest?.('[data-lfs-portal]')) return
+      if (dialogRef.current && !dialogRef.current.contains(target)) onClose()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [onClose])
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
 
   const filtered = LANGUAGES.filter(l =>
     l.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -22,8 +38,8 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
   )
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="language-selector" onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div ref={dialogRef} className="language-selector" onClick={e => e.stopPropagation()}>
         <div className="lang-header">
           <span className="remix lang-icon ri-translate-2"></span>
           <div>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
 import { CODE_THEMES } from '../../styles/code-themes'
+import { LFSCombo } from '../../components/ui/LFSCombo'
 
 const FONT_OPTIONS = [
   { value: 'sans-serif', label: '无衬线' },
@@ -27,6 +28,22 @@ const WIDTH_OPTIONS = [
 export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const state = useSettingsStore.getState()
   const updateSetting = useSettingsStore.getState().updateSetting
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if ((target as HTMLElement)?.closest?.('[data-lfs-portal]')) return
+      if (dialogRef.current && !dialogRef.current.contains(target)) onClose()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [onClose])
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
   const editor = useEditorStore(s => s.editor)
   const setMdContent = useEditorStore(s => s.setMdContent)
 
@@ -82,8 +99,8 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     : fontFamily
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="beautify-dialog" onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div ref={dialogRef} className="beautify-dialog" onClick={e => e.stopPropagation()}>
         <div className="beautify-header">
           <span className="remix ri-magic-line beautify-icon"></span>
           <span className="beautify-title">一键排版</span>
@@ -128,9 +145,7 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
             <div className="beautify-section-title">字体与排版</div>
             <div className="beautify-row">
               <label className="beautify-label">字体</label>
-              <select className="beautify-select" value={fontFamily} onChange={e => setFontFamily(e.target.value)}>
-                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
+              <LFSCombo value={fontFamily} onChange={v => setFontFamily(v)} options={FONT_OPTIONS.map(f => ({ value: f.value, label: f.label }))} style={{ minWidth: 160 }} />
             </div>
             <div className="beautify-row">
               <label className="beautify-label">字号</label>
@@ -221,7 +236,7 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
           <div className="export-actions">
             <button className="settings-cancel-btn" onClick={onClose} disabled={applying}>取消</button>
             <button className="settings-save-btn" onClick={handleApply} disabled={applying}>
-              <span className={`remix ${applying ? 'ri-loader-4-line ri-spin' : 'ri-magic-line'}`}></span>
+              <span className={`remix ${applying ? 'ri-loader-4-line spin' : 'ri-magic-line'}`}></span>
               <span>{applying ? '排版中…' : '应用排版'}</span>
             </button>
           </div>
