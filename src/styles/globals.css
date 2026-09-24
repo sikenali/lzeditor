@@ -3845,6 +3845,7 @@ span.notranslate[data-translate-ignore],
   max-width: 760px; margin: 0 auto;
 }
 .read-article-header { margin-bottom: 8px; }
+.read-article-header .read-meta { display: none; }
 .read-tags-row { display: flex; gap: 8px; margin-bottom: 16px; }
 .read-tag {
   padding: 3px 10px; border-radius: 6px;
