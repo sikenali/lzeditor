@@ -98,6 +98,7 @@ export interface EditorStoreState {
   readLayout: 'narrow' | 'normal' | 'wide'
   readZoom: number
   readTocOpen: boolean
+  readFontSize: number
   versions: DocVersion[]
   editor: any
   setTitle: (title: string) => void
@@ -129,6 +130,7 @@ export interface EditorStoreState {
   setReadLayout: (layout: 'narrow' | 'normal' | 'wide') => void
   setReadZoom: (zoom: number) => void
   setReadTocOpen: (open: boolean) => void
+  setReadFontSize: (fontSize: number) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
   editorContentRef: HTMLDivElement | null

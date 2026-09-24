@@ -66,6 +66,15 @@ export const LZEditor = () => {
   const wordCount = useEditorStore((s: any) => s.wordCount)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const mdContent = useEditorStore((s: any) => s.docsMd?.[activeDocId] || s.mdContent || '')
+  const readFontSize = useEditorStore((s) => s.readFontSize)
+  const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
+  const readLayout = useEditorStore((s) => s.readLayout)
+  const setReadLayout = useEditorStore((s) => s.setReadLayout)
+  const readTocOpen = useEditorStore((s) => s.readTocOpen)
+  const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
+  const docTitle = useEditorStore((s) => s.docTitle)
+  const [localTocOpen, setLocalTocOpen] = useState(readTocOpen)
+  useEffect(() => { setLocalTocOpen(readTocOpen) }, [readTocOpen])
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
@@ -95,6 +104,32 @@ export const LZEditor = () => {
     }
     return DEFAULT_CONTENT
   }, [docHTML, docsMd, activeDocId])
+
+  const LAYOUTS = ['narrow', 'normal', 'wide'] as const
+  const LAYOUT_LABELS: Record<string, string> = { narrow: '窄栏', normal: '标准', wide: '宽屏' }
+  const LAYOUT_MAX_W: Record<string, number> = { narrow: 530, normal: 760, wide: 1000 }
+  const [tocItems, setTocItems] = useState<{ id: string; text: string; level: number }[]>([])
+  const [activeTocId, setActiveTocId] = useState('')
+  const readTocRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = readTocRef.current
+    if (!el || !readContent) return
+    const headings = el.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    const items: { id: string; text: string; level: number }[] = []
+    headings.forEach((h, i) => {
+      const id = `read-h-${i}`
+      h.setAttribute('id', id)
+      items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
+    })
+    setTocItems(items)
+  }, [readContent])
+  const scrollToHeading = useCallback((id: string) => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setActiveTocId(id)
+    }
+  }, [])
 
   useTheme()
 
@@ -655,17 +690,81 @@ export const LZEditor = () => {
             <div className="read-mode-inline">
               <div className="read-mode-toolbar">
                 <span className="read-mode-label">📖 阅读模式</span>
+                <div className="read-mode-controls">
+                  <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
+                    onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
+                    <span className="remix ri-layout-2-line"></span>
+                    <span>{LAYOUT_LABELS[readLayout]}</span>
+                  </button>
+                  <button className="read-tool-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
+                    <span className="remix ri-subtract-line"></span>
+                  </button>
+                  <span className="read-font-size-value">{readFontSize}</span>
+                  <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
+                    <span className="remix ri-add-line"></span>
+                  </button>
+                  <button className={`read-tool-btn ${localTocOpen ? 'active' : ''}`} title="目录" onClick={() => setLocalTocOpen(!localTocOpen)}>
+                    <span className="remix ri-menu-fill"></span>
+                    <span>目录</span>
+                  </button>
+                </div>
                 <span className="read-mode-meta">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟阅读</span>
                 <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
                   <span className="remix ri-edit-line"></span>
                   <span>继续编辑</span>
                 </button>
               </div>
-              <div
-                className="read-article-body"
-                style={{ fontSize: '17px', lineHeight: '1.9' }}
-                dangerouslySetInnerHTML={{ __html: readContent }}
-              />
+              <div className="read-mode-body" style={{ flexDirection: localTocOpen ? 'row' : 'column' }}>
+                {localTocOpen && tocItems.length > 0 && (
+                  <div className="read-toc-sidebar">
+                    <div className="read-toc-header">
+                      <span className="remix ri-menu-fill"></span>
+                      <span>目录</span>
+                      <button className="read-toc-close" onClick={() => setLocalTocOpen(false)}>
+                        <span className="remix ri-close-line"></span>
+                      </button>
+                    </div>
+                    <div className="read-toc-list">
+                      {tocItems.map(item => (
+                        <button key={item.id} className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
+                          style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
+                          onClick={() => scrollToHeading(item.id)}>
+                          <span className="read-toc-dot" />
+                          <span className="read-toc-text">{item.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="read-article-wrapper" ref={readTocRef}>
+                  <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
+                    <div className="read-article-header">
+                      <div className="read-tags-row">
+                        <span className="read-tag read-tag-tech">Markdown</span>
+                        <span className="read-tag read-tag-system">阅读模式</span>
+                      </div>
+                      <h1 className="read-article-title">{docTitle || '文档'}</h1>
+                      <div className="read-meta">
+                        <div className="read-avatar" style={{ backgroundImage: 'url(https://i.pravatar.cc/70?img=12)' }} />
+                        <div className="read-author-info">
+                          <div className="read-author-name">LZEditor</div>
+                          <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
+                        </div>
+                        <div className="read-divider-v" />
+                        <div className="read-views">
+                          <span className="remix read-views-icon ri-clock-line"></span>
+                          <span className="read-views-text">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="read-article-body"
+                      style={{ fontSize: `${readFontSize}px`, lineHeight: '1.9' }}
+                      dangerouslySetInnerHTML={{ __html: readContent }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <>
