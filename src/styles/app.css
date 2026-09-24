@@ -5,6 +5,7 @@
   width: 100vw;
   overflow: hidden;
   background: var(--bg-primary);
+  font-family: var(--font-sans);
 }
 
 .app-layout-left {
@@ -42,11 +43,4 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  /* Warm parchment texture like momowuwen — subtle paper gradient */
-  background: linear-gradient(180deg,
-    rgba(250,246,237,0.5) 0%,
-    rgba(252,249,240,0.8) 50%,
-    rgba(250,246,237,0.5) 100%
-  ),
-  var(--bg-primary);
 }

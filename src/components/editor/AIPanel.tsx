@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useAIStore } from '../../store/aiStore'
 import { useAI } from '../../hooks/useAI'
+import { useEditorStore } from '../../store/editorStore'
 import type { AIAction } from '../../shared/types'
 
 const ACTION_LABELS: Record<string, string> = {
@@ -22,7 +23,7 @@ const ACTION_PLACEHOLDERS: Record<string, string> = {
 }
 
 const ACTION_ICONS: Record<string, string> = {
-  rewrite: 'ri-ball-pen-fill',
+  rewrite: 'ri-pen-nib-fill',
   polish: 'ri-brush-line',
   continue: 'ri-arrow-right-s-line',
   summarize: 'ri-article-fill',
@@ -40,21 +41,44 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value))
 }
 
+function clampPanelX(x: number, w: number): number {
+  return clamp(x, 8, window.innerWidth - w - 8)
+}
+
+function clampPanelY(y: number, h: number): number {
+  return clamp(y, 8, window.innerHeight - h - 8)
+}
+
 export const AIPanel: React.FC = () => {
   const state = useAIStore()
   const { send, isStreaming, applyToDoc, undo, copyOutput } = useAI()
+  const editorRef = useEditorStore(s => s.editorRef)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  const panelPosition = state.panelPosition ?? { x: window.innerWidth / 2 - 160, y: 120 }
+  const PANEL_W = 360
+  const PANEL_H = 420
+
+  const computePanelPosition = (): { x: number; y: number } => {
+    const stored = state.panelPosition
+    if (stored) return stored
+
+    const editorEl = editorRef?.querySelector?.('.ProseMirror') as HTMLElement | null
+    if (!editorEl) return { x: 8, y: 120 }
+
+    const editorRect = editorEl.getBoundingClientRect()
+    const x = clampPanelX(editorRect.right + 8, PANEL_W)
+    const y = clampPanelY(editorRect.top + editorRect.height / 2 - PANEL_H / 2, PANEL_H)
+    return { x, y }
+  }
+
+  const panelPosition = computePanelPosition()
 
   // Clamp position to viewport on open / resize
   useEffect(() => {
     if (!state.panelVisible) return
     const update = () => {
-      const pw = 360
-      const ph = 420
-      const x = clamp(panelPosition.x, 8, window.innerWidth - pw - 8)
-      const y = clamp(panelPosition.y, 8, window.innerHeight - ph - 8)
+      const x = clampPanelX(panelPosition.x, PANEL_W)
+      const y = clampPanelY(panelPosition.y, PANEL_H)
       if (panelRef.current) {
         panelRef.current.style.left = x + 'px'
         panelRef.current.style.top = y + 'px'
@@ -95,7 +119,6 @@ export const AIPanel: React.FC = () => {
         position: 'fixed',
         left: panelPosition.x,
         top: panelPosition.y,
-        width: 360,
       }}
     >
       {/* Header */}
@@ -115,7 +138,7 @@ export const AIPanel: React.FC = () => {
             className={`ai-chip ${state.panelAction === a ? 'active' : ''}`}
             onClick={() => {
               const sel = state.panelSelectedText
-              const pos = state.panelPosition || { x: window.innerWidth / 2 - 180, y: 120 }
+              const pos = computePanelPosition()
               useAIStore.getState().showPanel(a, sel, pos)
             }}
           >
@@ -157,7 +180,7 @@ export const AIPanel: React.FC = () => {
       {/* Error message */}
       {state.panelStatus === 'error' && state.panelError && (
         <div className="ai-error-msg">
-          <span className="remix ri-error-warning-fill"></span>
+          <span className="remix ri-error-warning-line"></span>
           {state.panelError}
           <button onClick={() => useAIStore.getState().setPanelError(null)} className="ai-error-close">
             <span className="remix ri-close-line"></span>
@@ -179,7 +202,7 @@ export const AIPanel: React.FC = () => {
               <span className="remix ri-arrow-go-back-line"></span> 撤销
             </button>
             <button className="ai-action-btn secondary" onClick={copyOutput}>
-              <span className="remix ri-file-copy-fill"></span> 复制
+              <span className="remix ri-file-copy-line"></span> 复制
             </button>
           </div>
         </>

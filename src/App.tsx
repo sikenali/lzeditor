@@ -1,13 +1,16 @@
-import React, { useState } from 'react'
-import { LZEditor } from './components/editor/LZEditor'
+import React, { useState, useEffect } from 'react'
+import { remark } from 'remark'
+import remarkGfm from 'remark-gfm'
+import remarkHtml from 'remark-html'
 import { Toolbar } from './components/layout/Toolbar'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
 import { StatusBar } from './components/layout/StatusBar'
 import { SettingsDialog } from './components/panels/SettingsDialog'
 import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
-import { ReadMode } from './components/panels/ReadMode'
-import { CodeMode } from './components/panels/CodeMode'
+import { StyleMainPanel } from './components/panels/StyleMainPanel'
+import { LZEditor } from './components/editor/LZEditor'
+import { SearchPanel } from './components/panels/SearchPanel'
 import { LibraryPanel } from './components/panels/LibraryPanel'
 import { FilePanel } from './components/panels/FilePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
@@ -29,33 +32,80 @@ function App() {
   useTheme()
   const openPanel = useEditorStore(s => s.openPanel)
   const insertPanel = useEditorStore(s => s.insertPanel)
-  const isReadMode = useEditorStore(s => s.isReadMode)
+  const appMode = useEditorStore(s => s.appMode)
+  const setAppMode = useEditorStore(s => s.setAppMode)
   const codeMode = useEditorStore(s => s.codeMode)
+  const setCodeMode = useEditorStore(s => s.setCodeMode)
+  const codeModeCursor = useEditorStore(s => s.codeModeCursor)
   const showOutline = useEditorStore(s => s.showOutline)
   const showPreview = useEditorStore(s => s.showPreview)
   const showLibrary = useEditorStore(s => s.showLibrary)
   const editor = useEditorStore(s => s.editor)
   const navMode = useSettingsStore(s => s.navMode || 'top')
-  const updateSetting = useSettingsStore(s => s.updateSetting)
+  const showSearch = useEditorStore(s => s.showSearch)
+
+  // 面板打开时让编辑器失去焦点，防止键盘事件穿透到编辑器
+  useEffect(() => {
+    const hasPanel = openPanel !== 'none' || insertPanel !== 'none' || showSearch
+    if (hasPanel && editor) {
+      editor.commands.blur()
+    }
+  }, [openPanel, insertPanel, showSearch, editor])
 
   const closePanel = () => useEditorStore.getState().setOpenPanel('none')
   const closeInsert = () => useEditorStore.getState().setInsertPanel('none')
 
-  const insertImage = (url: string, alt: string) => {
+  // 同步 appMode 和 codeMode
+  useEffect(() => {
+    if (appMode === 'code' && !codeMode) setCodeMode(true)
+    if (appMode === 'edit' && codeMode) setCodeMode(false)
+  }, [appMode, codeMode, setCodeMode])
+
+  const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
     if (!editor) return
-    editor.chain().focus().insertImage({ src: url, alt }).run()
+    editor.chain().focus().insertImage({ src: url, alt, align }).run()
     closeInsert()
   }
-  const uploadImage = (file: File) => {
+  const uploadImage = (file: File, align?: 'top' | 'left' | 'right') => {
     if (!editor) return
     const reader = new FileReader()
-    reader.onload = (ev) => insertImage(ev.target?.result as string, file.name)
+    reader.onload = (ev) => insertImage(ev.target?.result as string, file.name, align)
     reader.readAsDataURL(file)
+    closeInsert()
+  }
+  const insertMarkdown = (md: string) => {
+    const cur = useEditorStore.getState()
+    const pos = cur.codeModeCursor ?? 0
+    const content = cur.mdContent
+    const newContent = content.slice(0, pos) + md + content.slice(pos)
+    useEditorStore.getState().setMdContent(newContent)
+    const docId = cur.activeDocId
+    if (docId) {
+      try {
+        const html = remark().use(remarkGfm).use(remarkHtml).processSync(newContent).toString()
+        useEditorStore.getState().updateDoc({ md: newContent, html, docsMd: { [docId]: newContent } })
+        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: newContent, html, savedAt: Date.now() }))
+      } catch {}
+    }
     closeInsert()
   }
   const insertCode = (code: string, lang: string) => {
     if (!editor) return
     editor.chain().focus().insertContent({ type: 'codeBlock', attrs: { language: lang }, content: [{ type: 'text', text: code }] }).run()
+    closeInsert()
+  }
+  const insertLink = (text: string, url: string, newTab?: boolean) => {
+    if (!editor) return
+    const linkContent = {
+      type: 'link',
+      attrs: { href: url, ...(newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+    }
+    if (text.trim() && text !== url) {
+      editor.chain().focus().setTextSelection({ from: editor.state.selection.from, to: editor.state.selection.to }).insertContent(text).run()
+      editor.chain().focus().setLink(linkContent).run()
+    } else {
+      editor.chain().focus().extendMarkRange('link').insertContent(linkContent).run()
+    }
     closeInsert()
   }
   const insertFormula = (formula: string) => {
@@ -76,7 +126,6 @@ function App() {
   const insertTable = (rows: number, cols: number, data?: string[][]) => {
     if (!editor || rows <= 0 || cols <= 0) return
     editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run()
-    // Populate cells if data provided
     if (data && data.length > 0) {
       const ed = useEditorStore.getState().editor
       if (ed) {
@@ -94,40 +143,41 @@ function App() {
     closeInsert()
   }
 
+  const mainArea = (
+    <div className="app-main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+      <div className={`app-layout ${codeMode ? 'code-mode-active' : ''}`} style={{ flex: 1, minHeight: 0 }}>
+        {showLibrary && <LibraryPanel sidebar />}
+        {showOutline && <SidebarOutline />}
+        {appMode === 'edit' && <><LZEditor />{showPreview && <SidebarPreview />}</>}
+        {appMode === 'code' && <><LZEditor />{showPreview && <SidebarPreview />}</>}
+        {appMode === 'style' && <StyleMainPanel />}
+        {appMode === 'history' && <HistoryPanel inline />}
+      </div>
+    </div>
+  )
+
   const topLayout = (
     <>
       <Toolbar />
       <DocumentMetaBar />
-      <div className="app-main">
-        <div className="app-layout">
-          {showLibrary && <LibraryPanel sidebar />}
-          {showOutline && <SidebarOutline />}
-          <LZEditor />
-          {showPreview && <SidebarPreview />}
-        </div>
-      </div>
+      {mainArea}
       <StatusBar />
     </>
   )
 
   const leftLayout = (
+    <>
     <div className="app-layout-left" style={{ display: 'flex', flex: 1, minHeight: 0 }}>
       <div className="app-left-toolbar">
         <Toolbar />
       </div>
       <div className="app-left-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <DocumentMetaBar />
-        <div className="app-main" style={{ flex: 1, minHeight: 0 }}>
-          <div className="app-layout">
-            {showLibrary && <LibraryPanel sidebar />}
-            {showOutline && <SidebarOutline />}
-            <LZEditor />
-            {showPreview && <SidebarPreview />}
-          </div>
-        </div>
-        <StatusBar />
+        {mainArea}
       </div>
     </div>
+    <StatusBar />
+    </>
   )
 
   return (
@@ -140,12 +190,13 @@ function App() {
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
-      {isReadMode && <ReadMode onClose={() => useEditorStore.getState().setReadMode(false)} />}
-      {codeMode && <CodeMode onClose={() => useEditorStore.getState().setCodeMode(false)} />}
+      {useEditorStore(s => s.showSearch) && <SearchPanel onClose={() => useEditorStore.getState().setShowSearch(false)} />}
+      
+      
       <AIPanel />
 
-      {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} />}
-      {insertPanel === 'link' && <LinkDialog onClose={closeInsert} />}
+      {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
+      {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} /> }
       {insertPanel === 'code' && <CodeDialog onClose={closeInsert} onInsert={insertCode} />}
       {insertPanel === 'formula' && <FormulaDialog onClose={closeInsert} onInsert={insertFormula} />}
       {insertPanel === 'table' && (

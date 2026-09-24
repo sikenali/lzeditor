@@ -18,9 +18,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      const target = e.target as Node
-      if ((target as HTMLElement)?.closest?.('[data-lfs-portal]')) return
-      if (dialogRef.current && !dialogRef.current.contains(target)) onClose()
+      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) onClose()
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)

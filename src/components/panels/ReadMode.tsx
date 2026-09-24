@@ -211,7 +211,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const maxW = LAYOUT_MAX_W[readLayout]
 
   return (
-    <div className="read-mode-overlay" onClick={onClose}>
+    <div className="read-mode-fullscreen" onClick={onClose}>
       <div className="read-mode-container" onClick={e => e.stopPropagation()}>
 
         {/* ── Top bar ── */}

@@ -1,12 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-
-const CATEGORIES = [
-  { id: 'docs', label: '文档库', icon: 'ri-folder-fill', desc: '本地 MD 文件目录' },
-  { id: 'folders', label: '外部文件夹', icon: 'ri-git-branch-line', desc: 'Git / Dropbox / WebDAV' },
-  { id: 'blog', label: '博客', icon: 'ri-article-fill', desc: '在线博客同步' },
-  { id: 'ebook', label: '电子书', icon: 'ri-book-mark-fill', desc: 'EPUB / MOBI 导入' },
-]
+import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
+import { LibraryTree, buildTree } from './LibraryTree'
+import { ImportButtons, CATEGORIES } from './ImportButtons'
 
 export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }> = ({ onClose, sidebar }) => {
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
@@ -17,7 +13,12 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
   const activeLibraryId = useEditorStore((s: any) => s.activeLibraryId)
   const createLibrary = useEditorStore((s: any) => s.createLibrary)
   const setActiveLibrary = useEditorStore((s: any) => s.setActiveLibrary)
+  const renameLibrary = useEditorStore((s: any) => s.renameLibrary)
+  const setDocGitMeta = useEditorStore((s: any) => s.setDocGitMeta)
+  const [renameTargetId, setRenameTargetId] = useState<string | null>(null)
   const [category, setCategory] = useState('docs')
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
+  const [searchText, setSearchText] = useState('')
 
   const handleClose = () => {
     if (sidebar) setShowLibrary(false)
@@ -29,9 +30,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
     const activeLib = docLibraries.find((lib: any) => lib.id === activeLibraryId)
     const id = createDoc('', activeLib?.name || 'Default', activeLibraryId)
     const editor = useEditorStore.getState().editor
-    if (editor) {
-      editor.chain().focus().clearContent().run()
-    }
+    if (editor) { editor.chain().focus().clearContent().run() }
     if (!sidebar) handleClose()
   }
 
@@ -46,74 +45,122 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
     setOpenPanel('library')
   }
 
-  const categoryMeta = CATEGORIES.find(c => c.id === category) || CATEGORIES[0]
-
   const handlePrimaryAction = () => {
-    if (category === 'docs') {
-      handleNewLibrary()
-    }
+    if (category === 'docs') handleNewLibrary()
   }
 
-  const handleOpen = (docId: string) => {
-    const doc = docs.find((d: any) => d.id === docId)
-    if (doc) {
-      useEditorStore.getState().switchDoc(docId)
-      if (!sidebar) handleClose()
-    }
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }))
   }
 
-  const activeDocs = docs.filter((doc: any) => (doc.libraryId || 'default') === activeLibraryId)
+  const flatDocs = useMemo(() => {
+    if (searchText) {
+      return docs.filter((d: any) =>
+        d.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        (d.path || '').toLowerCase().includes(searchText.toLowerCase())
+      )
+    }
+    return docs
+  }, [docs, searchText])
 
+  const tree = useMemo(() => buildTree(flatDocs), [flatDocs])
+
+  const handleImportGit = () => {
+    const repoUrl = prompt('请输入 Git 仓库地址 (如 https://github.com/user/repo):')
+    if (!repoUrl) return
+    const id = createDoc('imported-from-git.md', 'Git Import', activeLibraryId)
+    const editor = useEditorStore.getState().editor
+    if (editor) editor.chain().focus().insertContent('<h1>来自 Git 的文档</h1><p>此文档已从远程仓库导入</p>').run()
+    setDocGitMeta({ gitPath: repoUrl, isFromGit: true })
+    alert('Git 仓库导入功能已触发（需后端支持）')
+  }
+
+  const handleImportBlog = () => {
+    const blogUrl = prompt('请输入博客地址 (如 https://blog.example.com):')
+    if (!blogUrl) return
+    alert('博客导入功能已触发（需后端支持）')
+  }
+
+  const handleImportGitbook = () => {
+    const gitbookUrl = prompt('请输入 GitBook 地址 (如 https://example.gitbook.io):')
+    if (!gitbookUrl) return
+    alert('GitBook 导入功能已触发（需后端支持）')
+  }
+
+  // Sidebar mode
   if (sidebar) {
     return (
       <div className="sidebar-library">
         <div className="sidebar-library-inner">
           <div className="sidebar-library-head">
             <div className="sidebar-library-title">
-              <span className="remix ri-folder-3-fill"></span>
+              <span className="remix ri-folder-fill"></span>
               <span>文档库</span>
             </div>
             <button className="sidebar-close-btn" onClick={handleClose} title="隐藏文档库">
               <span className="remix ri-close-line"></span>
             </button>
           </div>
-
           <div className="library-folder-list">
             {docLibraries.map((lib: any) => (
-              <button
-                key={lib.id}
-                className={`library-folder-item ${activeLibraryId === lib.id ? 'active' : ''}`}
-                onClick={() => setActiveLibrary(lib.id)}
-              >
-                <span className="remix ri-folder-3-fill library-folder-icon"></span>
-                <span className="library-folder-name">{lib.name}</span>
-                <span className="library-folder-count">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id).length}</span>
-              </button>
+              <div key={lib.id} className="library-folder-row">
+                <button
+                  className={`library-folder-item ${activeLibraryId === lib.id ? 'active' : ''}`}
+                  onClick={() => setActiveLibrary(lib.id)}
+                >
+                  <span className="remix ri-folder-fill library-folder-icon"></span>
+                  <span className="library-folder-name">{lib.name}</span>
+                  <span className="library-folder-count">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id).length}</span>
+                </button>
+                <button
+                  className="library-folder-rename-btn"
+                  onClick={(e) => { e.stopPropagation(); setRenameTargetId(renameTargetId === lib.id ? null : lib.id) }}
+                  title="重命名"
+                >
+                  <span className="remix ri-edit-line"></span>
+                </button>
+                {renameTargetId === lib.id && (
+                  <input
+                    className="library-folder-rename-input"
+                    defaultValue={lib.name}
+                    autoFocus
+                    onBlur={(e) => {
+                      const name = e.target.value.trim()
+                      if (name) renameLibrary(lib.id, name)
+                      setRenameTargetId(null)
+                    }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                  />
+                )}
+              </div>
             ))}
           </div>
-
+          <div className="library-search-wrap">
+            <span className="remix ri-search-line library-search-icon"></span>
+            <input
+              className="library-search-input"
+              placeholder="搜索文档…"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+            />
+            {searchText && (
+              <button className="library-search-clear" onClick={() => setSearchText('')}>
+                <span className="remix ri-close-line"></span>
+              </button>
+            )}
+          </div>
           <div className="library-docs-section">
             <div className="library-section-title">Markdown</div>
-            <button className="library-new-doc-inline" onClick={handleNewFile}>
-              <span className="remix ri-file-add-line"></span>
-              <span>新建 MD 文件</span>
-            </button>
-            <div className="library-list">
-              {activeDocs.map((doc: any) => (
-                <button key={doc.id} className="library-doc-item" onClick={() => handleOpen(doc.id)}>
-                  <span className="remix ri-file-text-line library-doc-icon"></span>
-                  <span className="library-doc-name">{doc.title}</span>
-                </button>
-              ))}
-              {activeDocs.length === 0 && (
-                <div className="library-empty-state compact">
-                  <span className="remix ri-file-text-line library-empty-icon"></span>
-                  <div className="library-empty-title">暂无文档</div>
-                </div>
-              )}
+            <div className="library-tree">
+              <LibraryTree
+                nodes={tree}
+                expandedFolders={expandedFolders}
+                onToggleFolder={toggleFolder}
+                onSelectDoc={(id) => { useEditorStore.getState().switchDoc(id); handleClose() }}
+                searchActive={!!searchText}
+              />
             </div>
           </div>
-
           <div className="library-sidebar-footer">
             <button className="library-add-folder-btn" onClick={handleOpenLibraryDialog}>
               <span className="remix ri-folder-add-line"></span>
@@ -125,111 +172,75 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean }>
     )
   }
 
-  return (
-    <div className={sidebar ? 'sidebar-library' : 'modal-overlay'} onClick={sidebar ? undefined : onClose}>
-      <div className={sidebar ? 'sidebar-library-inner' : 'export-dialog library-dialog-split'} onClick={e => !sidebar && e.stopPropagation()}>
-        <div className="export-header">
-          <div className="export-title">
-            <span className="remix export-icon ri-archive-2-line"></span>
-            <div>
-              <div className="export-title-text">文档库</div>
-              <div className="export-title-desc">{categoryMeta.label} · {categoryMeta.desc}</div>
-            </div>
-          </div>
-          <button className="settings-close-btn" onClick={handleClose}>
-            <span className="remix ri-close-line"></span>
+  // Dialog mode
+  const rightTop = (
+    <UDSection label="">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.id}
+            className={`ud-btn${category === cat.id ? ' ud-btn--primary' : ''}`}
+            onClick={() => setCategory(cat.id)}
+            style={{ flexDirection: 'column', gap: 6, padding: '14px 10px', justifyContent: 'center' }}
+          >
+            <span className={`remix ${cat.icon}`} style={{ fontSize: 18 }}></span>
+            <span style={{ fontSize: 12 }}>{cat.label}</span>
           </button>
-        </div>
+        ))}
+      </div>
+    </UDSection>
+  )
 
-        <div className="export-body export-body-split export-body-redesigned library-dialog-body">
-          <div className="export-left library-dialog-left">
-            <div className="format-chips-compact library-format-list">
-              {CATEGORIES.map(c => (
-                <button
-                  key={c.id}
-                  className={`format-chip-compact ${category === c.id ? 'active' : ''}`}
-                  onClick={() => setCategory(c.id)}
-                >
-                  <span className={`remix ${c.icon}`}></span>
-                  <span className="chip-name">{c.label}</span>
-                  <span className="chip-desc">{c.desc}</span>
+  const rightContent = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {category === 'docs' && (
+        <UDSection label="文档库">
+          {docLibraries.length === 0 ? (
+            <div className="library-empty-state">
+              <span className="remix ri-folder-open-line library-empty-icon"></span>
+              <div className="library-empty-title">暂无文档库</div>
+              <div className="library-empty-desc">点击右下角"新建文档库"开始组织文档</div>
+            </div>
+          ) : (
+            <div className="library-list">
+              {docLibraries.map((lib: any) => (
+                <button key={lib.id} className={`library-doc-item${activeLibraryId === lib.id ? 'active' : ''}`}
+                  onClick={() => { setActiveLibrary(lib.id); setShowLibrary(true); handleClose() }}>
+                  <span className="remix ri-folder-fill library-doc-icon"></span>
+                  <div className="library-doc-info">
+                    <div className="library-doc-name">{lib.name}</div>
+                    <div className="library-doc-meta">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id).length} 个文档</div>
+                  </div>
+                  <span className="remix ri-arrow-right-s-line library-doc-arrow"></span>
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="export-right library-dialog-right">
-            <div className="library-content">
-              {category === 'docs' && (
-                <div className="library-list">
-                  {docLibraries.length === 0 ? (
-                    <div className="library-empty-state">
-                      <span className="remix ri-folder-open-line library-empty-icon"></span>
-                      <div className="library-empty-title">暂无文档库</div>
-                      <div className="library-empty-desc">点击右下角"新建文档库"开始组织文档</div>
-                    </div>
-                  ) : (
-                    docLibraries.map((lib: any) => (
-                      <button
-                        key={lib.id}
-                        className={`library-doc-item ${activeLibraryId === lib.id ? 'active' : ''}`}
-                        onClick={() => { setActiveLibrary(lib.id); setShowLibrary(true); handleClose() }}
-                      >
-                        <span className="remix ri-folder-3-fill library-doc-icon"></span>
-                        <div className="library-doc-info">
-                          <div className="library-doc-name">{lib.name}</div>
-                          <div className="library-doc-meta">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id).length} 个文档</div>
-                        </div>
-                        <span className="remix ri-arrow-right-s-line library-doc-arrow"></span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {category === 'folders' && (
-                <div className="library-empty-state">
-                  <span className="remix ri-git-branch-line library-empty-icon"></span>
-                  <div className="library-empty-title">连接外部存储</div>
-                  <div className="library-empty-desc">支持 Git、Dropbox、WebDAV 等云存储服务</div>
-                </div>
-              )}
-
-              {category === 'blog' && (
-                <div className="library-empty-state">
-                  <span className="remix ri-article-fill library-empty-icon"></span>
-                  <div className="library-empty-title">同步博客</div>
-                  <div className="library-empty-desc">从 WordPress、Hexo、Hugo 等博客平台导入文章</div>
-                </div>
-              )}
-
-              {category === 'ebook' && (
-                <div className="library-empty-state">
-                  <span className="remix ri-book-mark-fill library-empty-icon"></span>
-                  <div className="library-empty-title">导入电子书</div>
-                  <div className="library-empty-desc">支持 EPUB、MOBI 格式，自动解析目录结构</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="export-footer">
-          <div className="export-hint">
-            <span className="remix ri-information-line"></span>
-            <span>{category === 'docs' ? '新建后会自动出现在左侧文档库侧边栏' : categoryMeta.desc}</span>
-          </div>
-          <div className="export-actions">
-            <button className="settings-cancel-btn" onClick={handleClose}>关闭</button>
-            {category === 'docs' && (
-              <button className="settings-save-btn" onClick={handlePrimaryAction}>
-                <span className="remix ri-folder-add-line"></span>
-                <span>新建文档库</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+          )}
+        </UDSection>
+      )}
+      <ImportButtons
+        category={category}
+        onImportGit={handleImportGit}
+        onImportBlog={handleImportBlog}
+        onImportGitbook={handleImportGitbook}
+      />
     </div>
+  )
+
+  return (
+    <UnifiedDialog
+      onClose={handleClose}
+      icon="ri-archive-2-line"
+      title="文档库"
+      subtitle={CATEGORIES.find(c => c.id === category)?.label || '文档库'}
+      rightTop={rightTop}
+      rightContent={rightContent}
+      hint={category === 'docs' ? '新建后会自动出现在左侧文档库侧边栏' : CATEGORIES.find(c => c.id === category)?.desc || ''}
+      cancelText="关闭"
+      submitText={category === 'docs' ? '新建文档库' : undefined}
+      onSubmit={category === 'docs' ? handlePrimaryAction : undefined}
+      size="lg"
+      className="library-dialog"
+    />
   )
 }

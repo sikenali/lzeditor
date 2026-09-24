@@ -1,132 +1,174 @@
 import React, { useState } from 'react'
-import { useEditorStore } from '../../store/editorStore'
+import { UnifiedDialog, UDSection, UDInput } from '../ui/UnifiedDialog'
 
-interface ImageDialogProps {
+interface Props {
   onClose: () => void
-  onInsert: (url: string, alt: string) => void
-  onUpload: (file: File) => void
+  onInsert: (url: string, alt: string, align?: 'top' | 'left' | 'right') => void
+  onUpload: (file: File, align?: 'top' | 'left' | 'right') => void
+  codeModeCursor?: number
+  onInsertMarkdown?: (md: string) => void
 }
 
-type ImageMode = 'local' | 'url'
+const ALIGN_OPTIONS = [
+  { id: 'left', label: '左对齐', icon: 'ri-align-left' },
+  { id: 'top', label: '居中', icon: 'ri-align-center' },
+  { id: 'right', label: '右对齐', icon: 'ri-align-right' },
+] as const
 
-export const ImageDialog: React.FC<ImageDialogProps> = ({ onClose, onInsert, onUpload }) => {
-  const [mode, setMode] = useState<ImageMode>('local')
-  const [imgUrl, setImgUrl] = useState('')
-  const [imgAlt, setImgAlt] = useState('')
-  const [dragOver, setDragOver] = useState(false)
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) onUpload(file)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) onUpload(file)
-  }
+export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) => {
+  const [url, setUrl] = useState('')
+  const [alt, setAlt] = useState('')
+  const [align, setAlign] = useState<'top' | 'left' | 'right'>('left')
+  const [useUrl, setUseUrl] = useState(false) // 默认本地上传
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [generating, setGenerating] = useState(false)
 
   const handleInsert = () => {
-    if (mode === 'url' && imgUrl.trim()) {
-      onInsert(imgUrl.trim(), imgAlt.trim() || 'image')
+    if (useUrl && url.trim()) {
+      onInsert(url.trim(), alt.trim() || 'image', align)
+      onClose()
+    } else if (!useUrl && uploadFile) {
+      onUpload(uploadFile, align)
       onClose()
     }
   }
 
-  const handleOpenImageHost = () => {
-    const opened = window.open('https://imgant.com', '_blank', 'noopener,noreferrer')
-    if (opened) opened.opener = null
+  const handleGenerateUrl = async () => {
+    if (!uploadFile) return
+    setGenerating(true)
+    try {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string
+        try {
+          const resp = await fetch('https://imgant.com/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64.split(',')[1] }),
+          })
+          const data = await resp.json()
+          if (data.url) {
+            setUrl(data.url)
+            setUseUrl(true) // 上传成功后切换到 URL 模式
+          } else {
+            alert('图床上传失败，请手动复制图片链接')
+          }
+        } catch {
+          alert('图床服务不可用，请使用其他图床或手动上传')
+        }
+      }
+      reader.readAsDataURL(uploadFile)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="export-dialog export-dialog-split settings-dialog insert-dialog" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="export-header">
-          <div className="export-title">
-            <span className="remix export-icon ri-image-line"></span>
-            <div>
-              <div className="export-title-text">插入图片</div>
-              <div className="export-title-desc">选择图片来源方式</div>
-            </div>
+    <UnifiedDialog
+      onClose={onClose} icon="ri-image-line" title="插入图片" subtitle="支持 URL 或本地上传" size="md"
+      className="dialog-fixed-882x600"
+      rightContent={(
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* 2 标签切换 - 本地上传在前，URL链接在后 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className={`ud-btn${!useUrl ? ' ud-btn--primary' : ''}`}
+              onClick={() => setUseUrl(false)}
+              style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
+            >
+              <span className="remix ri-upload-cloud-line" style={{ fontSize: 18 }}></span>
+              <span style={{ fontSize: 12 }}>本地上传</span>
+            </button>
+            <button
+              className={`ud-btn${useUrl ? ' ud-btn--primary' : ''}`}
+              onClick={() => setUseUrl(true)}
+              style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
+            >
+              <span className="remix ri-link" style={{ fontSize: 18 }}></span>
+              <span style={{ fontSize: 12 }}>URL 链接</span>
+            </button>
           </div>
-          <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix ri-close-line"></span>
-          </button>
-        </div>
 
-        <div className="export-body export-body-split export-body-redesigned insert-dialog-body">
-          <div className="export-left insert-left-nav">
-            <button
-              className={`insert-nav-item ${mode === 'local' ? 'active' : ''}`}
-              onClick={() => setMode('local')}
-            >
-              <span className="remix insert-nav-icon ri-upload-cloud-2-line"></span>
-              <span className="chip-name">本地图片</span>
-              <span className="chip-desc">上传或拖入图片文件</span>
-            </button>
-            <button
-              className={`insert-nav-item ${mode === 'url' ? 'active' : ''}`}
-              onClick={() => setMode('url')}
-            >
-              <span className="remix insert-nav-icon ri-global-line"></span>
-              <span className="chip-name">图床地址</span>
-              <span className="chip-desc">使用 http 或 https 链接</span>
-            </button>
-          </div>
-          <div className="export-right insert-right-pane">
-            <div className="insert-preview-panel">
-              {mode === 'local' && (
-                <div
-                  className={`image-drop-zone ${dragOver ? 'drag-over' : ''}`}
-                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleDrop}
+          {!useUrl ? (
+            // 本地上传
+            <UDSection label="选择文件">
+              <label className="ud-upload-area">
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) setUploadFile(f) }}
+                />
+                <span className="remix ri-upload-cloud-line" style={{ fontSize: 28, color: 'var(--accent-primary)' }}></span>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
+                  {uploadFile ? `✓ ${uploadFile.name}` : '点击选择图片或拖拽到此处'}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>支持 JPG、PNG、GIF、SVG、WebP</div>
+              </label>
+              {uploadFile && (
+                <button
+                  className="ud-btn"
+                  onClick={handleGenerateUrl}
+                  disabled={generating}
+                  style={{ marginTop: 8, width: '100%', justifyContent: 'center' }}
                 >
-                  <span className="remix ri-image-add-line" style={{ fontSize: 28, color: 'var(--text-muted)', opacity: 0.5 }}></span>
-                  <div className="image-drop-text">拖拽图片到此处，或</div>
-                  <label className="image-drop-btn">
-                    <span className="remix ri-folder-open-line"></span>
-                    选择文件
-                    <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-                  </label>
-                </div>
+                  <span className={`remix ${generating ? 'ri-loader-4-line spin' : 'ri-flashlight-line'}`}></span>
+                  {generating ? '上传中...' : '生成图床 URL'}
+                </button>
               )}
-              {mode === 'url' && (
-                <div className="image-url-fields">
-                  <div className="export-field">
-                    <label className="export-label">图片地址</label>
-                    <input className="lfs-input" placeholder="https:// 或 http://" value={imgUrl} onChange={e => setImgUrl(e.target.value)} />
-                    {imgUrl && !imgUrl.match(/^https?:\/\//) && <span className="image-url-tip">提示：URL 需以 http:// 或 https:// 开头</span>}
-                  </div>
-                  <button className="settings-cancel-btn image-host-btn" type="button" onClick={handleOpenImageHost}>
-                    <span className="remix ri-external-link-line"></span>
-                    <span>生成图床地址</span>
+            </UDSection>
+          ) : (
+            // URL 链接
+            <>
+              <UDSection label="图片地址">
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <UDInput
+                    value={url}
+                    onChange={e => setUrl(e.target.value)}
+                    placeholder="https://..."
+                    style={{ fontFamily: 'var(--font-mono)', flex: 1 }}
+                  />
+                  <button
+                    className="ud-btn"
+                    onClick={() => window.open('https://imgant.com', '_blank')}
+                    title="打开图床网站"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <span className="remix ri-flashlight-line"></span> 图床
                   </button>
-                  <div className="export-field">
-                    <label className="export-label">替代文字（可选）</label>
-                    <input className="lfs-input" placeholder="图片描述" value={imgAlt} onChange={e => setImgAlt(e.target.value)} />
-                  </div>
                 </div>
-              )}
+              </UDSection>
+              <UDSection label="替代文字">
+                <UDInput
+                  value={alt}
+                  onChange={e => setAlt(e.target.value)}
+                  placeholder="图片描述（可选）"
+                />
+              </UDSection>
+            </>
+          )}
+
+          <UDSection label="对齐方式">
+            <div style={{ display: 'flex', gap: 8 }}>
+              {ALIGN_OPTIONS.map(opt => (
+                <button
+                  key={opt.id}
+                  className={`ud-btn${align === opt.id ? ' ud-btn--primary' : ''}`}
+                  onClick={() => setAlign(opt.id as any)}
+                  style={{ flex: 1, justifyContent: 'center' }}
+                >
+                  <span className={`remix ${opt.icon}`}></span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
             </div>
-          </div>
+          </UDSection>
         </div>
-        <div className="export-footer">
-          <div className="export-hint">
-            <span className="remix ri-information-line"></span>
-            <span>插入后图片将显示在光标位置</span>
-          </div>
-          <div className="export-actions">
-            <button className="settings-cancel-btn" onClick={onClose}>关闭</button>
-            <button className="settings-save-btn" onClick={handleInsert} disabled={mode === 'url' && !imgUrl.trim()}>
-              <span className="remix ri-add-line"></span>
-              插入
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      )}
+      hint="图片将以 Markdown 格式插入，支持本地上传自动转 base64"
+      submitText="插入图片"
+      onSubmit={handleInsert}
+      submitDisabled={useUrl ? !url.trim() : !uploadFile}
+    />
   )
 }

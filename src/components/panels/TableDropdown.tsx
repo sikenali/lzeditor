@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
 
 interface TableDropdownProps {
   open: boolean
@@ -6,19 +7,18 @@ interface TableDropdownProps {
   onInsert: (rows: number, cols: number, data: string[][]) => void
 }
 
-const PRESETS = [
-  { id: 'basic', label: '基础表格', desc: '3 × 3 常规内容', icon: 'ri-table-2', rows: 3, cols: 3 },
-  { id: 'compare', label: '对比表格', desc: '适合双列比较', icon: 'ri-layout-column-line', rows: 4, cols: 2 },
-  { id: 'plan', label: '计划表', desc: '任务与进度排期', icon: 'ri-calendar-check-line', rows: 5, cols: 4 },
-  { id: 'data', label: '数据表', desc: '多列结构化数据', icon: 'ri-database-2-line', rows: 6, cols: 5 },
-]
+const TABLE_TYPES = [
+  { id: 'with-header', label: '带标题表格', icon: 'ri-table-2', desc: '首行为标题' },
+  { id: 'without-header', label: '无标题表格', icon: 'ri-layout-grid-fill', desc: '纯数据表格' },
+] as const
 
-function makeCells(rows: number, cols: number): string[][] {
+function makeCells(rows: number, cols: number, hasHeader: boolean): string[][] {
   const data: string[][] = []
   for (let r = 0; r < rows; r++) {
     const row: string[] = []
     for (let c = 0; c < cols; c++) {
-      row.push(r === 0 ? '标题' : '内容')
+      if (hasHeader && r === 0) row.push('标题')
+      else row.push('内容')
     }
     data.push(row)
   }
@@ -26,15 +26,13 @@ function makeCells(rows: number, cols: number): string[][] {
 }
 
 export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, onInsert }) => {
-  const [active, setActive] = useState(PRESETS[0].id)
-  const preset = PRESETS.find(p => p.id === active) || PRESETS[0]
-  const [rows, setRows] = useState(preset.rows)
-  const [cols, setCols] = useState(preset.cols)
-  const [cells, setCells] = useState(() => makeCells(preset.rows, preset.cols))
+  const [tableType, setTableType] = useState<'with-header' | 'without-header'>('with-header')
+  const [rows, setRows] = useState(3)
+  const [cols, setCols] = useState(3)
+  const [cells, setCells] = useState(() => makeCells(3, 3, true))
   const [activeCell, setActiveCell] = useState<{ r: number; c: number } | null>(null)
   const [hoveredRow, setHoveredRow] = useState<number | null>(null)
 
-  // ── Drag reorder ──
   const dragSrcIdx = useRef<number | null>(null)
   const dragRowEl = useRef<HTMLTableRowElement | null>(null)
 
@@ -57,14 +55,6 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     setHoveredRow(null)
   }, [rows, cols])
 
-  const choosePreset = useCallback((id: string) => {
-    const next = PRESETS.find(p => p.id === id) || PRESETS[0]
-    setActive(id)
-    setRows(next.rows)
-    setCols(next.cols)
-    setCells(makeCells(next.rows, next.cols))
-  }, [])
-
   const handleKeyDown = useCallback((e: React.KeyboardEvent, r: number, c: number) => {
     if (e.key === 'Tab') {
       e.preventDefault()
@@ -82,7 +72,6 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     }
   }, [cols, rows, focusCell])
 
-  // ── Drag reorder handlers ──
   const handleDragStart = useCallback((e: React.DragEvent, r: number) => {
     dragSrcIdx.current = r
     e.dataTransfer.effectAllowed = 'move'
@@ -117,7 +106,6 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     dragRowEl.current = null
   }, [])
 
-  // ── Column actions ──
   const handleAddCol = useCallback(() => {
     const next = cols + 1
     if (next > 10) return
@@ -131,7 +119,6 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     setCols(cols - 1)
   }, [cols])
 
-  // ── Row actions ──
   const handleAddRow = useCallback(() => {
     const next = rows + 1
     if (next > 20) return
@@ -150,66 +137,46 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     onToggle(false)
   }, [rows, cols, cells, onInsert, onToggle])
 
+  const handleChangeTableType = useCallback((type: 'with-header' | 'without-header') => {
+    setTableType(type)
+    setCells(makeCells(rows, cols, type === 'with-header'))
+  }, [rows, cols])
+
   if (!open) return null
 
   return (
-    <div className="modal-overlay" onClick={() => onToggle(false)}>
-      <div className="export-dialog export-dialog-split settings-dialog insert-dialog table-insert-dialog" onClick={e => e.stopPropagation()}>
-        {/* ── Header ── */}
-        <div className="export-header">
-          <div className="export-title">
-            <span className="remix export-icon ri-table-2"></span>
-            <div>
-              <div className="insert-title">插入表格</div>
-              <div className="insert-desc">在光标处插入表格并编辑内容</div>
-            </div>
-          </div>
-          <button className="settings-close-btn" onClick={() => onToggle(false)}>
-            <span className="remix ri-close-line"></span>
-          </button>
-        </div>
-
-        {/* ── Body ── */}
-        <div className="export-body export-body-split export-body-redesigned insert-dialog-body table-insert-body">
-          {/* Left: presets */}
-          <div className="export-left insert-left-nav">
-            {PRESETS.map(item => (
+    <UnifiedDialog
+      onClose={() => onToggle(false)}
+      icon="ri-table-2"
+      title="插入表格"
+      subtitle="选择表格类型并编辑内容"
+      size="lg"
+      rightContent={(
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* 表格类型切换 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {TABLE_TYPES.map(t => (
               <button
-                key={item.id}
-                className={`insert-nav-item ${active === item.id ? 'active' : ''}`}
-                onClick={() => choosePreset(item.id)}
+                key={t.id}
+                className={`ud-btn${tableType === t.id ? ' ud-btn--primary' : ''}`}
+                onClick={() => handleChangeTableType(t.id)}
+                style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
               >
-                <span className={`remix insert-nav-icon ${item.icon}`}></span>
-                <span className="chip-name">{item.label}</span>
-                <span className="chip-desc">{item.desc}</span>
+                <span className={`remix ${t.icon}`} style={{ fontSize: 18 }}></span>
+                <span style={{ fontSize: 12 }}>{t.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Right: table preview */}
-          <div className="export-right insert-right-pane">
-            {/* Top bar: spec badge + shortcuts */}
-            <div className="table-top-bar">
-              <span className="table-spec-badge">
-                <span className="remix ri-table-2"></span>
-                {cols} 列 · {rows} 行
-              </span>
-              <div className="table-shortcut-hints">
-                <span className="shortcut-item"><kbd>Tab</kbd><span>下一列</span></span>
-                <span className="shortcut-item"><kbd>⇧ Tab</kbd><span>上一列</span></span>
-                <span className="shortcut-item"><kbd>Enter</kbd><span>单元格内换行</span></span>
-                <span className="shortcut-item"><kbd>Esc</kbd><span>退出编辑</span></span>
-              </div>
-            </div>
-
-            {/* Table wrapper */}
-            <div className="table-editable-wrapper">
-              <table className="table-editable">
+          {/* 表格预览 */}
+          <UDSection label="表格预览">
+            <div style={{ overflow: 'auto', maxHeight: 320 }}>
+              <table className="table-editable" style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <tbody>
-              {cells.map((row, r) => (
+                  {cells.map((row, r) => (
                     <tr
                       key={r}
-                      className={`table-editable-row${r === 0 ? ' is-header' : ''}`}
+                      className={`table-editable-row${r === 0 && tableType === 'with-header' ? ' is-header' : ''}`}
                       draggable
                       onMouseEnter={() => setHoveredRow(r)}
                       onMouseLeave={() => setHoveredRow(null)}
@@ -218,16 +185,17 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                       onDrop={e => handleDrop(e, r)}
                       onDragEnd={clearDragStyles}
                     >
-                      {/* Drag handle column */}
-                      <td className="table-drag-col">
-                        <span className="remix ri-draggable ri-grip-vertical"></span>
+                      {/* 拖动列 */}
+                      <td className="table-drag-col" style={{ width: 24, cursor: 'grab', textAlign: 'center', verticalAlign: 'middle' }}>
+                        <span className="remix ri-draggable" style={{ fontSize: 14, color: 'var(--text-muted)', opacity: 0.8, display: 'inline-block' }}></span>
                       </td>
 
-                      {/* Data cells — all editable */}
+                      {/* 数据单元格 */}
                       {row.map((cell, c) => (
                         <td
                           key={c}
-                          className={`table-editable-cell${r === 0 ? ' is-header-cell' : ''}`}
+                          className={`table-editable-cell${r === 0 && tableType === 'with-header' ? ' is-header-cell' : ''}`}
+                          style={{ border: '1px solid var(--border-subtle)', padding: 0 }}
                         >
                           <div
                             className="table-cell-editor"
@@ -238,62 +206,78 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                             onInput={e => updateCell(r, c, (e.currentTarget as HTMLElement).innerText || '')}
                             onFocus={() => setActiveCell({ r, c })}
                             onKeyDown={e => handleKeyDown(e, r, c)}
+                            style={{ padding: '8px 12px', minHeight: 32, outline: 'none' }}
                           />
                         </td>
                       ))}
 
-                      {/* Actions column — always present, icons only on hover */}
-                      <td className="table-actions-col">
+                      {/* 操作列 */}
+                      <td style={{ width: 32, position: 'relative', verticalAlign: 'middle' }}>
                         {r === 0 ? (
-                          <button className="table-act-btn" onClick={handleAddCol} title="添加列">
-                            <span className="remix ri-add-line"></span>
+                          <button
+                            className="table-act-btn"
+                            onClick={handleAddCol}
+                            title="添加列"
+                            style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+                          >
+                            <span className="remix ri-add-line" style={{ fontSize: 14 }}></span>
                           </button>
                         ) : (
                           <button
                             className="table-act-btn"
                             onClick={() => handleDeleteRow(r)}
                             title="删除行"
-                            style={{ display: hoveredRow === r ? '' : 'none' }}
+                            style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              display: hoveredRow === r ? '' : 'none'
+                            }}
                           >
-                            <span className="remix ri-close-line"></span>
+                            <span className="remix ri-close-line" style={{ fontSize: 14 }}></span>
                           </button>
                         )}
                       </td>
                     </tr>
                   ))}
-
-                  {/* Add row row */}
-                  <tr className="table-add-row-trigger">
-                    <td className="table-drag-col"></td>
+                  <tr>
+                    <td className="table-drag-col" style={{ height: 36 }}></td>
                     <td colSpan={cols + 1}>
-                      <button className="table-add-row-btn" onClick={handleAddRow} title="添加行">
-                        <span className="remix ri-add-line"></span>
-                        <span>添加行</span>
+                      <button
+                        className="table-add-row-btn"
+                        onClick={handleAddRow}
+                        title="添加行"
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          border: '1px dashed var(--border-subtle)',
+                          borderRadius: 4,
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          color: 'var(--text-muted)',
+                          fontSize: 13
+                        }}
+                      >
+                        <span className="remix ri-add-line"></span> 添加行
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, display: 'flex', gap: 12 }}>
+              <span><kbd>Tab</kbd> 下一列</span>
+              <span><kbd>⇧Tab</kbd> 上一列</span>
+              <span><kbd>Esc</kbd> 退出编辑</span>
+            </div>
+          </UDSection>
         </div>
-
-        {/* ── Footer ── */}
-        <div className="export-footer">
-          <div className="export-hint">
-            <span className="remix ri-information-line"></span>
-            <span>插入后自动套用当前样式集，可随时在文档中编辑</span>
-          </div>
-          <div className="export-actions">
-            <button className="settings-cancel-btn" onClick={() => onToggle(false)}>关闭</button>
-            <button className="settings-save-btn" onClick={handleInsert}>
-              <span className="remix ri-add-line"></span>
-              插入
-              <span className="insert-key-hint">↵</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      )}
+      hint="表格将插入到当前光标位置"
+      submitText="插入表格"
+      onSubmit={handleInsert}
+      cancelText="取消"
+    />
   )
 }

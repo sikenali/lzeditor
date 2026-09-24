@@ -30,17 +30,18 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
   }
   const dialogRef = useRef<HTMLDivElement>(null)
 
-  // 点击遮罩外关闭：通过 document mousedown 检测，避免 modal-overlay 遮挡 pointer events
+  // 弹窗打开时自动将焦点移到弹窗内的第一个可聚焦元素
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node
-      // 跳过 portal 内的点击（LFSCombo 下拉框等），不关闭对话框
-      if ((target as HTMLElement)?.closest?.('[data-lfs-portal]')) return
-      if (dialogRef.current && !dialogRef.current.contains(target)) onClose()
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [onClose])
+    const timer = setTimeout(() => {
+      if (dialogRef.current) {
+        const focusable = dialogRef.current.querySelector<HTMLElement>(
+          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable) focusable.focus()
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   // ESC 关闭
   useEffect(() => {
@@ -51,8 +52,8 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose])
   return (
-    <div className="modal-overlay">
-      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className={`unified-dialog unified-dialog--${size} ${className}`} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="ud-header">
           {icon && <span className={`remix ud-icon ${icon}`}></span>}

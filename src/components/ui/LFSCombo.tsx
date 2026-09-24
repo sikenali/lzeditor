@@ -88,7 +88,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         type="button"
       >
         <span className="lfs-combo-label">{displayLabel || placeholder}</span>
-        {selected && <span className="remix ri-checkbox-fill lfs-combo-check"></span>}
+        {selected && <span className="remix ri-checkbox-circle-fill lfs-combo-check"></span>}
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
       {open && portalNode && portalPos && ReactDOM.createPortal(
@@ -108,7 +108,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
               >
                 {opt.icon && <span className={`remix lfs-combo-opt-icon ${opt.icon}`}></span>}
                 <span className="lfs-combo-opt-label">{opt.label}</span>
-                {opt.value === value && <span className="remix ri-checkbox-fill lfs-combo-check"></span>}
+                {opt.value === value && <span className="remix ri-checkbox-circle-fill lfs-combo-check"></span>}
               </button>
             ))
           )}

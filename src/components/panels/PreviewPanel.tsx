@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { useEditorStore } from '../../store/editorStore'
 import { copyRichText } from '../../clipboard'
+import { UnifiedDialog } from '../ui/UnifiedDialog'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
@@ -48,59 +49,56 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     }
   }
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="preview-panel" onClick={e => e.stopPropagation()}>
-        <div className="preview-header">
-          <div className="preview-title">
-            <span className="remix ri-eye-2-line" style={{ fontSize: 17, color: 'var(--accent-primary)' }}></span>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>预览</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{docTitle}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button
-              className="sidebar-wechat-btn"
-              onClick={handleCopyWechat}
-              title="一键复制为公众号可用富文本"
-            >
-              <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
-              {copied ? '已复制' : '公众号'}
-            </button>
-            <button
-              className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
-              onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
-              title="切换源码模式"
-            >
-              <span className="remix ri-code-line"></span>
-              <span>源码</span>
-            </button>
-            <button className="settings-close-btn" onClick={onClose}>
-              <span className="remix ri-close-line"></span>
-            </button>
-          </div>
-        </div>
-
-        <div className="preview-body">
-          {isCodeMode ? (
-            <pre className="preview-code">
-              <code>{effectiveMd || '# Welcome to LZEditor\n\n请切换到编辑模式后查看预览内容...'}</code>
-            </pre>
-          ) : (
-            <div
-              className="preview-content"
-              dangerouslySetInnerHTML={{ __html: renderedHtml || `<p style="color:var(--text-muted);text-align:center;padding:40px;">暂无内容</p>` }}
-            />
-          )}
-        </div>
-
-        <div className="preview-footer">
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            {isCodeMode ? 'Markdown 源码视图' : '富文本预览'} · 点击外部区域关闭
-          </span>
-        </div>
-      </div>
+  const rightTop = (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <button
+        className="sidebar-wechat-btn"
+        onClick={handleCopyWechat}
+        title="一键复制为公众号可用富文本"
+      >
+        <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
+        {copied ? '已复制' : '公众号'}
+      </button>
+      <button
+        className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
+        onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
+        title="切换源码模式"
+      >
+        <span className="remix ri-code-s-line"></span>
+        <span>源码</span>
+      </button>
     </div>
+  )
+
+  const rightContent = (
+    isCodeMode ? (
+      <pre className="preview-code">
+        <code>{effectiveMd || '# Welcome to LZEditor\n\n请切换到编辑模式后查看预览内容...'}</code>
+      </pre>
+    ) : (
+      <div
+        className="preview-content"
+        dangerouslySetInnerHTML={{ __html: renderedHtml || `<p style="color:var(--text-muted);text-align:center;padding:40px;">暂无内容</p>` }}
+      />
+    )
+  )
+
+  const rightBottom = (
+    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+      {isCodeMode ? 'Markdown 源码视图' : '富文本预览'} · 点击外部区域关闭
+    </span>
+  )
+
+  return (
+    <UnifiedDialog
+      onClose={onClose}
+      icon="ri-eye-2-line"
+      title="预览"
+      subtitle={docTitle}
+      rightTop={rightTop}
+      rightContent={rightContent}
+      rightBottom={rightBottom}
+      size="lg"
+    />
   )
 }

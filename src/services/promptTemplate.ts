@@ -7,10 +7,16 @@ export interface PromptVars {
   user_instruction?: string
   word_count?: number
   target?: string
+  schema_context?: string
 }
 
 const TEMPLATES: Record<string, (v: PromptVars) => string> = {
   rewrite: (v) => `你是一个专业的文字编辑。请对以下 Markdown 文本进行改写，保持原意不变，提升表达质量，使其更符合${v.style || '自然流畅'}风格。
+
+编辑器 Schema 上下文（帮助理解文档结构）：
+\`\`\`
+${v.schema_context || 'N/A'}
+\`\`\`
 
 上下文（前后各2段）：
 ${v.context_before || ''}
@@ -26,6 +32,11 @@ ${v.context_after || ''}
 2. 优化句子结构和表达
 3. 保持原有语气和风格
 
+编辑器 Schema 上下文：
+\`\`\`
+${v.schema_context || 'N/A'}
+\`\`\`
+
 原文：
 ${v.selected_text}
 
@@ -35,6 +46,11 @@ ${v.context || ''}
 直接输出润色后的文本，使用 Markdown 格式。`,
 
   continue: (v) => `你正在协助撰写一篇 Markdown 文档。请根据以下内容，续写后续段落，保持风格一致、逻辑连贯、语言流畅。
+
+编辑器 Schema 上下文：
+\`\`\`
+${v.schema_context || 'N/A'}
+\`\`\`
 
 前文：
 ${v.context_before || ''}${v.selected_text}
@@ -49,10 +65,20 @@ ${v.context_before || ''}${v.selected_text}
 - 控制在 1-3 句话
 - 保留关键数据或结论
 
+编辑器 Schema 上下文：
+\`\`\`
+${v.schema_context || 'N/A'}
+\`\`\`
+
 原文：
 ${v.selected_text}`,
 
   translate: (v) => `请将以下 Markdown 文本翻译为${v.target || '中文'}，保持格式不变：
+
+编辑器 Schema 上下文：
+\`\`\`
+${v.schema_context || 'N/A'}
+\`\`\`
 
 ${v.selected_text}`,
 }

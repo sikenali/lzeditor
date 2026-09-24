@@ -5,29 +5,30 @@
    - Light: warm parchment gradient backgrounds
    ============================================================ */
 
-/* ── Dark theme (msst ink-jade palette) ── */
-/* ink-bg #0a0c15, ink-surface #111422, jade #3ba873, gold #c9a84c */
+/* ── Dark theme (Apple-style layered surfaces) ── */
+/* Base: #0a0a0a (near-black, not pure #000 for depth) */
 :root {
-  /* Backgrounds — deep ink-blue, never pure black */
-  --background:           #0a0c15;
-  --background-card:      #111422;
-  --background-elevated:  #161a2e;
-  --background-hover:     #1c2340;
-  --background-input:     #141828;
-  --background-code:      #111422;
-  --background-quote:     #131728;
-  --background-muted:     #111422;
+  /* Backgrounds — Apple-style 4-layer surface hierarchy */
+  --background:           #0a0a0a;
+  --background-card:      #1c1c1e;    /* table-cell / modal content surface */
+  --background-elevated:  #2c2c2e;    /* popover / dropdown / input surface */
+  --background-hover:     #3a3a3c;    /* hover state on elevated */
+  --background-input:     #1c1c1e;    /* input field surface */
+  --background-code:      #151517;    /* code block surface (darker for contrast) */
+  --background-quote:     #1a1a1c;    /* blockquote surface */
+  --background-muted:     #1c1c1e;    /* muted surfaces */
 
-  /* Text — warm off-white / cool gray */
-  --foreground:           #e8e6e3;
-  --foreground-secondary: #b8b6c0;
-  --foreground-muted:     #5c5a6a;
-  --foreground-heading:   #f5f3f0;
-  --foreground-heading-2: #ece8e0;
+  /* Text — Apple-style hierarchy */
+  --foreground:           #f5f5f7;    /* primary text (brightest) */
+  --foreground-secondary: #d1d1d6;    /* secondary text */
+  --foreground-muted:     #6e6e73;    /* tertiary / muted text */
+  --foreground-heading:   #ffffff;    /* headings (full white) */
+  --foreground-heading-2: #e5e5ea;    /* subheadings */
 
-  /* Primary accent — jade green (msst jade) */
+  /* Primary accent — jade green */
   --accent:              #3ba873;
   --accent-foreground:   #ffffff;
+  --accent-hover:        var(--accent-a20);
 
   /* Accent alpha variants */
   --accent-a3:  rgba(59,168,115,0.03);
@@ -42,41 +43,75 @@
 
   --accent-primary:   var(--accent);
 
-  /* Borders — ink-blue */
-  --border:        #1e2440;
-  --border-default:#1e2440;
-  --border-subtle: #141828;
-  --border-input:  #1e2440;
+   /* Borders — subtle, low-contrast (Apple dark style) */
+   --border:        #38383a;
+   --border-default:#38383a;
+   --border-subtle: #2c2c2e;
+   --border-input:  #48484a;
 
-  /* Apple-style border tinting (bright top edge for glass) */
-  --border-light:   rgba(255,255,255,0.05);
-  --border-lighter: rgba(255,255,255,0.08);
+   /* Apple-style border tinting (bright top edge for glass) */
+   --border-light:   rgba(255,255,255,0.08);
+   --border-lighter: rgba(255,255,255,0.12);
 
-  /* Fixed chrome — isolated from content typography themes */
-  --chrome-toolbar-bg:             rgba(15,12,10,0.85);
-  --chrome-toolbar-hover-bg:       rgba(255,255,255,0.08);
-  --chrome-toolbar-active-bg:      rgba(212,168,67,0.25);
-  --chrome-toolbar-icon:           rgba(245,240,230,0.85);
-  --chrome-toolbar-icon-hover:     rgba(255,255,255,0.95);
-  --chrome-toolbar-label:          rgba(245,240,230,0.65);
-  --chrome-toolbar-label-hover:    rgba(255,255,255,0.85);
-  --chrome-toolbar-active:         #d4a843;
-  --chrome-toolbar-border:         rgba(255,255,255,0.06);
+    /* Additional semantic tokens */
+    --scrollbar-track:   transparent;
+    --scrollbar-thumb:   rgba(255,255,255,0.15);
+    --scrollbar-thumb-hover: rgba(255,255,255,0.25);
+    --selection-bg:      rgba(0,122,255,0.35);
+    --selection-text:    #ffffff;
+    --focus-ring:        rgba(0,122,255,0.5);
 
-  --chrome-statusbar-bg:           rgba(44,36,22,1);
-  --chrome-statusbar-text:         rgba(212,196,160,1);
-  --chrome-statusbar-muted:        rgba(160,139,106,1);
-  --chrome-statusbar-divider:      rgba(194,168,122,0.3);
-  --chrome-statusbar-seal-bg:      linear-gradient(135deg, #c23a2b, #d4624a);
-  --chrome-statusbar-pill-border:  rgba(194,168,122,0.3);
-  --chrome-statusbar-pill-hover-bg: rgba(194,58,43,0.12);
-  --chrome-statusbar-pill-hover-border: rgba(194,58,43,0.5);
-  --chrome-statusbar-pill-hover-text: rgba(212,168,67,1);
-  --chrome-statusbar-icon-bg:      rgba(61,51,34,1);
-  --chrome-statusbar-icon-text:    rgba(212,196,160,1);
-  --chrome-statusbar-icon-hover:   rgba(194,58,43,0.7);
-  --chrome-statusbar-badge-bg:     rgba(61,51,34,0.6);
-  --chrome-statusbar-badge-border: rgba(194,168,122,0.2);
+   /* Fixed chrome — isolated from content typography themes */
+   --chrome-toolbar-bg:             rgba(15,12,10,0.85);
+   --chrome-toolbar-hover-bg:       rgba(255,255,255,0.08);
+   --chrome-toolbar-active-bg:      rgba(255,255,255,0.08);
+   --chrome-toolbar-icon:           rgba(245,240,230,0.85);
+   --chrome-toolbar-icon-hover:     rgba(255,255,255,0.95);
+   --chrome-toolbar-label:          rgba(245,240,230,0.65);
+   --chrome-toolbar-label-hover:    rgba(255,255,255,0.85);
+   --chrome-toolbar-active:         var(--foreground-heading);
+   --chrome-toolbar-border:         rgba(255,255,255,0.06);
+
+    /* Unified chrome surface */
+    --chrome-surface:           #18181b;
+    --chrome-surface-hover:     #1c1c1e;
+    --chrome-surface-border:    rgba(255,255,255,0.06);
+    --chrome-surface-text:      rgba(245,240,230,0.88);
+    --chrome-surface-text-dim:  rgba(245,240,230,0.55);
+
+    /* Histogram — Calicat design spec */
+    --histo-dark:              rgba(38, 49, 60, 1);
+    --histo-light:             rgba(76, 90, 103, 1);
+    --histo-current-dark:      rgba(18, 51, 38, 1);
+    --histo-label:             rgba(111, 125, 138, 1);
+    --histo-tip:               rgba(255, 228, 92, 1);
+
+    /* Glass morphism — 定胆按钮风格 */
+   --glass-bg:          linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+   --glass-bg-hover:    linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%);
+   --glass-bg-active:   linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+   --glass-border:      rgba(255,255,255,0.12);
+   --glass-border-hover:rgba(255,255,255,0.22);
+   --glass-shadow:      0 4px 24px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.06);
+   --glass-shadow-hover:0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.10);
+   --glass-blur:        blur(20px);
+   --glass-text:        rgba(245,245,247,0.92);
+   --glass-text-dim:    rgba(174,174,178,0.70);
+
+   --chrome-statusbar-bg:           rgba(12,10,8,0.92);
+   --chrome-statusbar-text:         var(--chrome-surface-text);
+   --chrome-statusbar-muted:        var(--chrome-surface-text-dim);
+   --chrome-statusbar-divider:      rgba(255,255,255,0.08);
+   --chrome-statusbar-seal-bg:      linear-gradient(135deg, var(--accent-primary), var(--accent-a60));
+   --chrome-statusbar-pill-border:  var(--chrome-surface-border);
+   --chrome-statusbar-pill-hover-bg: var(--accent-a10);
+   --chrome-statusbar-pill-hover-border: var(--accent-a30);
+   --chrome-statusbar-pill-hover-text: var(--accent-primary);
+   --chrome-statusbar-icon-bg:      rgba(255,255,255,0.06);
+   --chrome-statusbar-icon-text:    var(--chrome-surface-text);
+   --chrome-statusbar-icon-hover:   var(--accent-a30);
+   --chrome-statusbar-badge-bg:     rgba(255,255,255,0.06);
+   --chrome-statusbar-badge-border: rgba(255,255,255,0.08);
 
   /* Toolbar aliases retained for menus and panels that use toolbar hover materials. */
   --toolbar-bg:          var(--chrome-toolbar-bg);
@@ -120,14 +155,14 @@
   --note-bg:        rgba(50,42,18,1);
   --note-border:    rgba(92,74,32,1);
 
-  /* Shadows — deep, layered */
-  --shadow-color-1: rgba(4,6,12,0.40);
-  --shadow-color-2: rgba(4,6,12,0.50);
-  --shadow-strong:  rgba(4,6,12,0.60);
-  --shadow-lg:      0 20px 60px var(--shadow-strong);
-  --shadow-modal:   0 24px 80px rgba(4,6,12,0.60), 0 0 1px rgba(255,255,255,0.05);
-  --shadow-sm:      0 2px 8px rgba(4,6,12,0.35);
-  --shadow-glass:   0 8px 32px rgba(4,6,12,0.50), inset 0 1px 0 rgba(255,255,255,0.04);
+   /* Shadows — colored, not pure black (Apple dark style) */
+   --shadow-color-1: rgba(0,0,0,0.25);
+   --shadow-color-2: rgba(0,0,0,0.35);
+   --shadow-strong:  rgba(0,0,0,0.50);
+   --shadow-lg:      0 20px 60px var(--shadow-strong);
+   --shadow-modal:   0 24px 80px rgba(0,0,0,0.55), 0 0 1px rgba(255,255,255,0.06);
+   --shadow-sm:      0 2px 8px rgba(0,0,0,0.35);
+   --shadow-glass:   0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
 
   /* Fonts */
   --font-sans:  "Noto Serif SC", "Source Han Serif SC", "Ma Shan Zheng", system-ui, -apple-system, "Helvetica Neue", serif;
@@ -182,6 +217,7 @@
   --accent:              #3ba873;
   --accent-foreground:   #ffffff;
   --accent-primary:      var(--accent);
+  --accent-hover:        var(--accent-a20);
 
   --accent-a3:  rgba(59,168,115,0.03);
   --accent-a5:  rgba(59,168,115,0.05);
@@ -203,31 +239,65 @@
   --border-light:   rgba(255,255,255,0.75);
   --border-lighter: rgba(255,255,255,0.92);
 
-  /* Fixed chrome — isolated from content typography themes */
-  --chrome-toolbar-bg:             transparent;
-  --chrome-toolbar-hover-bg:       rgba(0,0,0,0.05);
-  --chrome-toolbar-active-bg:      rgba(196,58,43,0.10);
-  --chrome-toolbar-icon:           rgba(61,50,38,0.80);
-  --chrome-toolbar-icon-hover:     rgba(0,0,0,0.95);
-  --chrome-toolbar-label:          rgba(61,50,38,0.60);
-  --chrome-toolbar-label-hover:    rgba(0,0,0,0.85);
-  --chrome-toolbar-active:         #c43a31;
-  --chrome-toolbar-border:         rgba(0,0,0,0.06);
+   /* Fixed chrome — isolated from content typography themes */
+   --chrome-toolbar-bg:             transparent;
+   --chrome-toolbar-hover-bg:       rgba(0,0,0,0.05);
+   --chrome-toolbar-active-bg:      var(--accent-a10);
+   --chrome-toolbar-icon:           rgba(61,50,38,0.80);
+   --chrome-toolbar-icon-hover:     rgba(0,0,0,0.95);
+   --chrome-toolbar-label:          rgba(61,50,38,0.60);
+   --chrome-toolbar-label-hover:    rgba(0,0,0,0.85);
+   --chrome-toolbar-active:         var(--accent-primary);
+   --chrome-toolbar-border:         rgba(0,0,0,0.06);
+
+    /* Glass morphism — 定胆按钮风格 (light) */
+    --glass-bg:          linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%);
+    --glass-bg-hover:    linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.62) 100%);
+    --glass-bg-active:   linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.35) 100%);
+    --glass-border:      rgba(255,255,255,0.70);
+    --glass-border-hover:rgba(255,255,255,0.90);
+    --glass-shadow:      0 4px 16px rgba(61,43,31,0.08), inset 0 1px 0 rgba(255,255,255,0.85);
+    --glass-shadow-hover:0 8px 24px rgba(61,43,31,0.12), inset 0 1px 0 rgba(255,255,255,0.95);
+    --glass-blur:        blur(20px);
+    --glass-text:        rgba(44,36,22,0.92);
+    --glass-text-dim:    rgba(61,50,38,0.58);
+
+    /* Unified chrome surface — light variant */
+    --chrome-surface:           rgba(255,255,255,0.82);
+    --chrome-surface-hover:     rgba(255,255,255,0.92);
+    --chrome-surface-border:    rgba(0,0,0,0.06);
+    --chrome-surface-text:      rgba(44,36,22,0.88);
+    --chrome-surface-text-dim:  rgba(61,50,38,0.55);
+
+    /* Histogram — light theme adapted */
+    --histo-dark:              var(--background-card);
+    --histo-light:             var(--accent-a10);
+    --histo-current-dark:      var(--accent-a15);
+    --histo-label:             var(--text-muted);
+    --histo-tip:               var(--accent-primary);
+
+    /* Additional semantic tokens */
+    --scrollbar-track:   transparent;
+    --scrollbar-thumb:   rgba(0,0,0,0.12);
+    --scrollbar-thumb-hover: rgba(0,0,0,0.25);
+    --selection-bg:      rgba(0,122,255,0.25);
+    --selection-text:    #ffffff;
+    --focus-ring:        rgba(0,122,255,0.5);
 
   --chrome-statusbar-bg:           transparent;
   --chrome-statusbar-text:         rgba(61,43,31,0.70);
   --chrome-statusbar-muted:        rgba(100,80,60,0.60);
-  --chrome-statusbar-divider:      rgba(194,168,122,0.35);
-  --chrome-statusbar-seal-bg:      linear-gradient(135deg, #c23a2b, #d4624a);
-  --chrome-statusbar-pill-border:  rgba(194,168,122,0.5);
-  --chrome-statusbar-pill-hover-bg: rgba(194,58,43,0.06);
-  --chrome-statusbar-pill-hover-border: rgba(194,58,43,0.4);
-  --chrome-statusbar-pill-hover-text: #c23a2b;
-  --chrome-statusbar-icon-bg:      rgba(240,235,225,1);
+  --chrome-statusbar-divider:      rgba(0,0,0,0.08);
+  --chrome-statusbar-seal-bg:      linear-gradient(135deg, var(--accent-primary), var(--accent-a60));
+  --chrome-statusbar-pill-border:  var(--border-default);
+  --chrome-statusbar-pill-hover-bg: var(--accent-a10);
+  --chrome-statusbar-pill-hover-border: var(--accent-a30);
+  --chrome-statusbar-pill-hover-text: var(--accent-primary);
+  --chrome-statusbar-icon-bg:      rgba(0,0,0,0.04);
   --chrome-statusbar-icon-text:    rgba(61,43,31,1);
-  --chrome-statusbar-icon-hover:   rgba(194,58,43,0.15);
-  --chrome-statusbar-badge-bg:     rgba(240,235,225,1);
-  --chrome-statusbar-badge-border: rgba(194,168,122,0.5);
+  --chrome-statusbar-icon-hover:   var(--accent-a30);
+  --chrome-statusbar-badge-bg:     rgba(0,0,0,0.04);
+  --chrome-statusbar-badge-border: rgba(0,0,0,0.08);
 
   /* Toolbar aliases retained for menus and panels that use toolbar hover materials. */
   --toolbar-bg:          var(--chrome-toolbar-bg);

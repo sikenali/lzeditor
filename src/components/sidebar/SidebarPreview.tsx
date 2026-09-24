@@ -54,13 +54,17 @@ export const SidebarPreview: React.FC = () => {
   const setMdContent = useEditorStore((s) => s.setMdContent)
   const setDocHTML = useEditorStore((s) => s.setDocHTML)
   const [previewEl, setPreviewEl] = useState<HTMLDivElement | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const effectiveMd = useMemo(() => getEffectiveMd(activeDocId, mdContent, docsMd), [activeDocId, mdContent, docsMd])
 
   // ── Render Markdown via remark into the preview container
-  const previewHtml = useMemo(() => mdToPreviewHtml(effectiveMd), [effectiveMd])
+  const previewHtml = useMemo(() => {
+    if (docHTML) return docHTML
+    return mdToPreviewHtml(effectiveMd)
+  }, [effectiveMd, docHTML])
 
   useEffect(() => {
     if (!previewEl) return
@@ -96,10 +100,10 @@ export const SidebarPreview: React.FC = () => {
     return () => observer.disconnect()
   }, [editorRef, previewHtml, previewEl])
 
-  // ── Scroll sync via hook (non-React, no re-renders)
+  // ── Scroll sync via hook (non-React, no re-renders) ──
   useScrollSync(
     { current: editorContentRef },
-    { current: previewEl },
+    scrollContainerRef,
     true,
   )
 
@@ -157,7 +161,7 @@ export const SidebarPreview: React.FC = () => {
             <span className="remix ri-close-line"></span>
           </button>
         </div>
-        <div className="sidebar-scroll">
+        <div className="sidebar-scroll" ref={scrollContainerRef}>
           <div className="preview-article-card">
             <div
               className="preview-doc"

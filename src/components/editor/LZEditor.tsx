@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
+import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
@@ -7,6 +8,8 @@ import { Table } from '@tiptap/extension-table'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { TableRow } from '@tiptap/extension-table-row'
+import { SearchAndReplace } from '@memfoldai/tiptap-search-and-replace'
+import { Emoji } from '@tiptap/extension-emoji'
 import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -27,6 +30,7 @@ import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
+import { ServerAiToolkit } from '@tiptap/ai-toolkit'
 
 const CONTENT_WIDTH_MAP: Record<string, string> = {
   '960': '960px',
@@ -50,6 +54,7 @@ const getDocMd = (id: string): string => {
 
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
+  const editorInitialized = useRef(false)
   const { toolbar } = useDocumentSelection(editorRef)
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
@@ -58,14 +63,49 @@ export const LZEditor = () => {
   const setEditorContentRef = useEditorStore((s: any) => s.setEditorContentRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
+  const updateDoc = useEditorStore((s: any) => s.updateDoc)
+  const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
   const setEditor = useEditorStore((s: any) => s.setEditor)
   const addVersion = useEditorStore((s: any) => s.addVersion)
   const activeDocId = useEditorStore((s: any) => s.activeDocId)
   const docs = useEditorStore((s: any) => s.docs)
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
-  const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
   const codeMode = useEditorStore((s: any) => s.codeMode)
-  const mdContent = useEditorStore((s: any) => s.mdContent || '')
+  const appMode = useEditorStore((s: any) => s.appMode)
+  const setAppMode = useEditorStore((s: any) => s.setAppMode)
+  const docHTML = useEditorStore((s: any) => s.docHTML || '')
+  const wordCount = useEditorStore((s: any) => s.wordCount)
+  const typographyTheme = useSettingsStore((s) => s.typographyTheme)
+  const mdContent = useEditorStore((s: any) => s.docsMd?.[activeDocId] || s.mdContent || '')
+
+  // 确保 mdContent 有默认值
+  const defaultMd = useMemo(() => {
+    const docId = activeDocId || 'welcome'
+    return docsMd?.[docId] || getDocMd(docId) || DEFAULT_CONTENT
+  }, [activeDocId, docsMd])
+
+  // 同步 mdContent 到 store
+  useEffect(() => {
+    if (defaultMd && (!mdContent || mdContent === '')) {
+      setMdContent(defaultMd)
+    }
+  }, [defaultMd])
+
+  // 确保阅读模式有内容：如果 docHTML 为空，从 docsMd 生成
+  const readContent = useMemo(() => {
+    if (docHTML) return docHTML
+    const docId = activeDocId || 'welcome'
+    const md = docsMd?.[docId] || getDocMd(docId) || DEFAULT_CONTENT
+    if (md && md.trim()) {
+      try {
+        const html = remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
+        return html || md
+      } catch {
+        return md
+      }
+    }
+    return DEFAULT_CONTENT
+  }, [docHTML, docsMd, activeDocId])
 
   useTheme()
 
@@ -88,6 +128,12 @@ export const LZEditor = () => {
       TableRow,
       TableHeader,
       TableCell,
+      Emoji,
+      SearchAndReplace.configure({
+        searchResultClass: 'search-result',
+        disableRegex: false,
+      }),
+      ServerAiToolkit,
     ],
     content: (() => {
       if (activeDocId && docsMd[activeDocId]) {
@@ -96,6 +142,7 @@ export const LZEditor = () => {
       return remark().use(remarkGfm).use(remarkHtml).processSync(getDocMd(activeDocId || 'welcome')).toString()
     })(),
     onCreate: ({ editor }: any) => {
+      editorInitialized.current = true
       setEditor(editor)
       const docId = useEditorStore.getState().activeDocId
       if (docId) {
@@ -115,16 +162,13 @@ export const LZEditor = () => {
     onUpdate: ({ editor }: any) => {
       useEditorStore.getState().setLastEditTime(Date.now())
       const text = editor.getText()
-      let html = editor.getHTML()
-      html = cleanContentHtml(html)
+      const html = cleanContentHtml(editor.getHTML())
+      const md = htmlToMarkdown(html)
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
-      setDocHTML(html)
-      setMdContent(htmlToMarkdown(html))
       const docId = useEditorStore.getState().activeDocId
+      updateDoc({ html, md, docsMd: docId ? { [docId]: md } : undefined })
       if (docId) {
-        const md = htmlToMarkdown(html)
-        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: md }))
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
       }
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
@@ -143,6 +187,7 @@ export const LZEditor = () => {
   const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastDocIdRef = useRef<string | null>(null)
   const pmDomRef = useRef<HTMLElement | null>(null)
+  const remarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
@@ -154,26 +199,33 @@ export const LZEditor = () => {
   const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
   const lineHeight = useSettingsStore((s) => s.lineHeight)
   const contentWidth = useSettingsStore((s) => s.contentWidth)
+  const showPreview = useEditorStore((s) => s.showPreview)
 
   useEffect(() => {
     const container = editorRef.current
     if (!container) return
     const inner = container.querySelector('.lz-editor-content') as HTMLElement | null
     if (!inner) return
-    const fw = CONTENT_WIDTH_MAP[contentWidth || '1024'] || '1024px'
-    inner.style.width = fw
-    inner.style.maxWidth = fw === '100%' ? 'none' : fw
-    if (defaultFontSize) inner.style.fontSize = `${defaultFontSize}px`
-    else inner.style.fontSize = ''
-    if (lineHeight) inner.style.lineHeight = lineHeight
-    else inner.style.lineHeight = ''
+    // width/size styles go to the page wrapper, not the scroll container
+    const page = inner.querySelector('.lz-editor-page') as HTMLElement ?? inner
+    const fw = contentWidth && CONTENT_WIDTH_MAP[contentWidth]
+      ? CONTENT_WIDTH_MAP[contentWidth]
+      : showPreview
+        ? '1024px'
+        : '100%'
+    page.style.width = fw
+    page.style.maxWidth = fw === '100%' ? 'none' : fw
+    if (defaultFontSize) page.style.fontSize = `${defaultFontSize}px`
+    else page.style.fontSize = ''
+    if (lineHeight) page.style.lineHeight = lineHeight
+    else page.style.lineHeight = ''
     if (editorFont) {
-      if (editorFont === 'sans-serif') inner.style.fontFamily = 'var(--font-sans)'
-      else if (editorFont === 'serif') inner.style.fontFamily = 'var(--font-sans)'
-      else if (editorFont === 'monospace') inner.style.fontFamily = 'var(--font-mono)'
-      else inner.style.fontFamily = editorFont
+      if (editorFont === 'sans-serif') page.style.fontFamily = 'var(--font-sans)'
+      else if (editorFont === 'serif') page.style.fontFamily = 'var(--font-sans)'
+      else if (editorFont === 'monospace') page.style.fontFamily = 'var(--font-mono)'
+      else page.style.fontFamily = editorFont
     }
-  }, [editorFont, defaultFontSize, lineHeight, contentWidth])
+  }, [editorFont, defaultFontSize, lineHeight, contentWidth, showPreview])
 
   // Apply typography overrides to :root for read-mode / preview areas
   const textIndent = useSettingsStore((s) => s.textIndent)
@@ -313,9 +365,19 @@ export const LZEditor = () => {
     editor.commands.setContent(html)
   }, [activeDocId, editor, docsMd])
 
+  // Sync mdContent when entering code mode
+  useEffect(() => {
+    if (!codeMode || !activeDocId) return
+    const md = docsMd[activeDocId] || getDocMd(activeDocId) || DEFAULT_CONTENT
+    if (md && md !== mdContent) setMdContent(md)
+  }, [codeMode, activeDocId])
+
   useEffect(() => {
     return () => {
+      if (!editorInitialized.current) return
+      editorInitialized.current = false
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
+      if (remarkTimerRef.current) clearTimeout(remarkTimerRef.current)
       setEditor(null)
       editor?.destroy()
     }
@@ -394,6 +456,8 @@ export const LZEditor = () => {
     }
   }, [editor])
 
+  const panelOpen = useEditorStore((s) => s.panelOpen)
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement
@@ -403,6 +467,29 @@ export const LZEditor = () => {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [hideSlash])
+
+  // Block ProseMirror from re-acquiring focus while a panel is open
+  useEffect(() => {
+    const pm = editorRef.current?.querySelector('.ProseMirror') as HTMLElement | null
+    if (!pm) return
+    const onFocus = (e: FocusEvent) => {
+      if (panelOpen) e.preventDefault()
+    }
+    const onMouseDown = (e: MouseEvent) => {
+      if (panelOpen) {
+        const target = e.target as HTMLElement
+        if (target.closest('.unified-dialog') || target.closest('.ai-panel')) return
+        e.preventDefault()
+      }
+    }
+    pm.addEventListener('focus', onFocus, true)
+    pm.addEventListener('mousedown', onMouseDown)
+    return () => {
+      pm.removeEventListener('focus', onFocus, true)
+      pm.removeEventListener('mousedown', onMouseDown)
+    }
+  }, [panelOpen])
+
   const autoCompleteEnabled = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
   const smartQuotesEnabled = useSettingsStore((s) => s.smartQuotes)
   const autoSpaceCJKEnabled = useSettingsStore((s) => s.autoSpaceCJK)
@@ -495,20 +582,22 @@ export const LZEditor = () => {
   }, [editor, toolbar])
 
   const handleCodeModeChange = useCallback((value: string) => {
-    setMdContent(value)
-    const docId = useEditorStore.getState().activeDocId
-    try {
-      const html = remark().use(remarkGfm).use(remarkHtml).processSync(value || '').toString()
-      setDocHTML(html)
-      if (docId) {
-        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
-        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
+    if (remarkTimerRef.current) clearTimeout(remarkTimerRef.current)
+    remarkTimerRef.current = setTimeout(() => {
+      setMdContent(value)
+      const docId = useEditorStore.getState().activeDocId
+      try {
+        const html = remark().use(remarkGfm).use(remarkHtml).processSync(value || '').toString()
+        updateDoc({ md: value, html, docsMd: docId ? { [docId]: value } : undefined })
+        if (docId) {
+          localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
+        }
+        editor?.commands.setContent(html, { emitUpdate: false })
+      } catch {
+        if (docId) setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
       }
-      editor?.commands.setContent(html, { emitUpdate: false })
-    } catch {
-      if (docId) setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
-    }
-  }, [editor, setDocHTML, setDocsMd, setMdContent])
+    }, 150)
+  }, [editor, updateDoc, setMdContent, setDocsMd])
 
   // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom
   useEffect(() => {
@@ -559,25 +648,56 @@ export const LZEditor = () => {
   }, [editor, editorRef])
 
   return (
-    <div className="lz-editor" ref={editorRef}>
-      <div className={`lz-editor-with-lines${showLineNumbers ? ' has-line-numbers' : ''}`}>
-        {showLineNumbers && (
-          <div className="lz-line-numbers">
-            {Array.from({ length: lineCount }, (_, i) => (
-              <span key={i + 1} className="lz-line-number">{i + 1}</span>
-            ))}
-          </div>
-        )}
-        <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`} style={codeMode ? { display: 'none' } : undefined}>
-          {codeMode ? (
-            <textarea
-              className="lz-code-mode-textarea"
-              value={mdContent}
-              onChange={e => handleCodeModeChange(e.target.value)}
-              spellCheck={false}
-            />
+    <div className={`lz-editor${showLineNumbers ? ' has-line-numbers' : ''}`} ref={editorRef}>
+      {showLineNumbers && (
+        <div className="lz-line-numbers">
+          {Array.from({ length: lineCount }, (_, i) => (
+            <span key={i + 1} className="lz-line-number">{i + 1}</span>
+          ))}
+        </div>
+      )}
+      <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}${appMode === 'read' ? ' lz-editor-content--read' : ''}`}>
+        <div className="lz-editor-page">
+          {appMode === 'read' ? (
+            <div className="read-mode-inline">
+              <div className="read-mode-toolbar">
+                <span className="read-mode-label">📖 阅读模式</span>
+                <span className="read-mode-meta">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟阅读</span>
+                <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
+                  <span className="remix ri-edit-line"></span>
+                  <span>继续编辑</span>
+                </button>
+              </div>
+              <div
+                className="read-article-body"
+                style={{ fontSize: '17px', lineHeight: '1.9' }}
+                dangerouslySetInnerHTML={{ __html: readContent }}
+              />
+            </div>
           ) : (
-            <EditorContent editor={editor} />
+            <>
+              {!codeMode && <EditorContent editor={editor} />}
+              {codeMode && (
+                <textarea
+                  className="lz-code-mode-textarea"
+                  value={mdContent}
+                  onChange={e => handleCodeModeChange(e.target.value)}
+                  onFocus={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
+                  onClick={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
+                  onKeyUp={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
+                  spellCheck={false}
+                />
+              )}
+              {!codeMode && editor && (
+                <BubbleMenu editor={editor}>
+                  <button className="format-chip" onClick={() => editor.chain().focus().toggleBold().run()} title="粗体"><span className="remix ri-bold"></span></button>
+                  <button className="format-chip" onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体"><span className="remix ri-italic"></span></button>
+                  <button className="format-chip" onClick={() => editor.chain().focus().toggleStrike().run()} title="删除线"><span className="remix ri-strikethrough"></span></button>
+                  <button className="format-chip" onClick={() => editor.chain().focus().toggleUnderline().run()} title="下划线"><span className="remix ri-underline"></span></button>
+                  <button className="format-chip" onClick={() => editor.chain().focus().toggleHighlight().run()} title="高亮"><span className="remix ri-highlight"></span></button>
+                </BubbleMenu>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -586,6 +706,7 @@ export const LZEditor = () => {
         visible={slashVisible}
         filter={slashFilter}
         onClose={hideSlash}
+        editor={editor}
       />
       <FloatingToolbar
         position={toolbar.position}

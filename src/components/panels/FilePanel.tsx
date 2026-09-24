@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { LFSInput } from '../ui/LFInput'
+import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
 
 const FILE_TEMPLATES = [
-  { id: 'blank', name: '空白文档', desc: '从头开始' },
-  { id: 'markdown', name: 'Markdown 模板', desc: '标准 Markdown 结构' },
-  { id: 'report', name: '技术报告', desc: '带章节的长文档' },
-  { id: 'notes', name: '会议记录', desc: '日程与待办' },
+  { id: 'blank', name: '空白文档', desc: '从头开始', icon: 'ri-file-line' },
+  { id: 'markdown', name: 'Markdown 模板', desc: '标准 Markdown 结构', icon: 'ri-markdown-fill' },
+  { id: 'report', name: '技术报告', desc: '带章节的长文档', icon: 'ri-file-text-line' },
+  { id: 'notes', name: '会议记录', desc: '日程与待办', icon: 'ri-article-line' },
 ]
 
 export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -33,11 +34,12 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     input.type = 'file'
     input.accept = '.md,.txt,.markdown'
     input.onchange = (e: any) => {
-      const file = e.target.files[0]
+      const file = e.target.files?.[0]
       if (file) {
         setTitle(file.name)
         setDocPath(file.name)
         setOpenPanel('none')
+        onClose()
       }
     }
     input.click()
@@ -48,61 +50,43 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     t.desc.toLowerCase().includes(searchText.toLowerCase())
   )
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="settings-dialog" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
-        <div className="settings-header">
-          <div className="settings-title">
-            <div className="settings-icon">
-              <span className="remix ri-file-list-2-line"></span>
-            </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-heading)' }}>文件</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>File • 新建或打开文档</div>
-            </div>
+  const leftNav = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {filtered.map(t => (
+        <button key={t.id} className="ud-chip" onClick={() => handleCreate(t.id)}>
+          <span className={`remix ud-chip-icon ${t.icon}`}></span>
+          <div>
+            <div className="ud-chip-label">{t.name}</div>
+            <div className="ud-chip-desc">{t.desc}</div>
           </div>
-          <button className="settings-close-btn" onClick={onClose}>
-            <span className="remix ri-close-line"></span>
-          </button>
-        </div>
-
-        <div className="settings-body">
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: 8 }}>
-            <LFSInput
-               type="text"
-               placeholder="搜索模板..."
-               value={searchText}
-               onChange={setSearchText}
-             />
-            <button className="settings-save-btn" onClick={handleOpen} style={{ whiteSpace: 'nowrap' }}>
-              <span className="remix ri-open-arm-line"></span>打开
-            </button>
-          </div>
-
-          <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            {filtered.map(t => (
-              <div
-                key={t.id}
-                className="settings-nav-item"
-                style={{ padding: 16, cursor: 'pointer', borderRadius: 8, border: '1px solid var(--border-color)' }}
-                onClick={() => handleCreate(t.id)}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)'
-                  e.currentTarget.style.background = 'var(--bg-elevated)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-color)'
-                  e.currentTarget.style.background = 'transparent'
-                }}
-              >
-                <span className="remix ri-file-text-fill"></span>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-heading)', marginTop: 8 }}>{t.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{t.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        </button>
+      ))}
     </div>
+  )
+
+  const rightContent = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <UDSection label="搜索">
+        <LFSInput value={searchText} onChange={setSearchText} placeholder="搜索模板…" />
+      </UDSection>
+      <UDSection label="快速打开">
+        <button className="ud-btn" onClick={handleOpen} style={{ width: '100%', justifyContent: 'center' }}>
+          <span className="remix ri-folder-open-line"></span> 打开本地文件
+        </button>
+      </UDSection>
+    </div>
+  )
+
+  return (
+    <UnifiedDialog
+      onClose={onClose}
+      icon="ri-file-list-2-line"
+      title="文件"
+      subtitle="新建或打开文档"
+      leftNav={leftNav}
+      rightContent={rightContent}
+      hint="选择模板将直接创建新文档"
+      size="md"
+    />
   )
 }

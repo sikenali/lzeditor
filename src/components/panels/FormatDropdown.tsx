@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 
 interface FormatDropdownProps {
   open: boolean
@@ -7,28 +8,64 @@ interface FormatDropdownProps {
 }
 
 const FORMAT_ITEMS = [
-  { label: '标题 1', action: 'h1' },
-  { label: '标题 2', action: 'h2' },
-  { label: '标题 3', action: 'h3' },
-  { label: '标题 4', action: 'h4' },
-  { label: '标题 5', action: 'h5' },
+  { icon: 'ri-h-1', label: '标题 1', action: 'h1' },
+  { icon: 'ri-h-2', label: '标题 2', action: 'h2' },
+  { icon: 'ri-h-3', label: '标题 3', action: 'h3' },
+  { icon: 'ri-h-4', label: '标题 4', action: 'h4' },
+  { icon: 'ri-h-5', label: '标题 5', action: 'h5' },
   { sep: true },
-  { label: '自动标题', action: 'auto' },
-  { label: '清除标题', action: 'clear' },
+  { icon: 'ri-eraser-fill', label: '清除格式', action: 'clear' },
+  { icon: 'ri-link', label: '链接', action: 'link' },
+  { icon: 'ri-image-line', label: '图片', action: 'image' },
   { sep: true },
-  { label: '分割线', action: 'hr' },
-  { label: '链接', action: 'link' },
-  { label: '图片', action: 'image' },
-  { sep: true },
-  { label: '有序列表', action: 'ol' },
-  { label: '无序列表', action: 'ul' },
-  { label: '任务列表', action: 'task' },
+  { icon: 'ri-list-ordered', label: '有序列表', action: 'ol' },
+  { icon: 'ri-list-unordered', label: '无序列表', action: 'ul' },
+  { icon: 'ri-task-line', label: '任务列表', action: 'task' },
 ]
 
 export const FormatDropdown: React.FC<FormatDropdownProps> = ({ open, onToggle }) => {
   const editorRef = useEditorStore((s: any) => s.editorRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
+  const navMode = useSettingsStore((s) => s.navMode)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const ddRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (navMode !== 'left' || !open || !ddRef.current) {
+      if (ddRef.current) { ddRef.current.style.position = ''; ddRef.current.style.left = ''; ddRef.current.style.top = '' }
+      return
+    }
+    const trigger = btnRef.current
+    if (!trigger) return
+    const rect = trigger.getBoundingClientRect()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const el = ddRef.current
+    el.style.position = 'fixed'
+    el.style.left = '-9999px'
+    el.style.top = '-9999px'
+    requestAnimationFrame(() => {
+      const mw = el.offsetWidth || 180
+      const mh = el.offsetHeight || 240
+      el.style.left = `${Math.min(rect.right + 4, vw - mw - 8)}px`
+      el.style.top = `${Math.min(rect.top, vh - mh - 8)}px`
+    })
+  }, [open, navMode])
+
+  useEffect(() => {
+    if (!open && ddRef.current) { ddRef.current.style.position = ''; ddRef.current.style.left = ''; ddRef.current.style.top = '' }
+  }, [open])
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (ddRef.current && !ddRef.current.contains(e.target as Node) && btnRef.current && !btnRef.current.contains(e.target as Node)) {
+        onToggle(false)
+      }
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [onToggle])
 
   const handleAction = (action: string) => {
     if (!editorRef) return
@@ -114,13 +151,12 @@ export const FormatDropdown: React.FC<FormatDropdownProps> = ({ open, onToggle }
 
   return (
     <div className="toolbar-dd-wrap">
-      <button className={`toolbar-btn ${open ? 'active' : ''} toolbar-btn--dd`} onClick={() => onToggle(!open)} title="格式">
+      <button ref={btnRef} className={`toolbar-btn ${open ? 'active' : ''}`} onClick={() => onToggle(!open)} title="格式">
         <span className="remix toolbar-icon ri-text-wrap"></span>
-        <span className={`toolbar-dd-arrow ${open ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(!open) }} style={{ cursor: 'pointer' }}>▼</span>
         <span className="toolbar-label">格式</span>
       </button>
       {open && (
-        <div className="toolbar-dropdown">
+        <div className="toolbar-dropdown" ref={ddRef}>
           {FORMAT_ITEMS.map((item, i) =>
             item.sep
               ? <div key={i} className="toolbar-dropdown-sep" />

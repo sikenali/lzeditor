@@ -12,11 +12,11 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
       return {
         showOutline: typeof parsed.showOutline === 'boolean' ? parsed.showOutline : false,
         showPreview: typeof parsed.showPreview === 'boolean' ? parsed.showPreview : false,
-        showLibrary: typeof parsed.showLibrary === 'boolean' ? parsed.showLibrary : true,
+        showLibrary: typeof parsed.showLibrary === 'boolean' ? parsed.showLibrary : false,
       }
     }
   } catch {}
-  return { showOutline: false, showPreview: false, showLibrary: true }
+  return { showOutline: false, showPreview: false, showLibrary: false }
 }
 
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
@@ -27,14 +27,17 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   charCount: 0,
   cursorPosition: { line: 1, column: 1 },
   isPreview: false,
-  isReadMode: false,
   syncStatus: 'synced',
   openPanel: 'none',
   insertPanel: 'none' as const,
+  panelOpen: false,
   showOutline: false,
   showPreview: false,
-  showLibrary: true,
+  showLibrary: false,
+  showSearch: false,
   codeMode: false,
+  codeModeCursor: 0,
+  appMode: 'edit' as const,
   docLibraries: [{ id: 'default', name: 'Default' }],
   activeLibraryId: 'default',
   previewMode: 'render' as 'render' | 'code',
@@ -83,10 +86,27 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setCursorPosition: (pos: { line: number; column: number }) => set({ cursorPosition: pos }),
   setDocHTML: (html: string) => set({ docHTML: html }),
   setPreview: (isPreview: boolean) => set({ isPreview }),
-  setReadMode: (isReadMode: boolean) => set({ isReadMode }),
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => set({ syncStatus: status }),
-  setOpenPanel: (panel: EditorStoreState['openPanel']) => set({ openPanel: panel }),
-  setInsertPanel: (panel: EditorStoreState['insertPanel']) => set({ insertPanel: panel }),
+  setOpenPanel: (panel: EditorStoreState['openPanel']) => {
+    const isOpening = panel !== 'none'
+    if (isOpening) {
+      const pm = get().editorContentRef
+      if (document.activeElement === pm) {
+        try { pm.blur() } catch {}
+      }
+    }
+    set({ openPanel: panel, panelOpen: isOpening })
+  },
+  setInsertPanel: (panel: EditorStoreState['insertPanel']) => {
+    if (panel !== 'none') {
+      const pm = get().editorContentRef
+      if (document.activeElement === pm) {
+        try { pm.blur() } catch {}
+      }
+    }
+    set({ insertPanel: panel, panelOpen: panel !== 'none' })
+  },
+  setPanelOpen: (open: boolean) => set({ panelOpen: open }),
   setShowOutline: (showOutline: boolean) => {
     set({ showOutline })
     try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showOutline })) } catch {}
@@ -95,11 +115,14 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     set({ showPreview })
     try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showPreview })) } catch {}
   },
+  setShowSearch: (showSearch: boolean) => set({ showSearch }),
   setShowLibrary: (showLibrary: boolean) => {
     set({ showLibrary })
     try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showLibrary })) } catch {}
   },
   setCodeMode: (codeMode: boolean) => set({ codeMode }),
+  setCodeModeCursor: (codeModeCursor: number) => set({ codeModeCursor }),
+  setAppMode: (appMode: 'edit' | 'code' | 'style' | 'history' | 'read') => set({ appMode }),
   createLibrary: (name: string) => {
     const title = (name || '').trim() || `Library ${get().docLibraries.length + 1}`
     const id = `lib-${Date.now()}`
@@ -111,6 +134,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     return id
   },
   setActiveLibrary: (id: string) => set({ activeLibraryId: id }),
+  renameLibrary: (id: string, name: string) => set((s: any) => ({
+    docLibraries: s.docLibraries.map((lib: any) => lib.id === id ? { ...lib, name } : lib),
+  })),
   setPreviewMode: (previewMode: 'render' | 'code') => set({ previewMode }),
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setMdContent: (mdContent: string) => set({ mdContent }),
@@ -129,6 +155,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
   },
   clearVersions: () => set({ versions: [] }),
+  setDocGitMeta: (meta: { gitPath?: string; isFromGit?: boolean }) => set((s: any) => ({
+    docs: s.docs.map((d: any) => d.id === s.activeDocId ? { ...d, gitPath: meta.gitPath, isFromGit: meta.isFromGit } : d),
+  })),
 
   // ── Tab actions ──
   createDoc: (title?: string, path = '', libraryId?: string) => {
@@ -170,4 +199,11 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
     docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,
   })),
+  updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => set((s: any) => {
+    const next: Record<string, any> = {}
+    if (params.md !== undefined) next.mdContent = params.md
+    if (params.html !== undefined) next.docHTML = params.html
+    if (params.docsMd !== undefined) next.docsMd = params.docsMd
+    return next
+  }),
 }))

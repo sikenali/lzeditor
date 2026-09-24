@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
+import { getEditorContext } from '@tiptap/ai-toolkit'
 import { useAIStore } from '../store/aiStore'
 import { useEditorStore } from '../store/editorStore'
 import { useSettingsStore } from '../store/settingsStore'
@@ -11,9 +12,10 @@ export function useAI() {
 
   const send = useCallback(async (action: AIAction, input: string, selectedText: string) => {
     const settings = useSettingsStore.getState()
-    const { provider, model, apiKey, customBaseUrl, temperature, maxTokens } = settings
+    const { apiKeys, selectedModelId, temperature, maxTokens } = settings
+    const activeKey = (apiKeys || []).find(k => k.id === selectedModelId) || (apiKeys || []).find(k => k.enabled)
 
-    if (!apiKey) {
+    if (!activeKey?.key) {
       useAIStore.getState().setPanelError('请先在设置中配置 API Key')
       return
     }
@@ -22,7 +24,16 @@ export function useAI() {
     useAIStore.getState().setPanelError(null)
     setIsStreaming(true)
 
-    const vars: any = { selected_text: selectedText }
+    const editor = useEditorStore.getState().editor
+    let schemaContext = ''
+    if (editor) {
+      try {
+        const ctx = getEditorContext(editor)
+        schemaContext = JSON.stringify(ctx, null, 2)
+      } catch {}
+    }
+
+    const vars: any = { selected_text: selectedText, schema_context: schemaContext }
     if (action === 'rewrite' || action === 'polish') vars.style = input || '流畅自然'
     if (action === 'continue') {
       vars.user_instruction = input
@@ -31,42 +42,31 @@ export function useAI() {
     if (action === 'translate') vars.target = input || '中文'
 
     const prompt = buildPrompt(action || 'question', vars)
-
-    const messages: ChatMessage[] = [
-      { role: 'user', content: prompt },
-    ]
+    const messages: ChatMessage[] = [{ role: 'user', content: prompt }]
 
     try {
-      let url: string
-      let headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      }
-
-      if (provider === 'anthropic') {
-        url = `${customBaseUrl || 'https://api.anthropic.com'}/v1/messages`
-        headers['anthropic-version'] = '2023-06-01'
-        const body = JSON.stringify({
-          model,
-          max_tokens: maxTokens,
-          temperature,
-          messages,
-        })
+      if (activeKey.format === 'anthropic') {
+        const url = `${activeKey.endpoint || 'https://api.anthropic.com'}/v1/messages`
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'x-api-key': activeKey.key,
+          'anthropic-version': '2023-06-01',
+        }
+        const body = JSON.stringify({ model: activeKey.model, max_tokens: maxTokens, temperature, messages })
         const resp = await fetch(url, { method: 'POST', headers, body })
         if (!resp.ok) throw new Error(`API Error: ${resp.status}`)
         const data = await resp.json()
-        const output = data.content?.[0]?.text || ''
-        useAIStore.getState().setPanelOutput(output)
+        useAIStore.getState().setPanelOutput(data.content?.[0]?.text || '')
         useAIStore.getState().setPanelStatus('result')
       } else {
-        url = `/api/chat`
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ messages, provider, model, temperature, maxTokens }),
-        })
+        const url = `${activeKey.endpoint || 'https://api.openai.com'}/v1/chat/completions`
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${activeKey.key}`,
+        }
+        const body = JSON.stringify({ model: activeKey.model, messages, temperature, max_tokens: maxTokens, stream: true })
+        const resp = await fetch(url, { method: 'POST', headers, body })
         if (!resp.ok) throw new Error(`API Error: ${resp.status}`)
-
         const reader = resp.body?.getReader()
         if (!reader) {
           const text = await resp.text()
@@ -74,14 +74,11 @@ export function useAI() {
           useAIStore.getState().setPanelStatus('result')
           return
         }
-
         let accumulated = ''
-        useAIStore.getState().setPanelStatus('thinking')
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-          const chunk = new TextDecoder().decode(value)
-          accumulated += chunk
+          accumulated += new TextDecoder().decode(value)
           useAIStore.getState().setPanelOutput(accumulated)
         }
         useAIStore.getState().setPanelStatus('result')
@@ -119,9 +116,7 @@ export function useAI() {
 
   const undo = useCallback(() => {
     const record = useAIStore.getState().getUndoRecord()
-    if (record) {
-      useAIStore.getState().undoLastApply()
-    }
+    if (record) useAIStore.getState().undoLastApply()
   }, [])
 
   const copyOutput = useCallback(() => {

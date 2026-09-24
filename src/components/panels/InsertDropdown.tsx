@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 
 interface InsertDropdownProps {
   open: boolean
@@ -9,10 +10,10 @@ interface InsertDropdownProps {
 const INSERT_ITEMS = [
   { icon: 'ri-menu-line', label: '目录', action: 'toc' },
   { icon: 'ri-double-quotes-l', label: '引言', action: 'quote' },
-  { icon: 'ri-superscript', label: '脚注', action: 'footnote' },
+  { icon: 'ri-bookmark-line', label: '脚注', action: 'footnote' },
   { sep: true },
   { icon: 'ri-separator', label: '分割线', action: 'hr' },
-  { icon: 'ri-double-quotes-l', label: '块引用', action: 'blockquote' },
+  { icon: 'ri-double-quotes-r', label: '块引用', action: 'blockquote' },
   { icon: 'ri-code-box-line', label: '代码块', action: 'code' },
   { icon: 'ri-function-fill', label: '数学公式', action: 'math' },
 ]
@@ -21,6 +22,45 @@ export const InsertDropdown: React.FC<InsertDropdownProps> = ({ open, onToggle }
   const editorRef = useEditorStore((s: any) => s.editorRef)
   const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
+  const navMode = useSettingsStore((s) => s.navMode)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const ddRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (navMode !== 'left' || !open || !ddRef.current) {
+      if (ddRef.current) { ddRef.current.style.position = ''; ddRef.current.style.left = ''; ddRef.current.style.top = '' }
+      return
+    }
+    const trigger = btnRef.current
+    if (!trigger) return
+    const rect = trigger.getBoundingClientRect()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const el = ddRef.current
+    el.style.position = 'fixed'
+    el.style.left = '-9999px'
+    el.style.top = '-9999px'
+    requestAnimationFrame(() => {
+      const mw = el.offsetWidth || 180
+      const mh = el.offsetHeight || 240
+      el.style.left = `${Math.min(rect.right + 4, vw - mw - 8)}px`
+      el.style.top = `${Math.min(rect.top, vh - mh - 8)}px`
+    })
+  }, [open, navMode])
+
+  useEffect(() => {
+    if (!open && ddRef.current) { ddRef.current.style.position = ''; ddRef.current.style.left = ''; ddRef.current.style.top = '' }
+  }, [open])
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (ddRef.current && !ddRef.current.contains(e.target as Node) && btnRef.current && !btnRef.current.contains(e.target as Node)) {
+        onToggle(false)
+      }
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [onToggle])
 
   const handleAction = (action: string) => {
     if (!editorRef) return
@@ -100,13 +140,12 @@ export const InsertDropdown: React.FC<InsertDropdownProps> = ({ open, onToggle }
 
   return (
     <div className="toolbar-dd-wrap">
-    <button className={`toolbar-btn ${open ? 'active' : ''} toolbar-btn--dd`} onClick={() => onToggle(!open)} title="插入">
+    <button ref={btnRef} className={`toolbar-btn ${open ? 'active' : ''}`} onClick={() => onToggle(!open)} title="插入">
       <span className="remix toolbar-icon ri-add-circle-line"></span>
-      <span className={`toolbar-dd-arrow ${open ? 'open' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(!open) }} style={{ cursor: 'pointer' }}>▼</span>
       <span className="toolbar-label">插入</span>
     </button>
     {open && (
-        <div className="toolbar-dropdown">
+        <div className="toolbar-dropdown" ref={ddRef}>
           {INSERT_ITEMS.map((item, i) =>
             item.sep
               ? <div key={i} className="toolbar-dropdown-sep" />

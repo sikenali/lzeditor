@@ -11,3 +11,10 @@ coverage/
 .vscode/
 *.db
 server/data/
+*.log
+node_modules/
+
+node_modules
+server/data
+*.db
+core
