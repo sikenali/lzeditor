@@ -3099,6 +3099,24 @@
   background: var(--bg-code);
 }
 
+.style-code-textarea {
+  width: 100%;
+  min-height: 400px;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 16px 20px;
+  color: var(--text-primary);
+  white-space: pre;
+  overflow-x: auto;
+  display: block;
+}
+.style-code-textarea::placeholder { color: var(--text-muted); opacity: 0.5; }
+
 .style-code-block code {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -3394,6 +3412,36 @@
   background: var(--chrome-surface);
   display: flex;
   flex-direction: column;
+}
+
+/* 版本信息头 */
+.history-version-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.history-version-icon {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.history-version-title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.history-version-sep {
+  opacity: 0.4;
+  margin: 0 2px;
+}
+.history-version-date {
+  color: var(--text-secondary);
+}
+.history-version-changes {
+  color: var(--accent-primary);
+  font-weight: 500;
 }
 
 .history-timeline {

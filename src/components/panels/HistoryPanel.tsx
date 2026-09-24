@@ -43,15 +43,6 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
           </div>
         ) : selected ? (
           <>
-            <div className="history-preview-header">
-              <span className="remix ri-file-text-line"></span>
-              <span>版本 #{currentIndex !== -1 ? currentIndex + 1 : versions.length}</span>
-              <span className="history-preview-sep">·</span>
-              <span className="remix ri-calendar-event-fill"></span>
-              <span>{selected.date} {selected.time}</span>
-              <span className="history-preview-sep">·</span>
-              <span>{selected.changes} 字</span>
-            </div>
             <div className="history-preview-doc">
               <div dangerouslySetInnerHTML={{ __html: selected.html || '<p class="history-preview-empty">空快照</p>' }} />
             </div>
@@ -64,9 +55,22 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         )}
       </div>
 
-      {/* ── 下部：时间线柱状图（点击切换版本） ── */}
+      {/* ── 下部：版本信息 + 时间线柱状图 ── */}
       {sortedVersions.length > 0 && (
         <div className="history-timeline-bar">
+          {/* 版本信息头 */}
+          {selected && (
+            <div className="history-version-info">
+              <span className="remix ri-file-text-line history-version-icon"></span>
+              <span className="history-version-title">版本 #{currentIndex !== -1 ? currentIndex + 1 : versions.length}</span>
+              <span className="history-version-sep">·</span>
+              <span className="remix ri-calendar-event-fill history-version-icon"></span>
+              <span className="history-version-date">{selected.date} {selected.time}</span>
+              <span className="history-version-sep">·</span>
+              <span className="history-version-changes">{selected.changes} 字</span>
+            </div>
+          )}
+          {/* 时间线柱状图 */}
           <div className="history-timeline">
             {sortedVersions.map((v, i) => {
               const isActive = i === currentIndex
