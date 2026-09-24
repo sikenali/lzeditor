@@ -352,13 +352,13 @@ A: 支持 Anthropic Claude 3、OpenAI GPT-4/GPT-3.5、Azure OpenAI，也可接�
 ---
 
 *END OF DOCUMENT · LZEditor v1.0 · Built with ❤️*
-`
+\`
 
 
-export const NEW_DOC_TEMPLATE = `# 新建文档
+export const NEW_DOC_TEMPLATE = \`# 新建文档
 
 开始写作吧…
-`
+\`
 
 export const DEFAULT_DOC_TITLE = 'Welcome to LZEditor'
 ---
@@ -390,4 +390,11 @@ export const DEFAULT_DOC_TITLE = 'Welcome to LZEditor'
 也支持直接粘贴系统 Emoji，或输入冒号短代码如 :smile: :heart: :rocket: 自动渲染为高清 PNG 图片。
 
 > Emoji 在预览和导出（PDF/HTML）时以图片形式展示，保留清晰度。
+`
 
+export const NEW_DOC_TEMPLATE = `# 新建文档
+
+开始写作吧…
+`
+
+export const DEFAULT_DOC_TITLE = 'Welcome to LZEditor'
