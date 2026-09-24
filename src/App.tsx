@@ -200,7 +200,7 @@ function App() {
         <div className="app-editor-area">
           {centerContent}
         </div>
-        <StatusBar />
+        <StatusBar className="statusbar-vertical" />
       </div>
 
       {/* 右面板 */}

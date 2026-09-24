@@ -373,11 +373,11 @@ function exportDOCX(title: string, content: string, opts: any): void {
 </body>
 </html>`
 
-  const blob = new Blob(['\ufeff', html], { type: 'application/msword' })
+  const blob = new Blob(['\ufeff', html], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${title}.doc`
+  a.download = `${title}.docx`
   a.click()
   URL.revokeObjectURL(url)
 }

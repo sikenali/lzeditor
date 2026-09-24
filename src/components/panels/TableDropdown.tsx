@@ -55,6 +55,18 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     setHoveredRow(null)
   }, [rows, cols])
 
+  // 关闭弹窗时清除所有 contentEditable 单元格的焦点，防止插入表格后编辑器抢焦
+  useEffect(() => {
+    if (!open) return
+    const timer = setTimeout(() => {
+      const focused = document.activeElement as HTMLElement | null
+      if (focused && focused.getAttribute('contenteditable') === 'true') {
+        focused.blur()
+      }
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [open])
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent, r: number, c: number) => {
     if (e.key === 'Tab') {
       e.preventDefault()

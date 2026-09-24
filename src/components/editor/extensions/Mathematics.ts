@@ -4,7 +4,8 @@ import 'katex/dist/katex.min.css'
 
 function renderMath(dom: HTMLElement, formula: string) {
   try {
-    katex.render(formula || '', dom, { throwOnError: false, displayMode: false })
+    const isBlock = /^\$\$[\s\S]*\$\$$/.test(formula.trim())
+    katex.render(formula || '', dom, { throwOnError: false, displayMode: isBlock })
   } catch {
     dom.textContent = `$${formula}$`
   }
@@ -17,25 +18,25 @@ export const Mathematics = Node.create({
   atom: true,
 
   addAttributes() {
-    return {
-      formula: { default: '' },
-    }
+    return { formula: { default: '' } }
   },
 
   parseHTML() {
-    return [
-      { tag: 'span[data-formula]' },
-    ]
+    return [{ tag: 'span[data-formula]' }, { tag: 'div[data-formula]' }]
   },
 
   renderHTML({ node }) {
-    return ['span', mergeAttributes({ 'data-formula': node.attrs.formula, class: 'math-inline' })]
+    const isBlock = /^\$\$[\s\S]*\$\$$/.test(node.attrs.formula || '')
+    const tag = isBlock ? 'div' : 'span'
+    const cls = isBlock ? 'math-block' : 'math-inline'
+    return [tag, mergeAttributes({ 'data-formula': node.attrs.formula, class: cls })]
   },
 
   addNodeView() {
     return ({ node }: any) => {
-      const dom = document.createElement('span')
-      dom.className = 'math-inline'
+      const isBlock = /^\$\$[\s\S]*\$\$$/.test(node.attrs.formula || '')
+      const dom = document.createElement(isBlock ? 'div' : 'span')
+      dom.className = isBlock ? 'math-block' : 'math-inline'
       dom.setAttribute('data-formula', node.attrs.formula)
       renderMath(dom, node.attrs.formula)
       return { dom }

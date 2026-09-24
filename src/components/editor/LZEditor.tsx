@@ -277,13 +277,15 @@ export const LZEditor = () => {
     if (!pm) return
     const applyFocus = () => {
       if (!pm || !focusModeRef.current) return
-      const { from } = editor!.state.selection
-      pm.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote, pre').forEach(node => {
+      const children = pm.children
+      for (let i = 0; i < children.length; i++) {
+        const node = children[i]
+        if (!(node instanceof HTMLElement)) continue
         const rect = node.getBoundingClientRect()
         const pmRect = pm.getBoundingClientRect()
-        const isActive = rect.top >= pmRect.top - 20 && rect.bottom <= pmRect.bottom + 20
-        ;(node as HTMLElement).style.opacity = isActive ? '' : '0.25'
-      })
+        const isVisible = rect.bottom > pmRect.top + 20 && rect.top < pmRect.bottom - 20
+        node.style.opacity = isVisible ? '' : '0.25'
+      }
     }
     editor!.on('update', applyFocus)
     applyFocus()
