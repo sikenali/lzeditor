@@ -56,7 +56,10 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+        e.stopPropagation()
+      }
     }
     document.addEventListener('mousedown', onClick)
     return () => {

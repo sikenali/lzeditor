@@ -38,8 +38,9 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
       if ((target as HTMLElement)?.closest?.('[data-lfs-portal]')) return
       if (dialogRef.current && !dialogRef.current.contains(target)) onClose()
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    // 使用捕获阶段，确保在 LFSCombo 等组件的 bubble handler 之前执行
+    document.addEventListener('mousedown', handler, true)
+    return () => document.removeEventListener('mousedown', handler, true)
   }, [onClose])
 
   // ESC 关闭
