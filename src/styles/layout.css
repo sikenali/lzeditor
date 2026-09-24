@@ -1644,6 +1644,17 @@
   background: var(--background);
 }
 
+/* 大纲面板（左侧） */
+.app-outline-panel {
+  width: 240px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: var(--chrome-surface);
+  border-right: 1px solid var(--glass-border);
+  overflow: hidden;
+  z-index: 50;
+}
+.app-outline-panel > * { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
 /* 左导航栏 */
 .app-left-nav {
   width: 200px; flex-shrink: 0;
