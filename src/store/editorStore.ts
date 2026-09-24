@@ -58,26 +58,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   // ── Multi-tab ──
   docs: [{ id: 'welcome', title: 'Welcome to LZEditor.md', path: 'Default', libraryId: 'default' }] as Array<{ id: string; title: string; path: string; libraryId?: string }>,
   activeDocId: 'welcome' as string | null,
-  docsMd: (() => {
-    const result: Record<string, string> = {}
-    try {
-      // Try new key format first (lzeditor-doc-{id})
-      const s1 = localStorage.getItem('lzeditor-doc-welcome')
-      if (s1) {
-        const d = JSON.parse(s1)
-        if (d.md) result['welcome'] = d.md
-      }
-      // Fallback: old key format (lzeditor-doc)
-      if (!result['welcome']) {
-        const s2 = localStorage.getItem('lzeditor-doc')
-        if (s2) {
-          const d = JSON.parse(s2)
-          if (d.md) result['welcome'] = d.md
-        }
-      }
-    } catch {}
-    return result
-  })(),
+  docsMd: {} as Record<string, string>,
   nextUntitledIdx: 1,
 
   setTitle: (title: string) => set({ docTitle: title }),

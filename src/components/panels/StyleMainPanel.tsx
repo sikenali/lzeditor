@@ -6,6 +6,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { DEFAULT_CONTENT } from '../../components/editor/constants'
+import { getDocMd, getDocHtml } from '../../utils/docSource'
 
 const STYLE_SETS = [
   { id: 'default', name: 'Default', accent: '#1a73e8' },
@@ -33,14 +34,7 @@ export const StyleMainPanel: React.FC = () => {
   const effectiveMd = useMemo(() => {
     if (mdContent) return mdContent
     if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-    try {
-      const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
-      if (raw) {
-        const d = JSON.parse(raw)
-        if (d.md) return d.md
-      }
-    } catch {}
-    return ''
+    return getDocMd(activeDocId || 'welcome')
   }, [activeDocId, mdContent, docsMd])
 
   const renderedHtml = useMemo(() => {
@@ -54,19 +48,7 @@ export const StyleMainPanel: React.FC = () => {
 
   const initialHtml = useMemo(() => {
     if (docHTML) return docHTML
-    try {
-      const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
-      if (raw) {
-        const d = JSON.parse(raw)
-        if (d.html) return d.html
-      }
-      const old = localStorage.getItem('lzeditor-doc')
-      if (old) {
-        const d = JSON.parse(old)
-        if (d.html) return d.html
-      }
-    } catch {}
-    return ''
+    return getDocHtml(activeDocId || 'welcome')
   }, [docHTML, activeDocId])
 
   const defaultHtml = useMemo(() => {

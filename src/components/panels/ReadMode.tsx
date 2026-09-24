@@ -7,6 +7,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES, getTypographyTheme } from '../../styles/typography-themes'
 import { useScrollSpy } from '../../hooks/useScrollSpy'
 import { DEFAULT_CONTENT } from '../../components/editor/constants'
+import { getDocHtml } from '../../utils/docSource'
 
 type Layout = 'narrow' | 'normal' | 'wide'
 const LAYOUTS: Layout[] = ['narrow', 'normal', 'wide']
@@ -47,19 +48,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   // ── Content fallback: store → localStorage → DEFAULT_CONTENT ──
   const initialHtml = useMemo(() => {
     if (docHTML) return docHTML
-    try {
-      const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
-      if (raw) {
-        const d = JSON.parse(raw)
-        if (d.html) return d.html
-      }
-      const old = localStorage.getItem('lzeditor-doc')
-      if (old) {
-        const d = JSON.parse(old)
-        if (d.html) return d.html
-      }
-    } catch {}
-    return ''
+    return getDocHtml(activeDocId || 'welcome')
   }, [docHTML, activeDocId])
 
   const defaultHtml = useMemo(() => {

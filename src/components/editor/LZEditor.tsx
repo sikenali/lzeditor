@@ -28,6 +28,7 @@ import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
+import { getDocMd } from '../../utils/docSource'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
 import { ServerAiToolkit } from '@tiptap/ai-toolkit'
@@ -38,18 +39,6 @@ const CONTENT_WIDTH_MAP: Record<string, string> = {
   '1200': '1200px',
   '1280': '1280px',
   'full': '100%',
-}
-
-const getDocMd = (id: string): string => {
-  try {
-    const key = `lzeditor-doc-${id}`
-    const s = localStorage.getItem(key)
-    if (s) {
-      const d = JSON.parse(s)
-      return d.md || DEFAULT_CONTENT
-    }
-  } catch {}
-  return DEFAULT_CONTENT
 }
 
 export const LZEditor = () => {
@@ -155,8 +144,10 @@ export const LZEditor = () => {
         setWordCount(text.split(/\s+/).filter(Boolean).length)
         setCharCount(text.length)
         takeSnapshot(editor)
-        const key = `lzeditor-doc-${docId}`
-        localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
+        if (docId !== 'welcome') {
+          const key = `lzeditor-doc-${docId}`
+          localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
+        }
       }
     },
     onUpdate: ({ editor }: any) => {
@@ -168,7 +159,7 @@ export const LZEditor = () => {
       setCharCount(text.length)
       const docId = useEditorStore.getState().activeDocId
       updateDoc({ html, md, docsMd: docId ? { [docId]: md } : undefined })
-      if (docId) {
+      if (docId && docId !== 'welcome') {
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
       }
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
@@ -591,7 +582,7 @@ export const LZEditor = () => {
       try {
         const html = remark().use(remarkGfm).use(remarkHtml).processSync(value || '').toString()
         updateDoc({ md: value, html, docsMd: docId ? { [docId]: value } : undefined })
-        if (docId) {
+        if (docId && docId !== 'welcome') {
           localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
         }
         editor?.commands.setContent(html, { emitUpdate: false })

@@ -27,10 +27,8 @@ export const LeftNav: React.FC = () => {
     if (next) setShowRightPanel(true)
   }, [showLibrary, setShowLibrary, setShowRightPanel])
   const toggleOutline = useCallback(() => {
-    const next = !showOutline
-    setShowOutline(next)
-    if (next) setShowRightPanel(true)
-  }, [showOutline, setShowOutline, setShowRightPanel])
+    setShowOutline(!showOutline)
+  }, [showOutline, setShowOutline])
   const togglePreview = useCallback(() => {
     const next = !showPreview
     setShowPreview(next)

@@ -7,6 +7,7 @@ import { useScrollSync } from '../../hooks/useScrollSync'
 import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
+import { getDocMd } from '../../utils/docSource'
 import { DEFAULT_CONTENT } from '../../components/editor/constants'
 
 const MIN_WIDTH = 200
@@ -16,14 +17,7 @@ const DEFAULT_WIDTH = 400
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
   if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-  try {
-    const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
-    if (raw) {
-      const d = JSON.parse(raw)
-      if (d.md) return d.md
-    }
-  } catch {}
-  return ''
+  return getDocMd(activeDocId || 'welcome')
 }
 
 /** Convert ProseMirror HTML → Markdown → rendered HTML for the preview. */

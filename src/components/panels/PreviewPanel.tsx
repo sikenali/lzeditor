@@ -4,19 +4,13 @@ import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { useEditorStore } from '../../store/editorStore'
 import { copyRichText } from '../../clipboard'
+import { getDocMd } from '../../utils/docSource'
 import { UnifiedDialog } from '../ui/UnifiedDialog'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
   if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-  try {
-    const raw = localStorage.getItem(`lzeditor-doc-${activeDocId || 'welcome'}`)
-    if (raw) {
-      const d = JSON.parse(raw)
-      if (d.md) return d.md
-    }
-  } catch {}
-  return ''
+  return getDocMd(activeDocId || 'welcome')
 }
 
 export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
