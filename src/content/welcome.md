@@ -35,7 +35,7 @@
 
 ### 文本格式
 
-**粗体文字** 用于强调重点内容，*斜体文字* 用于标注术语或外语，~~删除线~~ 表示已废弃的内容，`行内代码` 用于标注技术关键词，**粗斜体** 可复合使用。
+**粗体文字** 用于强调重点内容，*斜体文字* 用于标注术语或外语，~~删除线~~ 表示已废弃的内容，\`行内代码\` 用于标注技术关键词，**粗斜体** 可复合使用。
 
 > 选中任意文字可唤起 AI 浮动工具栏，提供改写、润色、续写、摘要、翻译、提问六大能力。
 
@@ -48,7 +48,7 @@
 - 支持嵌套子项
   - 二级缩进
     - 三级继续深入
-- 支持 emoji 图标 `🎯` `📌` `✨`
+- 支持 emoji 图标 \`🎯\` \`📌\` \`✨\`
 - 支持 **混合格式** 文本
 
 ### 有序列表
@@ -77,7 +77,7 @@
 
 ### JavaScript
 
-```javascript
+\`\`\`javascript
 import { createEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { AIAssistant } from './extensions/AIAssistant'
@@ -94,11 +94,11 @@ const editor = createEditor({
     console.log('编辑器已就绪')
   }
 })
-```
+\`\`\`
 
 ### Python
 
-```python
+\`\`\`python
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional
@@ -116,11 +116,11 @@ class Document:
             "INSERT OR REPLACE INTO docs VALUES (?, ?, ?, ?, ?)",
             (self.id, self.title, self.content, self.created_at, self.updated_at)
         )
-```
+\`\`\`
 
 ### Bash
 
-```bash
+\`\`\`bash
 # 开发环境启动
 npm run dev
 
@@ -132,11 +132,11 @@ cd lzc && bash package.sh
 
 # 检查依赖
 npm ls @tiptap/core react typescript
-```
+\`\`\`
 
 ### TypeScript
 
-```typescript
+\`\`\`typescript
 interface AIAction {
   type: 'rewrite' | 'polish' | 'continue' | 'summarize' | 'translate' | 'question'
   text: string
@@ -149,7 +149,7 @@ type EditorStore = {
   showPanel: (action: AIAction['type'], text: string, pos: Position) => void
   hidePanel: () => void
 }
-```
+\`\`\`
 
 ---
 
@@ -158,14 +158,14 @@ type EditorStore = {
 > "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."
 > — *Lorem Ipsum*
 
-> 📘 **提示**：使用 `/` 斜杠命令可快速插入标题、列表、代码块、表格等元素。
+> 📘 **提示**：使用 \`/\` 斜杠命令可快速插入标题、列表、代码块、表格等元素。
 
 > 📌 **快捷键**：
-> - `Ctrl/Cmd + B` — 粗体
-> - `Ctrl/Cmd + I` — 斜体
-> - `Ctrl/Cmd + K` — 插入链接
-> - `Ctrl/Cmd + Shift + S` — 搜索替换
-> - `Ctrl/Cmd + /` — 唤起 AI 对话框
+> - \`Ctrl/Cmd + B\` — 粗体
+> - \`Ctrl/Cmd + I\` — 斜体
+> - \`Ctrl/Cmd + K\` — 插入链接
+> - \`Ctrl/Cmd + Shift + S\` — 搜索替换
+> - \`Ctrl/Cmd + /\` — 唤起 AI 对话框
 
 ---
 
@@ -213,11 +213,11 @@ type EditorStore = {
 独立公式：
 
 $$
-\int_{-\infty}^{+\infty} e^{-x^2} dx = \sqrt{\pi}
+\\int_{-\\infty}^{+\\infty} e^{-x^2} dx = \\sqrt{\\pi}
 $$
 
 $$
-P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}
+P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}
 $$
 
 ---
@@ -228,7 +228,7 @@ $$
 
 ## 标签与徽章
 
-`markdown` · `writing` · `workflow` · `ai` · `editor` · `electron` · `react` · `typescript`
+\`markdown\` · \`writing\` · \`workflow\` · \`ai\` · \`editor\` · \`electron\` · \`react\` · \`typescript\`
 
 ---
 
@@ -248,8 +248,8 @@ LZEditor 内置 AI 写作助手，支持六大能力：
 ### 使用方式
 
 1. **选中文字** → 浮动工具栏自动出现
-2. **斜杠命令** → 输入 `/` 唤起 AI 指令面板
-3. **全局快捷键** → `Ctrl/Cmd + /` 直接打开 AI 对话框
+2. **斜杠命令** → 输入 \`/\` 唤起 AI 指令面板
+3. **全局快捷键** → \`Ctrl/Cmd + /\` 直接打开 AI 对话框
 
 ---
 
@@ -295,7 +295,7 @@ LZEditor 内置 AI 写作助手，支持六大能力：
 
 ## 技术架构
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │              Electron App               │
 ├──────────┬──────────────┬───────────────┤
@@ -308,7 +308,7 @@ LZEditor 内置 AI 写作助手，支持六大能力：
 │    Anthropic Claude / OpenAI / 自部署   │
 │              AI Provider 层             │
 └─────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
@@ -316,14 +316,14 @@ LZEditor 内置 AI 写作助手，支持六大能力：
 
 | 快捷键 | 功能 |
 |--------|------|
-| `Ctrl/Cmd + B` | 粗体 |
-| `Ctrl/Cmd + I` | 斜体 |
-| `Ctrl/Cmd + U` | 下划线 |
-| `Ctrl/Cmd + K` | 插入链接 |
-| `Ctrl/Cmd + Shift + S` | 查找与替换 |
-| `Ctrl/Cmd + /` | AI 对话框 |
-| `Esc` | 关闭弹窗 |
-| `Enter` | 发送 AI 消息 |
+| \`Ctrl/Cmd + B\` | 粗体 |
+| \`Ctrl/Cmd + I\` | 斜体 |
+| \`Ctrl/Cmd + U\` | 下划线 |
+| \`Ctrl/Cmd + K\` | 插入链接 |
+| \`Ctrl/Cmd + Shift + S\` | 查找与替换 |
+| \`Ctrl/Cmd + /\` | AI 对话框 |
+| \`Esc\` | 关闭弹窗 |
+| \`Enter\` | 发送 AI 消息 |
 
 ---
 
@@ -345,10 +345,48 @@ A: 支持 Anthropic Claude 3、OpenAI GPT-4/GPT-3.5、Azure OpenAI，也可接�
 现在就开始你的写作之旅吧！
 
 - 点击右上角 **新建** 创建第一个文档
-- 输入 `/` 体验斜杠命令的便捷
+- 输入 \`/\` 体验斜杠命令的便捷
 - 选中文字召唤 AI 浮动工具栏
 - 尝试 **样式面板** 自定义阅读体验
 
 ---
 
 *END OF DOCUMENT · LZEditor v1.0 · Built with ❤️*
+`
+
+
+export const NEW_DOC_TEMPLATE = `# 新建文档
+
+开始写作吧…
+`
+
+export const DEFAULT_DOC_TITLE = 'Welcome to LZEditor'
+---
+
+## 插入链接与图片
+
+### 插入链接
+
+两种方式：
+
+1. **工具栏按钮** — 点击工具栏「链接」图标，在弹窗中输入文字和 URL
+2. **Markdown 语法** — 在编辑器中输入 [显示文字](https://example.com)
+
+快捷键：Ctrl/Cmd + K 选中文字后快速插入链接。
+
+### 插入图片
+
+支持多种图片来源：
+
+1. **URL 图片** — 点击工具栏「图片」图标，粘贴图片地址即可插入
+2. **本地上传** — 上传图片文件，自动转 Base64 存储到文档中
+3. **拖拽粘贴** — 直接从剪贴板粘贴图片（Ctrl/Cmd + V），或拖拽图片文件到编辑器
+
+> 本地上传的图片以 Base64 形式存储在文档内，导出 PDF/HTML 时保留完整。
+
+### Emoji 表情
+
+点击工具栏「表情」按钮，或输入 /emoji 斜杠命令，唤起 Apple 风格 Emoji 面板。
+也支持直接粘贴系统 Emoji，或输入冒号短代码如 :smile: :heart: :rocket: 自动渲染为高清 PNG 图片。
+
+> Emoji 在预览和导出（PDF/HTML）时以图片形式展示，保留清晰度。
