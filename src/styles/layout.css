@@ -330,16 +330,16 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
-/* ── Statusbar pill/action hover tooltip ── */
-.statusbar-pill[title]:not([title=""]),
-.statusbar-action[title]:not([title=""]) {
+/* ── Statusbar pill/action hover tooltip (below icon, no arrow) ── */
+.statusbar-pill[data-title],
+.statusbar-action[data-title] {
   position: relative;
 }
-.statusbar-pill[title]:not([title=""]):hover::after,
-.statusbar-action[title]:not([title=""]):hover::after {
-  content: attr(title);
+.statusbar-pill[data-title]:hover::after,
+.statusbar-action[data-title]:hover::after {
+  content: attr(data-title);
   position: absolute;
-  bottom: calc(100% + 7px);
+  top: calc(100% + 7px);
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 10px;
@@ -357,27 +357,11 @@
   line-height: 1.4;
   font-family: "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif;
 }
-[data-theme="dark"] .statusbar-pill[title]:not([title=""]):hover::after,
-[data-theme="dark"] .statusbar-action[title]:not([title=""]):hover::after {
+[data-theme="dark"] .statusbar-pill[data-title]:hover::after,
+[data-theme="dark"] .statusbar-action[data-title]:hover::after {
   background: rgba(245,240,230,0.95);
   color: rgba(30,30,35,1);
   border-color: rgba(0,0,0,0.1);
-}
-.statusbar-pill[title]:not([title=""]):hover::before,
-.statusbar-action[title]:not([title=""]):hover::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--chrome-tooltip-bg, rgba(30,30,35,0.95));
-  pointer-events: none;
-  z-index: 1000;
-}
-[data-theme="dark"] .statusbar-pill[title]:not([title=""]):hover::before,
-[data-theme="dark"] .statusbar-action[title]:not([title=""]):hover::before {
-  border-top-color: rgba(245,240,230,0.95);
 }
 
 /* Social-like icon buttons (right side) — glassmorphism */

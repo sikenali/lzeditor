@@ -52,19 +52,19 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
         </div>
         <div className="statusbar-v-divider" />
         <div className="statusbar-v-section">
-          <button className="statusbar-pill" onClick={() => setShowOutline(!showOutline)} title="大纲">
+          <button className="statusbar-pill" onClick={() => setShowOutline(!showOutline)} data-title="大纲">
             <span className="remix ri-list-unordered"></span>
           </button>
-          <button className="statusbar-pill" onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} title="预览">
+          <button className="statusbar-pill" onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="预览">
             <span className="remix ri-eye-line"></span>
           </button>
-          <button className="statusbar-pill" onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} title="样式">
+          <button className="statusbar-pill" onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} data-title="样式">
             <span className="remix ri-palette-fill"></span>
           </button>
         </div>
         <div className="statusbar-v-divider" />
         <div className="statusbar-v-section">
-          <button className="statusbar-action" onClick={() => setShowSearch(!showSearch)} title="查找与替换">
+          <button className="statusbar-action" onClick={() => setShowSearch(!showSearch)} data-title="查找与替换">
             <span className="remix ri-search-line"></span>
           </button>
         </div>
@@ -105,18 +105,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
         </div>
       </div>
       <div className="statusbar-center">
-        <button className={`statusbar-pill ${showOutline ? 'active' : ''}`} onClick={() => setShowOutline(!showOutline)} title="显示/隐藏大纲">
+        <button className={`statusbar-pill ${showOutline ? 'active' : ''}`} onClick={() => setShowOutline(!showOutline)} data-title="大纲">
           <span className="remix ri-list-unordered"></span>
         </button>
-        <button className={`statusbar-pill ${showPreview ? 'active' : ''}`} onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} title="显示/隐藏预览">
+        <button className={`statusbar-pill ${showPreview ? 'active' : ''}`} onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="预览">
           <span className="remix ri-eye-line"></span>
         </button>
-        <button className={`statusbar-pill ${appMode === 'style' ? 'active' : ''}`} onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} title="样式预览">
+        <button className={`statusbar-pill ${appMode === 'style' ? 'active' : ''}`} onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} data-title="样式预览">
           <span className="remix ri-palette-fill"></span>
         </button>
       </div>
       <div className="statusbar-right">
-        <button className={`statusbar-action ${showSearch ? 'active' : ''}`} title="查找与替换" onClick={() => setShowSearch(!showSearch)}>
+        <button className={`statusbar-action ${showSearch ? 'active' : ''}`} data-title="查找与替换" onClick={() => setShowSearch(!showSearch)}>
           <span className="remix ri-search-line"></span>
         </button>
         <div className="statusbar-divider" />
