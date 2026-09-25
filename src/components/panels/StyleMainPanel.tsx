@@ -250,18 +250,6 @@ export const StyleMainPanel: React.FC = () => {
                 <span className="remix ri-download-2-line"></span>
                 <span>导出</span>
               </button>
-              <div style={{ flex: 1 }} />
-              <button className="style-action-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
-                <span className="remix ri-subtract-line"></span>
-              </button>
-              <span className="read-font-size-value">{readFontSize}</span>
-              <button className="style-action-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
-                <span className="remix ri-add-line"></span>
-              </button>
-              <button className={`style-action-btn ${readTocOpen ? 'active' : ''}`} title="目录" onClick={() => setReadTocOpen(!readTocOpen)}>
-                <span className="remix ri-menu-fill"></span>
-                <span>目录</span>
-              </button>
               <button className="style-action-btn" onClick={() => setAppMode('edit')} title="关闭">
                 <span className="remix ri-close-line"></span>
                 <span>关闭</span>
