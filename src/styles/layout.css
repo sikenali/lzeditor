@@ -64,11 +64,11 @@
 .toolbar-icon-only .toolbar-label { display: none; }
 .toolbar-icon-only .toolbar-menu-dot { display: none; }
 
-/* ── Toolbar button hover tooltip ── */
+/* ── Toolbar button hover tooltip (below icon, no arrow) ── */
 .toolbar-icon-only .toolbar-btn[data-title]:hover::after {
   content: attr(data-title);
   position: absolute;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
   padding: 3px 8px;
@@ -89,20 +89,6 @@
   background: rgba(245,240,230,0.95);
   color: rgba(30,30,35,1);
   border-color: rgba(0,0,0,0.1);
-}
-.toolbar-icon-only .toolbar-btn[data-title]:hover::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--chrome-tooltip-bg, rgba(30,30,35,0.95));
-  pointer-events: none;
-  z-index: 1000;
-}
-[data-theme="dark"] .toolbar-icon-only .toolbar-btn[data-title]:hover::before {
-  border-top-color: rgba(245,240,230,0.95);
 }
 
 /* ── Submenu indicator dot ── */
