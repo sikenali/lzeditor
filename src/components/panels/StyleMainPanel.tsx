@@ -191,24 +191,6 @@ export const StyleMainPanel: React.FC = () => {
         {/* ── Read content area ── */}
         <div ref={bodyRef} className="style-read-scroll">
           <div className="style-read-article" style={{ maxWidth: 760 }}>
-            <div className="main-read-header">
-              <div className="main-read-tags">
-                <span className="read-tag read-tag-tech">Markdown</span>
-                <button className="sidebar-wechat-btn" onClick={handleCopyWechat} title="一键复制为公众号可用富文本">
-                  <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
-                  {copied ? '已复制' : '公众号'}
-                </button>
-              </div>
-              <h1 className="read-article-title">{docTitle}</h1>
-              <div className="read-meta">
-                <div className="read-avatar" style={{ backgroundImage: 'url(https://i.pravatar.cc/70?img=12)' }} />
-                <div className="read-author-info">
-                  <div className="read-author-name">LZEditor</div>
-                  <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
-                </div>
-                <div className="read-divider-v" />
-              </div>
-            </div>
             <div
               className="read-article-body"
               style={{ fontSize: `${fontSize}px`, lineHeight: '1.9', '--style-accent': activeStyleData.color } as React.CSSProperties}
