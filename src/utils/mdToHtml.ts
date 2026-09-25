@@ -4,30 +4,26 @@
  */
 export function mdToHtml(md: string): string {
   if (!md) return ''
+  return convertMarkdownToHtml(md)
+}
 
-  // Check if content contains data URIs
-  const hasDataUri = /!\[[^\]]*\]\(data:[^\)]+\)/.test(md)
-
-  if (!hasDataUri) {
-    // Fast path: use remark for normal content
-    try {
-      const { remark } = require('remark')
-      const remarkGfm = require('remark-gfm').default
-      const remarkHtml = require('remark-html').default
-      return remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
-    } catch {
-      // Fallback to regex converter
+/** Find the index of the closing paren that matches the opening paren at `start`. */
+function findMatchingParen(str: string, start: number): number {
+  let depth = 1
+  for (let i = start + 1; i < str.length; i++) {
+    if (str[i] === '(') depth++
+    else if (str[i] === ')') {
+      depth--
+      if (depth === 0) return i
     }
   }
-
-  // Custom converter that handles data URIs correctly
-  return convertMarkdownToHtml(md)
+  return -1
 }
 
 function convertMarkdownToHtml(md: string): string {
   let html = md
 
-  // Escape HTML special chars (except in code blocks)
+  // ── Code blocks (fenced) ──
   const codeBlocks: string[] = []
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m: string, lang: string, code: string) => {
     const idx = codeBlocks.length
@@ -35,10 +31,10 @@ function convertMarkdownToHtml(md: string): string {
     return `%%CODEBLOCK_${idx}%%`
   })
 
-  // Inline code
+  // ── Inline code ──
   html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>')
 
-  // Headings
+  // ── Headings ──
   html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>')
   html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>')
   html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
@@ -46,16 +42,16 @@ function convertMarkdownToHtml(md: string): string {
   html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
   html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
 
-  // Horizontal rule
+  // ── Horizontal rule ──
   html = html.replace(/^(---+|\*\*\*+|___+)\s*$/gm, '<hr>')
 
-  // Blockquote
+  // ── Blockquote ──
   html = html.replace(/^(>\s?.+$(?:\n>\s?.+$)*)/gm, (_m: string, block: string) => {
     const lines = block.split('\n').map((l: string) => l.replace(/^>\s?/, '')).join('')
     return `<blockquote><p>${lines}</p></blockquote>`
   })
 
-  // Tables
+  // ── Tables ──
   html = html.replace(/((?:^|[ \t]*\n)[ \t]*\|.+[ \t]*\n(?:[ \t]*\|[ \t]*:?-+[ \t]*:?[ \t]*|[ \t]*\|.*)\n(?:[ \t]*\|.+\n?)*)/gm, (_m: string, table: string) => {
     const lines = table.trim().split('\n').filter((l: string) => l.trim())
     if (lines.length < 2) return table
@@ -83,14 +79,27 @@ function convertMarkdownToHtml(md: string): string {
     return result
   })
 
-  // Images - preserve data URIs
-  html = html.replace(/!\[([^\]]*)\]\((data:[^\)]+)\)/g, '<img src="$2" alt="$1">')
-  html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1">')
+  // ── Images with paren-aware closing-paren matching ──
+  // Data URIs like url(#g) contain ')' which breaks naive [^) regexes
+  const imageResult: string[] = []
+  let imageIdx = 0
+  html = html.replace(/!\[([^\]]*)\]\(/g, (_match: string, alt: string, offset: number, source: string) => {
+    const closeIdx = findMatchingParen(source, offset)
+    if (closeIdx === -1) return _match // malformed, leave as-is
+    const url = source.slice(offset + 1, closeIdx)
+    imageResult[imageIdx] = `<img src="${url}" alt="${alt}">`
+    const result = `%%IMG_${imageIdx}%%`
+    imageIdx++
+    return result
+  })
+  imageResult.forEach((img, idx) => {
+    html = html.replace(`%%IMG_${idx}%%`, img)
+  })
 
-  // Links
+  // ── Links ──
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
 
-  // Bold + Italic
+  // ── Bold + Italic ──
   html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
   html = html.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>')
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -99,31 +108,31 @@ function convertMarkdownToHtml(md: string): string {
   html = html.replace(/_(.+?)_/g, '<em>$1</em>')
   html = html.replace(/~~(.+?)~~/g, '<del>$1</del>')
 
-  // Task lists
+  // ── Task lists ──
   html = html.replace(/^- \[x\]\s+(.+)$/gmi, '<li class="task-item checked"><input type="checkbox" checked disabled> $1</li>')
   html = html.replace(/^- \[\s\]\s+(.+)$/gmi, '<li class="task-item"><input type="checkbox" disabled> $1</li>')
 
-  // List items
+  // ── List items ──
   html = html.replace(/^[^\-\*\d>]\s*[-*+]\s+(.+)$/gm, '<li>$1</li>')
   html = html.replace(/^[^\d>]\s*\d+\.\s+(.+)$/gm, '<li>$1</li>')
 
-  // Wrap consecutive <li>
+  // ── Wrap consecutive <li> ──
   html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, (match: string) => {
     if (match.includes('task-item')) return `<ul>${match}</ul>`
     if (/^\s*\d+\./.test(match)) return `<ol>${match}</ol>`
     return `<ul>${match}</ul>`
   })
 
-  // Paragraphs
+  // ── Paragraphs ──
   html = html.replace(/^(?!<[a-z])(?!%%CODEBLOCK)([^\n]+)$/gm, '<p>$1</p>')
   html = html.replace(/<\/p>\s*<p>/g, '\n')
 
-  // Restore code blocks
+  // ── Restore code blocks ──
   codeBlocks.forEach((block, idx) => {
     html = html.replace(`%%CODEBLOCK_${idx}%%`, block)
   })
 
-  // Clean up
+  // ── Clean up ──
   html = html.replace(/\n{3,}/g, '\n\n')
 
   return html.trim()
