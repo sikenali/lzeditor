@@ -3,7 +3,7 @@ import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
 import { copyRichText } from '../../clipboard'
 import { getDocMd } from '../../utils/docSource'
-import { UnifiedDialog } from '../ui/UnifiedDialog'
+import { PanelContainer } from '../ui/PanelContainer'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
@@ -91,15 +91,18 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   )
 
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={onClose}
       icon="ri-eye-2-line"
       title="预览"
       subtitle={docTitle}
-      rightTop={rightTop}
-      rightContent={rightContent}
-      rightBottom={rightBottom}
       size="lg"
-    />
+    >
+      <div className="ud-body">
+        <div className="ud-right-top">{rightTop}</div>
+        <div className="ud-right-content">{rightContent}</div>
+        <div className="ud-right-bottom">{rightBottom}</div>
+      </div>
+    </PanelContainer>
   )
 }

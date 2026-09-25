@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { LFSInput } from '../ui/LFInput'
-import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection } from '../ui/PanelContainer'
 
 const FILE_TEMPLATES = [
   { id: 'blank', name: '空白文档', desc: '从头开始', icon: 'ri-file-line' },
@@ -78,15 +78,19 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   )
 
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={onClose}
       icon="ri-file-list-2-line"
       title="文件"
       subtitle="新建或打开文档"
-      leftNav={leftNav}
-      rightContent={rightContent}
-      hint="选择模板将直接创建新文档"
       size="md"
-    />
+    >
+      <div className="ud-body ud-body-split">
+        <div className="ud-left">{leftNav}</div>
+        <div className="ud-right">
+          <div className="ud-right-content">{rightContent}</div>
+        </div>
+      </div>
+    </PanelContainer>
   )
 }
