@@ -80,10 +80,7 @@ export const Toolbar: React.FC = () => {
   const setShowSearch = useEditorStore((s: any) => s.setShowSearch)
   const editor = useEditorStore((s: any) => s.editor)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
-  const createDoc = useEditorStore((s: any) => s.createDoc)
-  const compactToolbar = useSettingsStore((s) => s.compactToolbar)
-  const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
-
+  const createDoc = useEditorStore((s) => s.createDoc)
   const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
   const [showBeautifyDialog, setShowBeautifyDialog] = useState(false)
   const [tableActive, setTableActive] = useState(false)
@@ -382,7 +379,7 @@ export const Toolbar: React.FC = () => {
     <>
       <div className="toolbar">
         {/* ── Left ── */}
-        <div className="toolbar-group">
+        <div className="toolbar-group toolbar-icon-only">
           <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)} title="文档库">
             <span className="remix toolbar-icon ri-archive-2-line"></span>
           </button>
@@ -405,14 +402,14 @@ export const Toolbar: React.FC = () => {
         </div>
 
         {/* ── Middle ── */}
-        <div className="toolbar-group toolbar-group--middle">
-          {compactToolbar && <>
+        <div className="toolbar-group toolbar-group--middle toolbar-icon-only">
+          <>
             <button className="toolbar-btn" onClick={() => applyCmd('bold')} title="粗体"><span className="remix toolbar-icon ri-bold"></span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('italic')} title="斜体"><span className="remix toolbar-icon ri-italic"></span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('underline')} title="下划线"><span className="remix toolbar-icon ri-underline"></span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')} title="删除线"><span className="remix toolbar-icon ri-strikethrough"></span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('toggleHighlight')} title="高亮"><span className="remix toolbar-icon ri-mark-pen-fill"></span></button>
-          </>}
+          </>
 
           <div className="toolbar-menu-btn" onClick={() => openMenu('format')}>
             <button ref={formatBtnRef} className={`toolbar-btn format-btn ${menuOpen === 'format' ? 'menu-open' : ''}`} title="格式">
@@ -443,10 +440,10 @@ export const Toolbar: React.FC = () => {
         </div>
 
         {/* ── Right ── */}
-        <div className={`toolbar-group${compactToolbar ? ' toolbar-group--compact' : ''}`}>
-          {compactToolbar && <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })} title="AI">
+        <div className="toolbar-group toolbar-icon-only">
+          <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })} title="AI">
             <span className="remix toolbar-icon ri-openai-fill"></span>
-          </button>}
+          </button>
           <div className="toolbar-menu-btn" onClick={() => openMenu('mode')}>
             <button ref={modeBtnRef} className={`toolbar-btn ${menuOpen === 'mode' ? 'menu-open' : ''}`} title="模式">
               <span className="remix toolbar-icon ri-eye-2-fill"></span>
