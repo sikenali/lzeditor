@@ -1,12 +1,12 @@
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React from 'react'
 
 export interface PanelContainerProps {
   onClose: () => void
   icon?: string
   title: string
   subtitle?: string
-  children: ReactNode
-  footer?: ReactNode
+  children: React.ReactNode
+  footer?: React.ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
@@ -14,21 +14,12 @@ export interface PanelContainerProps {
 export const PanelContainer: React.FC<PanelContainerProps> = ({
   onClose, icon, title, subtitle, children, footer, size = 'lg', className = ''
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const previousFocus = useRef<HTMLElement | null>(null)
-  const clickHandledRef = useRef(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
+  React.useEffect(() => {
     document.body.style.overflow = 'hidden'
     previousFocus.current = document.activeElement as HTMLElement
-
-    // 点击弹窗内元素时不自动聚焦，让用户自己控制焦点
-    const handleClickInside = (e: MouseEvent) => {
-      if (containerRef.current?.contains(e.target as Node)) {
-        clickHandledRef.current = true
-      }
-    }
-    document.addEventListener('mousedown', handleClickInside, true)
 
     // ESC 关闭
     const handleEsc = (e: KeyboardEvent) => {
@@ -36,27 +27,7 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
     }
     document.addEventListener('keydown', handleEsc)
 
-    // 仅在用户未主动点击时，自动聚焦第一个可交互元素
-    if (!clickHandledRef.current) {
-      const el = containerRef.current
-      if (el) {
-        const focusable = Array.from(
-          el.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
-        ).filter(el => !(el instanceof HTMLButtonElement || el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) || !el.disabled && el.offsetParent !== null)
-        if (focusable.length > 0) {
-          // 延迟执行，等 React 完成渲染
-          const timer = setTimeout(() => {
-            if (document.activeElement === document.body) {
-              focusable[0].focus()
-            }
-          }, 100)
-          return () => clearTimeout(timer)
-        }
-      }
-    }
-
     return () => {
-      document.removeEventListener('mousedown', handleClickInside, true)
       document.removeEventListener('keydown', handleEsc)
       document.body.style.overflow = ''
       if (previousFocus.current) previousFocus.current.focus()
@@ -64,7 +35,9 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
   }, [onClose])
 
   return (
-    <div className="panel-backdrop">
+    <div className="panel-backdrop" onClick={(e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) onClose()
+    }}>
       <div ref={containerRef} className={`panel-container${className ? ' ' + className : ''}`}>
         <div className="panel-header">
           {icon && <span className={`remix panel-icon ${icon}`}></span>}
@@ -82,78 +55,3 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
     </div>
   )
 }
-
-/* ── Chip item for left nav ── */
-export interface NavChip {
-  id: string
-  label: string
-  icon: string
-  desc?: string
-}
-
-export const NavChipItem: React.FC<{ chip: NavChip; active: boolean; onClick: () => void }> = ({ chip, active, onClick }) => (
-  <button className={`ud-chip${active ? ' active' : ''}`} onClick={onClick}>
-    <span className={`remix ud-chip-icon ${chip.icon}`}></span>
-    <span className="ud-chip-label">{chip.label}</span>
-    {chip.desc && <span className="ud-chip-desc">{chip.desc}</span>}
-  </button>
-)
-
-/* ── Section inside right panel ── */
-export const UDSection: React.FC<{ label: string; desc?: string; children: ReactNode; className?: string }> = ({ label, desc, children, className }) => (
-  <div className={`ud-section${className ? ' ' + className : ''}`}>
-    <div className="ud-section-head">
-      <span className="ud-section-label">{label}</span>
-      {desc && <span className="ud-section-desc">{desc}</span>}
-    </div>
-    <div className="ud-section-body">{children}</div>
-  </div>
-)
-
-/* ── Setting row ── */
-export const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string; children: ReactNode }> = ({ icon, label, desc, children }) => (
-  <div className="ud-setting-row">
-    <div className="ud-setting-label">
-      <span className={`remix ud-setting-icon ${icon}`}></span>
-      <div>
-        <span className="ud-setting-name">{label}</span>
-        {desc && <span className="ud-setting-desc">{desc}</span>}
-      </div>
-    </div>
-    <div className="ud-setting-control">{children}</div>
-  </div>
-)
-
-/* ── Toggle switch ── */
-export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }> = ({ checked, onChange, size = 'sm' }) => (
-  <button
-    className={`ud-toggle${checked ? ' on' : ''}${size === 'md' ? ' ud-toggle--md' : ''}`}
-    onClick={() => onChange(!checked)}
-    onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onChange(!checked) } }}
-    role="switch"
-    aria-checked={checked}
-    tabIndex={0}
-  >
-    <span className="ud-toggle-thumb" />
-  </button>
-)
-
-/* ── Select input ── */
-export const UDSelect: React.FC<{ value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; style?: React.CSSProperties }> = ({ value, onChange, options, style }) => (
-  <select className="ud-select" value={value} onChange={e => onChange(e.target.value)} style={style}>
-    {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-  </select>
-)
-
-/* ── Text input ── */
-export const UDInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = props => (
-  <input className="ud-input" {...props} />
-)
-
-/* ── Preview card ── */
-export const UDPreviewCard: React.FC<{ children: ReactNode; label?: string }> = ({ children, label }) => (
-  <div className="ud-preview-card">
-    {label && <div className="ud-preview-label">{label}</div>}
-    <div className="ud-preview-body">{children}</div>
-  </div>
-)
