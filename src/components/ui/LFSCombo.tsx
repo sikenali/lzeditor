@@ -61,7 +61,10 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
   // 点击外部关闭：纯 ref 检测，不调用 stopPropagation
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (ref.current && !ref.current.contains(target)) {
+        // 下拉菜单在 portal 中，也不在 ref 内，跳过关闭
+        if ((target as HTMLElement).closest('.lfs-combo-dropdown')) return
         setOpen(false)
       }
     }
