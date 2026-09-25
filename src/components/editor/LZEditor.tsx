@@ -83,6 +83,18 @@ export const LZEditor = () => {
     return getDocMd(docId) || (docId === 'welcome' ? DEFAULT_CONTENT : '')
   }, [activeDocId, docsMd])
 
+  const renderedHtml = useMemo(() => {
+    if (!mdContent) return ''
+    try { return remark().use(remarkGfm).use(remarkHtml).processSync(mdContent).toString() } catch { return mdContent }
+  }, [mdContent])
+
+  const codeEditMdRef = useRef(mdContent)
+  const [codeEditMd, setCodeEditMd] = useState(mdContent)
+  useEffect(() => {
+    codeEditMdRef.current = mdContent
+    if (codeMode) setCodeEditMd(mdContent)
+  }, [mdContent, codeMode])
+
   // 同步 mdContent 到 store：优先使用 docsMd，其次用 getDocMd 兜底
   useEffect(() => {
     const docId = activeDocId || 'welcome'
@@ -794,25 +806,65 @@ export const LZEditor = () => {
             <>
               {!codeMode && <EditorContent editor={editor} />}
               {codeMode && (
-                <div className="code-mode-wrapper">
+                <div className="code-mode-inline">
+                  {/* ── code-mode-toolbar ── */}
                   <div className="code-mode-toolbar">
-                    <span className="remix ri-code-s-line" style={{ fontSize: 14, color: 'var(--text-muted)' }}></span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Markdown 源码</span>
-                    <button className="code-mode-switch-btn" onClick={() => setAppMode('edit')} title="切换回编辑模式">
-                      <span className="remix ri-edit-2-line"></span>
-                      <span>切换编辑模式</span>
-                    </button>
+                    <div className="code-mode-left">
+                      <span className="remix ri-code-s-line code-mode-icon"></span>
+                      <span className="code-mode-label">源码编辑</span>
+                    </div>
+                    <div className="code-mode-center">
+                      <span className="code-mode-meta-item">{mdContent.length} 字符</span>
+                      <span className="code-mode-dot">·</span>
+                      <span className="code-mode-meta-item">{wordCount} 字</span>
+                    </div>
+                    <div className="code-mode-right">
+                      <button className="code-mode-exit-btn" onClick={() => setAppMode('edit')} title="返回编辑模式">
+                        <span className="remix ri-edit-2-line"></span>
+                        <span>返回编辑</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="code-mode-textarea-wrap">
-                    <textarea
-                      className="lz-code-mode-textarea"
-                      value={mdContent}
-                      onChange={e => handleCodeModeChange(e.target.value)}
-                      onFocus={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
-                      onClick={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
-                      onKeyUp={e => useEditorStore.getState().setCodeModeCursor((e.target as HTMLTextAreaElement).selectionStart)}
-                      spellCheck={false}
+                  {/* ── code-mode-body ── */}
+                  <div className="code-mode-body">
+                    <div
+                      className="read-article-body"
+                      style={{ fontSize: '16px', lineHeight: '1.9' }}
+                      dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
                     />
+                    <div className="code-editor-wrap">
+                      <div className="code-editor-label">
+                        <span className="remix ri-code-s-line"></span>
+                        <span>Markdown 源码</span>
+                      </div>
+                      <textarea
+                        className="code-editor-textarea"
+                        value={codeEditMd}
+                        onChange={e => {
+                          const value = e.target.value
+                          setCodeEditMd(value)
+                          handleCodeModeChange(value)
+                        }}
+                        spellCheck={false}
+                      />
+                    </div>
+                    <div className="code-mode-footer">
+                      <div className="code-mode-footer-tags">
+                        <span className="remix ri-price-tag-3-line code-footer-tag-icon"></span>
+                        <span className="read-tag-chip">markdown</span>
+                        <span className="read-tag-chip">source</span>
+                      </div>
+                      <div className="code-mode-footer-actions">
+                        <button className="read-back-top-btn" onClick={() => editorRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' })}>
+                          <span className="remix ri-arrow-up-line"></span>
+                          <span>回到顶部</span>
+                        </button>
+                        <button className="read-edit-btn" onClick={() => setAppMode('edit')}>
+                          <span className="remix ri-edit-line"></span>
+                          <span>返回编辑</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
