@@ -385,7 +385,7 @@ export const Toolbar: React.FC = () => {
       <div className="toolbar">
         {/* ── Left ── */}
         <div className="toolbar-group">
-          <button className={`toolbar-btn ${showLibrary ? 'active' : ''}`} onClick={() => setShowLibrary(!showLibrary)}>
+          <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)}>
             <span className="remix toolbar-icon ri-archive-2-line"></span>
             <span className="toolbar-label">文档库</span>
           </button>
@@ -400,11 +400,11 @@ export const Toolbar: React.FC = () => {
               { icon: 'ri-folder-open-line', label: '打开本地文件', action: 'open' },
             ]} onAction={(a) => { if (a === 'new') handleNewFile(); else handleOpenFile(); setMenuOpen(null) }} />
           </div>
-          <button className={`toolbar-btn ${showOutline ? 'active' : ''}`} onClick={() => setShowOutline(!showOutline)}>
+          <button className="toolbar-btn" onClick={() => setShowOutline(!showOutline)}>
             <span className="remix toolbar-icon ri-list-unordered"></span>
             <span className="toolbar-label">大纲</span>
           </button>
-          <button className={`toolbar-btn ${showSearch ? 'active' : ''}`} onClick={() => setShowSearch(!showSearch)} title="查找与替换">
+          <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)} title="查找与替换">
             <span className="remix toolbar-icon ri-search-line"></span>
             <span className="toolbar-label">查找</span>
           </button>
