@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useCallback } from 'react'
 
 export interface LFSComboOption {
   value: string
@@ -24,76 +24,91 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number; w: number } | null>(null)
-  const id = useRef(`lfs-combo-${++uniqueId}`)
+  const selectRef = useRef<HTMLSelectElement>(null)
+  const id = `lfs-combo-${++uniqueId}`
 
-  // 点击外部关闭：document capture 阶段，只在 open 时挂载
-  useEffect(() => {
-    if (!open) return
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as Node
-      if (wrapperRef.current && !wrapperRef.current.contains(target)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick, true)
-    return () => document.removeEventListener('mousedown', handleClick, true)
-  }, [open])
-
-  // 打开时计算 viewport 位置（fixed 定位，不依赖父容器 overflow:hidden）
-  useEffect(() => {
-    if (!open || !wrapperRef.current) return
-    const rect = wrapperRef.current.getBoundingClientRect()
-    setPos({ top: rect.bottom + 4, left: rect.left, w: rect.width })
-  }, [open])
+  // 使用原生 select 作为底层，完全不依赖外部事件监听
+  const handleNativeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onChange(e.target.value)
+  }, [onChange])
 
   const selected = options.find(o => o.value === value)
   const displayLabel = selected ? selected.label : (placeholder || '')
 
   return (
     <div ref={wrapperRef} className={`lfs-combo${className ? ` ${className}` : ''}`} style={{ minWidth, ...style, position: 'relative', display: 'inline-block' }}>
+      {/* 自定义 trigger button */}
       <button
         className={`lfs-combo-trigger${disabled ? ' disabled' : ''}${open ? ' open' : ''}`}
         disabled={disabled}
         onClick={() => { if (!disabled) setOpen(v => !v) }}
+        onBlur={() => setOpen(false)}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-controls={id.current}
+        aria-controls={`${id}-listbox`}
       >
         <span className="lfs-combo-label">{displayLabel || placeholder}</span>
         {selected && <span className="remix ri-checkbox-circle-fill lfs-combo-check"></span>}
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
 
-      {/* fixed 定位，不受父容器 overflow:hidden 裁剪 */}
-      {open && pos && (
+      {/* 隐藏的原生 select，提供真正的点击交互 */}
+      <select
+        ref={selectRef}
+        id={id}
+        className="lfs-combo-native"
+        value={open ? value : ''}
+        onChange={handleNativeChange}
+        autoFocus={open}
+        onBlur={() => setOpen(false)}
+        disabled={disabled}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          opacity: 0,
+          cursor: 'pointer',
+          zIndex: 1,
+          margin: 0,
+          padding: 0,
+          border: 'none',
+          outline: 'none',
+          appearance: 'none',
+          WebkitAppearance: 'none',
+        }}
+      >
+        <option value="" disabled>{placeholder || '请选择'}</option>
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+
+      {/* 自定义下拉列表（视觉增强，不用于实际交互） */}
+      {open && !disabled && (
         <div
-          id={id.current}
+          id={`${id}-listbox`}
           role="listbox"
           className="lfs-combo-dropdown"
-          style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.w, zIndex: 3000 }}
+          style={{ position: 'absolute', top: '100%', left: 0, width: '100%', zIndex: 3000 }}
         >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>
           ) : (
             options.map(opt => (
-              <button
+              <div
                 key={opt.value}
                 className={`lfs-combo-option${opt.value === value ? ' active' : ''}`}
                 role="option"
                 aria-selected={opt.value === value}
-                onClick={() => {
-                  onChange(opt.value)
-                  setOpen(false)
-                }}
-                type="button"
-                tabIndex={-1}
+                style={{ pointerEvents: 'none' }}
               >
                 {opt.icon && <span className={`remix lfs-combo-opt-icon ${opt.icon}`}></span>}
                 <span className="lfs-combo-opt-label">{opt.label}</span>
                 {opt.value === value && <span className="remix ri-checkbox-circle-fill lfs-combo-check"></span>}
-              </button>
+              </div>
             ))
           )}
         </div>
