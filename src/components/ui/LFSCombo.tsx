@@ -1,5 +1,4 @@
-import React, { useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
+import React, { useRef, useState, useEffect } from 'react'
 
 export interface LFSComboOption {
   value: string
@@ -18,82 +17,55 @@ export interface LFSComboProps {
   minWidth?: number
 }
 
-let portalCount = 0
-let portalRoot: HTMLDivElement | null = null
-
-function getPortalRoot(): HTMLDivElement {
-  if (!portalRoot) {
-    portalRoot = document.createElement('div')
-    portalRoot.setAttribute('data-lfs-portal', 'true')
-    portalRoot.style.cssText = 'position:fixed;inset:0;z-index:3000;pointer-events:none;'
-    document.body.appendChild(portalRoot)
-  }
-  portalCount++
-  return portalRoot
-}
-
-function releasePortalRoot(): void {
-  portalCount--
-  if (portalCount <= 0 && portalRoot) {
-    portalRoot.remove()
-    portalRoot = null
-    portalCount = 0
-  }
-}
+let uniqueId = 0
 
 export const LFSCombo: React.FC<LFSComboProps> = ({
   value, onChange, options, style, className, disabled, placeholder, minWidth,
 }) => {
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
-  const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const id = useRef(`lfs-combo-${++uniqueId}`)
 
-  React.useEffect(() => {
-    if (!open) {
-      setPortalNode(null)
-      setPortalPos(null)
-      releasePortalRoot()
+  // 点击外部关闭（document level，捕获阶段最先执行）
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node
+      const inWrapper = wrapperRef.current?.contains(target)
+      if (!inWrapper) setOpen(false)
     }
+    document.addEventListener('mousedown', handleClick, true)
+    return () => document.removeEventListener('mousedown', handleClick, true)
   }, [open])
-
-  // 打开时计算位置并创建 portal
-  React.useEffect(() => {
-    if (!open || !ref.current) return
-    const rect = ref.current.getBoundingClientRect()
-    setPortalPos({ x: rect.left, y: rect.bottom + 4, w: rect.width })
-    setPortalNode(getPortalRoot())
-  }, [open])
-
-  const handleTriggerClick = () => {
-    if (disabled) return
-    setOpen(v => !v)
-  }
-
-  const handleOptionClick = (optValue: string) => {
-    onChange(optValue)
-    setOpen(false)
-  }
 
   const selected = options.find(o => o.value === value)
   const displayLabel = selected ? selected.label : (placeholder || '')
 
   return (
-    <div ref={ref} className={`lfs-combo${className ? ` ${className}` : ''}`} style={{ minWidth, ...style, position: 'relative', display: 'inline-block' }}>
+    <div ref={wrapperRef} className={`lfs-combo${className ? ` ${className}` : ''}`} style={{ minWidth, ...style, position: 'relative', display: 'inline-block' }}>
       <button
         className={`lfs-combo-trigger${disabled ? ' disabled' : ''}${open ? ' open' : ''}`}
         disabled={disabled}
-        onClick={handleTriggerClick}
+        onClick={() => { if (!disabled) setOpen(v => !v) }}
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={id.current}
       >
         <span className="lfs-combo-label">{displayLabel || placeholder}</span>
         {selected && <span className="remix ri-checkbox-circle-fill lfs-combo-check"></span>}
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
-      {open && portalNode && portalPos && ReactDOM.createPortal(
+
+      {/* Dropdown 绝对定位在 wrapper 内，不破坏 DOM 层级 */}
+      {open && (
         <div
+          ref={dropdownRef}
+          id={id.current}
+          role="listbox"
           className="lfs-combo-dropdown"
-          style={{ position: 'fixed', top: portalPos.y, left: portalPos.x, width: portalPos.w, zIndex: 3000 }}
+          style={{ position: 'absolute', top: '100%', left: 0, width: '100%', zIndex: 3000 }}
         >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>
@@ -102,8 +74,14 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
               <button
                 key={opt.value}
                 className={`lfs-combo-option${opt.value === value ? ' active' : ''}`}
-                onClick={() => handleOptionClick(opt.value)}
+                role="option"
+                aria-selected={opt.value === value}
+                onClick={() => {
+                  onChange(opt.value)
+                  setOpen(false)
+                }}
                 type="button"
+                tabIndex={-1}
               >
                 {opt.icon && <span className={`remix lfs-combo-opt-icon ${opt.icon}`}></span>}
                 <span className="lfs-combo-opt-label">{opt.label}</span>
@@ -111,8 +89,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
               </button>
             ))
           )}
-        </div>,
-        portalNode
+        </div>
       )}
     </div>
   )

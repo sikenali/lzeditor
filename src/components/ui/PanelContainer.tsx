@@ -1,12 +1,12 @@
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React from 'react'
 
 export interface PanelContainerProps {
   onClose: () => void
   icon?: string
   title: string
   subtitle?: string
-  children: ReactNode
-  footer?: ReactNode
+  children: React.ReactNode
+  footer?: React.ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
@@ -14,10 +14,10 @@ export interface PanelContainerProps {
 export const PanelContainer: React.FC<PanelContainerProps> = ({
   onClose, icon, title, subtitle, children, footer, size = 'lg', className = ''
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const previousFocus = useRef<HTMLElement | null>(null)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
+  React.useEffect(() => {
     document.body.style.overflow = 'hidden'
     previousFocus.current = document.activeElement as HTMLElement
 
@@ -35,9 +35,12 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
   }, [onClose])
 
   return (
-    <div className="panel-backdrop" onClick={(e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) onClose()
-    }}>
+    <div
+      className="panel-backdrop"
+      onClick={(e) => {
+        if (containerRef.current && !containerRef.current.contains(e.target as Node)) onClose()
+      }}
+    >
       <div ref={containerRef} className={`panel-container${className ? ' ' + className : ''}`}>
         <div className="panel-header">
           {icon && <span className={`remix panel-icon ${icon}`}></span>}
@@ -73,7 +76,7 @@ export const NavChipItem: React.FC<{ chip: NavChip; active: boolean; onClick: ()
 )
 
 /* ── Section inside right panel ── */
-export const UDSection: React.FC<{ label: string; desc?: string; children: ReactNode; className?: string }> = ({ label, desc, children, className }) => (
+export const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode; className?: string }> = ({ label, desc, children, className }) => (
   <div className={`ud-section${className ? ' ' + className : ''}`}>
     <div className="ud-section-head">
       <span className="ud-section-label">{label}</span>
@@ -84,7 +87,7 @@ export const UDSection: React.FC<{ label: string; desc?: string; children: React
 )
 
 /* ── Setting row ── */
-export const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string; children: ReactNode }> = ({ icon, label, desc, children }) => (
+export const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string; children: React.ReactNode }> = ({ icon, label, desc, children }) => (
   <div className="ud-setting-row">
     <div className="ud-setting-label">
       <span className={`remix ud-setting-icon ${icon}`}></span>
@@ -106,6 +109,7 @@ export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => vo
     role="switch"
     aria-checked={checked}
     tabIndex={0}
+    type="button"
   >
     <span className="ud-toggle-thumb" />
   </button>
@@ -124,7 +128,7 @@ export const UDInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = pr
 )
 
 /* ── Preview card ── */
-export const UDPreviewCard: React.FC<{ children: ReactNode; label?: string }> = ({ children, label }) => (
+export const UDPreviewCard: React.FC<{ children: React.ReactNode; label?: string }> = ({ children, label }) => (
   <div className="ud-preview-card">
     {label && <div className="ud-preview-label">{label}</div>}
     <div className="ud-preview-body">{children}</div>
