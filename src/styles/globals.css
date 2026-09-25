@@ -696,6 +696,12 @@ li.ProseMirror-selectednode:after { border: none !important; }
   cursor: pointer;
 }
 
+/* ── Global native checkbox accent ── */
+input[type="checkbox"] {
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
 /* ── Page entry animation (LZMail spec: translateY 12px → 0) ── */
 @keyframes pageSlideIn {
   from { opacity: 0; transform: translateY(12px); }

@@ -90,7 +90,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
         <div className="search-options-col">
           <label className="search-option">
             <span className={`search-checkbox ${caseSensitive ? 'checked' : ''}`}>
-              {caseSensitive && <span className="checkmark">✓</span>}
+              <span className="checkmark"><span className="remix ri-check-line"></span></span>
             </span>
             <input
               type="checkbox"
@@ -102,7 +102,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
           </label>
           <label className="search-option">
             <span className={`search-checkbox ${wholeWord ? 'checked' : ''}`}>
-              {wholeWord && <span className="checkmark">✓</span>}
+              <span className="checkmark"><span className="remix ri-check-line"></span></span>
             </span>
             <input
               type="checkbox"
@@ -114,7 +114,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
           </label>
           <label className="search-option">
             <span className={`search-checkbox ${useRegex ? 'checked' : ''}`}>
-              {useRegex && <span className="checkmark">✓</span>}
+              <span className="checkmark"><span className="remix ri-check-line"></span></span>
             </span>
             <input
               type="checkbox"

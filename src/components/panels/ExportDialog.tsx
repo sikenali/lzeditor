@@ -7,6 +7,7 @@ import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { UnifiedDialog, UDSection, UDSettingRow, UDToggle, UDPreviewCard } from '../ui/UnifiedDialog'
+import { LFSCombo } from '../ui/LFSCombo'
 import { getDocMd } from '../../utils/docSource'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
@@ -135,15 +136,11 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>纸张</div>
-                <select className="export-select" value={paperSize} onChange={e => setPaperSize(e.target.value)}>
-                  {PAPER_SIZES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                </select>
+                <LFSCombo value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.value, label: p.label }))} style={{ minWidth: 0 }} />
               </div>
               <div style={{ flex: 1 }}>
                 <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>方向</div>
-                <select className="export-select" value={orientation} onChange={e => setOrientation(e.target.value)}>
-                  {ORIENTATIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
+                <LFSCombo value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.value, label: o.label }))} style={{ minWidth: 0 }} />
               </div>
             </div>
           </UDSection>
