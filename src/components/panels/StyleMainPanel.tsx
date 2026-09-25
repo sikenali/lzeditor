@@ -187,7 +187,7 @@ export const StyleMainPanel: React.FC = () => {
                 </button>
               </div>
               <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
-                <span className={`remix ${previewVisible ? 'ri-eye-off-line' : 'ri-eye-line'}`}></span>
+                <span className={`preview-toggle-icon ${previewVisible ? 'icon-hide' : 'icon-show'}`}></span>
                 <span>{previewVisible ? '隐藏' : '显示'}</span>
               </button>
               <button className="style-action-btn" title="导出样式" onClick={() => setExportOpen(true)}>

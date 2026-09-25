@@ -2813,6 +2813,31 @@
   font-size: 14px;
 }
 
+/* ── Preview toggle triangle icon ── */
+.preview-toggle-icon {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 7px;
+  border-color: transparent transparent transparent currentColor;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.preview-toggle-icon.icon-show {
+  border-width: 7px 5px 0;
+  border-color: currentColor transparent transparent;
+  transform: rotate(0deg);
+}
+.preview-toggle-icon.icon-hide {
+  transform: rotate(0deg);
+}
+.style-action-btn:hover .preview-toggle-icon {
+  transform: translateX(2px);
+}
+.style-action-btn:hover .preview-toggle-icon.icon-show {
+  transform: translateY(2px);
+}
+
 .style-cards-wrapper {
   display: grid;
   grid-template-rows: 1fr;
