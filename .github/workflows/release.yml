@@ -48,12 +48,14 @@ jobs:
       # ── macOS: 安装 setuptools（Python 3.12+ 移除了 distutils） ──
       - name: Install setuptools (macOS)
         if: runner.os == 'macOS'
-        run: python3 -m pip install setuptools
+        run: python3 -m pip install --break-system-packages setuptools
 
       # ── Windows: 设置 node-gyp 使用 MSBuild 2022 ──
       - name: Configure node-gyp (Windows)
         if: runner.os == 'Windows'
-        run: npm config set node_gyp "$(npm root -g)/node-gyp/bin/node-gyp.js"
+        run: |
+          npm config set python "$(python -c "import sys; print(sys.executable)")"
+          npm config set msvs_version 2022
 
       - name: Build Vite app
         run: npm run build
