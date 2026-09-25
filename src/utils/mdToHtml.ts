@@ -113,8 +113,8 @@ function convertMarkdownToHtml(md: string): string {
   html = html.replace(/^- \[\s\]\s+(.+)$/gmi, '<li class="task-item"><input type="checkbox" disabled> $1</li>')
 
   // ── List items (支持 emoji 前缀如 * 📝 ...) ──
-  html = html.replace(/^\S*\s*[-*+]\s+(.+)$/gm, '<li>$1</li>')
-  html = html.replace(/^\S*\s*\d+\.\s+(.+)$/gm, '<li>$1</li>')
+  html = html.replace(/^[\s\S]*?[-*+]\s+(.+)$/gm, '<li>$1</li>')
+  html = html.replace(/^[\s\S]*?\d+\.\s+(.+)$/gm, '<li>$1</li>')
 
   // ── Wrap consecutive <li> ──
   html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, (match: string) => {
