@@ -285,7 +285,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
       subtitle={CATEGORIES.find(c => c.id === category)?.label || '文档库'}
       footer={footer}
       size="lg"
-      className="library-dialog"
     >
       <div className="ud-body ud-body-split">
         <div className="ud-left">{leftNav}</div>

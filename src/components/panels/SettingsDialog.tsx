@@ -187,7 +187,6 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
         </div>
       }
       size="lg"
-      className="settings-dialog-fixed"
     >
       <div className="ud-body ud-body-split">
         <div className="ud-left">{leftNav}</div>

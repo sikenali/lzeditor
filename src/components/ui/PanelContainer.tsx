@@ -28,7 +28,7 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
 
   return (
     <div className="panel-backdrop">
-      <div ref={containerRef} className={`panel-container panel-container--${size} ${className}`}>
+      <div ref={containerRef} className={`panel-container${className ? ' ' + className : ''}`}>
         <div className="panel-header">
           {icon && <span className={`remix panel-icon ${icon}`}></span>}
           <div className="panel-title-group">

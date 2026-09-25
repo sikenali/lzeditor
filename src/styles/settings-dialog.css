@@ -1822,7 +1822,7 @@
 }
 
 /* ═══════════════════════════════════════════
-   Panel Container — 独立面板样式
+   Panel Container — 统一窗口大小，切换标签不变
    ═══════════════════════════════════════════ */
 .panel-backdrop {
   position: fixed; inset: 0;
@@ -1839,17 +1839,20 @@
   background: var(--chrome-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  width: min(920px, 92vw);
-  max-height: 88vh;
+  width: 920px;
+  height: 680px;
+  max-width: 94vw;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 24px 80px rgba(0,0,0,0.3);
   animation: panel-in 0.25s cubic-bezier(0.32, 0.72, 0, 1);
   pointer-events: auto;
+  /* 固定高度，切换标签时不变 */
+  resize: none;
+  flex-shrink: 0;
 }
-.panel-container--lg { width: min(920px, 92vw); max-height: 88vh; }
-.panel-container--xl { width: min(920px, 92vw); max-height: 88vh; }
 @keyframes panel-in {
   from { opacity: 0; transform: scale(0.96) translateY(12px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
