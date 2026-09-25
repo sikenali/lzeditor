@@ -74,8 +74,8 @@ export const LZEditor = () => {
   const readTocOpen = useEditorStore((s) => s.readTocOpen)
   const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
   const docTitle = useEditorStore((s) => s.docTitle)
-  const [localTocOpen, setLocalTocOpen] = useState(true)
-  const [codeTocOpen, setCodeTocOpen] = useState(true)
+  const setTocItems = useEditorStore((s) => s.setTocItems)
+  const tocItems = useEditorStore((s) => s.tocItems)
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
@@ -127,11 +127,13 @@ export const LZEditor = () => {
   const LAYOUTS = ['narrow', 'normal', 'wide'] as const
   const LAYOUT_LABELS: Record<string, string> = { narrow: '窄栏', normal: '标准', wide: '宽屏' }
   const LAYOUT_MAX_W: Record<string, number> = { narrow: 530, normal: 760, wide: 1000 }
-  const [tocItems, setTocItems] = useState<{ id: string; text: string; level: number }[]>([])
-  const [activeTocId, setActiveTocId] = useState('')
+  const storeTocItems = useEditorStore((s) => s.tocItems)
+  const setStoreTocItems = useEditorStore((s) => s.setTocItems)
+  const activeTocId = useEditorStore((s) => s.activeTocId)
+  const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
   const readTocRef = useRef<HTMLDivElement>(null)
+  // code mode TOC items (computed from markdown, separate IDs)
   const [codeTocItems, setCodeTocItems] = useState<{ id: string; text: string; level: number }[]>([])
-  const codeTocRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = readTocRef.current
     if (!el || !readContent) return
@@ -142,7 +144,7 @@ export const LZEditor = () => {
       h.setAttribute('id', id)
       items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
     })
-    setTocItems(items)
+    setStoreTocItems(items)
   }, [readContent])
   // 代码模式目录 — 从 markdown 文本提取标题
   useEffect(() => {
@@ -765,18 +767,18 @@ export const LZEditor = () => {
                 <span>继续编辑</span>
               </button>
             </div>
-            <div className="read-mode-body" style={{ flexDirection: localTocOpen ? 'row' : 'column' }}>
-              {localTocOpen && tocItems.length > 0 && (
+            <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column' }}>
+              {readTocOpen && storeTocItems.length > 0 && (
                 <div className="read-toc-sidebar">
                   <div className="read-toc-header">
                     <span className="remix ri-menu-fill"></span>
                     <span>目录</span>
-                    <button className="read-toc-close" onClick={() => setLocalTocOpen(false)}>
+                    <button className="read-toc-close" onClick={() => setReadTocOpen(false)}>
                       <span className="remix ri-close-line"></span>
                     </button>
                   </div>
                   <div className="read-toc-list">
-                    {tocItems.map(item => (
+                    {storeTocItems.map(item => (
                       <button key={item.id} className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
                         style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
                         onClick={() => scrollToHeading(item.id)}>
@@ -838,6 +840,10 @@ export const LZEditor = () => {
                 <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
                   <span className="remix ri-add-line"></span>
                 </button>
+                <button className={`read-tool-btn ${readTocOpen ? 'active' : ''}`} title="目录" onClick={() => setReadTocOpen(!readTocOpen)}>
+                  <span className="remix ri-menu-fill"></span>
+                  <span>目录</span>
+                </button>
               </div>
               <span className="read-mode-meta">{mdContent.length} 字符 · {wordCount} 字</span>
               <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
@@ -845,7 +851,7 @@ export const LZEditor = () => {
                 <span>编辑模式</span>
               </button>
             </div>
-            <div className="read-mode-body">
+            <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column' }}>
               <div className="read-article-wrapper">
                 <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
                   <div className="read-article-header">
@@ -876,12 +882,12 @@ export const LZEditor = () => {
                   />
                 </div>
               </div>
-              {codeTocOpen && codeTocItems.length > 0 && (
-                <div className="read-toc-sidebar" ref={codeTocRef}>
+              {readTocOpen && codeTocItems.length > 0 && (
+                <div className="read-toc-sidebar">
                   <div className="read-toc-header">
                     <span className="remix ri-menu-fill"></span>
                     <span>目录</span>
-                    <button className="read-toc-close" onClick={() => setCodeTocOpen(false)}>
+                    <button className="read-toc-close" onClick={() => setReadTocOpen(false)}>
                       <span className="remix ri-close-line"></span>
                     </button>
                   </div>

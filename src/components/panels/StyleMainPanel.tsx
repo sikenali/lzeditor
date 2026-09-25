@@ -22,6 +22,15 @@ export const StyleMainPanel: React.FC = () => {
   const fontSize = useEditorStore((s) => s.fontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore.getState().updateSetting
+  const readFontSize = useEditorStore((s) => s.readFontSize)
+  const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
+  const readLayout = useEditorStore((s) => s.readLayout)
+  const setReadLayout = useEditorStore((s) => s.setReadLayout)
+  const readTocOpen = useEditorStore((s) => s.readTocOpen)
+  const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
+  const storeTocItems = useEditorStore((s) => s.tocItems)
+  const activeTocId = useEditorStore((s) => s.activeTocId)
+  const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
@@ -150,6 +159,35 @@ export const StyleMainPanel: React.FC = () => {
   return (
     <>
       <div className="style-main-panel">
+        <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column', flex: 1, minHeight: 0, display: 'flex' }}>
+          {readTocOpen && storeTocItems.length > 0 && (
+            <div className="read-toc-sidebar">
+              <div className="read-toc-header">
+                <span className="remix ri-menu-fill"></span>
+                <span>目录</span>
+                <button className="read-toc-close" onClick={() => setReadTocOpen(false)}>
+                  <span className="remix ri-close-line"></span>
+                </button>
+              </div>
+              <div className="read-toc-list">
+                {storeTocItems.map(item => (
+                  <button
+                    key={item.id}
+                    className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
+                    style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
+                    onClick={() => {
+                      setActiveTocId(item.id)
+                      const el = document.getElementById(item.id)
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                  >
+                    <span className="read-toc-dot" />
+                    <span className="read-toc-text">{item.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         {/* ── Read content area ── */}
         <div ref={bodyRef} className="style-read-scroll">
           <div className="style-read-article" style={{ maxWidth: 760 }}>
@@ -177,6 +215,7 @@ export const StyleMainPanel: React.FC = () => {
               dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
             />
           </div>
+        </div>
         </div>
         <div className="main-nav-float">
           <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
@@ -210,6 +249,18 @@ export const StyleMainPanel: React.FC = () => {
               <button className="style-action-btn" title="导出样式" onClick={() => setExportOpen(true)}>
                 <span className="remix ri-download-2-line"></span>
                 <span>导出</span>
+              </button>
+              <div style={{ flex: 1 }} />
+              <button className="style-action-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
+                <span className="remix ri-subtract-line"></span>
+              </button>
+              <span className="read-font-size-value">{readFontSize}</span>
+              <button className="style-action-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
+                <span className="remix ri-add-line"></span>
+              </button>
+              <button className={`style-action-btn ${readTocOpen ? 'active' : ''}`} title="目录" onClick={() => setReadTocOpen(!readTocOpen)}>
+                <span className="remix ri-menu-fill"></span>
+                <span>目录</span>
               </button>
               <button className="style-action-btn" onClick={() => setAppMode('edit')} title="关闭">
                 <span className="remix ri-close-line"></span>

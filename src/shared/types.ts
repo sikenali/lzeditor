@@ -99,6 +99,8 @@ export interface EditorStoreState {
   readZoom: number
   readTocOpen: boolean
   readFontSize: number
+  tocItems: { id: string; text: string; level: number }[]
+  activeTocId: string
   versions: DocVersion[]
   editor: any
   setTitle: (title: string) => void
@@ -132,6 +134,8 @@ export interface EditorStoreState {
   setReadZoom: (zoom: number) => void
   setReadTocOpen: (open: boolean) => void
   setReadFontSize: (fontSize: number) => void
+  setTocItems: (items: { id: string; text: string; level: number }[]) => void
+  setActiveTocId: (id: string) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
   editorContentRef: HTMLDivElement | null
