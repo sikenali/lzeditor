@@ -73,8 +73,8 @@ export const LZEditor = () => {
   const readTocOpen = useEditorStore((s) => s.readTocOpen)
   const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
   const docTitle = useEditorStore((s) => s.docTitle)
-  const [localTocOpen, setLocalTocOpen] = useState(readTocOpen)
-  useEffect(() => { setLocalTocOpen(readTocOpen) }, [readTocOpen])
+  const [localTocOpen, setLocalTocOpen] = useState(true)
+  const [codeTocOpen, setCodeTocOpen] = useState(false)
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
@@ -129,6 +129,8 @@ export const LZEditor = () => {
   const [tocItems, setTocItems] = useState<{ id: string; text: string; level: number }[]>([])
   const [activeTocId, setActiveTocId] = useState('')
   const readTocRef = useRef<HTMLDivElement>(null)
+  const [codeTocItems, setCodeTocItems] = useState<{ id: string; text: string; level: number }[]>([])
+  const codeTocRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = readTocRef.current
     if (!el || !readContent) return
@@ -141,6 +143,20 @@ export const LZEditor = () => {
     })
     setTocItems(items)
   }, [readContent])
+  // 代码模式目录 — 从 markdown 文本提取标题
+  useEffect(() => {
+    const lines = (codeEditMd || '').split('\n')
+    const items: { id: string; text: string; level: number }[] = []
+    lines.forEach((line: string, i: number) => {
+      const match = line.match(/^(#{1,6})\s+(.+)$/m)
+      if (match) {
+        const level = match[1].length
+        const id = `code-h-${i}`
+        items.push({ id, text: match[2].trim(), level })
+      }
+    })
+    setCodeTocItems(items)
+  }, [codeEditMd])
   const scrollToHeading = useCallback((id: string) => {
     const el = document.getElementById(id)
     if (el) {
@@ -822,7 +838,7 @@ export const LZEditor = () => {
                 <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
                   <span className="remix ri-add-line"></span>
                 </button>
-                <button className={`read-tool-btn ${localTocOpen ? 'active' : ''}`} title="目录" onClick={() => setLocalTocOpen(!localTocOpen)}>
+                <button className={`read-tool-btn ${codeTocOpen ? 'active' : ''}`} title="目录" onClick={() => setCodeTocOpen(!codeTocOpen)}>
                   <span className="remix ri-menu-fill"></span>
                   <span>目录</span>
                 </button>
@@ -864,6 +880,33 @@ export const LZEditor = () => {
                   />
                 </div>
               </div>
+              {codeTocOpen && codeTocItems.length > 0 && (
+                <div className="read-toc-sidebar" ref={codeTocRef}>
+                  <div className="read-toc-header">
+                    <span className="remix ri-menu-fill"></span>
+                    <span>目录</span>
+                    <button className="read-toc-close" onClick={() => setCodeTocOpen(false)}>
+                      <span className="remix ri-close-line"></span>
+                    </button>
+                  </div>
+                  <div className="read-toc-list">
+                    {codeTocItems.map(item => (
+                      <button
+                        key={item.id}
+                        className="read-toc-item"
+                        style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
+                        onClick={() => {
+                          const el = document.getElementById(item.id)
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }}
+                      >
+                        <span className="read-toc-dot" />
+                        <span className="read-toc-text">{item.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
