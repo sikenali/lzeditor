@@ -68,7 +68,7 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
       icon="ri-bar-chart-2-line"
       title="插入图表"
       subtitle="生成 ECharts 图表并插入文档"
-      size="md"
+      size="lg"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>

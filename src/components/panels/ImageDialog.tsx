@@ -69,7 +69,7 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
       icon="ri-image-line"
       title="插入图片"
       subtitle="支持 URL 或本地上传"
-      size="md"
+      size="lg"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>

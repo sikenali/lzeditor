@@ -100,7 +100,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
       icon="ri-link"
       title="插入链接"
       subtitle="链接将插入到当前光标位置"
-      size="md"
+      size="lg"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>

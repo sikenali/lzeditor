@@ -162,7 +162,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
       icon="ri-table-2"
       title="插入表格"
       subtitle="选择表格类型并编辑内容"
-      size="md"
+      size="lg"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={() => onToggle(false)}>取消</button>

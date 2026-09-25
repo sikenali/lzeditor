@@ -35,7 +35,7 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
       icon="ri-function-fill"
       title="数学公式"
       subtitle="使用 LaTeX 语法输入公式"
-      size="md"
+      size="lg"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
