@@ -55,7 +55,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
           <button className="statusbar-pill" onClick={() => setShowOutline(!showOutline)} data-title="大纲">
             <span className="remix ri-list-unordered"></span>
           </button>
-          <button className="statusbar-pill" onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="预览">
+          <button className="statusbar-pill" onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="即时预览">
             <span className="remix ri-eye-line"></span>
           </button>
           <button className="statusbar-pill" onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} data-title="样式">
@@ -108,7 +108,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
         <button className={`statusbar-pill ${showOutline ? 'active' : ''}`} onClick={() => setShowOutline(!showOutline)} data-title="大纲">
           <span className="remix ri-list-unordered"></span>
         </button>
-        <button className={`statusbar-pill ${showPreview ? 'active' : ''}`} onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="预览">
+        <button className={`statusbar-pill ${showPreview ? 'active' : ''}`} onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="即时预览">
           <span className="remix ri-eye-line"></span>
         </button>
         <button className={`statusbar-pill ${appMode === 'style' ? 'active' : ''}`} onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} data-title="样式预览">
