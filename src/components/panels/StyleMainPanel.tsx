@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme, TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
@@ -101,7 +99,7 @@ export const StyleMainPanel: React.FC = () => {
 
   const defaultHtml = useMemo(() => {
     try {
-      return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString()
+      return mdToHtml(DEFAULT_CONTENT)
     } catch {
       return DEFAULT_CONTENT
     }

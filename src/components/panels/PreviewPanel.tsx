@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
 import { copyRichText } from '../../clipboard'
 import { getDocMd } from '../../utils/docSource'
@@ -37,7 +35,7 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const renderedHtml = useMemo(() => {
     if (!effectiveMd) return ''
     try {
-      return remark().use(remarkGfm).use(remarkHtml).processSync(effectiveMd).toString()
+      return mdToHtml(effectiveMd)
     } catch {
       return effectiveMd
     }

@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES, getTypographyTheme } from '../../styles/typography-themes'
@@ -53,7 +51,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const defaultHtml = useMemo(() => {
     try {
-      return remark().use(remarkGfm).use(remarkHtml).processSync(DEFAULT_CONTENT).toString()
+      return mdToHtml(DEFAULT_CONTENT)
     } catch {
       return DEFAULT_CONTENT
     }

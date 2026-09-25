@@ -12,7 +12,7 @@ export const DocumentMetaBar: React.FC = () => {
     <div className="document-meta-bar">
       {/* Tab bar */}
       <div className="meta-tabs">
-        {docs.map((doc: { id: string; title: string }) => {
+        {docs.filter((doc: any) => !doc.system).map((doc: { id: string; title: string }) => {
           const isActive = doc.id === activeDocId
           const isHovered = hoveredTab === doc.id
           return (

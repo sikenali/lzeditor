@@ -23,9 +23,7 @@ import { Superscript, Subscript } from './extensions/SupSub'
 import { Mathematics } from './extensions/Mathematics'
 import { ImageExt } from './extensions/ImageExt'
 import { StyledInsertAttributes } from './extensions/StyledInsertAttributes'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
 import { getDocMd } from '../../utils/docSource'
@@ -117,7 +115,7 @@ export const LZEditor = () => {
     const md = docsMd?.[docId] || getDocMd(docId)
     if (md && md.trim()) {
       try {
-        const html = remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
+        const html = mdToHtml(md)
         return html || md
       } catch {
         return md
@@ -214,12 +212,10 @@ export const LZEditor = () => {
       ServerAiToolkit,
     ],
     content: (() => {
-      if (activeDocId && docsMd[activeDocId]) {
-        return remark().use(remarkGfm).use(remarkHtml).processSync(docsMd[activeDocId]).toString()
-      }
-      const md = getDocMd(activeDocId || 'welcome') || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
+      const docId = activeDocId || 'welcome'
+      const md = docsMd?.[docId] || getDocMd(docId) || (docId === 'welcome' ? DEFAULT_CONTENT : '')
       if (!md) return ''
-      return remark().use(remarkGfm).use(remarkHtml).processSync(md).toString()
+      return mdToHtml(md)
     })(),
     onCreate: ({ editor }: any) => {
       editorInitialized.current = true
@@ -458,7 +454,7 @@ export const LZEditor = () => {
     if (activeDocId === lastDocIdRef.current) return
     lastDocIdRef.current = activeDocId
     const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
-    const html = md ? remark().use(remarkGfm).use(remarkHtml).processSync(md).toString() : ''
+    const html = md ? mdToHtml(md) : ''
     editor.commands.setContent(html)
   }, [activeDocId, editor, docsMd])
 
@@ -687,7 +683,7 @@ export const LZEditor = () => {
       setMdContent(value)
       const docId = useEditorStore.getState().activeDocId
       try {
-        const html = remark().use(remarkGfm).use(remarkHtml).processSync(value || '').toString()
+        const html = mdToHtml(value || '')
         updateDoc({ md: value, html, docsMd: docId ? { [docId]: value } : undefined })
         if (docId && docId !== 'welcome') {
           localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))

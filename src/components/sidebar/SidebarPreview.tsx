@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
 import { useScrollSync } from '../../hooks/useScrollSync'
 import { copyRichText } from '../../clipboard'
@@ -24,10 +22,7 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
 function mdToPreviewHtml(mdContent: string): string {
   if (!mdContent) return ''
   try {
-    const result = remark()
-      .use(remarkGfm)
-      .use(remarkHtml)
-      .processSync(mdContent)
+    const result = mdToHtml(mdContent)
     return result.toString()
   } catch {
     return mdContent

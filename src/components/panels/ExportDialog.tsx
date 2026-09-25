@@ -3,9 +3,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { exportDocument } from '../../services/exportService'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import { UnifiedDialog, UDSection, UDSettingRow, UDToggle, UDPreviewCard } from '../ui/UnifiedDialog'
 import { LFSCombo } from '../ui/LFSCombo'
 import { getDocMd } from '../../utils/docSource'
@@ -56,7 +54,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   const previewHtml = useMemo(() => {
     const md = getEffectiveMd(activeDocId, mdContent, docsMd)
     if (!md) return ''
-    try { return remark().use(remarkGfm).use(remarkHtml).processSync(md).toString() } catch { return md }
+    try { return mdToHtml(md) } catch { return md }
   }, [activeDocId, mdContent, docsMd])
 
   useEffect(() => {

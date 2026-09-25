@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from './utils/mdToHtml'
 import { Toolbar } from './components/layout/Toolbar'
 import { LeftNav } from './components/layout/LeftNav'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
@@ -131,7 +129,7 @@ function App() {
     const docId = cur.activeDocId
     if (docId) {
       try {
-        const html = remark().use(remarkGfm).use(remarkHtml).processSync(newContent).toString()
+        const html = mdToHtml(newContent)
         useEditorStore.getState().updateDoc({ md: newContent, html, docsMd: { [docId]: newContent } })
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: newContent, html, savedAt: Date.now() }))
       } catch {}

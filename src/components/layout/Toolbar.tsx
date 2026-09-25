@@ -1,6 +1,4 @@
-import { remark } from 'remark'
-import remarkGfm from 'remark-gfm'
-import remarkHtml from 'remark-html'
+import { mdToHtml } from '../../utils/mdToHtml'
 import React, { useState, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useAIStore } from '../../store/aiStore'
@@ -200,7 +198,7 @@ export const Toolbar: React.FC = () => {
         const id = createDoc(file.name.replace(/\.\w+$/, ''), '', undefined)
         const ed = useEditorStore.getState().editor
         if (ed) {
-          const html = remark().use(remarkGfm).use(remarkHtml).processSync(text).toString()
+          const html = mdToHtml(text)
           ed.commands.setContent(html)
         }
       }
