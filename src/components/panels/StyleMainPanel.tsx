@@ -200,22 +200,18 @@ export const StyleMainPanel: React.FC = () => {
         </div>
         </div>
         <div className={`main-nav-float${previewVisible ? '' : ' nav-hidden'}`}>
-          {/* Hover trigger area */}
-          <div className="nav-hover-trigger" />
-          <div className="nav-float-content">
-            <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
-              <span className="remix ri-arrow-left-s-line"></span>
-            </button>
-            <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
-              <span className="remix ri-arrow-right-s-line"></span>
-            </button>
-            <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
-              <span className="remix ri-arrow-up-s-line"></span>
-            </button>
-            <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
-              <span className="remix ri-fullscreen-line"></span>
-            </button>
-          </div>
+          <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
+            <span className="remix ri-arrow-left-s-line"></span>
+          </button>
+          <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
+            <span className="remix ri-arrow-right-s-line"></span>
+          </button>
+          <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
+            <span className="remix ri-arrow-up-s-line"></span>
+          </button>
+          <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
+            <span className="remix ri-fullscreen-line"></span>
+          </button>
         </div>
         <div className="style-panel">
           <div className="style-panel-inner">

@@ -1276,9 +1276,8 @@
   gap: 12px;
   padding: 16px 0;
   z-index: 100;
-  transition: opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: opacity 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
-/* Hidden state: no hover trigger */
 .main-nav-float.nav-hidden {
   opacity: 0;
   pointer-events: none;
@@ -1286,39 +1285,6 @@
 .main-nav-float.nav-hidden:hover {
   opacity: 1;
   pointer-events: auto;
-}
-/* Visible state with hover trigger */
-.main-nav-float:not(.nav-hidden) {
-  pointer-events: auto;
-}
-.nav-hover-trigger {
-  position: absolute;
-  inset: -8px 0;
-  z-index: 1;
-}
-.nav-float-content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 40px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: opacity 0.2s ease;
-}
-[data-theme="dark"] .nav-float-content {
-  background: rgba(40, 44, 52, 0.9);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-.main-nav-float.nav-hidden .nav-float-content {
-  opacity: 0;
-}
-.main-nav-float:hover .nav-float-content {
-  opacity: 1;
 }
 
 .nav-float-btn {
