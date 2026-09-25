@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection } from '../ui/PanelContainer'
 import { LibraryTree, buildTree } from './LibraryTree'
 import { ImportButtons, CATEGORIES } from './ImportButtons'
 
@@ -173,7 +173,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     )
   }
 
-  // Dialog mode
+  // Dialog mode - now using PanelContainer instead of UnifiedDialog
   const rightTop = (
     <UDSection label="">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -228,20 +228,33 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     </div>
   )
 
+  const footer = (
+    <div className="ud-actions">
+      <button className="ud-btn ud-btn--ghost" onClick={handleClose}>关闭</button>
+      {category === 'docs' && (
+        <button className="ud-btn ud-btn--primary" onClick={handlePrimaryAction}>新建文档库</button>
+      )}
+    </div>
+  )
+
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={handleClose}
       icon="ri-archive-2-line"
       title="文档库"
       subtitle={CATEGORIES.find(c => c.id === category)?.label || '文档库'}
-      rightTop={rightTop}
-      rightContent={rightContent}
-      hint={category === 'docs' ? '新建后会自动出现在左侧文档库侧边栏' : CATEGORIES.find(c => c.id === category)?.desc || ''}
-      cancelText="关闭"
-      submitText={category === 'docs' ? '新建文档库' : undefined}
-      onSubmit={category === 'docs' ? handlePrimaryAction : undefined}
+      footer={footer}
       size="lg"
       className="library-dialog"
-    />
+    >
+      <div className="ud-body ud-body-split">
+        <div className="ud-left">
+          {rightTop}
+        </div>
+        <div className="ud-right">
+          <div className="ud-right-content">{rightContent}</div>
+        </div>
+      </div>
+    </PanelContainer>
   )
 }

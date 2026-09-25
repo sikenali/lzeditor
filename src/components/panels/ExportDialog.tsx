@@ -4,7 +4,7 @@ import { exportDocument } from '../../services/exportService'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { mdToHtml } from '../../utils/mdToHtml'
-import { UnifiedDialog, UDSection, UDSettingRow, UDToggle, UDPreviewCard } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection, UDSettingRow, UDToggle, UDPreviewCard } from '../ui/PanelContainer'
 import { LFSCombo } from '../ui/LFSCombo'
 import { getDocMd } from '../../utils/docSource'
 
@@ -159,12 +159,28 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   )
 
   return (
-    <UnifiedDialog
-      onClose={onClose} icon="ri-download-2-line"
-      title="导出文档" subtitle={docTitle}
-      leftNav={leftNav} rightTop={rightTop} rightContent={previewContent}
-      hint="导出不会修改原文档" submitText={`导出 ${selected.name}`}
-      onSubmit={handleExport} submitDisabled={exporting} size="lg"
-    />
+    <PanelContainer
+      onClose={onClose}
+      icon="ri-download-2-line"
+      title="导出文档"
+      subtitle={docTitle}
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleExport} disabled={exporting}>
+            导出 {selected.name}
+          </button>
+        </div>
+      }
+      size="lg"
+    >
+      <div className="ud-body ud-body-split">
+        <div className="ud-left">{leftNav}</div>
+        <div className="ud-right">
+          {rightTop && <div className="ud-right-top">{rightTop}</div>}
+          <div className="ud-right-content">{previewContent}</div>
+        </div>
+      </div>
+    </PanelContainer>
   )
 }
