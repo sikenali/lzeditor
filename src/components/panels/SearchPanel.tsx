@@ -83,107 +83,85 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
     setTimeout(scrollToSelection, 50)
   }, [editor, refreshCounts, scrollToSelection])
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const panel = document.querySelector('.search-panel')
-      if (panel && !panel.contains(e.target as Node)) {
-        onClose()
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [onClose])
-
   return (
-    <div className="search-panel-overlay">
-      <div className="search-panel" role="dialog" aria-label="搜索与替换">
-        {/* Top bar — close button only */}
-        <div className="search-panel-topbar">
-          <button className="search-panel-close" onClick={onClose} title="关闭">
-            <span className="remix ri-close-line"></span>
-          </button>
+    <div className="search-panel-bar">
+      <div className="search-panel-inner">
+        {/* Options column */}
+        <div className="search-options-col">
+          <label className="search-option">
+            <span className={`search-checkbox ${caseSensitive ? 'checked' : ''}`}>
+              {caseSensitive && <span className="checkmark">✓</span>}
+            </span>
+            <input
+              type="checkbox"
+              checked={caseSensitive}
+              onChange={e => setCaseSensitive(e.target.checked)}
+              className="search-option-input"
+            />
+            <span>区分大小写</span>
+          </label>
+          <label className="search-option">
+            <span className={`search-checkbox ${wholeWord ? 'checked' : ''}`}>
+              {wholeWord && <span className="checkmark">✓</span>}
+            </span>
+            <input
+              type="checkbox"
+              checked={wholeWord}
+              onChange={e => setWholeWord(e.target.checked)}
+              className="search-option-input"
+            />
+            <span>全字匹配</span>
+          </label>
+          <label className="search-option">
+            <span className={`search-checkbox ${useRegex ? 'checked' : ''}`}>
+              {useRegex && <span className="checkmark">✓</span>}
+            </span>
+            <input
+              type="checkbox"
+              checked={useRegex}
+              onChange={e => setUseRegex(e.target.checked)}
+              className="search-option-input"
+            />
+            <span>使用正则</span>
+          </label>
         </div>
 
-        {/* Main content */}
-        <div className="search-panel-main">
-          {/* Left: options column */}
-          <div className="search-options-col">
-            <label className="search-option">
-              <span className="search-checkbox"></span>
+        {/* Operations column */}
+        <div className="search-ops-col">
+          {/* Find row */}
+          <div className="search-row">
+            <div className="search-input-group">
+              <span className="search-input-label">查找</span>
               <input
-                type="checkbox"
-                checked={caseSensitive}
-                onChange={e => setCaseSensitive(e.target.checked)}
-                style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                ref={inputRef}
+                className="search-input"
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
               />
-              <span>区分大小写</span>
-            </label>
-            <label className="search-option">
-              <span className="search-checkbox"></span>
-              <input
-                type="checkbox"
-                checked={wholeWord}
-                onChange={e => setWholeWord(e.target.checked)}
-                style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
-              />
-              <span>全字匹配</span>
-            </label>
-            <label className="search-option">
-              <span className="search-checkbox"></span>
-              <input
-                type="checkbox"
-                checked={useRegex}
-                onChange={e => setUseRegex(e.target.checked)}
-                style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
-              />
-              <span>使用正则表达式</span>
-            </label>
+            </div>
+            <button className="search-btn search-btn--primary" onClick={handleSearch} disabled={!editor}>
+              <span className="remix ri-search-line"></span> 查找
+            </button>
+            <button className="search-btn" onClick={handlePrev} disabled={!editor}>上一处</button>
+            <button className="search-btn" onClick={handleNext} disabled={!editor}>下一处</button>
           </div>
 
-          {/* Right: operations column */}
-          <div className="search-ops-col">
-            {/* Find row */}
-            <div className="search-row">
-              <div className="search-input-group">
-                <span className="search-input-label">查找</span>
-                <input
-                  ref={inputRef}
-                  className="search-input"
-                  type="text"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="搜索..."
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
-                />
-              </div>
-              <button className="search-btn search-btn--primary" onClick={handleSearch}>
-                <span className="remix ri-search-line"></span> 查找
-              </button>
-              <button className="search-btn" onClick={handlePrev} disabled={!editor}>
-                查找上一处
-              </button>
+          {/* Replace row */}
+          <div className="search-row">
+            <div className="search-input-group">
+              <span className="search-input-label">替换</span>
+              <input
+                className="search-input"
+                type="text"
+                value={replaceTerm}
+                onChange={e => setReplaceTerm(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleReplace() } }}
+              />
             </div>
-
-            {/* Replace row */}
-            <div className="search-row">
-              <div className="search-input-group">
-                <span className="search-input-label">替换</span>
-                <input
-                  className="search-input"
-                  type="text"
-                  value={replaceTerm}
-                  onChange={e => setReplaceTerm(e.target.value)}
-                  placeholder="替换为..."
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleReplace() } }}
-                />
-              </div>
-              <button className="search-btn" onClick={handleReplace} disabled={!editor || !replaceTerm}>
-                替换
-              </button>
-              <button className="search-btn" onClick={handleReplaceAll} disabled={!editor || !replaceTerm}>
-                全部替换
-              </button>
-            </div>
+            <button className="search-btn" onClick={handleReplace} disabled={!editor || !replaceTerm}>替换</button>
+            <button className="search-btn" onClick={handleReplaceAll} disabled={!editor || !replaceTerm}>全部替换</button>
           </div>
         </div>
 
@@ -193,6 +171,11 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
             {resultCount > 0 ? `找到 ${resultCount} 个结果（第 ${currentIndex + 1} 个）` : '未找到匹配项'}
           </div>
         )}
+
+        {/* Close button */}
+        <button className="search-panel-close" onClick={onClose} title="关闭">
+          <span className="remix ri-close-line"></span>
+        </button>
       </div>
     </div>
   )

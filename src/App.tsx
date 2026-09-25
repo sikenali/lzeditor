@@ -271,6 +271,11 @@ function App() {
   return (
     <div className={`app${navMode === 'left' ? ' nav-mode-left' : ''}`} style={{ display: 'flex', flexDirection: navMode === 'left' ? 'row' : 'column', height: '100vh', overflow: 'hidden' }}>
       {navMode === 'left' ? leftLayout : topLayout}
+      {useEditorStore(s => s.showSearch) && (
+        <div className={`search-panel-bar${searchPanelAnimating === 'search-panel-exit' ? ' search-panel-exiting' : ''}`}>
+          <SearchPanel onClose={() => useEditorStore.getState().setShowSearch(false)} />
+        </div>
+      )}
 
       {openPanel === 'settings' && <SettingsDialog onClose={closePanel} />}
       {openPanel === 'export' && <ExportDialog onClose={closePanel} />}
@@ -278,11 +283,6 @@ function App() {
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
-      {useEditorStore(s => s.showSearch) && (
-        <div className={`search-panel-overlay${searchPanelAnimating === 'search-panel-exit' ? ' search-panel-exiting' : ''}`}>
-          <SearchPanel onClose={() => useEditorStore.getState().setShowSearch(false)} />
-        </div>
-      )}
 
       <AIPanel />
 
