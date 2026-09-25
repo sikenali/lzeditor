@@ -101,7 +101,6 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
       title="插入链接"
       subtitle="链接将插入到当前光标位置"
       size="md"
-      className="dialog-fixed-882x600"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
@@ -111,9 +110,8 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
         </div>
       }
     >
-      <div className="ud-right-content">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* 2 标签切换 */}
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+        {/* 2 标签切换 */}
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               className={`ud-btn${linkType === 'external' ? ' ud-btn--primary' : ''}`}
@@ -206,7 +204,6 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
             </>
           )}
         </div>
-      </div>
     </PanelContainer>
   )
 }
