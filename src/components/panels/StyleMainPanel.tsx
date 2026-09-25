@@ -8,6 +8,7 @@ import { getTypographyTheme, TYPOGRAPHY_THEMES } from '../../styles/typography-t
 import { useScrollSpy } from '../../hooks/useScrollSpy'
 import { DEFAULT_CONTENT } from '../../components/editor/constants'
 import { getDocMd, getDocHtml } from '../../utils/docSource'
+import { ExportDialog } from './ExportDialog'
 
 export const StyleMainPanel: React.FC = () => {
   const docTitle = useEditorStore((s) => s.docTitle)
@@ -22,11 +23,13 @@ export const StyleMainPanel: React.FC = () => {
   const codeMode = useEditorStore((s: any) => s.codeMode)
   const setCodeMode = useEditorStore((s: any) => s.setCodeMode)
   const setAppMode = useEditorStore((s) => s.setAppMode)
+  const updateSetting = useSettingsStore.getState().updateSetting
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
   const [isCodeMode, setIsCodeMode] = useState(codeMode)
   const [previewVisible, setPreviewVisible] = useState(true)
+  const [exportOpen, setExportOpen] = useState(false)
 
   // ── Chapter navigation ──
   interface Chapter { id: string; text: string; level: number }
@@ -197,7 +200,7 @@ export const StyleMainPanel: React.FC = () => {
                 <span className={`remix ${previewVisible ? 'ri-eye-off-line' : 'ri-eye-line'}`}></span>
                 <span>{previewVisible ? '隐藏' : '显示'}</span>
               </button>
-              <button className="style-action-btn" title="导出样式">
+              <button className="style-action-btn" title="导出样式" onClick={() => setExportOpen(true)}>
                 <span className="remix ri-download-2-line"></span>
                 <span>导出</span>
               </button>
@@ -221,7 +224,7 @@ export const StyleMainPanel: React.FC = () => {
                 <button
                   key={t.id}
                   className={`style-card${t.id === activeStyle ? ' active' : ''}`}
-                  onClick={() => setActiveStyle(t.id)}
+                  onClick={() => { setActiveStyle(t.id); updateSetting('typographyTheme', t.id) }}
                 >
                   <div
                     className="style-card-thumb"
@@ -250,6 +253,7 @@ export const StyleMainPanel: React.FC = () => {
           </div>
         </div>
       </div>
+      {exportOpen && <ExportDialog onClose={() => setExportOpen(false)} styleId={activeStyle} />}
     </>
   )
 }

@@ -34,7 +34,7 @@ const ORIENTATIONS = [
   { value: 'portrait', label: '纵向' }, { value: 'landscape', label: '横向' },
 ]
 
-export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> = ({ onClose, styleId }) => {
   const docTitle = useEditorStore(s => s.docTitle)
   const docHTML = useEditorStore(s => s.docHTML)
   const mdContent = useEditorStore(s => s.mdContent)
@@ -61,7 +61,8 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   useEffect(() => {
     const el = document.getElementById('lz-export-typography-css')
     if (el) el.remove()
-    const theme = getTypographyTheme(typographyTheme || 'classic')
+    const themeId = styleId || typographyTheme || 'classic'
+    const theme = getTypographyTheme(themeId)
     if (theme) {
       const styleEl = document.createElement('style')
       styleEl.id = 'lz-export-typography-css'
@@ -151,10 +152,14 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     </div>
   )
 
-  const rightContent = (
+  const previewContent = (
     <UDPreviewCard label={isPrintFormat ? `${paperSize.toUpperCase()} · ${orientation === 'portrait' ? '纵向' : '横向'}` : selected.name}>
-      <div dangerouslySetInnerHTML={{ __html: previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:32px 16px;">暂无内容，请先编辑文档</p>' }}
-        style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--text-primary)' }} />
+      <div
+        className="export-preview-body"
+        data-typography-theme={styleId || typographyTheme}
+        dangerouslySetInnerHTML={{ __html: previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:32px 16px;">暂无内容，请先编辑文档</p>' }}
+        style={{ fontSize: 13, lineHeight: 1.7 }}
+      />
     </UDPreviewCard>
   )
 
@@ -162,7 +167,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     <UnifiedDialog
       onClose={onClose} icon="ri-download-2-line"
       title="导出文档" subtitle={docTitle}
-      leftNav={leftNav} rightTop={rightTop} rightContent={rightContent}
+      leftNav={leftNav} rightTop={rightTop} rightContent={previewContent}
       hint="导出不会修改原文档" submitText={`导出 ${selected.name}`}
       onSubmit={handleExport} submitDisabled={exporting} size="lg"
     />
