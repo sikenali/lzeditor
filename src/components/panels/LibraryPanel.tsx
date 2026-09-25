@@ -54,13 +54,14 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   }
 
   const flatDocs = useMemo(() => {
+    const visible = docs.filter((d: any) => !d.system)
     if (searchText) {
-      return docs.filter((d: any) =>
+      return visible.filter((d: any) =>
         d.title.toLowerCase().includes(searchText.toLowerCase()) ||
         (d.path || '').toLowerCase().includes(searchText.toLowerCase())
       )
     }
-    return docs
+    return visible
   }, [docs, searchText])
 
   const tree = useMemo(() => buildTree(flatDocs), [flatDocs])
@@ -110,7 +111,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
                 >
                   <span className="remix ri-folder-fill library-folder-icon"></span>
                   <span className="library-folder-name">{lib.name}</span>
-                  <span className="library-folder-count">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id).length}</span>
+                  <span className="library-folder-count">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id && !doc.system).length}</span>
                 </button>
                 <button
                   className="library-folder-rename-btn"
@@ -209,7 +210,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
                   <span className="remix ri-folder-fill library-doc-icon"></span>
                   <div className="library-doc-info">
                     <div className="library-doc-name">{lib.name}</div>
-                    <div className="library-doc-meta">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id).length} 个文档</div>
+                    <div className="library-doc-meta">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id && !doc.system).length} 个文档</div>
                   </div>
                   <span className="remix ri-arrow-right-s-line library-doc-arrow"></span>
                 </button>
