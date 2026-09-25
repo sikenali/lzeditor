@@ -15,6 +15,12 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
 
   const selected = sortedVersions.find(v => v.id === selectedVersion) ?? sortedVersions[0] ?? null
   const currentIndex = sortedVersions.findIndex(v => v.id === selected?.id)
+
+  const commitShortHash = (id: string) => {
+    const n = parseInt(id, 10)
+    return n.toString(16).slice(-6)
+  }
+
   const maxChanges = useMemo(() =>
     Math.max(...sortedVersions.map(v => v.changes), 1),
     [sortedVersions]
@@ -61,13 +67,26 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
           {/* 版本信息头 */}
           {selected && (
             <div className="history-version-info">
-              <span className="remix ri-file-text-line history-version-icon"></span>
-              <span className="history-version-title">版本 #{currentIndex !== -1 ? currentIndex + 1 : versions.length}</span>
-              <span className="history-version-sep">·</span>
-              <span className="remix ri-calendar-event-fill history-version-icon"></span>
-              <span className="history-version-date">{selected.date} {selected.time}</span>
-              <span className="history-version-sep">·</span>
-              <span className="history-version-changes">{selected.changes} 字</span>
+              <span className="history-version-label">
+                <span className="remix ri-git-commit-line history-version-hash-icon"></span>
+                <span className="history-version-num">版本 #{currentIndex !== -1 ? currentIndex + 1 : versions.length}</span>
+                <span className="history-version-hash">({commitShortHash(selected.id)})</span>
+                <span className="history-version-date">{selected.date} {selected.time}</span>
+              </span>
+              <div className="history-version-actions">
+                <button className="history-action-btn" onClick={handleRollback}>
+                  <span className="remix ri-arrow-go-back-line"></span>
+                  <span>回滚</span>
+                </button>
+                <button className="history-action-btn" onClick={() => {}}>
+                  <span className="remix ri-restart-line"></span>
+                  <span>重播</span>
+                </button>
+                <button className="history-action-btn" onClick={onClose}>
+                  <span className="remix ri-close-line"></span>
+                  <span>关闭</span>
+                </button>
+              </div>
             </div>
           )}
           {/* 时间线柱状图 */}

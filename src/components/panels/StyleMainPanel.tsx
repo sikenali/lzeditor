@@ -1,19 +1,13 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { getTypographyTheme } from '../../styles/typography-themes'
+import { getTypographyTheme, TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
+import { useScrollSpy } from '../../hooks/useScrollSpy'
 import { DEFAULT_CONTENT } from '../../components/editor/constants'
 import { getDocMd, getDocHtml } from '../../utils/docSource'
-
-const STYLE_SETS = [
-  { id: 'default', name: 'Default', accent: '#1a73e8' },
-  { id: 'ocean', name: 'Ocean', accent: '#0ea5e9' },
-  { id: 'plain', name: 'Plain', accent: '#64748b' },
-  { id: 'summer', name: 'Summer', accent: '#b43a2e' },
-] as const
 
 export const StyleMainPanel: React.FC = () => {
   const docTitle = useEditorStore((s) => s.docTitle)
@@ -30,8 +24,39 @@ export const StyleMainPanel: React.FC = () => {
   const setAppMode = useEditorStore((s) => s.setAppMode)
 
   const bodyRef = useRef<HTMLDivElement>(null)
-  const [activeStyle, setActiveStyle] = useState('default')
+  const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
   const [isCodeMode, setIsCodeMode] = useState(codeMode)
+
+  // ── Chapter navigation ──
+  interface Chapter { id: string; text: string; level: number }
+  const [chapters, setChapters] = useState<Chapter[]>([])
+  const chaptersRef = useRef<Chapter[]>([])
+  chaptersRef.current = chapters
+  const [activeChapterId, setActiveChapterId] = useState<string>('')
+  const chapterItems = useMemo(
+    () => chapters.map(c => ({ id: c.id, text: c.text, el: document.getElementById(c.id) })),
+    [chapters]
+  )
+  const { scrollTo: scrollToChapter } = useScrollSpy({
+    items: chapterItems,
+    activeId: activeChapterId,
+    setActiveId: setActiveChapterId,
+    container: bodyRef.current,
+  })
+
+  const handlePrevChapter = useCallback(() => {
+    const items = chaptersRef.current
+    const active = items.find(c => c.id === activeChapterId)
+    const idx = active ? items.indexOf(active) : -1
+    if (idx > 0) scrollToChapter(items[idx - 1].id)
+  }, [activeChapterId, scrollToChapter])
+
+  const handleNextChapter = useCallback(() => {
+    const items = chaptersRef.current
+    const active = items.find(c => c.id === activeChapterId)
+    const idx = active ? items.indexOf(active) : -1
+    if (idx >= 0 && idx < items.length - 1) scrollToChapter(items[idx + 1].id)
+  }, [activeChapterId, scrollToChapter])
 
   useEffect(() => { setIsCodeMode(codeMode) }, [codeMode])
 
@@ -68,6 +93,20 @@ export const StyleMainPanel: React.FC = () => {
     setEffectiveHtml(docHTML || initialHtml || defaultHtml)
   }, [docHTML, initialHtml, defaultHtml])
 
+  // ── Extract chapters from rendered headings ──
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    const headings = el.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    const items: Chapter[] = []
+    headings.forEach((h, i) => {
+      const id = `style-h-${i}`
+      h.setAttribute('id', id)
+      items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
+    })
+    setChapters(items)
+  }, [renderedHtml, effectiveHtml])
+
   useEffect(() => {
     const el = bodyRef.current
     if (!el) return
@@ -85,7 +124,7 @@ export const StyleMainPanel: React.FC = () => {
     }
   }, [typographyTheme, effectiveHtml])
 
-  const activeStyleData = STYLE_SETS.find(s => s.id === activeStyle) ?? STYLE_SETS[0]
+  const activeStyleData = TYPOGRAPHY_THEMES.find(t => t.id === activeStyle) ?? TYPOGRAPHY_THEMES[0]
 
   const handleFullscreen = () => {
     const el = document.documentElement
@@ -123,17 +162,17 @@ export const StyleMainPanel: React.FC = () => {
             ) : (
               <div
                 className="read-article-body"
-                style={{ fontSize: `${fontSize}px`, lineHeight: '1.9', '--style-accent': activeStyleData.accent } as React.CSSProperties}
+                style={{ fontSize: `${fontSize}px`, lineHeight: '1.9', '--style-accent': activeStyleData.color } as React.CSSProperties}
                 dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
               />
             )}
           </div>
         </div>
         <div className="main-nav-float">
-          <button className="nav-float-btn" title="上一页">
+          <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
             <span className="remix ri-arrow-left-s-line"></span>
           </button>
-          <button className="nav-float-btn" title="下一页">
+          <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
             <span className="remix ri-arrow-right-s-line"></span>
           </button>
           <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
@@ -170,7 +209,6 @@ export const StyleMainPanel: React.FC = () => {
                 <span className="remix ri-code-s-line"></span>
                 <span>源码</span>
               </button>
-              <div style={{ flex: 1 }} />
               <button className="style-action-btn" onClick={() => setAppMode('edit')} title="关闭">
                 <span className="remix ri-close-line"></span>
                 <span>关闭</span>
@@ -179,31 +217,32 @@ export const StyleMainPanel: React.FC = () => {
 
             {/* Style cards */}
             <div className="style-cards">
-              {STYLE_SETS.map(s => (
+              {TYPOGRAPHY_THEMES.map(t => (
                 <button
-                  key={s.id}
-                  className={`style-card${s.id === activeStyle ? ' active' : ''}`}
-                  onClick={() => setActiveStyle(s.id)}
+                  key={t.id}
+                  className={`style-card${t.id === activeStyle ? ' active' : ''}`}
+                  onClick={() => setActiveStyle(t.id)}
                 >
                   <div
                     className="style-card-thumb"
-                    style={{ borderColor: s.id === activeStyle ? s.accent : 'rgba(204,204,204,1)' }}
+                    style={{
+                      borderColor: t.id === activeStyle ? t.color : 'rgba(204,204,204,1)',
+                      background: t.id === 'night' ? '#1a1b26' : '#fff',
+                    }}
                   >
-                    <div className="thumb-line thumb-line-title" style={{ color: s.accent }}>Lorem ipsum</div>
-                    <div className="thumb-line" />
-                    <div className="thumb-line" />
-                    <div className="thumb-line thumb-line-short" />
-                    <div className="thumb-line thumb-line-sub">Etiam fringilla</div>
-                    <div className="thumb-line" />
-                    <div className="thumb-line" />
-                    <div className="thumb-line thumb-line-short" />
-                    <div className="thumb-line thumb-line-sub">Aliquam semper</div>
-                    <div className="thumb-sep" />
-                    <div className="thumb-line thumb-line-author">Thomas antoine</div>
-                    <div className="thumb-line thumb-line-short" />
+                    <div
+                      className="style-card-preview"
+                      data-typography-theme={t.id}
+                      style={{ fontSize: 5, lineHeight: 1.4, color: t.id === 'night' ? '#c6cade' : '#333', padding: '2px 3px' }}
+                    >
+                      <div style={{ fontSize: 6, fontWeight: 600, color: t.color, marginBottom: 1 }}>{t.name}</div>
+                      <div style={{ fontSize: 4.5, color: 'rgba(128,128,128,0.7)', borderBottom: `1px solid ${t.color}33`, paddingBottom: 1, marginBottom: 1 }}>二级标题装饰</div>
+                      <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.8)' }}>正文文字样例·<code style={{ background: `${t.color}18`, color: t.color, padding: '0 2px', borderRadius: 1, fontSize: 4 }}>代码</code></div>
+                      <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.6)', marginTop: 1 }}>引用文字样例</div>
+                    </div>
                   </div>
-                  <div className="style-card-name" style={s.id === activeStyle ? { color: s.accent } : undefined}>
-                    {s.name}
+                  <div className="style-card-name" style={t.id === activeStyle ? { color: t.color } : undefined}>
+                    {t.name}
                   </div>
                 </button>
               ))}
