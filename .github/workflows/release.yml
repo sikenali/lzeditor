@@ -45,17 +45,20 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --ignore-scripts
 
-      # ── macOS: 安装 setuptools（Python 3.12+ 移除了 distutils） ──
+      # ── macOS: 安装 setuptools 并添加到 node-gyp Python 路径 ──
       - name: Install setuptools (macOS)
         if: runner.os == 'macOS'
-        run: python3 -m pip install --break-system-packages setuptools
+        run: |
+          python3 -m pip install --user setuptools
+          echo "PYTHONPATH=$(python3 -m site --user-site)" >> $GITHUB_ENV
 
-      # ── Windows: 设置 node-gyp 使用 MSBuild 2022 ──
+      # ── Windows: 配置 node-gyp 使用 MSBuild 2022 ──
       - name: Configure node-gyp (Windows)
         if: runner.os == 'Windows'
         run: |
-          npm config set python "$(python -c "import sys; print(sys.executable)")"
-          npm config set msvs_version 2022
+          npm config set python "$(where python)"
+          echo "PYTHON=$(where python)" >> $GITHUB_ENV
+          echo "npm_config_msvs_version=2022" >> $GITHUB_ENV
 
       - name: Build Vite app
         run: npm run build
@@ -69,6 +72,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
+          PYTHON: ${{ env.PYTHON }}
+          npm_config_msvs_version: '2022'
 
       - name: Build & Publish (macOS)
         if: runner.os == 'macOS'
@@ -76,6 +81,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
+          PYTHONPATH: ${{ env.PYTHONPATH }}
 
       - name: Build & Publish (Linux)
         if: runner.os == 'Linux'
