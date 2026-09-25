@@ -29,6 +29,7 @@ import remarkHtml from 'remark-html'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
 import { getDocMd } from '../../utils/docSource'
+import { renderMdWithMath } from '../../utils/mdWithMath'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
 import { ServerAiToolkit } from '@tiptap/ai-toolkit'
@@ -74,7 +75,7 @@ export const LZEditor = () => {
   const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
   const docTitle = useEditorStore((s) => s.docTitle)
   const [localTocOpen, setLocalTocOpen] = useState(true)
-  const [codeTocOpen, setCodeTocOpen] = useState(false)
+  const [codeTocOpen, setCodeTocOpen] = useState(true)
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
@@ -85,7 +86,7 @@ export const LZEditor = () => {
 
   const renderedHtml = useMemo(() => {
     if (!mdContent) return ''
-    try { return remark().use(remarkGfm).use(remarkHtml).processSync(mdContent).toString() } catch { return mdContent }
+    try { return renderMdWithMath(mdContent) } catch { return mdContent }
   }, [mdContent])
 
   const codeEditMdRef = useRef(mdContent)
@@ -740,7 +741,10 @@ export const LZEditor = () => {
         {appMode === 'read' && (
           <div className="read-mode-inline">
             <div className="read-mode-toolbar">
-              <span className="read-mode-label">📖 阅读模式</span>
+              <span className="read-mode-label">
+                <span className="remix ri-book-open-line" style={{ marginRight: 5, fontSize: 15 }}></span>
+                阅读模式
+              </span>
               <div className="read-mode-controls">
                 <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
                   onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
@@ -753,10 +757,6 @@ export const LZEditor = () => {
                 <span className="read-font-size-value">{readFontSize}</span>
                 <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
                   <span className="remix ri-add-line"></span>
-                </button>
-                <button className={`read-tool-btn ${localTocOpen ? 'active' : ''}`} title="目录" onClick={() => setLocalTocOpen(!localTocOpen)}>
-                  <span className="remix ri-menu-fill"></span>
-                  <span>目录</span>
                 </button>
               </div>
               <span className="read-mode-meta">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟阅读</span>
@@ -837,10 +837,6 @@ export const LZEditor = () => {
                 <span className="read-font-size-value">{readFontSize}</span>
                 <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
                   <span className="remix ri-add-line"></span>
-                </button>
-                <button className={`read-tool-btn ${codeTocOpen ? 'active' : ''}`} title="目录" onClick={() => setCodeTocOpen(!codeTocOpen)}>
-                  <span className="remix ri-menu-fill"></span>
-                  <span>目录</span>
                 </button>
               </div>
               <span className="read-mode-meta">{mdContent.length} 字符 · {wordCount} 字</span>
