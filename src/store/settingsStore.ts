@@ -70,7 +70,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   toolbarCollapsed: false,
   toolbarWidth: 220,
   // ── Toolbar defaults ──
-  compactToolbar: false,
+  compactToolbar: true,
   showToolbarLabels: true,
   // ── Startup / app behavior defaults ──
   enableTabs: true,
