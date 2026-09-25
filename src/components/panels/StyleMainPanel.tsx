@@ -25,11 +25,15 @@ export const StyleMainPanel: React.FC = () => {
   const fontSize = useEditorStore((s) => s.fontSize)
   const previewMode = useEditorStore((s: any) => s.previewMode)
   const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
+  const codeMode = useEditorStore((s: any) => s.codeMode)
+  const setCodeMode = useEditorStore((s: any) => s.setCodeMode)
   const setAppMode = useEditorStore((s) => s.setAppMode)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState('default')
-  const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
+  const [isCodeMode, setIsCodeMode] = useState(codeMode)
+
+  useEffect(() => { setIsCodeMode(codeMode) }, [codeMode])
 
   const effectiveMd = useMemo(() => {
     if (mdContent) return mdContent
@@ -160,7 +164,7 @@ export const StyleMainPanel: React.FC = () => {
               </button>
               <button
                 className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
-                onClick={() => { setIsCodeMode(!isCodeMode); setPreviewMode(isCodeMode ? 'render' : 'code') }}
+                onClick={() => { const next = !codeMode; setCodeMode(next); setPreviewMode(next ? 'code' : 'render') }}
                 title="切换源码模式"
               >
                 <span className="remix ri-code-s-line"></span>
