@@ -32,25 +32,32 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
   hint, cancelText = '取消', submitText, onSubmit, submitDisabled,
   size = 'md', className = ''
 }) => {
-  const sizeMap: Record<string, string> = {
-    sm: 'min(640px, 92vw)', md: 'min(880px, 92vw)',
-    lg: 'min(1080px, 94vw)', xl: 'min(1200px, 94vw)',
-  }
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef(onClose)
   closeRef.current = onClose
 
-  // ── 焦点陷阱 ──
+  // ── 点击遮罩关闭：document capture 阶段，在 stopPropagation 之前执行 ──
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const dialog = dialogRef.current
+      if (!dialog) return
+      // 点击在 dialog 内部 → 忽略（内部 stopPropagation 会处理）
+      if (dialog.contains(e.target as Node)) return
+      // 点击在 dialog 外部 → 关闭
+      onClose()
+    }
+    // capture 阶段：早于 dialog div 的 stopPropagation
+    document.addEventListener('mousedown', handleClick, true)
+    return () => document.removeEventListener('mousedown', handleClick, true)
+  }, [])
+
+  // ── ESC 关闭 + 焦点陷阱 ──
   useEffect(() => {
     const el = dialogRef.current
     if (!el) return
-    // 打开时聚焦第一个可交互元素
-    const focusable = getFocusableElements(el)
-    if (focusable.length > 0) focusable[0].focus()
-    else el.focus()
 
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onClose() ; return }
+      if (e.key === 'Escape') { onClose(); return }
       if (e.key !== 'Tab') return
       const items = getFocusableElements(el)
       if (items.length === 0) return
@@ -63,19 +70,17 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
       }
     }
     el.addEventListener('keydown', handleKeydown)
-    return () => el.removeEventListener('keydown', handleKeydown)
+    // 打开时聚焦第一个可交互元素
+    const focusable = getFocusableElements(el)
+    if (focusable.length > 0) setTimeout(() => focusable[0].focus(), 0)
+    return () => {
+      el.removeEventListener('keydown', handleKeydown)
+    }
   }, [])
 
-  // 点击遮罩关闭：只响应直接点击 overlay 本身（不在 dialog 内）
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    // 只有点击 overlay 背景层才关闭，dialog 内的点击忽略
-    if (target.classList.contains('modal-overlay')) onClose()
-  }
-
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`}>
         {/* Header */}
         <div className="ud-header">
           {icon && <span className={`remix ud-icon ${icon}`}></span>}
