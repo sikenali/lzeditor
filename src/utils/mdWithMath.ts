@@ -15,14 +15,14 @@ export function renderMdWithMath(md: string): string {
   // 提取行内公式 $...$（不含换行）
   let processed = md.replace(/\$([^\$\n]+?)\$/g, (_, formula) => {
     const idx = inlineMATH.length
-    inlineMATH.push(formula.trim())
+    inlineMATH.push(sanitizeFormula(formula.trim()))
     return `__INLINE_${idx}__`
   })
 
   // 提取独立公式 $$...$$（支持多行）
   processed = processed.replace(/\$\$([\s\S]+?)\$\$/g, (_, formula) => {
     const idx = displayMATH.length
-    displayMATH.push(formula.trim())
+    displayMATH.push(sanitizeFormula(formula.trim()))
     return `__DISPLAY_${idx}__`
   })
 
@@ -56,4 +56,12 @@ export function renderMdWithMath(md: string): string {
   })
 
   return html
+}
+
+/** 清理公式中 LaTeX 不兼容的语法，消除 strict mode 警告 */
+function sanitizeFormula(formula: string): string {
+  return formula
+    .replace(/\\newline/g, '\\\\')
+    .replace(/\\\\$/gm, '')
+    .replace(/\n/g, '\\\\')
 }

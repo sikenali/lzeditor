@@ -322,7 +322,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
                 <h1 className="read-article-title">{docTitle}</h1>
                 <div className="read-meta">
-                  <div className="read-avatar" style={{ backgroundImage: 'url(https://i.pravatar.cc/70?img=12)' }} />
+                  <div className="read-avatar"><svg viewBox="0 0 70 70" width="32" height="32"><circle cx="35" cy="26" r="13" fill="currentColor" opacity="0.85"/><path d="M8 60c0-13 11-23 27-23s27 10 27 23" fill="currentColor" opacity="0.6"/></svg></div>
                   <div className="read-author-info">
                     <div className="read-author-name">LZEditor</div>
                     <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>

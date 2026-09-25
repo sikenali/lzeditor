@@ -177,7 +177,7 @@ type EditorStore = {
 
 ### 图片占位
 
-![LZEditor Logo](https://via.placeholder.com/80x80/6366F1/FFFFFF?text=LZ)
+![LZEditor Logo](data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='12' fill='%236366F1'/%3E%3Ctext x='40' y='52' text-anchor='middle' fill='white' font-size='28' font-weight='bold' font-family='sans-serif'%3ELZ%3C/text%3E%3C/svg%3E)
 
 ---
 
