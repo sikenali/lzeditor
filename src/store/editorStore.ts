@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
+import { BUILTIN_DOCS } from '../utils/docSource'
 
 const MAX_VERSIONS = 10
 
@@ -60,7 +61,19 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   lastEditTime: Date.now(),
 
   // ── Multi-tab ──
-  docs: [{ id: 'welcome', title: 'Welcome.md', path: 'Default', libraryId: 'default' }] as Array<{ id: string; title: string; path: string; libraryId?: string }>,
+  docs: [
+    { id: 'welcome',      title: '欢迎文档',     path: 'Default',       libraryId: 'default' },
+    { id: 'a01-特色功能',  title: 'A01 特色功能', path: '使用手册',      libraryId: 'manual' },
+    { id: 'a02-文档库和文档', title: 'A02 文档库和文档', path: '使用手册', libraryId: 'manual' },
+    { id: 'a03-基本格式',  title: 'A03 基本格式', path: '使用手册',      libraryId: 'manual' },
+    { id: 'a04-自动完成',  title: 'A04 自动完成', path: '使用手册',      libraryId: 'manual' },
+    { id: 'a05-快捷键',    title: 'A05 快捷键',   path: '使用手册',      libraryId: 'manual' },
+    { id: 'a06-大纲视图',  title: 'A06 大纲视图', path: '使用手册',      libraryId: 'manual' },
+    { id: 'a07-即时预览和阅读模式', title: 'A07 即时预览与阅读模式', path: '使用手册', libraryId: 'manual' },
+    { id: 'a08-预览视图',  title: 'A08 预览视图', path: '使用手册',      libraryId: 'manual' },
+    { id: 'a09-历史记录',  title: 'A09 历史记录', path: '使用手册',      libraryId: 'manual' },
+    { id: 'a10-拼写检查',  title: 'A10 拼写检查', path: '使用手册',      libraryId: 'manual' },
+  ] as Array<{ id: string; title: string; path: string; libraryId?: string }>,
   activeDocId: 'welcome' as string | null,
   docsMd: {} as Record<string, string>,
   nextUntitledIdx: 1,
