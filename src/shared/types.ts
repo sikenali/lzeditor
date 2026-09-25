@@ -188,7 +188,7 @@ export interface SettingsState {
   toolbarCollapsed?: boolean
   toolbarWidth?: number
   // ── Toolbar ──
-  showAllToolbarButtons?: boolean
+  compactToolbar?: boolean
   showToolbarLabels?: boolean
   // ── Startup / app behavior ──
   enableTabs?: boolean

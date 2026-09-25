@@ -7,8 +7,8 @@ import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography
 import { CODE_THEMES, getCodeTheme } from '../../styles/code-themes'
 import { LFSInput } from '../../components/ui/LFInput'
 import { LFSCombo } from '../../components/ui/LFSCombo'
-import { UDToggle, UDSettingRow, UDSection } from '../../components/ui/UnifiedDialog'
-import { UnifiedDialog } from '../../components/ui/UnifiedDialog'
+import { UDToggle, UDSettingRow, UDSection } from '../../components/ui/PanelContainer'
+import { PanelContainer } from '../../components/ui/PanelContainer'
 
 /* ── Nav categories ── */
 const NAV_ITEMS: { id: SettingsGroup; label: string; desc: string; icon: string }[] = [
@@ -175,21 +175,28 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   )
 
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={onClose}
       icon="ri-settings-3-fill"
       title="设置"
       subtitle={`${NAV_ITEMS.find(g => g.id === activeGroup)?.label}${activeGroup !== 'about' && subs.length ? ` · ${subs.find(t => t.id === subTab)?.label}` : ''}`}
-      leftNav={leftNav}
-      rightTop={rightTop}
-      rightContent={settingsContent}
-      hint="修改后自动保存到本地"
-      cancelText="取消"
-      submitText="保存"
-      onSubmit={handleSave}
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleSave}>保存</button>
+        </div>
+      }
       size="lg"
       className="settings-dialog-fixed"
-    />
+    >
+      <div className="ud-body ud-body-split">
+        <div className="ud-left">{leftNav}</div>
+        <div className="ud-right">
+          {rightTop && <div className="ud-right-top">{rightTop}</div>}
+          <div className="ud-right-content">{settingsContent}</div>
+        </div>
+      </div>
+    </PanelContainer>
   )
 }
 
@@ -475,7 +482,7 @@ function renderGeneralSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
         <UDSettingRow icon="ri-apps-2-fill" label="精简工具栏" desc="开启后中间仅显示：格式、图片、链接、表格、插入；右侧隐藏 AI">
-        <UDToggle checked={ s.showAllToolbarButtons || false } onChange={ v => u('showAllToolbarButtons', v) } />
+        <UDToggle checked={ !!s.compactToolbar } onChange={ v => u('compactToolbar', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="关闭后仅显示图标，不显示文字">

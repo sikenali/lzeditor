@@ -81,7 +81,7 @@ export const Toolbar: React.FC = () => {
   const editor = useEditorStore((s: any) => s.editor)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const createDoc = useEditorStore((s: any) => s.createDoc)
-  const compactToolbar = useSettingsStore((s) => s.showAllToolbarButtons)
+  const compactToolbar = useSettingsStore((s) => s.compactToolbar)
   const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
 
   const [menuOpen, setMenuOpen] = useState<MenuKey>(null)

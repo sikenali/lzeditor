@@ -70,7 +70,9 @@ export const DEFAULT_SETTINGS: SettingsState = {
   toolbarCollapsed: false,
   toolbarWidth: 220,
   // ── Toolbar defaults ──
-  showAllToolbarButtons: false,
+   * 精简工具栏：默认开启，仅显示格式/图片/链接/表格/插入，右侧隐藏 AI
+   */
+  compactToolbar: true,
   showToolbarLabels: true,
   // ── Startup / app behavior defaults ──
   enableTabs: true,
