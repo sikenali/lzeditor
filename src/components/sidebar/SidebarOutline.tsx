@@ -53,8 +53,6 @@ function buildTree(items: OutlineItem[]): Map<string, OutlineItem[]> {
 export const SidebarOutline: React.FC = () => {
   const editor = useEditorStore((s) => s.editor)
   const setShowOutline = useEditorStore((s) => s.setShowOutline)
-  const showSearch = useEditorStore((s) => s.showSearch)
-  const setShowSearch = useEditorStore((s) => s.setShowSearch)
   const [items, setItems] = useState<OutlineItem[]>([])
   const [activeId, setActiveId] = useState<string>('')
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -180,10 +178,6 @@ export const SidebarOutline: React.FC = () => {
       <div className="sidebar-header">
         <span className="remix sidebar-header-icon ri-list-unordered"></span>
         <span className="sidebar-header-title">目录</span>
-        <button className="sidebar-search-btn" onClick={() => setShowSearch(!showSearch)} title="查找与替换">
-          <span className="remix ri-search-line"></span>
-          <span>查找</span>
-        </button>
         <button className="sidebar-close-btn" onClick={() => setShowOutline(false)}>
           <span className="remix ri-close-line"></span>
         </button>

@@ -430,21 +430,6 @@
 }
 .sidebar-header-icon { font-size: 15px; color: var(--accent-primary); }
 .sidebar-header-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
-.sidebar-search-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px; cursor: pointer;
-  transition: all 0.12s;
-  font-family: inherit;
-  margin-right: 2px;
-}
-.sidebar-search-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-default); }
-.sidebar-search-btn.active { background: var(--accent-a10); color: var(--accent-primary); border-color: var(--accent-a30); }
-.sidebar-search-btn .remix { font-size: 13px; }
 .sidebar-close-btn {
   width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
   border-radius: 6px; color: var(--text-muted); border: none; background: none;
