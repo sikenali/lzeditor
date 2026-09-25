@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
+import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
 
 const MAX_VERSIONS = 10
 
@@ -20,7 +21,7 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
 }
 
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
-  docTitle: 'Welcome to LZEditor',
+  docTitle: DEFAULT_DOC_TITLE,
   docPath: '',
   docHTML: '',
   wordCount: 0,
