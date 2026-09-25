@@ -92,6 +92,24 @@ function App() {
     setStylePanelAnimating(null)
     prevAppMode.current = appMode
   }, [appMode])
+
+  // 搜索面板开闭动画追踪
+  const prevShowSearch = useRef(showSearch)
+  const [searchPanelAnimating, setSearchPanelAnimating] = useState<string | null>(null)
+  useEffect(() => {
+    if (showSearch && !prevShowSearch.current) {
+      setSearchPanelAnimating('search-panel-in')
+      const t = setTimeout(() => setSearchPanelAnimating(null), 300)
+      return () => clearTimeout(t)
+    }
+    if (!showSearch && prevShowSearch.current) {
+      setSearchPanelAnimating('search-panel-exit')
+      const t = setTimeout(() => setSearchPanelAnimating(null), 200)
+      return () => clearTimeout(t)
+    }
+    setSearchPanelAnimating(null)
+    prevShowSearch.current = showSearch
+  }, [showSearch])
   const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
     if (!editor) return
     editor.chain().focus().insertImage({ src: url, alt, align }).run()
@@ -260,7 +278,11 @@ function App() {
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
-      {useEditorStore(s => s.showSearch) && <SearchPanel onClose={() => useEditorStore.getState().setShowSearch(false)} />}
+      {useEditorStore(s => s.showSearch) && (
+        <div className={`search-panel-overlay${searchPanelAnimating === 'search-panel-exit' ? ' search-panel-exiting' : ''}`}>
+          <SearchPanel onClose={() => useEditorStore.getState().setShowSearch(false)} />
+        </div>
+      )}
 
       <AIPanel />
 

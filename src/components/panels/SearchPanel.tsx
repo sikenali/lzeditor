@@ -10,6 +10,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [replaceTerm, setReplaceTerm] = useState('')
   const [caseSensitive, setCaseSensitive] = useState(false)
+  const [wholeWord, setWholeWord] = useState(false)
+  const [useRegex, setUseRegex] = useState(false)
   const [resultCount, setResultCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -45,14 +47,15 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
     if (!editor || !searchTerm.trim()) return
     editor.commands.setSearchTerm(searchTerm)
     editor.commands.setCaseSensitive(caseSensitive)
+    editor.commands.setWholeWord(wholeWord)
+    editor.commands.setRegex(useRegex)
     editor.commands.resetIndex()
     if (editor.view) {
       editor.view.dispatch(editor.view.state.tr)
     }
     refreshCounts()
-    // Scroll to first result after a short delay to let decorations render
     setTimeout(scrollToSelection, 50)
-  }, [editor, searchTerm, caseSensitive, refreshCounts, scrollToSelection])
+  }, [editor, searchTerm, caseSensitive, wholeWord, useRegex, refreshCounts, scrollToSelection])
 
   const handleReplace = useCallback(() => {
     if (!editor || !searchTerm.trim()) return
@@ -92,67 +95,104 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   }, [onClose])
 
   return (
-    <div className="search-panel" role="dialog" aria-label="搜索与替换">
-      <div className="search-panel-header">
-        <span>搜索与替换</span>
-        <button className="search-panel-close" onClick={onClose} title="关闭">
-          <span className="remix ri-close-line"></span>
-        </button>
-      </div>
-
-      <div className="search-panel-body">
-        <input
-          ref={inputRef}
-          className="search-input"
-          type="text"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          placeholder="搜索..."
-          onKeyDown={e => {
-            if (e.key === 'Enter') { e.preventDefault(); handleSearch() }
-          }}
-        />
-        <input
-          className="search-input"
-          type="text"
-          value={replaceTerm}
-          onChange={e => setReplaceTerm(e.target.value)}
-          placeholder="替换为..."
-          onKeyDown={e => {
-            if (e.key === 'Enter') { e.preventDefault(); handleReplace() }
-          }}
-        />
-        <label className="search-option">
-          <input
-            type="checkbox"
-            checked={caseSensitive}
-            onChange={e => setCaseSensitive(e.target.checked)}
-          />
-          区分大小写
-        </label>
-      </div>
-
-      {searchTerm && (
-        <div className="search-result-count">
-          {resultCount > 0 ? `找到 ${resultCount} 个结果（第 ${currentIndex + 1} 个）` : '未找到匹配项'}
+    <div className="search-panel-overlay">
+      <div className="search-panel" role="dialog" aria-label="搜索与替换">
+        {/* Top bar — close button only */}
+        <div className="search-panel-topbar">
+          <button className="search-panel-close" onClick={onClose} title="关闭">
+            <span className="remix ri-close-line"></span>
+          </button>
         </div>
-      )}
 
-      <div className="search-panel-actions">
-        <button className="search-btn search-btn--primary" onClick={handleSearch}>
-          <span className="remix ri-search-line"></span> 搜索
-        </button>
-        <button className="search-btn" onClick={handleNext} disabled={!editor}>下一个</button>
-        <button className="search-btn" onClick={handlePrev} disabled={!editor}>上一个</button>
-      </div>
+        {/* Main content */}
+        <div className="search-panel-main">
+          {/* Left: options column */}
+          <div className="search-options-col">
+            <label className="search-option">
+              <span className="search-checkbox"></span>
+              <input
+                type="checkbox"
+                checked={caseSensitive}
+                onChange={e => setCaseSensitive(e.target.checked)}
+                style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+              />
+              <span>区分大小写</span>
+            </label>
+            <label className="search-option">
+              <span className="search-checkbox"></span>
+              <input
+                type="checkbox"
+                checked={wholeWord}
+                onChange={e => setWholeWord(e.target.checked)}
+                style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+              />
+              <span>全字匹配</span>
+            </label>
+            <label className="search-option">
+              <span className="search-checkbox"></span>
+              <input
+                type="checkbox"
+                checked={useRegex}
+                onChange={e => setUseRegex(e.target.checked)}
+                style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+              />
+              <span>使用正则表达式</span>
+            </label>
+          </div>
 
-      <div className="search-panel-actions">
-        <button className="search-btn search-btn--accent" onClick={handleReplace} disabled={!editor || !replaceTerm}>
-          <span className="remix ri-arrow-right-line"></span> 替换
-        </button>
-        <button className="search-btn search-btn--accent" onClick={handleReplaceAll} disabled={!editor || !replaceTerm}>
-          <span className="remix ri-arrow-right-double-line"></span> 全部替换
-        </button>
+          {/* Right: operations column */}
+          <div className="search-ops-col">
+            {/* Find row */}
+            <div className="search-row">
+              <div className="search-input-group">
+                <span className="search-input-label">查找</span>
+                <input
+                  ref={inputRef}
+                  className="search-input"
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="搜索..."
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
+                />
+              </div>
+              <button className="search-btn search-btn--primary" onClick={handleSearch}>
+                <span className="remix ri-search-line"></span> 查找
+              </button>
+              <button className="search-btn" onClick={handlePrev} disabled={!editor}>
+                查找上一处
+              </button>
+            </div>
+
+            {/* Replace row */}
+            <div className="search-row">
+              <div className="search-input-group">
+                <span className="search-input-label">替换</span>
+                <input
+                  className="search-input"
+                  type="text"
+                  value={replaceTerm}
+                  onChange={e => setReplaceTerm(e.target.value)}
+                  placeholder="替换为..."
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleReplace() } }}
+                />
+              </div>
+              <button className="search-btn" onClick={handleReplace} disabled={!editor || !replaceTerm}>
+                替换
+              </button>
+              <button className="search-btn" onClick={handleReplaceAll} disabled={!editor || !replaceTerm}>
+                全部替换
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Result count */}
+        {searchTerm && (
+          <div className="search-result-count">
+            {resultCount > 0 ? `找到 ${resultCount} 个结果（第 ${currentIndex + 1} 个）` : '未找到匹配项'}
+          </div>
+        )}
       </div>
     </div>
   )
