@@ -1268,12 +1268,22 @@
 
 /* ── Floating Nav Buttons ── */
 .main-nav-float {
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 24px 0 16px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
   z-index: 100;
+}
+[data-theme="dark"] .main-nav-float {
+  background: rgba(28, 32, 40, 0.92);
+  border-top-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.35);
 }
 
 .nav-float-btn {
