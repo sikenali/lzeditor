@@ -5,7 +5,7 @@
   display: flex; align-items: center; justify-content: center;
   z-index: 2000;
   animation: modal-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: auto;
+  pointer-events: none;
 }
 .modal-overlay-click {
   position: absolute; inset: 0;
