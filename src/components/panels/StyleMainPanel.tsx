@@ -18,16 +18,11 @@ export const StyleMainPanel: React.FC = () => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const fontSize = useEditorStore((s) => s.fontSize)
-  const previewMode = useEditorStore((s: any) => s.previewMode)
-  const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
-  const codeMode = useEditorStore((s: any) => s.codeMode)
-  const setCodeMode = useEditorStore((s: any) => s.setCodeMode)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore.getState().updateSetting
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
-  const [isCodeMode, setIsCodeMode] = useState(codeMode)
   const [previewVisible, setPreviewVisible] = useState(true)
   const [exportOpen, setExportOpen] = useState(false)
 
@@ -61,8 +56,6 @@ export const StyleMainPanel: React.FC = () => {
     const idx = active ? items.indexOf(active) : -1
     if (idx >= 0 && idx < items.length - 1) scrollToChapter(items[idx + 1].id)
   }, [activeChapterId, scrollToChapter])
-
-  useEffect(() => { setIsCodeMode(codeMode) }, [codeMode])
 
   const effectiveMd = useMemo(() => {
     if (mdContent) return mdContent
@@ -161,15 +154,11 @@ export const StyleMainPanel: React.FC = () => {
                 <div className="read-divider-v" />
               </div>
             </div>
-            {isCodeMode ? (
-              <pre className="style-code-block"><code>{effectiveMd || '# Welcome to LZEditor\n\n请切换到编辑模式后查看预览内容...'}</code></pre>
-            ) : (
-              <div
-                className="read-article-body"
-                style={{ fontSize: `${fontSize}px`, lineHeight: '1.9', '--style-accent': activeStyleData.color } as React.CSSProperties}
-                dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
-              />
-            )}
+            <div
+              className="read-article-body"
+              style={{ fontSize: `${fontSize}px`, lineHeight: '1.9', '--style-accent': activeStyleData.color } as React.CSSProperties}
+              dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
+            />
           </div>
         </div>
         <div className="main-nav-float">
@@ -194,6 +183,7 @@ export const StyleMainPanel: React.FC = () => {
                 <span className="style-label-text">文档样式:</span>
                 <button className="style-select-btn">
                   <span>{activeStyleData.name}</span>
+                  <span className="remix ri-arrow-down-s-line"></span>
                 </button>
               </div>
               <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
@@ -204,14 +194,6 @@ export const StyleMainPanel: React.FC = () => {
                 <span className="remix ri-download-2-line"></span>
                 <span>导出</span>
               </button>
-              <button
-                className={`preview-mode-btn ${isCodeMode ? 'active' : ''}`}
-                onClick={() => { const next = !codeMode; setCodeMode(next); setPreviewMode(next ? 'code' : 'render') }}
-                title="切换源码模式"
-              >
-                <span className="remix ri-code-s-line"></span>
-                <span>源码</span>
-              </button>
               <button className="style-action-btn" onClick={() => setAppMode('edit')} title="关闭">
                 <span className="remix ri-close-line"></span>
                 <span>关闭</span>
@@ -219,36 +201,40 @@ export const StyleMainPanel: React.FC = () => {
             </div>
 
             {/* Style cards */}
-            <div className={`style-cards${previewVisible ? '' : ' preview-hidden'}`}>
-              {TYPOGRAPHY_THEMES.map(t => (
-                <button
-                  key={t.id}
-                  className={`style-card${t.id === activeStyle ? ' active' : ''}`}
-                  onClick={() => { setActiveStyle(t.id); updateSetting('typographyTheme', t.id) }}
-                >
-                  <div
-                    className="style-card-thumb"
-                    style={{
-                      borderColor: t.id === activeStyle ? t.color : 'rgba(204,204,204,1)',
-                      background: t.id === 'night' ? '#1a1b26' : '#fff',
-                    }}
-                  >
-                    <div
-                      className="style-card-preview"
-                      data-typography-theme={t.id}
-                      style={{ fontSize: 5, lineHeight: 1.4, color: t.id === 'night' ? '#c6cade' : '#333', padding: '2px 3px' }}
+            <div className={`style-cards-wrapper${previewVisible ? '' : ' preview-collapsed'}`}>
+              <div className="style-cards-inner">
+                <div className="style-cards">
+                  {TYPOGRAPHY_THEMES.map(t => (
+                    <button
+                      key={t.id}
+                      className={`style-card${t.id === activeStyle ? ' active' : ''}`}
+                      onClick={() => { setActiveStyle(t.id); updateSetting('typographyTheme', t.id) }}
                     >
-                      <div style={{ fontSize: 6, fontWeight: 600, color: t.color, marginBottom: 1 }}>{t.name}</div>
-                      <div style={{ fontSize: 4.5, color: 'rgba(128,128,128,0.7)', borderBottom: `1px solid ${t.color}33`, paddingBottom: 1, marginBottom: 1 }}>二级标题装饰</div>
-                      <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.8)' }}>正文文字样例·<code style={{ background: `${t.color}18`, color: t.color, padding: '0 2px', borderRadius: 1, fontSize: 4 }}>代码</code></div>
-                      <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.6)', marginTop: 1 }}>引用文字样例</div>
-                    </div>
-                  </div>
-                  <div className="style-card-name" style={t.id === activeStyle ? { color: t.color } : undefined}>
-                    {t.name}
-                  </div>
-                </button>
-              ))}
+                      <div
+                        className="style-card-thumb"
+                        style={{
+                          borderColor: t.id === activeStyle ? t.color : 'rgba(204,204,204,1)',
+                          background: t.id === 'night' ? '#1a1b26' : '#fff',
+                        }}
+                      >
+                        <div
+                          className="style-card-preview"
+                          data-typography-theme={t.id}
+                          style={{ fontSize: 5, lineHeight: 1.4, color: t.id === 'night' ? '#c6cade' : '#333', padding: '2px 3px' }}
+                        >
+                          <div style={{ fontSize: 6, fontWeight: 600, color: t.color, marginBottom: 1 }}>{t.name}</div>
+                          <div style={{ fontSize: 4.5, color: 'rgba(128,128,128,0.7)', borderBottom: `1px solid ${t.color}33`, paddingBottom: 1, marginBottom: 1 }}>二级标题装饰</div>
+                          <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.8)' }}>正文文字样例·<code style={{ background: `${t.color}18`, color: t.color, padding: '0 2px', borderRadius: 1, fontSize: 4 }}>代码</code></div>
+                          <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.6)', marginTop: 1 }}>引用文字样例</div>
+                        </div>
+                      </div>
+                      <div className="style-card-name" style={t.id === activeStyle ? { color: t.color } : undefined}>
+                        {t.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
