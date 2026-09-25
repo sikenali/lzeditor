@@ -3215,7 +3215,7 @@
 /* ── Search Panel (bottom bar) ── */
 .search-panel-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 42px;
   left: 0;
   right: 0;
   z-index: 300;
