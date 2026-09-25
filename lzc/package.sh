@@ -15,11 +15,26 @@ echo "Packaging version: $LPK_VERSION"
 bash "$(dirname "$0")/build.sh"
 
 # 2. 调用 lzc-cli 生成 LPK
-CLI_BIN="/tmp/package/scripts/cli.js"
-if [ -f "/usr/local/lib/node_modules/@lazycatcloud/lzc-cli/scripts/cli.js" ]; then
-  CLI_BIN="/usr/local/lib/node_modules/@lazycatcloud/lzc-cli/scripts/cli.js"
+# 查找 lzc-cli 二进制位置
+CLI_BIN=""
+for candidate in \
+  "$(npm root -g)/@lazycatcloud/lzc-cli/scripts/cli.js" \
+  "/usr/local/lib/node_modules/@lazycatcloud/lzc-cli/scripts/cli.js" \
+  "/opt/homebrew/lib/node_modules/@lazycatcloud/lzc-cli/scripts/cli.js" \
+  "/tmp/package/scripts/cli.js"; do
+  if [ -f "$candidate" ]; then
+    CLI_BIN="$candidate"
+    break
+  fi
+done
+
+if [ -z "$CLI_BIN" ]; then
+  echo "ERROR: lzc-cli not found. Install with: npm install -g @lazycatcloud/lzc-cli"
+  exit 1
 fi
-$CLI_BIN project release -o output.lpk
+
+echo "Using lzc-cli: $CLI_BIN"
+"$CLI_BIN" project release -o output.lpk
 
 # 3. 重命名
 LPK_NAME="cloud.lazycat.app.lazycateditor-${LPK_VERSION}.lpk"
