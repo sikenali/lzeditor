@@ -803,61 +803,61 @@ export const LZEditor = () => {
           </div>
         )}
         {codeMode && appMode !== 'read' && (
-          <div className="code-mode-inline">
-            <div className="code-mode-toolbar">
-              <div className="code-mode-left">
-                <span className="remix ri-code-s-line code-mode-icon"></span>
-                <span className="code-mode-label">源码编辑</span>
-              </div>
-              <div className="code-mode-center">
-                <span className="code-mode-meta-item">{mdContent.length} 字符</span>
-                <span className="code-mode-dot">·</span>
-                <span className="code-mode-meta-item">{wordCount} 字</span>
-              </div>
-              <div className="code-mode-right">
-                <button className="code-mode-exit-btn" onClick={() => setAppMode('edit')} title="返回编辑模式">
-                  <span className="remix ri-edit-2-line"></span>
-                  <span>返回编辑</span>
+          <div className="read-mode-inline read-mode-code">
+            <div className="read-mode-toolbar">
+              <span className="read-mode-label">
+                <span className="remix ri-code-s-line" style={{ marginRight: 4, fontSize: 15 }}></span>
+                代码模式
+              </span>
+              <div className="read-mode-controls">
+                <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
+                  onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
+                  <span className="remix ri-layout-2-line"></span>
+                  <span>{LAYOUT_LABELS[readLayout]}</span>
+                </button>
+                <button className="read-tool-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
+                  <span className="remix ri-subtract-line"></span>
+                </button>
+                <span className="read-font-size-value">{readFontSize}</span>
+                <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
+                  <span className="remix ri-add-line"></span>
                 </button>
               </div>
+              <span className="read-mode-meta">{mdContent.length} 字符 · {wordCount} 字</span>
+              <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
+                <span className="remix ri-edit-line"></span>
+                <span>编辑模式</span>
+              </button>
             </div>
-            <div className="code-mode-body">
-              <div
-                className="read-article-body"
-                style={{ fontSize: '16px', lineHeight: '1.9' }}
-                dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
-              />
-              <div className="code-editor-wrap">
-                <div className="code-editor-label">
-                  <span className="remix ri-code-s-line"></span>
-                  <span>Markdown 源码</span>
-                </div>
-                <textarea
-                  className="code-editor-textarea"
-                  value={codeEditMd}
-                  onChange={e => {
-                    const value = e.target.value
-                    setCodeEditMd(value)
-                    handleCodeModeChange(value)
-                  }}
-                  spellCheck={false}
-                />
-              </div>
-              <div className="code-mode-footer">
-                <div className="code-mode-footer-tags">
-                  <span className="remix ri-price-tag-3-line code-footer-tag-icon"></span>
-                  <span className="read-tag-chip">markdown</span>
-                  <span className="read-tag-chip">source</span>
-                </div>
-                <div className="code-mode-footer-actions">
-                  <button className="read-back-top-btn" onClick={() => editorRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' })}>
-                    <span className="remix ri-arrow-up-line"></span>
-                    <span>回到顶部</span>
-                  </button>
-                  <button className="read-edit-btn" onClick={() => setAppMode('edit')}>
-                    <span className="remix ri-edit-line"></span>
-                    <span>返回编辑</span>
-                  </button>
+            <div className="read-mode-body">
+              <div className="read-article-wrapper">
+                <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
+                  <div className="read-article-header">
+                    <div className="read-tags-row">
+                      <span className="read-tag read-tag-tech">Markdown</span>
+                      <span className="read-tag read-tag-system">代码模式</span>
+                    </div>
+                    <h1 className="read-article-title">{docTitle || '文档'}</h1>
+                    <div className="read-meta">
+                      <div className="read-avatar" style={{ backgroundImage: 'url(https://i.pravatar.cc/70?img=12)' }} />
+                      <div className="read-author-info">
+                        <div className="read-author-name">LZEditor</div>
+                        <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
+                      </div>
+                      <div className="read-divider-v" />
+                      <div className="read-views">
+                        <span className="remix read-views-icon ri-code-s-line"></span>
+                        <span className="read-views-text">{wordCount} 字</span>
+                      </div>
+                    </div>
+                  </div>
+                  <textarea
+                    className="read-article-code"
+                    value={codeEditMd}
+                    onChange={e => { setCodeEditMd(e.target.value); handleCodeModeChange(e.target.value) }}
+                    spellCheck={false}
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: `${readFontSize}px`, lineHeight: '1.8' }}
+                  />
                 </div>
               </div>
             </div>
