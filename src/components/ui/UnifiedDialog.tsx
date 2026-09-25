@@ -186,9 +186,9 @@ export const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string
   </div>
 )
 
-/* ── Checkbox toggle ── */
+/* ── Checkbox (square with checkmark) ── */
 export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }> = ({ checked, onChange, size = 'sm' }) => (
-  <label className={`ud-toggle${checked ? ' on' : ''}${size === 'md' ? ' ud-toggle--md' : ''}`}>
+  <label className={`ud-toggle${checked ? ' checked' : ''}`}>
     <input
       type="checkbox"
       checked={checked}
@@ -196,8 +196,7 @@ export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => vo
       className="ud-toggle-input"
       aria-checked={checked}
     />
-    <span className="ud-toggle-track" />
-    <span className="ud-toggle-thumb" />
+    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
   </label>
 )
 
