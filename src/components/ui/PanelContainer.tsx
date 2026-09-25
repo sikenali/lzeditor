@@ -15,14 +15,24 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
   onClose, icon, title, subtitle, children, footer, size = 'lg', className = ''
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const previousFocus = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
+    previousFocus.current = document.activeElement as HTMLElement
     const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handleEsc)
+    // 自动聚焦弹窗内第一个可交互元素
+    const focusable = containerRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+    if (focusable?.length) {
+      setTimeout(() => focusable[0].focus(), 50)
+    }
     return () => {
       document.body.style.overflow = ''
       document.removeEventListener('keydown', handleEsc)
+      if (previousFocus.current) previousFocus.current.focus()
     }
   }, [onClose])
 

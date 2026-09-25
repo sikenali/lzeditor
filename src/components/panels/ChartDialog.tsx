@@ -14,7 +14,7 @@ const CHART_TYPES: { id: ChartType; label: string; icon: string }[] = [
 ]
 
 export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: string, type: string) => void }> = ({ onClose, onInsert }) => {
-  const [chartType, setChartType] = useState<ChartType>('bar')
+  const [chartType, setChartType] = useState<ChartType>('line')
   const [title, setTitle] = useState('图表标题')
   const [dataStr, setDataStr] = useState('10,20,15,30,25')
   const [labelsStr, setLabelsStr] = useState('A,B,C,D,E')
