@@ -70,7 +70,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
       icon="ri-code-box-line"
       title="插入代码块"
       subtitle={`${language} · ${THEME_OPTIONS.find(t => t.id === themeId)?.name || ''}`}
-      size="lg"
+      size="md"
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>

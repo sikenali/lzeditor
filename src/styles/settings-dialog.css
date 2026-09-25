@@ -1884,4 +1884,8 @@
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;
   background: var(--chrome-surface);
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+.ud-actions {
+  display: flex; gap: 8px;
 }
