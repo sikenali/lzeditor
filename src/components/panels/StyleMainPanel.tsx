@@ -26,6 +26,7 @@ export const StyleMainPanel: React.FC = () => {
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
   const [isCodeMode, setIsCodeMode] = useState(codeMode)
+  const [previewVisible, setPreviewVisible] = useState(true)
 
   // ── Chapter navigation ──
   interface Chapter { id: string; text: string; level: number }
@@ -190,12 +191,11 @@ export const StyleMainPanel: React.FC = () => {
                 <span className="style-label-text">文档样式:</span>
                 <button className="style-select-btn">
                   <span>{activeStyleData.name}</span>
-                  <span className="remix ri-arrow-down-s-line"></span>
                 </button>
               </div>
-              <button className="style-action-btn" title="隐藏预览">
-                <span className="remix ri-eye-off-line"></span>
-                <span>隐藏</span>
+              <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
+                <span className={`remix ${previewVisible ? 'ri-eye-off-line' : 'ri-eye-line'}`}></span>
+                <span>{previewVisible ? '隐藏' : '显示'}</span>
               </button>
               <button className="style-action-btn" title="导出样式">
                 <span className="remix ri-download-2-line"></span>
@@ -216,7 +216,7 @@ export const StyleMainPanel: React.FC = () => {
             </div>
 
             {/* Style cards */}
-            <div className="style-cards">
+            <div className={`style-cards${previewVisible ? '' : ' preview-hidden'}`}>
               {TYPOGRAPHY_THEMES.map(t => (
                 <button
                   key={t.id}
