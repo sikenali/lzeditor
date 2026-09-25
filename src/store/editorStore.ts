@@ -59,7 +59,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   lastEditTime: Date.now(),
 
   // ── Multi-tab ──
-  docs: [{ id: 'welcome', title: 'Welcome to LZEditor.md', path: 'Default', libraryId: 'default' }] as Array<{ id: string; title: string; path: string; libraryId?: string }>,
+  docs: [{ id: 'welcome', title: 'Welcome.md', path: 'Default', libraryId: 'default' }] as Array<{ id: string; title: string; path: string; libraryId?: string }>,
   activeDocId: 'welcome' as string | null,
   docsMd: {} as Record<string, string>,
   nextUntitledIdx: 1,
