@@ -67,25 +67,69 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const tree = useMemo(() => buildTree(flatDocs), [flatDocs])
 
   const handleImportGit = () => {
-    const repoUrl = prompt('请输入 Git 仓库地址 (如 https://github.com/user/repo):')
-    if (!repoUrl) return
-    const id = createDoc('imported-from-git.md', 'Git Import', activeLibraryId)
-    const editor = useEditorStore.getState().editor
-    if (editor) editor.chain().focus().insertContent('<h1>来自 Git 的文档</h1><p>此文档已从远程仓库导入</p>').run()
-    setDocGitMeta({ gitPath: repoUrl, isFromGit: true })
-    alert('Git 仓库导入功能已触发（需后端支持）')
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.md,.markdown,.txt'
+    input.multiple = true
+    input.onchange = (e: any) => {
+      const files = e.target.files
+      if (!files.length) return
+      Array.from(files).forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          const text = ev.target?.result as string
+          const id = createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
+          const editor = useEditorStore.getState().editor
+          if (editor) editor.chain().focus().setContent(text).run()
+        }
+        reader.readAsText(file)
+      })
+    }
+    input.click()
   }
 
   const handleImportBlog = () => {
-    const blogUrl = prompt('请输入博客地址 (如 https://blog.example.com):')
-    if (!blogUrl) return
-    alert('博客导入功能已触发（需后端支持）')
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.md,.markdown,.txt'
+    input.multiple = true
+    input.onchange = (e: any) => {
+      const files = e.target.files
+      if (!files.length) return
+      Array.from(files).forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          const text = ev.target?.result as string
+          const id = createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
+          const editor = useEditorStore.getState().editor
+          if (editor) editor.chain().focus().setContent(text).run()
+        }
+        reader.readAsText(file)
+      })
+    }
+    input.click()
   }
 
   const handleImportGitbook = () => {
-    const gitbookUrl = prompt('请输入 GitBook 地址 (如 https://example.gitbook.io):')
-    if (!gitbookUrl) return
-    alert('GitBook 导入功能已触发（需后端支持）')
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.md,.markdown,.txt'
+    input.multiple = true
+    input.onchange = (e: any) => {
+      const files = e.target.files
+      if (!files.length) return
+      Array.from(files).forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          const text = ev.target?.result as string
+          const id = createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
+          const editor = useEditorStore.getState().editor
+          if (editor) editor.chain().focus().setContent(text).run()
+        }
+        reader.readAsText(file)
+      })
+    }
+    input.click()
   }
 
   // Sidebar mode
@@ -174,22 +218,18 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   }
 
   // Dialog mode - now using PanelContainer instead of UnifiedDialog
-  const rightTop = (
-    <UDSection label="">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            className={`ud-btn${category === cat.id ? ' ud-btn--primary' : ''}`}
-            onClick={() => setCategory(cat.id)}
-            style={{ flexDirection: 'column', gap: 6, padding: '14px 10px', justifyContent: 'center' }}
-          >
-            <span className={`remix ${cat.icon}`} style={{ fontSize: 18 }}></span>
-            <span style={{ fontSize: 12 }}>{cat.label}</span>
-          </button>
-        ))}
-      </div>
-    </UDSection>
+  const leftNav = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {CATEGORIES.map(cat => (
+        <button key={cat.id} className={`ud-chip${category === cat.id ? ' active' : ''}`} onClick={() => setCategory(cat.id)}>
+          <span className={`remix ud-chip-icon ${cat.icon}`}></span>
+          <div>
+            <div className="ud-chip-label">{cat.label}</div>
+            <div className="ud-chip-desc">{cat.desc}</div>
+          </div>
+        </button>
+      ))}
+    </div>
   )
 
   const rightContent = (
@@ -248,9 +288,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
       className="library-dialog"
     >
       <div className="ud-body ud-body-split">
-        <div className="ud-left">
-          {rightTop}
-        </div>
+        <div className="ud-left">{leftNav}</div>
         <div className="ud-right">
           <div className="ud-right-content">{rightContent}</div>
         </div>
