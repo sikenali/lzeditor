@@ -45,6 +45,16 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --ignore-scripts
 
+      # ── macOS: 安装 setuptools（Python 3.12+ 移除了 distutils） ──
+      - name: Install setuptools (macOS)
+        if: runner.os == 'macOS'
+        run: python3 -m pip install setuptools
+
+      # ── Windows: 设置 node-gyp 使用 MSBuild 2022 ──
+      - name: Configure node-gyp (Windows)
+        if: runner.os == 'Windows'
+        run: npm config set node_gyp "$(npm root -g)/node-gyp/bin/node-gyp.js"
+
       - name: Build Vite app
         run: npm run build
 
@@ -87,7 +97,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lpk
-          path: lzc/output*.lpk
+          path: lzc/*.lpk
           retention-days: 7
 
   publish:
