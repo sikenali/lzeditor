@@ -110,6 +110,7 @@ export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => vo
       className="ud-toggle-input"
       aria-checked={checked}
     />
+    <span className="ud-toggle-track" />
     <span className="ud-toggle-thumb" />
   </label>
 )
