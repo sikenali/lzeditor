@@ -74,6 +74,24 @@ function App() {
     setLibraryClosing(false)
     prevShowLibrary.current = showLibrary
   }, [showLibrary])
+
+  // 样式面板开闭动画追踪
+  const prevAppMode = useRef(appMode)
+  const [stylePanelAnimating, setStylePanelAnimating] = useState<string | null>(null)
+  useEffect(() => {
+    if (appMode === 'style' && prevAppMode.current !== 'style') {
+      setStylePanelAnimating('style-panel-in')
+      const t = setTimeout(() => setStylePanelAnimating(null), 300)
+      return () => clearTimeout(t)
+    }
+    if (appMode !== 'style' && prevAppMode.current === 'style') {
+      setStylePanelAnimating('style-panel-exit')
+      const t = setTimeout(() => setStylePanelAnimating(null), 250)
+      return () => clearTimeout(t)
+    }
+    setStylePanelAnimating(null)
+    prevAppMode.current = appMode
+  }, [appMode])
   const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
     if (!editor) return
     editor.chain().focus().insertImage({ src: url, alt, align }).run()
@@ -223,7 +241,7 @@ function App() {
 
       {/* 右面板 */}
       {(showRightPanel || showPreview || appMode === 'history') && (
-        <div className="app-right-panel">
+        <div className={`app-right-panel${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
           {appMode === 'history' && <HistoryPanel onClose={() => setAppMode('edit')} />}
           {appMode === 'style' && <StyleMainPanel />}
           {showPreview && <SidebarPreview />}
