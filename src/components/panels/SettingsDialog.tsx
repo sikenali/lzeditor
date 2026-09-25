@@ -839,22 +839,6 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
           </div>
         </div>
       )}
-
-      {/* 温度/Token 设置 */}
-      <div>
-        <div className="settings-section-title" style={{ marginBottom: 12 }}><span>AI 参数</span><span className="settings-section-desc">控制 AI 回复的创造性和长度</span></div>
-        <div className="setting-row">
-          <div className="setting-label"><span><span className="remix ri-temperature-line"></span> 温度</span><span className="setting-hint">创造性 0~1</span></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, maxWidth: 300 }}>
-            <input type="range" min="0" max="1" step="0.1" value={s.temperature} onChange={(e) => u('temperature', parseFloat(e.target.value))} style={{ flex: 1, accentColor: 'var(--accent-primary)' }} />
-            <span style={{ color: 'var(--accent-primary)', fontSize: 12, minWidth: 28, fontFamily: 'var(--font-mono)' }}>{s.temperature}</span>
-          </div>
-        </div>
-        <div className="setting-row">
-          <div className="setting-label"><span><span className="remix ri-text-spacing"></span> 最大 Token</span></div>
-          <input className="lfs-input" type="number" value={s.maxTokens} onChange={e => u('maxTokens', parseInt(e.target.value) || 1024)} style={{ width: 100 }} />
-        </div>
-      </div>
     </>
   )
 }
