@@ -42,7 +42,7 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
       if (el) {
         const focusable = Array.from(
           el.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
-        ).filter(el => !el.disabled && el.offsetParent !== null)
+        ).filter(el => !(el instanceof HTMLButtonElement || el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) || !el.disabled && el.offsetParent !== null)
         if (focusable.length > 0) {
           // 延迟执行，等 React 完成渲染
           const timer = setTimeout(() => {
