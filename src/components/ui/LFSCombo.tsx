@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 
 export interface LFSComboOption {
@@ -41,6 +41,9 @@ function releasePortalRoot(): void {
   }
 }
 
+// 全局标记：当前哪个 combo 是打开的
+let activeComboId = 0
+
 export const LFSCombo: React.FC<LFSComboProps> = ({
   value, onChange, options, style, className, disabled, placeholder, minWidth,
 }) => {
@@ -48,7 +51,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
   const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const comboId = useRef(++activeComboId)
 
   // 关闭时安全清理 portal
   useEffect(() => {
@@ -57,21 +60,27 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
       setPortalPos(null)
       releasePortalRoot()
     }
-    return () => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current) }
   }, [open])
 
-  // 点击外部关闭：用捕获阶段，在 option onClick 之前拦截
+  // 打开时设为全局 active
+  useEffect(() => {
+    if (open) activeComboId = comboId.current
+  }, [open])
+
+  // 点击外部关闭：mousedown 捕获阶段，优先于所有其他监听器
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
+      if (activeComboId !== comboId.current) return
       const target = e.target as Node
-      // 如果点击在 combo 内部（包括 portal 中的 dropdown），不关闭
       if (ref.current?.contains(target)) return
-      if ((target as HTMLElement).closest('.lfs-combo-dropdown')) return
+      // 检查是否在 dropdown 内（portal 中的元素不在 ref 内）
+      const dropdown = (target as HTMLElement).closest('.lfs-combo-dropdown')
+      if (dropdown) return
       setOpen(false)
     }
-    // 用捕获阶段，先于 option 的 onClick 执行
-    document.addEventListener('click', onClick, true)
-    return () => document.removeEventListener('click', onClick, true)
+    // capture phase: 最优先执行
+    document.addEventListener('mousedown', onClick, true)
+    return () => document.removeEventListener('mousedown', onClick, true)
   }, [])
 
   // 打开时计算位置并创建 portal
@@ -90,7 +99,10 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
       <button
         className={`lfs-combo-trigger${disabled ? ' disabled' : ''}${open ? ' open' : ''}`}
         disabled={disabled}
-        onClick={() => !disabled && setOpen(v => !v)}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (!disabled) setOpen(v => !v)
+        }}
         type="button"
       >
         <span className="lfs-combo-label">{displayLabel || placeholder}</span>
@@ -101,6 +113,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         <div
           className="lfs-combo-dropdown"
           style={{ position: 'fixed', top: portalPos.y, left: portalPos.x, width: portalPos.w, zIndex: 3000 }}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>
@@ -109,7 +122,11 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
               <button
                 key={opt.value}
                 className={`lfs-combo-option${opt.value === value ? ' active' : ''}`}
-                onClick={() => { onChange(opt.value); setOpen(false) }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onChange(opt.value)
+                  setOpen(false)
+                }}
                 type="button"
               >
                 {opt.icon && <span className={`remix lfs-combo-opt-icon ${opt.icon}`}></span>}
