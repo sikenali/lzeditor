@@ -1276,6 +1276,15 @@
   gap: 12px;
   padding: 16px 0;
   z-index: 100;
+  transition: opacity 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.main-nav-float.nav-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.main-nav-float.nav-hidden:hover {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .nav-float-btn {

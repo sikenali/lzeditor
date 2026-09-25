@@ -199,7 +199,7 @@ export const StyleMainPanel: React.FC = () => {
           </div>
         </div>
         </div>
-        <div className="main-nav-float">
+        <div className={`main-nav-float${previewVisible ? '' : ' nav-hidden'}`}>
           <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
             <span className="remix ri-arrow-left-s-line"></span>
           </button>
