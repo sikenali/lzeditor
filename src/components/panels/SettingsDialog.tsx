@@ -480,8 +480,8 @@ function renderGeneralSection(s: any, u: any) {
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
-        <UDSettingRow icon="ri-apps-2-fill" label="精简工具栏" desc="开启后中间仅显示：格式、图片、链接、表格、插入；右侧隐藏 AI">
-        <UDToggle checked={ !!s.compactToolbar } onChange={ v => u('compactToolbar', v) } />
+        <UDSettingRow icon="ri-apps-2-fill" label="显示所有工具栏按钮" desc="关闭后精简为：格式、图片、链接、表格、插入；右侧隐藏 AI">
+        <UDToggle checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="关闭后仅显示图标，不显示文字">
@@ -514,7 +514,7 @@ function renderAppSettings() {
         <UDToggle checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
-      <UDSettingRow icon="ri-new-releases-fill" label="从文件资源管理器打开文档时总在新窗口中打开" desc="双击文件总是在新窗口中打开">
+        <UDSettingRow icon="ri-window-line" label="从文件资源管理器打开文档时总在新窗口中打开" desc="双击文件总是在新窗口中打开">
         <UDToggle checked={ s.openInNewWindow || false } onChange={ v => u('openInNewWindow', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
@@ -841,8 +841,8 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
       )}
 
       {/* 温度/Token 设置 */}
-      <div className="settings-section">
-        <div className="settings-section-title"><span>AI 参数</span><span className="settings-section-desc">控制 AI 回复的创造性和长度</span></div>
+      <div>
+        <div className="settings-section-title" style={{ marginBottom: 12 }}><span>AI 参数</span><span className="settings-section-desc">控制 AI 回复的创造性和长度</span></div>
         <div className="setting-row">
           <div className="setting-label"><span><span className="remix ri-temperature-line"></span> 温度</span><span className="setting-hint">创造性 0~1</span></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, maxWidth: 300 }}>
@@ -875,8 +875,8 @@ function renderShortcutContent(tab: string) {
   )
 
   if (tab === 'doc') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>文档操作</span></div>
+    <div>
+      <div className="settings-section-title"><span className="remix ri-file-lines-line shortcut-section-icon"></span><span>文档操作</span></div>
       <div className="shortcut-list">
         {row('新建文档', `${mod}+N`)}
         {row('打开文档', `${mod}+O`)}
@@ -888,8 +888,8 @@ function renderShortcutContent(tab: string) {
     </div>
   )
   if (tab === 'edit') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>编辑操作</span></div>
+    <div>
+      <div className="settings-section-title"><span className="remix ri-edit-line shortcut-section-icon"></span><span>编辑操作</span></div>
       <div className="shortcut-list">
         {row('撤销', `${mod}+Z`)}
         {row('重做', `${mod}+${shift}+Z`)}
@@ -901,8 +901,8 @@ function renderShortcutContent(tab: string) {
     </div>
   )
   if (tab === 'common') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>常规操作</span><span className="settings-section-desc">常用命令</span></div>
+    <div>
+      <div className="settings-section-title"><span className="remix ri-list-check shortcut-section-icon"></span><span>常规操作</span><span className="settings-section-desc">常用命令</span></div>
       <div className="shortcut-list">
         {row('设置面板', `${mod}+,`)}
         {row('全屏模式', `${mod}+Shift+F`)}
@@ -913,8 +913,8 @@ function renderShortcutContent(tab: string) {
     </div>
   )
   if (tab === 'heading') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>标题与段落</span></div>
+    <div>
+      <div className="settings-section-title"><span className="remix ri-h-1 shortcut-section-icon"></span><span>标题与段落</span></div>
       <div className="shortcut-list">
         {row('一级标题 (H1)', `${mod}+${alt}+1`)}
         {row('二级标题 (H2)', `${mod}+${alt}+2`)}
@@ -931,8 +931,8 @@ function renderShortcutContent(tab: string) {
     </div>
   )
   if (tab === 'code') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>代码块</span></div>
+    <div>
+      <div className="settings-section-title"><span className="remix ri-code-box-line shortcut-section-icon"></span><span>代码块</span></div>
       <div className="shortcut-list">
         {row('代码块', `${mod}+${alt}+C`)}
         {row('行内代码', `${mod}+E`)}
@@ -942,8 +942,8 @@ function renderShortcutContent(tab: string) {
     </div>
   )
   return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>应用级快捷键</span></div>
+    <div>
+      <div className="settings-section-title"><span className="remix ri-apps-line shortcut-section-icon"></span><span>应用级快捷键</span></div>
       <div className="shortcut-list">
         {row('AI 辅助面板', `${mod}+/`)}
         {row('预览模式', '仅工具栏按钮')}

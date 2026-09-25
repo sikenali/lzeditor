@@ -410,7 +410,7 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Middle ── */}
         <div className="toolbar-group toolbar-group--middle">
-          {!compactToolbar && <>
+          {compactToolbar && <>
             <button className="toolbar-btn" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>粗体</span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>斜体</span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('underline')}><span className="remix toolbar-icon ri-underline"></span><span className={`toolbar-label${!showToolbarLabels ? ' toolbar-label-hidden' : ''}`}>下划线</span></button>
@@ -451,7 +451,7 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Right ── */}
         <div className={`toolbar-group${compactToolbar ? ' toolbar-group--compact' : ''}`}>
-          {!compactToolbar && <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })}>
+          {compactToolbar && <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })}>
             <span className="remix toolbar-icon ri-openai-fill"></span>
             <span className="toolbar-label">AI</span>
           </button>}
