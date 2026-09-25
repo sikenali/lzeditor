@@ -45,6 +45,7 @@ const CONTENT_WIDTH_MAP: Record<string, string> = {
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
   const editorInitialized = useRef(false)
+  const readTocRef = useRef<HTMLDivElement>(null)
   const { toolbar } = useDocumentSelection(editorRef)
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
@@ -131,9 +132,6 @@ export const LZEditor = () => {
   const setStoreTocItems = useEditorStore((s) => s.setTocItems)
   const activeTocId = useEditorStore((s) => s.activeTocId)
   const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
-  const readTocRef = useRef<HTMLDivElement>(null)
-  // code mode TOC items (computed from markdown, separate IDs)
-  const [codeTocItems, setCodeTocItems] = useState<{ id: string; text: string; level: number }[]>([])
   useEffect(() => {
     const el = readTocRef.current
     if (!el || !readContent) return
@@ -146,20 +144,6 @@ export const LZEditor = () => {
     })
     setStoreTocItems(items)
   }, [readContent])
-  // 代码模式目录 — 从 markdown 文本提取标题
-  useEffect(() => {
-    const lines = (codeEditMd || '').split('\n')
-    const items: { id: string; text: string; level: number }[] = []
-    lines.forEach((line: string, i: number) => {
-      const match = line.match(/^(#{1,6})\s+(.+)$/m)
-      if (match) {
-        const level = match[1].length
-        const id = `code-h-${i}`
-        items.push({ id, text: match[2].trim(), level })
-      }
-    })
-    setCodeTocItems(items)
-  }, [codeEditMd])
   const scrollToHeading = useCallback((id: string) => {
     const el = document.getElementById(id)
     if (el) {
@@ -878,11 +862,10 @@ export const LZEditor = () => {
                     value={codeEditMd}
                     onChange={e => { setCodeEditMd(e.target.value); handleCodeModeChange(e.target.value) }}
                     spellCheck={false}
-                    style={{ fontFamily: 'var(--font-mono)', fontSize: `${defaultFontSize}px`, lineHeight: '1.8' }}
                   />
                 </div>
               </div>
-              {readTocOpen && codeTocItems.length > 0 && (
+              {readTocOpen && storeTocItems.length > 0 && (
                 <div className="read-toc-sidebar">
                   <div className="read-toc-header">
                     <span className="remix ri-menu-fill"></span>
@@ -892,15 +875,12 @@ export const LZEditor = () => {
                     </button>
                   </div>
                   <div className="read-toc-list">
-                    {codeTocItems.map(item => (
+                    {storeTocItems.map(item => (
                       <button
                         key={item.id}
-                        className="read-toc-item"
+                        className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
                         style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-                        onClick={() => {
-                          const el = document.getElementById(item.id)
-                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }}
+                        onClick={() => scrollToHeading(item.id)}
                       >
                         <span className="read-toc-dot" />
                         <span className="read-toc-text">{item.text}</span>
