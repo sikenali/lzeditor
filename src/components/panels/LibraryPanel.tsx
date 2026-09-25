@@ -72,9 +72,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     input.accept = '.md,.markdown,.txt'
     input.multiple = true
     input.onchange = (e: any) => {
-      const files = e.target.files
+      const files: File[] = Array.from(e.target.files || [])
       if (!files.length) return
-      Array.from(files).forEach(file => {
+      files.forEach(file => {
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
@@ -94,9 +94,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     input.accept = '.md,.markdown,.txt'
     input.multiple = true
     input.onchange = (e: any) => {
-      const files = e.target.files
+      const files: File[] = Array.from(e.target.files || [])
       if (!files.length) return
-      Array.from(files).forEach(file => {
+      files.forEach(file => {
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
@@ -116,9 +116,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     input.accept = '.md,.markdown,.txt'
     input.multiple = true
     input.onchange = (e: any) => {
-      const files = e.target.files
+      const files: File[] = Array.from(e.target.files || [])
       if (!files.length) return
-      Array.from(files).forEach(file => {
+      files.forEach(file => {
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
