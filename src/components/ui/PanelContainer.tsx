@@ -16,22 +16,49 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
+  const clickHandledRef = useRef(false)
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     previousFocus.current = document.activeElement as HTMLElement
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handleEsc)
-    // 自动聚焦弹窗内第一个可交互元素
-    const focusable = containerRef.current?.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )
-    if (focusable?.length) {
-      setTimeout(() => focusable[0].focus(), 50)
+
+    // 点击弹窗内元素时不自动聚焦，让用户自己控制焦点
+    const handleClickInside = (e: MouseEvent) => {
+      if (containerRef.current?.contains(e.target as Node)) {
+        clickHandledRef.current = true
+      }
     }
+    document.addEventListener('mousedown', handleClickInside, true)
+
+    // ESC 关闭
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEsc)
+
+    // 仅在用户未主动点击时，自动聚焦第一个可交互元素
+    if (!clickHandledRef.current) {
+      const el = containerRef.current
+      if (el) {
+        const focusable = Array.from(
+          el.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        ).filter(el => !el.disabled && el.offsetParent !== null)
+        if (focusable.length > 0) {
+          // 延迟执行，等 React 完成渲染
+          const timer = setTimeout(() => {
+            if (document.activeElement === document.body) {
+              focusable[0].focus()
+            }
+          }, 100)
+          return () => clearTimeout(timer)
+        }
+      }
+    }
+
     return () => {
-      document.body.style.overflow = ''
+      document.removeEventListener('mousedown', handleClickInside, true)
       document.removeEventListener('keydown', handleEsc)
+      document.body.style.overflow = ''
       if (previousFocus.current) previousFocus.current.focus()
     }
   }, [onClose])
