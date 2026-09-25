@@ -78,9 +78,8 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
         </div>
       }
     >
-      <div className="ud-right-content">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <UDSection label="图表类型">
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+        <UDSection label="图表类型">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
               {CHART_TYPES.map(ct => (
                 <button key={ct.id} className={`ud-btn${chartType === ct.id ? ' ud-btn--primary' : ''}`}
@@ -116,7 +115,6 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
             <div ref={chartRef} style={{ width: '100%', height: 220, borderRadius: 8 }} />
           </UDSection>
         </div>
-      </div>
     </PanelContainer>
   )
 }

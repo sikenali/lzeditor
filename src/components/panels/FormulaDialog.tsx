@@ -45,9 +45,8 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
         </div>
       }
     >
-      <div className="ud-right-content">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <UDSection label="公式模板">
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+        <UDSection label="公式模板">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
               {EXAMPLES.map(ex => (
                 <button key={ex.label} className={`ud-btn${formula === ex.formula ? ' ud-btn--primary' : ''}`}
@@ -73,7 +72,6 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
             }} />
           </UDSection>
         </div>
-      </div>
     </PanelContainer>
   )
 }

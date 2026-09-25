@@ -172,9 +172,8 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
         </div>
       }
     >
-      <div className="ud-right-content">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* 表格类型切换 */}
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+        {/* 表格类型切换 */}
           <div style={{ display: 'flex', gap: 8 }}>
             {TABLE_TYPES.map(t => (
               <button
@@ -294,7 +293,6 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
             </div>
           </UDSection>
         </div>
-      </div>
     </PanelContainer>
   )
 }

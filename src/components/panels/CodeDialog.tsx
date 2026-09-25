@@ -80,9 +80,8 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
         </div>
       }
     >
-      <div className="ud-right-content">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* 主题选择 */}
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+        {/* 主题选择 */}
           <UDSection label="高亮主题">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {THEME_OPTIONS.map(t => (
@@ -144,7 +143,6 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
             )}
           </UDSection>
         </div>
-      </div>
     </PanelContainer>
   )
 }
