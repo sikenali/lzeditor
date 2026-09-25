@@ -186,18 +186,18 @@ export const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string
   </div>
 )
 
-/* ── Toggle switch ── */
+/* ── Checkbox toggle ── */
 export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }> = ({ checked, onChange, size = 'sm' }) => (
-  <button
-    className={`ud-toggle${checked ? ' on' : ''}${size === 'md' ? ' ud-toggle--md' : ''}`}
-    onClick={() => onChange(!checked)}
-    onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onChange(!checked) } }}
-    role="switch"
-    aria-checked={checked}
-    tabIndex={0}
-  >
+  <label className={`ud-toggle${checked ? ' on' : ''}${size === 'md' ? ' ud-toggle--md' : ''}`}>
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={e => onChange(e.target.checked)}
+      className="ud-toggle-input"
+      aria-checked={checked}
+    />
     <span className="ud-toggle-thumb" />
-  </button>
+  </label>
 )
 
 /* ── Select input ── */

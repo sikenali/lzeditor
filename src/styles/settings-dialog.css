@@ -1569,25 +1569,45 @@
 }
 .ud-setting-control { flex-shrink: 0; }
 
-/* ── Toggle ── */
+/* ── Toggle (checkbox) ── */
 .ud-toggle {
-  width: 40px; height: 22px;
-  border-radius: 11px;
-  background: var(--border-default);
-  border: none; cursor: pointer;
   position: relative;
-  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
   flex-shrink: 0;
 }
-.ud-toggle.on { background: var(--accent-primary); }
-.ud-toggle--md { width: 48px; height: 26px; border-radius: 13px; }
+.ud-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+.ud-toggle-track {
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--border-default);
+  border: none;
+  position: relative;
+  transition: background 0.2s;
+  display: block;
+}
+.ud-toggle.on .ud-toggle-track { background: var(--accent-primary); }
+.ud-toggle--md .ud-toggle-track { width: 48px; height: 26px; border-radius: 13px; }
 .ud-toggle-thumb {
-  position: absolute; top: 2px; left: 2px;
-  width: 18px; height: 18px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
 }
 .ud-toggle.on .ud-toggle-thumb { transform: translateX(18px); }
 .ud-toggle--md .ud-toggle-thumb { width: 22px; height: 22px; }
@@ -1828,7 +1848,7 @@
 
 /* ── Ensure toggles are always clickable ── */
 .ud-setting-row .ud-toggle,
-.ud-setting-row button[role="switch"],
+.ud-setting-row input[type="checkbox"],
 .toggle-checkbox { pointer-events: auto !important; }
 .ud-setting-row { pointer-events: auto !important; }
 .settings-content { min-height: 0; overflow: visible; }
