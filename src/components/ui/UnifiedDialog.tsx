@@ -92,8 +92,14 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
   }, [])
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} tabIndex={-1} onClick={e => e.stopPropagation()}>
+    <div
+      className="modal-overlay"
+      onClick={e => {
+        const el = dialogRef.current
+        if (el && !el.contains(e.target as Node)) onClose()
+      }}
+    >
+      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} tabIndex={-1}>
         {/* Header */}
         <div className="ud-header">
           {icon && <span className={`remix ud-icon ${icon}`}></span>}
