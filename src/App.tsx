@@ -224,7 +224,7 @@ function App() {
       <Toolbar />
       <DocumentMetaBar />
       <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
-        {showOutline && !showPreview && <SidebarOutline />}
+        {showOutline && <SidebarOutline />}
         {showLibrary && <LibraryPanel sidebar className={libraryClosing ? 'closing' : ''} />}
         {centerContent}
         {(showPreview) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
@@ -237,7 +237,7 @@ function App() {
   const leftLayout = (
     <div className="app-left-layout">
       {/* 大纲面板 */}
-      {showOutline && !showPreview && (
+      {showOutline && (
         <div className="app-outline-panel">
           <SidebarOutline />
         </div>
