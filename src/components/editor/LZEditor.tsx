@@ -46,6 +46,7 @@ export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
   const editorInitialized = useRef(false)
   const readTocRef = useRef<HTMLDivElement>(null)
+  const codeAreaRef = useRef<HTMLTextAreaElement>(null)
   const { toolbar } = useDocumentSelection(editorRef)
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
@@ -151,6 +152,38 @@ export const LZEditor = () => {
       setActiveTocId(id)
     }
   }, [])
+
+  // Code mode: build TOC from markdown headings with line numbers
+  const codeTocItems = useMemo(() => {
+    if (!codeEditMd) return []
+    const lines = codeEditMd.split('\n')
+    const items: { id: string; text: string; level: number; line: number }[] = []
+    lines.forEach((line: string, i: number) => {
+      const match = line.match(/^(#{1,6})\s+(.+)$/m)
+      if (match) {
+        items.push({
+          id: `code-h-${i}`,
+          text: match[2].trim(),
+          level: match[1].length,
+          line: i,
+        })
+      }
+    })
+    return items
+  }, [codeEditMd])
+
+  const scrollToCodeHeading = useCallback((item: { id: string; line: number }) => {
+    const ta = codeAreaRef.current
+    if (!ta) return
+    const lines = codeEditMdRef.current.split('\n')
+    let charPos = 0
+    for (let i = 0; i < item.line; i++) charPos += lines[i].length + 1
+    ta.focus()
+    ta.setSelectionRange(charPos, charPos)
+    const container = ta.closest('.read-article-wrapper') as HTMLElement | null
+    container?.scrollTo({ top: ta.offsetTop - 20, behavior: 'smooth' })
+    setActiveTocId(item.id)
+  }, [codeEditMd])
 
   useTheme()
 
@@ -858,6 +891,7 @@ export const LZEditor = () => {
                     </div>
                   </div>
                   <textarea
+                    ref={codeAreaRef}
                     className="read-article-code"
                     value={codeEditMd}
                     onChange={e => { setCodeEditMd(e.target.value); handleCodeModeChange(e.target.value) }}
@@ -865,7 +899,7 @@ export const LZEditor = () => {
                   />
                 </div>
               </div>
-              {readTocOpen && storeTocItems.length > 0 && (
+              {readTocOpen && codeTocItems.length > 0 && (
                 <div className="read-toc-sidebar">
                   <div className="read-toc-header">
                     <span className="remix ri-menu-fill"></span>
@@ -875,12 +909,12 @@ export const LZEditor = () => {
                     </button>
                   </div>
                   <div className="read-toc-list">
-                    {storeTocItems.map(item => (
+                    {codeTocItems.map(item => (
                       <button
                         key={item.id}
                         className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
                         style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-                        onClick={() => scrollToHeading(item.id)}
+                        onClick={() => scrollToCodeHeading(item)}
                       >
                         <span className="read-toc-dot" />
                         <span className="read-toc-text">{item.text}</span>
