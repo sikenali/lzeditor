@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { UnifiedDialog, UDSection, UDInput } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 import { useEditorStore } from '../../store/editorStore'
 
@@ -95,14 +95,23 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   }
 
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={onClose}
       icon="ri-link"
       title="插入链接"
       subtitle="链接将插入到当前光标位置"
       size="md"
       className="dialog-fixed-882x600"
-      rightContent={(
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={linkType === 'external' ? !url.trim() : !docSource}>
+            插入链接
+          </button>
+        </div>
+      }
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 2 标签切换 */}
           <div style={{ display: 'flex', gap: 8 }}>
@@ -197,11 +206,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
             </>
           )}
         </div>
-      )}
-      hint={linkType === 'external' ? '链接文字留空将使用 URL 作为显示文字' : '选择文档和章节创建内部锚点链接'}
-      submitText="插入链接"
-      onSubmit={handleInsert}
-      submitDisabled={linkType === 'external' ? !url.trim() : !docSource}
-    />
+      </div>
+    </PanelContainer>
   )
 }

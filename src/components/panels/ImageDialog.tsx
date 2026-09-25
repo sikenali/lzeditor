@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { UnifiedDialog, UDSection, UDInput } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
 
 interface Props {
   onClose: () => void
@@ -64,10 +64,23 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
   }
 
   return (
-    <UnifiedDialog
-      onClose={onClose} icon="ri-image-line" title="插入图片" subtitle="支持 URL 或本地上传" size="md"
+    <PanelContainer
+      onClose={onClose}
+      icon="ri-image-line"
+      title="插入图片"
+      subtitle="支持 URL 或本地上传"
+      size="md"
       className="dialog-fixed-882x600"
-      rightContent={(
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={useUrl ? !url.trim() : !uploadFile}>
+            插入图片
+          </button>
+        </div>
+      }
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 2 标签切换 - 本地上传在前，URL链接在后 */}
           <div style={{ display: 'flex', gap: 8 }}>
@@ -164,11 +177,7 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
             </div>
           </UDSection>
         </div>
-      )}
-      hint="图片将以 Markdown 格式插入，支持本地上传自动转 base64"
-      submitText="插入图片"
-      onSubmit={handleInsert}
-      submitDisabled={useUrl ? !url.trim() : !uploadFile}
-    />
+      </div>
+    </PanelContainer>
   )
 }

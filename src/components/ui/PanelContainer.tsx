@@ -7,7 +7,7 @@ export interface PanelContainerProps {
   subtitle?: string
   children: ReactNode
   footer?: ReactNode
-  size?: 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
 

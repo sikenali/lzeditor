@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import { UnifiedDialog, UDSection, UDInput } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
 
 const EXAMPLES = [
   { label: '二次公式', formula: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}', icon: 'ri-function-fill' },
@@ -30,11 +30,22 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
   }
 
   return (
-    <UnifiedDialog
-      onClose={onClose} icon="ri-function-fill"
-      title="数学公式" subtitle="使用 LaTeX 语法输入公式"
+    <PanelContainer
+      onClose={onClose}
+      icon="ri-function-fill"
+      title="数学公式"
+      subtitle="使用 LaTeX 语法输入公式"
       size="md"
-      rightContent={(
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={!formula.trim()}>
+            插入公式
+          </button>
+        </div>
+      }
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <UDSection label="公式模板">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -62,10 +73,7 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
             }} />
           </UDSection>
         </div>
-      )}
-      hint="公式将以内联数学元素插入"
-      submitText="插入公式"
-      onSubmit={handleInsert} submitDisabled={!formula.trim()}
-    />
+      </div>
+    </PanelContainer>
   )
 }
