@@ -24,19 +24,27 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number; w: number } | null>(null)
   const id = useRef(`lfs-combo-${++uniqueId}`)
 
-  // 点击外部关闭（document level，捕获阶段最先执行）
+  // 点击外部关闭：document capture 阶段，只在 open 时挂载
   useEffect(() => {
     if (!open) return
     const handleClick = (e: MouseEvent) => {
       const target = e.target as Node
-      const inWrapper = wrapperRef.current?.contains(target)
-      if (!inWrapper) setOpen(false)
+      if (wrapperRef.current && !wrapperRef.current.contains(target)) {
+        setOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClick, true)
     return () => document.removeEventListener('mousedown', handleClick, true)
+  }, [open])
+
+  // 打开时计算 viewport 位置（fixed 定位，不依赖父容器 overflow:hidden）
+  useEffect(() => {
+    if (!open || !wrapperRef.current) return
+    const rect = wrapperRef.current.getBoundingClientRect()
+    setPos({ top: rect.bottom + 4, left: rect.left, w: rect.width })
   }, [open])
 
   const selected = options.find(o => o.value === value)
@@ -58,14 +66,13 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         <span className="lfs-combo-arrow"><span className="remix ri-arrow-down-s-line"></span></span>
       </button>
 
-      {/* Dropdown 绝对定位在 wrapper 内，不破坏 DOM 层级 */}
-      {open && (
+      {/* fixed 定位，不受父容器 overflow:hidden 裁剪 */}
+      {open && pos && (
         <div
-          ref={dropdownRef}
           id={id.current}
           role="listbox"
           className="lfs-combo-dropdown"
-          style={{ position: 'absolute', top: '100%', left: 0, width: '100%', zIndex: 3000 }}
+          style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.w, zIndex: 3000 }}
         >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>
