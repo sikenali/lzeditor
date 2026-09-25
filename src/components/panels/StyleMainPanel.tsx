@@ -8,7 +8,9 @@ import { getTypographyTheme, TYPOGRAPHY_THEMES } from '../../styles/typography-t
 import { useScrollSpy } from '../../hooks/useScrollSpy'
 import { DEFAULT_CONTENT } from '../../components/editor/constants'
 import { getDocMd, getDocHtml } from '../../utils/docSource'
+import { copyRichText } from '../../clipboard'
 import { ExportDialog } from './ExportDialog'
+import { renderMdWithMath } from '../../utils/mdWithMath'
 
 export const StyleMainPanel: React.FC = () => {
   const docTitle = useEditorStore((s) => s.docTitle)
@@ -25,6 +27,21 @@ export const StyleMainPanel: React.FC = () => {
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
   const [previewVisible, setPreviewVisible] = useState(true)
   const [exportOpen, setExportOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current) }
+  }, [])
+
+  const handleCopyWechat = async () => {
+    if (!renderedHtml) return
+    const ok = await copyRichText(renderedHtml)
+    if (ok) {
+      setCopied(true)
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   // ── Chapter navigation ──
   interface Chapter { id: string; text: string; level: number }
@@ -65,11 +82,7 @@ export const StyleMainPanel: React.FC = () => {
 
   const renderedHtml = useMemo(() => {
     if (!effectiveMd) return ''
-    try {
-      return remark().use(remarkGfm).use(remarkHtml).processSync(effectiveMd).toString()
-    } catch {
-      return effectiveMd
-    }
+    try { return renderMdWithMath(effectiveMd) } catch { return effectiveMd }
   }, [effectiveMd])
 
   const initialHtml = useMemo(() => {
@@ -143,6 +156,10 @@ export const StyleMainPanel: React.FC = () => {
             <div className="main-read-header">
               <div className="main-read-tags">
                 <span className="read-tag read-tag-tech">Markdown</span>
+                <button className="sidebar-wechat-btn" onClick={handleCopyWechat} title="一键复制为公众号可用富文本">
+                  <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
+                  {copied ? '已复制' : '公众号'}
+                </button>
               </div>
               <h1 className="read-article-title">{docTitle}</h1>
               <div className="read-meta">
