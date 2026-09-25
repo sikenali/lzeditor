@@ -330,7 +330,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
-/* ── Statusbar pill/action hover tooltip (below icon, no arrow) ── */
+/* ── Statusbar pill/action hover tooltip (above icon, no arrow) ── */
 .statusbar-pill[data-title],
 .statusbar-action[data-title] {
   position: relative;
@@ -339,7 +339,7 @@
 .statusbar-action[data-title]:hover::after {
   content: attr(data-title);
   position: absolute;
-  top: calc(100% + 7px);
+  bottom: calc(100% + 7px);
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 10px;
