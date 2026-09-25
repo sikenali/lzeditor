@@ -7,8 +7,15 @@ import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography
 import { CODE_THEMES, getCodeTheme } from '../../styles/code-themes'
 import { LFSInput } from '../../components/ui/LFInput'
 import { LFSCombo } from '../../components/ui/LFSCombo'
-import { UDToggle, UDSettingRow, UDSection } from '../../components/ui/PanelContainer'
+import { UDSettingRow, UDSection } from '../../components/ui/PanelContainer'
 import { PanelContainer } from '../../components/ui/PanelContainer'
+
+const UDCheckbox: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
+  <label className="ud-toggle">
+    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="ud-toggle-input" aria-checked={checked} />
+    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
+  </label>
+)
 
 /* ── Nav categories ── */
 const NAV_ITEMS: { id: SettingsGroup; label: string; desc: string; icon: string }[] = [
@@ -424,21 +431,21 @@ function renderGeneralSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>段落排版</span><span className="settings-section-desc">首行缩进与对齐方式</span></div>
         <UDSettingRow icon="ri-text-spacing" label="首行缩进" desc="每个段落首行缩进两个字符">
-        <UDToggle checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
+        <UDCheckbox checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-align-justify" label="两端对齐" desc="段落文字左右两端对齐">
-        <UDToggle checked={ s.textJustify || false } onChange={ v => u('textJustify', v) } />
+        <UDCheckbox checked={ s.textJustify || false } onChange={ v => u('textJustify', v) } />
       </UDSettingRow>
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
         <UDSettingRow icon="ri-apps-2-fill" label="显示所有工具栏按钮" desc="关闭后精简为：格式、图片、链接、表格、插入；右侧隐藏 AI">
-        <UDToggle checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
+        <UDCheckbox checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="在图标下方显示文字标签">
-        <UDToggle checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
+        <UDCheckbox checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
       </UDSettingRow>
       </div>
     </>
@@ -452,27 +459,27 @@ function renderAppSettings() {
     <div className="settings-section">
       <div className="settings-section-title"><span>启动行为</span><span className="settings-section-desc">应用启动与窗口管理</span></div>
       <UDSettingRow icon="ri-window-fill" label="启动标签页" desc="应用启动时显示多文档标签栏">
-        <UDToggle checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
+        <UDCheckbox checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-clipboard-fill" label="启动保存剪切板内容" desc="每次启动时自动保存当前剪切板内容">
-        <UDToggle checked={ s.saveClipboardOnLaunch || false } onChange={ v => u('saveClipboardOnLaunch', v) } />
+        <UDCheckbox checked={ s.saveClipboardOnLaunch || false } onChange={ v => u('saveClipboardOnLaunch', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-notification-3-line" label="显示托盘图标" desc="在系统托盘显示应用图标">
-        <UDToggle checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
+        <UDCheckbox checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-file-list-3-fill" label="下次启动时自动打开最后编辑的文档" desc="记住上次编辑的文档，下次启动自动打开">
-        <UDToggle checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />
+        <UDCheckbox checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
         <UDSettingRow icon="ri-window-line" label="从文件资源管理器打开文档时总在新窗口中打开" desc="双击文件总是在新窗口中打开">
-        <UDToggle checked={ s.openInNewWindow || false } onChange={ v => u('openInNewWindow', v) } />
+        <UDCheckbox checked={ s.openInNewWindow || false } onChange={ v => u('openInNewWindow', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-close-circle-fill" label="当所有窗口关闭时退出应用程序" desc="关闭最后一个窗口后完全退出应用">
-        <UDToggle checked={ s.quitWhenAllWindowsClosed !== false } onChange={ v => u('quitWhenAllWindowsClosed', v) } />
+        <UDCheckbox checked={ s.quitWhenAllWindowsClosed !== false } onChange={ v => u('quitWhenAllWindowsClosed', v) } />
       </UDSettingRow>
     </div>
   )
@@ -484,7 +491,7 @@ function renderLocalizationSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>拼写检查</span><span className="settings-section-desc">文字输入辅助</span></div>
         <UDSettingRow icon="ri-spell-check-line" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
-        <UDToggle checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
+        <UDCheckbox checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
       </UDSettingRow>
         <div style={{ padding: '8px 0 0 44px', marginBottom: 8 }}>
           <div className="setting-row" style={{ marginBottom: 0 }}>
@@ -496,31 +503,31 @@ function renderLocalizationSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>Markdown 快捷符号</span><span className="settings-section-desc">自动格式化与补全</span></div>
         <UDSettingRow icon="ri-asterisk" label="允许使用符号键 (* _ + ~ = 和 `) 设置选中的文本的格式" desc="选中文字后按 * 加粗、_ 斜体等">
-        <UDToggle checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
+        <UDCheckbox checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-braces-fill" label="自动补完 Markdown 符号对" desc="输入 ( 时自动补全 )，输入 「 时自动补全 」 等">
-        <UDToggle checked={ s.autoCompleteMarkdownPairs !== false } onChange={ v => u('autoCompleteMarkdownPairs', v) } />
+        <UDCheckbox checked={ s.autoCompleteMarkdownPairs !== false } onChange={ v => u('autoCompleteMarkdownPairs', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-double-quotes-l" label="自动替换引号为智能引号（即双引号和单引号）" desc="英文弯引号，提升可读性">
-           <UDToggle checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
+           <UDCheckbox checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-language-fill" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
-        <UDToggle checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
+        <UDCheckbox checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-double-quotes-r" label={'自动替换引号为直角引号（即「」和『』）'} desc={'将 "" 替换为 「」，将 \'\' 替换为 『』'}>
-           <UDToggle checked={s.cornerQuotes || false} onChange={v => u('cornerQuotes', v)} />
+           <UDCheckbox checked={s.cornerQuotes || false} onChange={v => u('cornerQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
         <UDSettingRow icon="ri-translate-2" label="自动替换半角符号为全角符号（仅限，、;符号）" desc="将半角 , 和 ; 替换为全角 ，和 ；">
-        <UDToggle checked={ s.fullwidthSymbols || false } onChange={ v => u('fullwidthSymbols', v) } />
+        <UDCheckbox checked={ s.fullwidthSymbols || false } onChange={ v => u('fullwidthSymbols', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-list-ordered" label="显示行号" desc="在编辑器左侧显示行号">
-        <UDToggle checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
+        <UDCheckbox checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
       </UDSettingRow>
        </div>
     </>
@@ -533,23 +540,23 @@ function renderEditModeSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>编辑模式</span><span className="settings-section-desc">编辑器功能开关</span></div>
         <UDSettingRow icon="ri-markdown-fill" label="Markdown 标记常显" desc="始终显示 ### 与列表符号">
-        <UDToggle checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
+        <UDCheckbox checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
          <UDSettingRow icon="ri-diff" label="快照差异高亮" desc="红底为删除、绿底为新增">
-        <UDToggle checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
+        <UDCheckbox checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-cursor-fill" label="打字机模式" desc="光标始终居中垂直位置">
-        <UDToggle checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
+        <UDCheckbox checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
          <UDSettingRow icon="ri-focus-2" label="专注模式" desc="仅高亮当前段落，其余淡化">
-        <UDToggle checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
+        <UDCheckbox checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-eye-line" label="预览模式" desc="编辑模式与代码模式下默认显示右侧预览">
-           <UDToggle checked={s.previewModeEnabled !== false} onChange={v => {
+           <UDCheckbox checked={s.previewModeEnabled !== false} onChange={v => {
              u('previewModeEnabled', v)
              useEditorStore.getState().setShowPreview(v)
            }} />
@@ -754,7 +761,7 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
                     </button>
                     <button className="ai-key-edit-btn" onClick={() => startEdit(key)} title="编辑"><span className="remix ri-edit-line"></span></button>
                     <button className="ai-key-delete-btn" onClick={() => { if (confirm(`删除 ${key.modelName || key.model}？`)) removeApiKey(key.id) }} title="删除"><span className="remix ri-delete-bin-line"></span></button>
-                    <UDToggle checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
+                    <UDCheckbox checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
                     {isActive && <span className="remix ri-checkbox-circle-fill" style={{ fontSize: 16, color: 'var(--accent-primary)' }} />}
                   </div>
                 </div>

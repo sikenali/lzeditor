@@ -186,20 +186,6 @@ export const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string
   </div>
 )
 
-/* ── Checkbox (square with checkmark) ── */
-export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }> = ({ checked, onChange, size = 'sm' }) => (
-  <label className={`ud-toggle${checked ? ' checked' : ''}`}>
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={e => onChange(e.target.checked)}
-      className="ud-toggle-input"
-      aria-checked={checked}
-    />
-    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
-  </label>
-)
-
 /* ── Select input ── */
 export const UDSelect: React.FC<{ value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; style?: React.CSSProperties }> = ({ value, onChange, options, style }) => (
   <select className="ud-select" value={value} onChange={e => onChange(e.target.value)} style={style}>

@@ -4,7 +4,7 @@ import { exportDocument } from '../../services/exportService'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { mdToHtml } from '../../utils/mdToHtml'
-import { PanelContainer, UDSection, UDSettingRow, UDToggle, UDPreviewCard } from '../ui/PanelContainer'
+import { PanelContainer, UDSection, UDSettingRow, UDPreviewCard } from '../ui/PanelContainer'
 import { LFSCombo } from '../ui/LFSCombo'
 import { getDocMd } from '../../utils/docSource'
 
@@ -13,6 +13,13 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
   if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
   return getDocMd(activeDocId || 'welcome')
 }
+
+const UDCheckbox: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
+  <label className="ud-toggle">
+    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="ud-toggle-input" aria-checked={checked} />
+    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
+  </label>
+)
 
 const EXPORT_FORMATS = [
   { id: 'pdf',   name: 'PDF',   icon: 'ri-file-pdf-fill',    desc: '可打印',   color: '#e74c3c' },
@@ -120,13 +127,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           <UDSection label="样式选项">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <UDSettingRow icon="ri-menu-fill" label="包含目录" desc="在文档开头插入目录">
-                <UDToggle checked={state.includeTOC !== false} onChange={v => updateSetting('includeTOC', v)} />
+                <UDCheckbox checked={state.includeTOC !== false} onChange={v => updateSetting('includeTOC', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-number-1" label="代码行号" desc="导出代码块时显示行号">
-                <UDToggle checked={state.includeLineNumbers || false} onChange={v => updateSetting('includeLineNumbers', v)} />
+                <UDCheckbox checked={state.includeLineNumbers || false} onChange={v => updateSetting('includeLineNumbers', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-numbers-fill" label="页码" desc="为每页添加页码">
-                <UDToggle checked={state.includePageNumbers || false} onChange={v => updateSetting('includePageNumbers', v)} />
+                <UDCheckbox checked={state.includePageNumbers || false} onChange={v => updateSetting('includePageNumbers', v)} />
               </UDSettingRow>
             </div>
           </UDSection>
