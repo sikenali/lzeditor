@@ -465,19 +465,19 @@ export const Toolbar: React.FC = () => {
             </button>
             <SubMenu menuKey="mode" items={MODE_ITEMS} onAction={(a) => { handleModeAction(a); setMenuOpen(null) }} />
           </div>
-          <button className={`toolbar-btn ${appMode === 'history' ? 'active' : ''}`} onClick={() => setAppMode(appMode === 'history' ? 'edit' : 'history')}>
+          <button className="toolbar-btn" onClick={() => setAppMode(appMode === 'history' ? 'edit' : 'history')}>
             <span className="remix toolbar-icon ri-history-fill"></span>
             <span className="toolbar-label">历史</span>
           </button>
-          <button className={`toolbar-btn ${appMode === 'style' ? 'active' : ''}`} onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')}>
+          <button className="toolbar-btn" onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')}>
             <span className="remix toolbar-icon ri-palette-fill"></span>
             <span className="toolbar-label">样式</span>
           </button>
-          <button className={`toolbar-btn ${openPanel === 'export' ? 'active' : ''}`} onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
+          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
             <span className="remix toolbar-icon ri-download-2-line"></span>
             <span className="toolbar-label">导出</span>
           </button>
-          <button className={`toolbar-btn ${openPanel === 'settings' ? 'active' : ''}`} onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')}>
+          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')}>
             <span className="remix toolbar-icon ri-settings-3-fill"></span>
             <span className="toolbar-label">设置</span>
           </button>
