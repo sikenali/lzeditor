@@ -507,7 +507,7 @@ function renderLocalizationSection(s: any, u: any) {
            <UDToggle checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
-        <UDSettingRow icon="ri-space-bar" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
+         <UDSettingRow icon="ri-language-fill" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
         <UDToggle checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
@@ -522,16 +522,7 @@ function renderLocalizationSection(s: any, u: any) {
         <UDSettingRow icon="ri-list-ordered" label="显示行号" desc="在编辑器左侧显示行号">
         <UDToggle checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
       </UDSettingRow>
-      </div>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>预览</span><span className="settings-section-desc">符号规则效果预览</span></div>
-        <div className="preview-card" style={{ lineHeight: 1.8 }}>
-          <div className="preview-text-line" style={{ fontSize: 15 }}><span className="preview-text">「Hello World」是编程入门经典示例。</span></div>
-          <div className="preview-text-line" style={{ fontSize: 15 }}><span className="preview-text">他在 2024 年发布了「智能编辑器」。</span></div>
-          <div className="preview-text-line" style={{ fontSize: 15 }}><span className="preview-text">用 (括号) 标注重点内容。</span></div>
-          <div className="preview-text-line" style={{ fontSize: 15 }}><span className="preview-text">"""智能引号""" 效果预览。</span></div>
-        </div>
-      </div>
+       </div>
     </>
   )
 }
@@ -545,7 +536,7 @@ function renderEditModeSection(s: any, u: any) {
         <UDToggle checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
-        <UDSettingRow icon="ri-diff-fill" label="快照差异高亮" desc="红底为删除、绿底为新增">
+         <UDSettingRow icon="ri-diff" label="快照差异高亮" desc="红底为删除、绿底为新增">
         <UDToggle checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
@@ -553,7 +544,7 @@ function renderEditModeSection(s: any, u: any) {
         <UDToggle checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
-        <UDSettingRow icon="ri-focus-3" label="专注模式" desc="仅高亮当前段落，其余淡化">
+         <UDSettingRow icon="ri-focus-2" label="专注模式" desc="仅高亮当前段落，其余淡化">
         <UDToggle checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
@@ -562,35 +553,15 @@ function renderEditModeSection(s: any, u: any) {
              u('previewModeEnabled', v)
              useEditorStore.getState().setShowPreview(v)
            }} />
-         </UDSettingRow>
-       </div>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>效果预览</span><span className="settings-section-desc">当前编辑器配置预览</span></div>
-        <div className="preview-card edit-mode-preview" style={{ fontFamily: s.editorFont || 'var(--font-sans)', fontSize: `${s.defaultFontSize || 17}px`, lineHeight: s.lineHeight || '1.5' }}>
-          <div className="preview-code-line"><span className="preview-dollarsign">$</span><span className="preview-text">git status</span></div>
-          <div className="preview-title-line"><span className="preview-hash">##</span><span className="preview-text">配置文件</span></div>
-          <div className="preview-text-line"><span className="preview-text">当前字体：</span><span className="preview-added">{s.editorFont || 'sans-serif'}</span></div>
-          <div className="preview-text-line"><span className="preview-text">字号 / 行高 / 宽度：</span><span className="preview-added">{s.defaultFontSize || 17}px / {s.lineHeight || '1.5'} / {s.contentWidth || '1024'}px</span></div>
-          <div className="preview-text-line"><span className="preview-selected">专注段落：这是当前正在编辑的内容</span><span className="preview-text">。其余内容会被淡化处理。</span></div>
+          </UDSettingRow>
         </div>
-        <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <span className="edit-mode-tag">字体: {s.editorFont === 'serif' ? '衬线' : s.editorFont === 'monospace' ? '等宽' : '无衬线'}</span>
-          <span className="edit-mode-tag">字号: {s.defaultFontSize || 17}px</span>
-          <span className="edit-mode-tag">行高: {s.lineHeight || '1.5'}</span>
-          <span className="edit-mode-tag">宽度: {s.contentWidth || '1024'}</span>
-          <span className={`edit-mode-tag ${s.showMarkdownMarkers !== false ? 'tag-on' : 'tag-off'}`}>Markdown 标记: {s.showMarkdownMarkers !== false ? '开启' : '关闭'}</span>
-          <span className={`edit-mode-tag ${s.typewriterMode ? 'tag-on' : 'tag-off'}`}>打字机: {s.typewriterMode ? '开启' : '关闭'}</span>
-          <span className={`edit-mode-tag ${s.focusMode ? 'tag-on' : 'tag-off'}`}>专注模式: {s.focusMode ? '开启' : '关闭'}</span>
-          <span className={`edit-mode-tag ${s.previewModeEnabled !== false ? 'tag-on' : 'tag-off'}`}>预览模式: {s.previewModeEnabled !== false ? '开启' : '关闭'}</span>
-        </div>
-      </div>
     </>
   )
 }
 
 /* ═══════════════════════════════════════════
    AI SETTINGS (bid-maker style)
-═══════════════════════════════════════════ */
+   ═══════════════════════════════════════════ */
 
 // 内置服务商配置
 const PROVIDER_CONFIGS: Record<string, { endpoint: string; format: 'openai' | 'anthropic'; models: string[] }> = {
