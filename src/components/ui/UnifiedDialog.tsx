@@ -101,7 +101,7 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
   }, [])
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={onClose}>
       <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} tabIndex={-1} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="ud-header">
