@@ -78,6 +78,8 @@ export const Toolbar: React.FC = () => {
   const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
   const setShowPreview = useEditorStore((s: any) => s.setShowPreview)
   const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
+  const showSearch = useEditorStore((s: any) => s.showSearch)
+  const setShowSearch = useEditorStore((s: any) => s.setShowSearch)
   const editor = useEditorStore((s: any) => s.editor)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const createDoc = useEditorStore((s: any) => s.createDoc)
@@ -401,6 +403,11 @@ export const Toolbar: React.FC = () => {
           <button className={`toolbar-btn ${showOutline ? 'active' : ''}`} onClick={() => setShowOutline(!showOutline)}>
             <span className="remix toolbar-icon ri-list-unordered"></span>
             <span className="toolbar-label">大纲</span>
+          </button>
+          <button className={`toolbar-btn ${showSearch ? 'active' : ''}`} onClick={() => setShowSearch(!showSearch)} title="查找与替换">
+            <span className="remix toolbar-icon ri-search-line"></span>
+            <span className="toolbar-label">查找</span>
+          </button>
           </button>
         </div>
 
