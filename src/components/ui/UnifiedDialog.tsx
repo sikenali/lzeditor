@@ -20,9 +20,9 @@ export interface UnifiedDialogProps {
 
 /** Collect all focusable elements inside a container */
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  const selectors = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
   return Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
-    el => el.tabIndex >= 0 && (el as HTMLButtonElement | HTMLInputElement).disabled !== true && el.offsetParent !== null
+    el => !(el instanceof HTMLButtonElement || el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) || !el.disabled
   )
 }
 
@@ -33,48 +33,70 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
   size = 'md', className = ''
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null)
-  const closeRef = useRef(onClose)
-  closeRef.current = onClose
+  const previousFocus = useRef<HTMLElement | null>(null)
 
-  // ── 点击遮罩关闭：document capture 阶段，在 stopPropagation 之前执行 ──
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const dialog = dialogRef.current
-      if (!dialog) return
-      // 点击在 dialog 内部 → 忽略（内部 stopPropagation 会处理）
-      if (dialog.contains(e.target as Node)) return
-      // 点击在 dialog 外部 → 关闭
-      onClose()
-    }
-    // capture 阶段：早于 dialog div 的 stopPropagation
-    document.addEventListener('mousedown', handleClick, true)
-    return () => document.removeEventListener('mousedown', handleClick, true)
-  }, [])
-
-  // ── ESC 关闭 + 焦点陷阱 ──
+  // ── 弹窗打开/关闭时的副作用 ──
   useEffect(() => {
     const el = dialogRef.current
     if (!el) return
 
+    // 保存当前焦点，关闭时恢复
+    previousFocus.current = document.activeElement as HTMLElement
+
+    // 锁定 body 滚动
+    document.body.style.overflow = 'hidden'
+
+    // 聚焦到弹窗内第一个可交互元素
+    const focusable = getFocusableElements(el)
+    if (focusable.length > 0) {
+      focusable[0].focus()
+    } else {
+      el.focus()
+    }
+
+    // 点击外部关闭（capture 阶段，早于内部 stopPropagation）
+    const handleClick = (e: MouseEvent) => {
+      if (!el.contains(e.target as Node)) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handleClick, true)
+
+    // ESC 关闭 + Tab 焦点陷阱
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
       if (e.key !== 'Tab') return
+      
       const items = getFocusableElements(el)
       if (items.length === 0) return
+      
       const first = items[0]
       const last = items[items.length - 1]
+      
       if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
       } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
       }
     }
     el.addEventListener('keydown', handleKeydown)
-    // 打开时聚焦第一个可交互元素
-    const focusable = getFocusableElements(el)
-    if (focusable.length > 0) setTimeout(() => focusable[0].focus(), 0)
+
     return () => {
+      document.removeEventListener('mousedown', handleClick, true)
       el.removeEventListener('keydown', handleKeydown)
+      document.body.style.overflow = ''
+      if (previousFocus.current) {
+        previousFocus.current.focus()
+      }
     }
   }, [])
 
