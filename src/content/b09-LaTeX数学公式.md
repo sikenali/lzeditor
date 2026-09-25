@@ -36,17 +36,15 @@ $$
 
 ## 常用符号
 
-| 符号 | 写法 | 说明 |
-|------|------|------|
-| $\alpha$ — \`\\alpha\` | 希腊字母 α |
-| $\beta$ — \`\\beta\` | 希腊字母 β |
-| $\sum$ — \`\\sum\` | 求和符号 |
-| $\prod$ — \`\\prod\` | 连乘符号 |
-| $\infty$ — \`\\infty\` | 无穷大 |
-| $\partial$ — \`\\partial\` | 偏导数 |
-| $\nabla$ — \`\\nabla\` | Nabla 算子 |
-| $\forall$ — \`\\forall\` | 任意 |
-| $\exists$ — \`\\exists\` | 存在 |
+- `$\alpha$` — `\alpha`，希腊字母 α
+- `$\beta$` — `\beta`，希腊字母 β
+- `$\sum$` — `\sum`，求和符号
+- `$\prod$` — `\prod`，连乘符号
+- `$\infty$` — `\infty`，无穷大
+- `$\partial$` — `\partial`，偏导数
+- `$\nabla$` — `\nabla`，Nabla 算子
+- `$\forall$` — `\forall`，任意
+- `$\exists$` — `\exists`，存在
 
 ---
 
@@ -108,9 +106,7 @@ $$
 
 ## 导出支持
 
-| 格式 | 支持情况 |
-|------|---------|
-| HTML — ✅ KaTeX CDN 自动加载 |
-| PDF — ✅ 内嵌公式图片 |
-| DOCX — ⚠️ 部分公式转为图片 |
-| Markdown — ✅ 保留源码 |
+- **HTML** — ✅ KaTeX CDN 自动加载
+- **PDF** — ✅ 内嵌公式图片
+- **DOCX** — ⚠️ 部分公式转为图片
+- **Markdown** — ✅ 保留源码
