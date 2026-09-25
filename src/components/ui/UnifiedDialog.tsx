@@ -66,11 +66,11 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
     return () => el.removeEventListener('keydown', handleKeydown)
   }, [])
 
-  // 点击遮罩关闭
+  // 点击遮罩关闭：只响应直接点击 overlay 本身（不在 dialog 内）
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).classList.contains('modal-overlay')) {
-      onClose()
-    }
+    const target = e.target as HTMLElement
+    // 只有点击 overlay 背景层才关闭，dialog 内的点击忽略
+    if (target.classList.contains('modal-overlay')) onClose()
   }
 
   return (
