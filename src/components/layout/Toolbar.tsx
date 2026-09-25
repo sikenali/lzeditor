@@ -450,7 +450,7 @@ export const Toolbar: React.FC = () => {
         </div>
 
         {/* ── Right ── */}
-        <div className="toolbar-group">
+        <div className={`toolbar-group${compactToolbar ? ' toolbar-group--compact' : ''}`}>
           {!compactToolbar && <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })}>
             <span className="remix toolbar-icon ri-openai-fill"></span>
             <span className="toolbar-label">AI</span>
