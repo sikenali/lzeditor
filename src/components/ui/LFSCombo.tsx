@@ -48,16 +48,13 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
   const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 关闭时安全清理 portal
   React.useEffect(() => {
     if (!open) {
       setPortalNode(null)
       setPortalPos(null)
       releasePortalRoot()
     }
-    return () => { if (closeTimer.current) clearTimeout(closeTimer.current) }
   }, [open])
 
   // 打开时计算位置并创建 portal
@@ -97,11 +94,6 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
         <div
           className="lfs-combo-dropdown"
           style={{ position: 'fixed', top: portalPos.y, left: portalPos.x, width: portalPos.w, zIndex: 3000 }}
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            if (closeTimer.current) clearTimeout(closeTimer.current)
-            closeTimer.current = setTimeout(() => setOpen(false), 8)
-          }}
         >
           {options.length === 0 && placeholder ? (
             <div className="lfs-combo-empty">{placeholder}</div>

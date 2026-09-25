@@ -574,7 +574,7 @@ export const LZEditor = () => {
     const onMouseDown = (e: MouseEvent) => {
       if (panelOpen) {
         const target = e.target as HTMLElement
-        if (target.closest('.unified-dialog') || target.closest('.ai-panel')) return
+        if (target.closest('.unified-dialog') || target.closest('.ai-panel') || target.closest('.panel-container')) return
         e.preventDefault()
       }
     }
