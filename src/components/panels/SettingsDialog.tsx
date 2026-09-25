@@ -437,7 +437,7 @@ function renderGeneralSection(s: any, u: any) {
         <UDToggle checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
       </UDSettingRow>
         <div className="setting-divider" />
-        <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="关闭后仅显示图标，不显示文字">
+        <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="关闭后仅显示图标，文字居中隐藏">
         <UDToggle checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
       </UDSettingRow>
       </div>

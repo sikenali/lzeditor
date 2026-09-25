@@ -53,6 +53,18 @@
 .toolbar-btn.menu-open .toolbar-label { color: var(--accent-primary); }
 .toolbar-label-hidden { display: none; }
 
+/* ── 仅图标模式 ── */
+.toolbar-icon-only .toolbar-btn {
+  justify-content: center;
+  padding: 0;
+}
+.toolbar-icon-only .toolbar-label {
+  display: none;
+}
+.toolbar-icon-only .toolbar-menu-dot {
+  display: none;
+}
+
 /* ── Submenu indicator dot ── */
 .toolbar-menu-dot {
   position: absolute;
