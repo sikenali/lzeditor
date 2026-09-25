@@ -380,11 +380,11 @@ export const Toolbar: React.FC = () => {
       <div className="toolbar">
         {/* ── Left ── */}
         <div className="toolbar-group toolbar-icon-only">
-          <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)} title="文档库">
+          <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)} data-title="文档库">
             <span className="remix toolbar-icon ri-archive-2-line"></span>
           </button>
           <div className="toolbar-menu-btn" onClick={() => openMenu('preview')}>
-            <button ref={previewBtnRef} className={`toolbar-btn ${menuOpen === 'preview' ? 'menu-open' : ''}`} title="新建">
+            <button ref={previewBtnRef} className={`toolbar-btn ${menuOpen === 'preview' ? 'menu-open' : ''}`} data-title="新建">
               <span className="remix toolbar-icon ri-file-add-line"></span>
               <span className="toolbar-menu-dot"></span>
             </button>
@@ -393,10 +393,10 @@ export const Toolbar: React.FC = () => {
               { icon: 'ri-folder-open-line', label: '打开本地文件', action: 'open' },
             ]} onAction={(a) => { if (a === 'new') handleNewFile(); else handleOpenFile(); setMenuOpen(null) }} />
           </div>
-          <button className="toolbar-btn" onClick={() => setShowOutline(!showOutline)} title="大纲">
+          <button className="toolbar-btn" onClick={() => setShowOutline(!showOutline)} data-title="大纲">
             <span className="remix toolbar-icon ri-list-unordered"></span>
           </button>
-          <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)} title="查找与替换">
+          <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)} data-title="查找与替换">
             <span className="remix toolbar-icon ri-search-line"></span>
           </button>
         </div>
@@ -404,26 +404,26 @@ export const Toolbar: React.FC = () => {
         {/* ── Middle ── */}
         <div className="toolbar-group toolbar-group--middle toolbar-icon-only">
           <>
-            <button className="toolbar-btn" onClick={() => applyCmd('bold')} title="粗体"><span className="remix toolbar-icon ri-bold"></span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('italic')} title="斜体"><span className="remix toolbar-icon ri-italic"></span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('underline')} title="下划线"><span className="remix toolbar-icon ri-underline"></span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')} title="删除线"><span className="remix toolbar-icon ri-strikethrough"></span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('toggleHighlight')} title="高亮"><span className="remix toolbar-icon ri-mark-pen-fill"></span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('bold')} data-title="粗体"><span className="remix toolbar-icon ri-bold"></span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('italic')} data-title="斜体"><span className="remix toolbar-icon ri-italic"></span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('underline')} data-title="下划线"><span className="remix toolbar-icon ri-underline"></span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')} data-title="删除线"><span className="remix toolbar-icon ri-strikethrough"></span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('toggleHighlight')} data-title="高亮"><span className="remix toolbar-icon ri-mark-pen-fill"></span></button>
           </>
 
           <div className="toolbar-menu-btn" onClick={() => openMenu('format')}>
-            <button ref={formatBtnRef} className={`toolbar-btn format-btn ${menuOpen === 'format' ? 'menu-open' : ''}`} title="格式">
+            <button ref={formatBtnRef} className={`toolbar-btn format-btn ${menuOpen === 'format' ? 'menu-open' : ''}`} data-title="格式">
               <span className="remix toolbar-icon ri-text-wrap"></span>
               <span className="toolbar-menu-dot"></span>
             </button>
             <SubMenu menuKey="format" items={FORMAT_ITEMS} onAction={handleFormatAction} />
           </div>
 
-          <button className="toolbar-btn" onClick={() => setInsertPanel('image')} title="图片"><span className="remix toolbar-icon ri-image-line"></span></button>
-          <button className="toolbar-btn" onClick={() => setInsertPanel('link')} title="链接"><span className="remix toolbar-icon ri-link"></span></button>
+          <button className="toolbar-btn" onClick={() => setInsertPanel('image')} data-title="图片"><span className="remix toolbar-icon ri-image-line"></span></button>
+          <button className="toolbar-btn" onClick={() => setInsertPanel('link')} data-title="链接"><span className="remix toolbar-icon ri-link"></span></button>
 
           <div className="toolbar-menu-btn" onClick={() => openMenu('table')}>
-            <button ref={tableBtnRef} className={`toolbar-btn ${menuOpen === 'table' ? 'menu-open' : ''}`} title="表格">
+            <button ref={tableBtnRef} className={`toolbar-btn ${menuOpen === 'table' ? 'menu-open' : ''}`} data-title="表格">
               <span className="remix toolbar-icon ri-table-2"></span>
               <span className="toolbar-menu-dot"></span>
             </button>
@@ -431,7 +431,7 @@ export const Toolbar: React.FC = () => {
           </div>
 
           <div className="toolbar-menu-btn" onClick={() => openMenu('insert')}>
-            <button ref={insertBtnRef} className={`toolbar-btn ${menuOpen === 'insert' ? 'menu-open' : ''}`} title="插入">
+            <button ref={insertBtnRef} className={`toolbar-btn ${menuOpen === 'insert' ? 'menu-open' : ''}`} data-title="插入">
               <span className="remix toolbar-icon ri-add-circle-line"></span>
               <span className="toolbar-menu-dot"></span>
             </button>
@@ -441,26 +441,26 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Right ── */}
         <div className="toolbar-group toolbar-icon-only">
-          <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })} title="AI">
+          <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })} data-title="AI">
             <span className="remix toolbar-icon ri-openai-fill"></span>
           </button>
           <div className="toolbar-menu-btn" onClick={() => openMenu('mode')}>
-            <button ref={modeBtnRef} className={`toolbar-btn ${menuOpen === 'mode' ? 'menu-open' : ''}`} title="模式">
+            <button ref={modeBtnRef} className={`toolbar-btn ${menuOpen === 'mode' ? 'menu-open' : ''}`} data-title="模式">
               <span className="remix toolbar-icon ri-eye-2-fill"></span>
               <span className="toolbar-menu-dot"></span>
             </button>
             <SubMenu menuKey="mode" items={MODE_ITEMS} onAction={(a) => { handleModeAction(a); setMenuOpen(null) }} />
           </div>
-          <button className="toolbar-btn" onClick={() => setAppMode(appMode === 'history' ? 'edit' : 'history')} title="历史">
+          <button className="toolbar-btn" onClick={() => setAppMode(appMode === 'history' ? 'edit' : 'history')} data-title="历史">
             <span className="remix toolbar-icon ri-history-fill"></span>
           </button>
-          <button className="toolbar-btn" onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} title="样式">
+          <button className="toolbar-btn" onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} data-title="样式">
             <span className="remix toolbar-icon ri-palette-fill"></span>
           </button>
-          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')} title="导出">
+          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')} data-title="导出">
             <span className="remix toolbar-icon ri-download-2-line"></span>
           </button>
-          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')} title="设置">
+          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')} data-title="设置">
             <span className="remix toolbar-icon ri-settings-3-fill"></span>
           </button>
         </div>
