@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (如 0.9.0)'
+        required: true
+        default: '0.9.0'
 
 permissions:
   contents: write
@@ -18,6 +23,8 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ github.event.inputs.version || github.ref_name }}
 
     steps:
       - name: Checkout
@@ -49,27 +56,31 @@ jobs:
         run: npx electron-builder --win --x64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
 
       - name: Build & Publish (macOS)
         if: runner.os == 'macOS'
         run: npx electron-builder --mac --x64 --arm64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
 
       - name: Build & Publish (Linux)
         if: runner.os == 'Linux'
         run: npx electron-builder --linux deb appimage --x64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
 
       - name: Build LPK
         if: runner.os == 'Linux'
         run: |
           npm install -g @lazycatcloud/lzc-cli
           cd lzc
+          export LPK_VERSION="${VERSION#v}"
           bash package.sh
         env:
-          LPK_VERSION: ${{ github.ref_name }}
+          VERSION: ${{ env.VERSION }}
 
       - name: Upload LPK artifact
         if: runner.os == 'Linux'
@@ -77,45 +88,51 @@ jobs:
         with:
           name: lpk
           path: lzc/output*.lpk
+          retention-days: 7
 
   publish:
     name: Publish Release
     needs: build
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    env:
+      VERSION: ${{ github.event.inputs.version || github.ref_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Get Version
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${VERSION#v}" >> $GITHUB_OUTPUT
 
       - name: Download LPK artifact
-        if: github.event_name == 'workflow_dispatch'
         uses: actions/download-artifact@v4
         with:
           name: lpk
 
-      - name: Publish Draft Release
+      - name: Create or Update Release
         run: |
-          DRAFT_RELEASE=$(gh release list --repo ${{ github.repository }} --json tagName,isDraft --jq '.[] | select(.tagName == "${{ steps.version.outputs.VERSION }}" and .isDraft == true) | .tagName' 2>/dev/null || true)
-          if [ -n "$DRAFT_RELEASE" ]; then
-            gh release edit "$DRAFT_RELEASE" --draft=false
-            echo "✅ Release $DRAFT_RELEASE 已发布"
+          # 检查是否已存在草稿 release
+          EXISTING=$(gh release list --repo ${{ github.repository }} --limit 10 --json tagName,isDraft --jq ".[] | select(.tagName == \"v${{ steps.version.outputs.VERSION }}\" and .isDraft == true) | .tagName" 2>/dev/null || true)
+          if [ -n "$EXISTING" ]; then
+            gh release edit "$EXISTING" --draft=false --title "v${{ steps.version.outputs.VERSION }}" --notes "## 更新内容\n\n- 版本 ${{ steps.version.outputs.VERSION }}\n\n## 下载\n\n- Windows: lzeditor-${{ steps.version.outputs.VERSION }}-win-setup.exe\n- macOS Intel: lzeditor-${{ steps.version.outputs.VERSION }}-mac-x64.dmg\n- macOS Apple Silicon: lzeditor-${{ steps.version.outputs.VERSION }}-mac-arm64.dmg\n- Linux deb: lzeditor-${{ steps.version.outputs.VERSION }}-linux-amd64.deb\n- Linux AppImage: lzeditor-${{ steps.version.outputs.VERSION }}-linux-x86_64.AppImage\n- LazyCat Cloud: cloud.lazycat.app.lazycateditor-${{ steps.version.outputs.VERSION }}.lpk"
+            echo "✅ Release 已更新: $EXISTING"
           else
-            echo "⚠️ 未找到草稿 Release，手动检查: https://github.com/${{ github.repository }}/releases"
+            gh release create "v${{ steps.version.outputs.VERSION }}" \
+              --title "v${{ steps.version.outputs.VERSION }}" \
+              --notes "## 更新内容\n\n- 版本 ${{ steps.version.outputs.VERSION }}" \
+              --draft
+            echo "✅ 草稿 Release 已创建: v${{ steps.version.outputs.VERSION }}"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload LPK to Release
-        if: github.event_name == 'workflow_dispatch' && steps.version.outputs.VERSION != ''
         run: |
-          LPK_FILE=$(ls lzc/output*.lpk 2>/dev/null || ls *.lpk 2>/dev/null)
+          LPK_FILE=$(ls lzc/output*.lpk 2>/dev/null | head -1)
           if [ -n "$LPK_FILE" ]; then
-            gh release upload "${{ steps.version.outputs.VERSION }}" "$LPK_FILE" --clobber
-            echo "✅ LPK: $LPK_FILE 已上传"
+            gh release upload "v${{ steps.version.outputs.VERSION }}" "$LPK_FILE" --clobber
+            echo "✅ LPK 已上传: $LPK_FILE"
           else
             echo "⚠️ 未找到 LPK 文件"
           fi
@@ -126,11 +143,13 @@ jobs:
         run: |
           echo "## ✅ 构建并发布完成" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**版本**: ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Windows**: lzeditor-${{ steps.version.outputs.VERSION }}-win-setup.exe" >> $GITHUB_STEP_SUMMARY
           echo "- **macOS Intel**: lzeditor-${{ steps.version.outputs.VERSION }}-mac-x64.dmg" >> $GITHUB_STEP_SUMMARY
           echo "- **macOS Apple Silicon**: lzeditor-${{ steps.version.outputs.VERSION }}-mac-arm64.dmg" >> $GITHUB_STEP_SUMMARY
           echo "- **Linux deb**: lzeditor-${{ steps.version.outputs.VERSION }}-linux-amd64.deb" >> $GITHUB_STEP_SUMMARY
           echo "- **Linux AppImage**: lzeditor-${{ steps.version.outputs.VERSION }}-linux-x86_64.AppImage" >> $GITHUB_STEP_SUMMARY
-          echo "- **LazyCat Cloud**: $(ls lzc/output*.lpk 2>/dev/null || echo 'LPK 构建中...')" >> $GITHUB_STEP_SUMMARY
+          echo "- **LazyCat Cloud**: cloud.lazycat.app.lazycateditor-${{ steps.version.outputs.VERSION }}.lpk" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📦 [点击下载](https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.VERSION }})" >> $GITHUB_STEP_SUMMARY
+          echo "📦 [点击下载](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.VERSION }})" >> $GITHUB_STEP_SUMMARY
