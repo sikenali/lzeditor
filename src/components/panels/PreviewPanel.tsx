@@ -76,7 +76,7 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const rightContent = (
     isCodeMode ? (
       <pre className="preview-code">
-        <code>{effectiveMd || '# Welcome to LZEditor\n\n请切换到编辑模式后查看预览内容...'}</code>
+        <code>{effectiveMd || `# ${docTitle || 'LZEditor'}\n\n请切换到编辑模式后查看预览内容...`}</code>
       </pre>
     ) : (
       <div
