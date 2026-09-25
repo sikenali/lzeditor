@@ -408,7 +408,6 @@ export const Toolbar: React.FC = () => {
             <span className="remix toolbar-icon ri-search-line"></span>
             <span className="toolbar-label">查找</span>
           </button>
-          </button>
         </div>
 
         {/* ── Middle ── */}
