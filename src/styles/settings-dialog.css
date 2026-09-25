@@ -1892,3 +1892,11 @@
 .ud-actions {
   display: flex; gap: 8px;
 }
+
+/* ── Shortcut section icons ── */
+.shortcut-section-icon {
+  margin-right: 8px;
+  font-size: 15px;
+  color: var(--accent-primary);
+  opacity: 0.8;
+}
