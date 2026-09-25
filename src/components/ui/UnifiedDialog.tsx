@@ -54,13 +54,13 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
       el.focus()
     }
 
-    // 点击遮罩关闭（冒泡阶段）
-    const handleOverlayClick = (e: MouseEvent) => {
+    // 点击遮罩关闭（capture 阶段，早于内部 stopPropagation）
+    const handleClick = (e: MouseEvent) => {
       if (!el.contains(e.target as Node)) {
         onClose()
       }
     }
-    document.addEventListener('click', handleOverlayClick)
+    document.addEventListener('mousedown', handleClick, true)
 
     // ESC 关闭 + Tab 焦点陷阱
     const handleKeydown = (e: KeyboardEvent) => {
@@ -91,7 +91,7 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
     el.addEventListener('keydown', handleKeydown)
 
     return () => {
-      document.removeEventListener('click', handleOverlayClick)
+      document.removeEventListener('mousedown', handleClick, true)
       el.removeEventListener('keydown', handleKeydown)
       document.body.style.overflow = ''
       if (previousFocus.current) {
