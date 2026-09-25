@@ -48,6 +48,7 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
   const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 关闭时安全清理 portal
   useEffect(() => {
@@ -56,20 +57,21 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
       setPortalPos(null)
       releasePortalRoot()
     }
+    return () => { if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current) }
   }, [open])
 
-  // 点击外部关闭：纯 ref 检测，不调用 stopPropagation
+  // 点击外部关闭：用捕获阶段，在 option onClick 之前拦截
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target as Node
-      if (ref.current && !ref.current.contains(target)) {
-        // 下拉菜单在 portal 中，也不在 ref 内，跳过关闭
-        if ((target as HTMLElement).closest('.lfs-combo-dropdown')) return
-        setOpen(false)
-      }
+      // 如果点击在 combo 内部（包括 portal 中的 dropdown），不关闭
+      if (ref.current?.contains(target)) return
+      if ((target as HTMLElement).closest('.lfs-combo-dropdown')) return
+      setOpen(false)
     }
-    document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
+    // 用捕获阶段，先于 option 的 onClick 执行
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
 
   // 打开时计算位置并创建 portal
