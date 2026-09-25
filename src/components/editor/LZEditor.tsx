@@ -876,7 +876,7 @@ export const LZEditor = () => {
                     value={codeEditMd}
                     onChange={e => { setCodeEditMd(e.target.value); handleCodeModeChange(e.target.value) }}
                     spellCheck={false}
-                    style={{ fontFamily: 'var(--font-mono)', fontSize: `${readFontSize}px`, lineHeight: '1.8' }}
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: `${defaultFontSize}px`, lineHeight: '1.8' }}
                   />
                 </div>
               </div>
