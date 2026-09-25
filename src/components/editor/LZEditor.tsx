@@ -822,6 +822,10 @@ export const LZEditor = () => {
                 <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
                   <span className="remix ri-add-line"></span>
                 </button>
+                <button className={`read-tool-btn ${localTocOpen ? 'active' : ''}`} title="目录" onClick={() => setLocalTocOpen(!localTocOpen)}>
+                  <span className="remix ri-menu-fill"></span>
+                  <span>目录</span>
+                </button>
               </div>
               <span className="read-mode-meta">{mdContent.length} 字符 · {wordCount} 字</span>
               <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
