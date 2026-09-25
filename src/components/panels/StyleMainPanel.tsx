@@ -147,6 +147,21 @@ export const StyleMainPanel: React.FC = () => {
           </div>
         </div>
 
+        <div className="main-nav-float">
+          <button className="nav-float-btn" title="上一页">
+            <span className="remix ri-arrow-left-s-line"></span>
+          </button>
+          <button className="nav-float-btn" title="下一页">
+            <span className="remix ri-arrow-right-s-line"></span>
+          </button>
+          <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
+            <span className="remix ri-arrow-up-s-line"></span>
+          </button>
+          <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
+            <span className="remix ri-fullscreen-line"></span>
+          </button>
+        </div>
+
         {/* ── Style Panel (matches design 065a3800) ── */}
         <div className="style-panel">
           <div className="style-panel-inner">
@@ -215,22 +230,6 @@ export const StyleMainPanel: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* ── Fixed floating nav — outside style-main-panel to avoid overflow clipping ── */}
-      <div className="main-nav-float">
-        <button className="nav-float-btn" title="上一页">
-          <span className="remix ri-arrow-left-s-line"></span>
-        </button>
-        <button className="nav-float-btn" title="下一页">
-          <span className="remix ri-arrow-right-s-line"></span>
-        </button>
-        <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
-          <span className="remix ri-arrow-up-s-line"></span>
-        </button>
-        <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
-          <span className="remix ri-fullscreen-line"></span>
-        </button>
       </div>
     </>
   )

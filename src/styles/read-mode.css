@@ -1268,19 +1268,12 @@
 
 /* ── Floating Nav Buttons ── */
 .main-nav-float {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 24px 0 16px;
   z-index: 100;
-  pointer-events: none;
-}
-.main-nav-float > * {
-  pointer-events: auto;
 }
 
 .nav-float-btn {
