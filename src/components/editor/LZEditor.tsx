@@ -721,154 +721,153 @@ export const LZEditor = () => {
         </div>
       )}
       <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}${appMode === 'read' ? ' lz-editor-content--read' : ''}`}>
-        <div className="lz-editor-page">
-          {appMode === 'read' ? (
-            <div className="read-mode-inline">
-              <div className="read-mode-toolbar">
-                <span className="read-mode-label">📖 阅读模式</span>
-                <div className="read-mode-controls">
-                  <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
-                    onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
-                    <span className="remix ri-layout-2-line"></span>
-                    <span>{LAYOUT_LABELS[readLayout]}</span>
-                  </button>
-                  <button className="read-tool-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
-                    <span className="remix ri-subtract-line"></span>
-                  </button>
-                  <span className="read-font-size-value">{readFontSize}</span>
-                  <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
-                    <span className="remix ri-add-line"></span>
-                  </button>
-                  <button className={`read-tool-btn ${localTocOpen ? 'active' : ''}`} title="目录" onClick={() => setLocalTocOpen(!localTocOpen)}>
-                    <span className="remix ri-menu-fill"></span>
-                    <span>目录</span>
-                  </button>
-                </div>
-                <span className="read-mode-meta">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟阅读</span>
-                <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
-                  <span className="remix ri-edit-line"></span>
-                  <span>继续编辑</span>
+        {appMode === 'read' && (
+          <div className="read-mode-inline">
+            <div className="read-mode-toolbar">
+              <span className="read-mode-label">📖 阅读模式</span>
+              <div className="read-mode-controls">
+                <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
+                  onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
+                  <span className="remix ri-layout-2-line"></span>
+                  <span>{LAYOUT_LABELS[readLayout]}</span>
+                </button>
+                <button className="read-tool-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
+                  <span className="remix ri-subtract-line"></span>
+                </button>
+                <span className="read-font-size-value">{readFontSize}</span>
+                <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
+                  <span className="remix ri-add-line"></span>
+                </button>
+                <button className={`read-tool-btn ${localTocOpen ? 'active' : ''}`} title="目录" onClick={() => setLocalTocOpen(!localTocOpen)}>
+                  <span className="remix ri-menu-fill"></span>
+                  <span>目录</span>
                 </button>
               </div>
-              <div className="read-mode-body" style={{ flexDirection: localTocOpen ? 'row' : 'column' }}>
-                {localTocOpen && tocItems.length > 0 && (
-                  <div className="read-toc-sidebar">
-                    <div className="read-toc-header">
-                      <span className="remix ri-menu-fill"></span>
-                      <span>目录</span>
-                      <button className="read-toc-close" onClick={() => setLocalTocOpen(false)}>
-                        <span className="remix ri-close-line"></span>
-                      </button>
-                    </div>
-                    <div className="read-toc-list">
-                      {tocItems.map(item => (
-                        <button key={item.id} className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
-                          style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-                          onClick={() => scrollToHeading(item.id)}>
-                          <span className="read-toc-dot" />
-                          <span className="read-toc-text">{item.text}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="read-article-wrapper" ref={readTocRef}>
-                  <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
-                    <div className="read-article-header">
-                      <div className="read-tags-row">
-                        <span className="read-tag read-tag-tech">Markdown</span>
-                        <span className="read-tag read-tag-system">阅读模式</span>
-                      </div>
-                      <h1 className="read-article-title">{docTitle || '文档'}</h1>
-                      <div className="read-meta">
-                        <div className="read-avatar" style={{ backgroundImage: 'url(https://i.pravatar.cc/70?img=12)' }} />
-                        <div className="read-author-info">
-                          <div className="read-author-name">LZEditor</div>
-                          <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
-                        </div>
-                        <div className="read-divider-v" />
-                        <div className="read-views">
-                          <span className="remix read-views-icon ri-clock-line"></span>
-                          <span className="read-views-text">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className="read-article-body"
-                      style={{ fontSize: `${readFontSize}px`, lineHeight: '1.9' }}
-                      dangerouslySetInnerHTML={{ __html: readContent }}
-                    />
-                  </div>
-                </div>
-              </div>
+              <span className="read-mode-meta">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟阅读</span>
+              <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
+                <span className="remix ri-edit-line"></span>
+                <span>继续编辑</span>
+              </button>
             </div>
-          ) : (
-            <>
-              {!codeMode && <EditorContent editor={editor} />}
-              {codeMode && (
-                <div className="code-mode-inline">
-                  {/* ── code-mode-toolbar ── */}
-                  <div className="code-mode-toolbar">
-                    <div className="code-mode-left">
-                      <span className="remix ri-code-s-line code-mode-icon"></span>
-                      <span className="code-mode-label">源码编辑</span>
-                    </div>
-                    <div className="code-mode-center">
-                      <span className="code-mode-meta-item">{mdContent.length} 字符</span>
-                      <span className="code-mode-dot">·</span>
-                      <span className="code-mode-meta-item">{wordCount} 字</span>
-                    </div>
-                    <div className="code-mode-right">
-                      <button className="code-mode-exit-btn" onClick={() => setAppMode('edit')} title="返回编辑模式">
-                        <span className="remix ri-edit-2-line"></span>
-                        <span>返回编辑</span>
-                      </button>
-                    </div>
+            <div className="read-mode-body" style={{ flexDirection: localTocOpen ? 'row' : 'column' }}>
+              {localTocOpen && tocItems.length > 0 && (
+                <div className="read-toc-sidebar">
+                  <div className="read-toc-header">
+                    <span className="remix ri-menu-fill"></span>
+                    <span>目录</span>
+                    <button className="read-toc-close" onClick={() => setLocalTocOpen(false)}>
+                      <span className="remix ri-close-line"></span>
+                    </button>
                   </div>
-                  {/* ── code-mode-body ── */}
-                  <div className="code-mode-body">
-                    <div
-                      className="read-article-body"
-                      style={{ fontSize: '16px', lineHeight: '1.9' }}
-                      dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
-                    />
-                    <div className="code-editor-wrap">
-                      <div className="code-editor-label">
-                        <span className="remix ri-code-s-line"></span>
-                        <span>Markdown 源码</span>
-                      </div>
-                      <textarea
-                        className="code-editor-textarea"
-                        value={codeEditMd}
-                        onChange={e => {
-                          const value = e.target.value
-                          setCodeEditMd(value)
-                          handleCodeModeChange(value)
-                        }}
-                        spellCheck={false}
-                      />
-                    </div>
-                    <div className="code-mode-footer">
-                      <div className="code-mode-footer-tags">
-                        <span className="remix ri-price-tag-3-line code-footer-tag-icon"></span>
-                        <span className="read-tag-chip">markdown</span>
-                        <span className="read-tag-chip">source</span>
-                      </div>
-                      <div className="code-mode-footer-actions">
-                        <button className="read-back-top-btn" onClick={() => editorRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' })}>
-                          <span className="remix ri-arrow-up-line"></span>
-                          <span>回到顶部</span>
-                        </button>
-                        <button className="read-edit-btn" onClick={() => setAppMode('edit')}>
-                          <span className="remix ri-edit-line"></span>
-                          <span>返回编辑</span>
-                        </button>
-                      </div>
-                    </div>
+                  <div className="read-toc-list">
+                    {tocItems.map(item => (
+                      <button key={item.id} className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
+                        style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
+                        onClick={() => scrollToHeading(item.id)}>
+                        <span className="read-toc-dot" />
+                        <span className="read-toc-text">{item.text}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
-              {!codeMode && editor && (
+              <div className="read-article-wrapper" ref={readTocRef}>
+                <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
+                  <div className="read-article-header">
+                    <div className="read-tags-row">
+                      <span className="read-tag read-tag-tech">Markdown</span>
+                      <span className="read-tag read-tag-system">阅读模式</span>
+                    </div>
+                    <h1 className="read-article-title">{docTitle || '文档'}</h1>
+                    <div className="read-meta">
+                      <div className="read-avatar" style={{ backgroundImage: 'url(https://i.pravatar.cc/70?img=12)' }} />
+                      <div className="read-author-info">
+                        <div className="read-author-name">LZEditor</div>
+                        <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
+                      </div>
+                      <div className="read-divider-v" />
+                      <div className="read-views">
+                        <span className="remix read-views-icon ri-clock-line"></span>
+                        <span className="read-views-text">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="read-article-body"
+                    style={{ fontSize: `${readFontSize}px`, lineHeight: '1.9' }}
+                    dangerouslySetInnerHTML={{ __html: readContent }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {codeMode && appMode !== 'read' && (
+          <div className="code-mode-inline">
+            <div className="code-mode-toolbar">
+              <div className="code-mode-left">
+                <span className="remix ri-code-s-line code-mode-icon"></span>
+                <span className="code-mode-label">源码编辑</span>
+              </div>
+              <div className="code-mode-center">
+                <span className="code-mode-meta-item">{mdContent.length} 字符</span>
+                <span className="code-mode-dot">·</span>
+                <span className="code-mode-meta-item">{wordCount} 字</span>
+              </div>
+              <div className="code-mode-right">
+                <button className="code-mode-exit-btn" onClick={() => setAppMode('edit')} title="返回编辑模式">
+                  <span className="remix ri-edit-2-line"></span>
+                  <span>返回编辑</span>
+                </button>
+              </div>
+            </div>
+            <div className="code-mode-body">
+              <div
+                className="read-article-body"
+                style={{ fontSize: '16px', lineHeight: '1.9' }}
+                dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
+              />
+              <div className="code-editor-wrap">
+                <div className="code-editor-label">
+                  <span className="remix ri-code-s-line"></span>
+                  <span>Markdown 源码</span>
+                </div>
+                <textarea
+                  className="code-editor-textarea"
+                  value={codeEditMd}
+                  onChange={e => {
+                    const value = e.target.value
+                    setCodeEditMd(value)
+                    handleCodeModeChange(value)
+                  }}
+                  spellCheck={false}
+                />
+              </div>
+              <div className="code-mode-footer">
+                <div className="code-mode-footer-tags">
+                  <span className="remix ri-price-tag-3-line code-footer-tag-icon"></span>
+                  <span className="read-tag-chip">markdown</span>
+                  <span className="read-tag-chip">source</span>
+                </div>
+                <div className="code-mode-footer-actions">
+                  <button className="read-back-top-btn" onClick={() => editorRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' })}>
+                    <span className="remix ri-arrow-up-line"></span>
+                    <span>回到顶部</span>
+                  </button>
+                  <button className="read-edit-btn" onClick={() => setAppMode('edit')}>
+                    <span className="remix ri-edit-line"></span>
+                    <span>返回编辑</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="lz-editor-page">
+          {appMode !== 'read' && !codeMode && (
+            <>
+              <EditorContent editor={editor} />
+              {editor && (
                 <BubbleMenu editor={editor}>
                   <button className="format-chip" onClick={() => editor.chain().focus().toggleBold().run()} title="粗体"><span className="remix ri-bold"></span></button>
                   <button className="format-chip" onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体"><span className="remix ri-italic"></span></button>

@@ -3770,7 +3770,8 @@ span.notranslate[data-translate-ignore],
   position: relative;
 }
 .read-mode-inline {
-  padding: 40px;
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0;
   animation: readModeSlideIn 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 @keyframes readModeSlideIn {
