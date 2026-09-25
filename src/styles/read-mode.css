@@ -1503,7 +1503,7 @@
   width: 100%;
   min-height: 400px;
   background: var(--bg-code);
-  border: 1px solid var(--border-subtle);
+  border: none;
   border-radius: 12px;
   padding: 20px 24px;
   font-family: var(--font-mono);
@@ -1511,18 +1511,15 @@
   color: var(--text-primary);
   outline: none;
   resize: vertical;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: box-shadow 0.15s;
 }
 .read-article-code:focus {
-  border-color: var(--border-subtle);
   box-shadow: none;
 }
 .read-article-code::placeholder { color: var(--text-muted); opacity: 0.5; }
 [data-theme="dark"] .read-article-code {
   background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.10);
 }
 [data-theme="dark"] .read-article-code:focus {
-  border-color: var(--border-subtle);
   box-shadow: none;
 }
