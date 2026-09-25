@@ -49,18 +49,18 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
     // 聚焦到弹窗内第一个可交互元素
     const focusable = getFocusableElements(el)
     if (focusable.length > 0) {
-      focusable[0].focus()
+      setTimeout(() => focusable[0].focus(), 0)
     } else {
       el.focus()
     }
 
-    // 点击外部关闭（capture 阶段，早于内部 stopPropagation）
-    const handleClick = (e: MouseEvent) => {
+    // 点击遮罩关闭（冒泡阶段）
+    const handleOverlayClick = (e: MouseEvent) => {
       if (!el.contains(e.target as Node)) {
         onClose()
       }
     }
-    document.addEventListener('mousedown', handleClick, true)
+    document.addEventListener('click', handleOverlayClick)
 
     // ESC 关闭 + Tab 焦点陷阱
     const handleKeydown = (e: KeyboardEvent) => {
@@ -69,13 +69,13 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
         return
       }
       if (e.key !== 'Tab') return
-      
+
       const items = getFocusableElements(el)
       if (items.length === 0) return
-      
+
       const first = items[0]
       const last = items[items.length - 1]
-      
+
       if (e.shiftKey) {
         if (document.activeElement === first) {
           e.preventDefault()
@@ -91,7 +91,7 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
     el.addEventListener('keydown', handleKeydown)
 
     return () => {
-      document.removeEventListener('mousedown', handleClick, true)
+      document.removeEventListener('click', handleOverlayClick)
       el.removeEventListener('keydown', handleKeydown)
       document.body.style.overflow = ''
       if (previousFocus.current) {
@@ -102,7 +102,7 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
 
   return (
     <div className="modal-overlay">
-      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`}>
+      <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} tabIndex={-1} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="ud-header">
           {icon && <span className={`remix ud-icon ${icon}`}></span>}
