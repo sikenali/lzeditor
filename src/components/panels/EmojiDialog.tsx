@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { UnifiedDialog } from '../ui/UnifiedDialog'
+import { PanelContainer } from '../ui/PanelContainer'
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react'
 import type { EmojiClickData } from 'emoji-picker-react'
 
@@ -18,13 +18,14 @@ export const EmojiDialog: React.FC<{ onClose: () => void; onInsert: (text: strin
   }
 
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={onClose}
       icon="ri-emotion-happy-fill"
       title="表情符号"
       subtitle="选择表情插入到文档中"
       size="lg"
-      rightContent={(
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 主题切换 - 与插入图片标签样式一致 */}
           <div style={{ display: 'flex', gap: 8 }}>
@@ -62,8 +63,7 @@ export const EmojiDialog: React.FC<{ onClose: () => void; onInsert: (text: strin
             />
           </div>
         </div>
-      )}
-      hint="点击表情即可插入到当前光标位置"
-    />
+      </div>
+    </PanelContainer>
   )
 }

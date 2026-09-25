@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { UnifiedDialog, UDSection } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection } from '../ui/PanelContainer'
 
 interface TableDropdownProps {
   open: boolean
@@ -157,13 +157,22 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
   if (!open) return null
 
   return (
-    <UnifiedDialog
+    <PanelContainer
       onClose={() => onToggle(false)}
       icon="ri-table-2"
       title="插入表格"
       subtitle="选择表格类型并编辑内容"
       size="lg"
-      rightContent={(
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={() => onToggle(false)}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleInsert}>
+            插入表格
+          </button>
+        </div>
+      }
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 表格类型切换 */}
           <div style={{ display: 'flex', gap: 8 }}>
@@ -285,11 +294,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
             </div>
           </UDSection>
         </div>
-      )}
-      hint="表格将插入到当前光标位置"
-      submitText="插入表格"
-      onSubmit={handleInsert}
-      cancelText="取消"
-    />
+      </div>
+    </PanelContainer>
   )
 }

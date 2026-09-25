@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import hljs from 'highlight.js'
 import { CODE_THEMES } from '../../styles/code-themes'
-import { UnifiedDialog, UDSection, UDSettingRow } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection, UDSettingRow } from '../ui/PanelContainer'
 import { LFSCombo } from '../../components/ui/LFSCombo'
 
 const LANGUAGES = [
@@ -65,11 +65,22 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   }
 
   return (
-    <UnifiedDialog
-      onClose={onClose} icon="ri-code-box-line"
-      title="插入代码块" subtitle={`${language} · ${THEME_OPTIONS.find(t => t.id === themeId)?.name || ''}`}
+    <PanelContainer
+      onClose={onClose}
+      icon="ri-code-box-line"
+      title="插入代码块"
+      subtitle={`${language} · ${THEME_OPTIONS.find(t => t.id === themeId)?.name || ''}`}
       size="lg"
-      rightContent={(
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={!code.trim()}>
+            插入代码块
+          </button>
+        </div>
+      }
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 主题选择 */}
           <UDSection label="高亮主题">
@@ -133,9 +144,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
             )}
           </UDSection>
         </div>
-      )}
-      hint="代码块将插入到当前光标位置" submitText="插入代码块"
-      onSubmit={handleInsert} submitDisabled={!code.trim()}
-    />
+      </div>
+    </PanelContainer>
   )
 }

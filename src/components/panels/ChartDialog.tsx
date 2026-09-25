@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import * as echartsLib from 'echarts'
 const echarts: any = echartsLib
-import { UnifiedDialog, UDSection, UDSettingRow, UDToggle, UDInput } from '../ui/UnifiedDialog'
+import { PanelContainer, UDSection, UDSettingRow, UDToggle, UDInput } from '../ui/PanelContainer'
 
 
 type ChartType = 'line' | 'bar' | 'pie' | 'scatter'
@@ -63,10 +63,22 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
   }
 
   return (
-    <UnifiedDialog
-      onClose={onClose} icon="ri-bar-chart-2-line"
-      title="插入图表" subtitle="生成 ECharts 图表并插入文档" size="lg"
-      rightContent={(
+    <PanelContainer
+      onClose={onClose}
+      icon="ri-bar-chart-2-line"
+      title="插入图表"
+      subtitle="生成 ECharts 图表并插入文档"
+      size="lg"
+      footer={
+        <div className="ud-actions">
+          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
+          <button className="ud-btn ud-btn--primary" onClick={handleInsert}>
+            插入图表
+          </button>
+        </div>
+      }
+    >
+      <div className="ud-right-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <UDSection label="图表类型">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -104,11 +116,8 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
             <div ref={chartRef} style={{ width: '100%', height: 220, borderRadius: 8 }} />
           </UDSection>
         </div>
-      )}
-      hint="图表将以内联 PNG 图片插入，可后续编辑"
-      submitText="插入图表"
-      onSubmit={handleInsert}
-    />
+      </div>
+    </PanelContainer>
   )
 }
 
