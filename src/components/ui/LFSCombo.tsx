@@ -48,32 +48,30 @@ export const LFSCombo: React.FC<LFSComboProps> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null)
   const [portalPos, setPortalPos] = useState<{ x: number; y: number; w: number } | null>(null)
-  const isOpenRef = useRef(false)
 
+  // 关闭时安全清理 portal
   useEffect(() => {
-    isOpenRef.current = open
+    if (!open) {
+      setPortalNode(null)
+      setPortalPos(null)
+      releasePortalRoot()
+    }
   }, [open])
 
+  // 点击外部关闭：纯 ref 检测，不调用 stopPropagation
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false)
-        e.stopPropagation()
       }
     }
     document.addEventListener('mousedown', onClick)
-    return () => {
-      document.removeEventListener('mousedown', onClick)
-      if (!isOpenRef.current) releasePortalRoot()
-    }
+    return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
-  // Open → compute position → create portal
+  // 打开时计算位置并创建 portal
   useEffect(() => {
-    if (!open || !ref.current) {
-      if (!open) setPortalNode(null)
-      return
-    }
+    if (!open || !ref.current) return
     const rect = ref.current.getBoundingClientRect()
     setPortalPos({ x: rect.left, y: rect.bottom + 4, w: rect.width })
     setPortalNode(getPortalRoot())

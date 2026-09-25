@@ -18,6 +18,14 @@ export interface UnifiedDialogProps {
   className?: string
 }
 
+/** Collect all focusable elements inside a container */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  return Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+    el => el.tabIndex >= 0 && (el as HTMLButtonElement | HTMLInputElement).disabled !== true && el.offsetParent !== null
+  )
+}
+
 export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
   onClose, icon, title, subtitle,
   leftNav, rightTop, rightContent, rightBottom,
@@ -29,30 +37,44 @@ export const UnifiedDialog: React.FC<UnifiedDialogProps> = ({
     lg: 'min(1080px, 94vw)', xl: 'min(1200px, 94vw)',
   }
   const dialogRef = useRef<HTMLDivElement>(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
 
-  // 点击遮罩外关闭：通过 document mousedown 检测，避免 modal-overlay 遮挡 pointer events
+  // ── 焦点陷阱 ──
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node
-      // 跳过 portal 内的点击（LFSCombo 下拉框等），不关闭对话框
-      if ((target as HTMLElement)?.closest?.('[data-lfs-portal]')) return
-      if (dialogRef.current && !dialogRef.current.contains(target)) onClose()
-    }
-    // 使用捕获阶段，确保在 LFSCombo 等组件的 bubble handler 之前执行
-    document.addEventListener('mousedown', handler, true)
-    return () => document.removeEventListener('mousedown', handler, true)
-  }, [onClose])
+    const el = dialogRef.current
+    if (!el) return
+    // 打开时聚焦第一个可交互元素
+    const focusable = getFocusableElements(el)
+    if (focusable.length > 0) focusable[0].focus()
+    else el.focus()
 
-  // ESC 关闭
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.stopPropagation(); onClose() ; return }
+      if (e.key !== 'Tab') return
+      const items = getFocusableElements(el)
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
     }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose])
+    el.addEventListener('keydown', handleKeydown)
+    return () => el.removeEventListener('keydown', handleKeydown)
+  }, [])
+
+  // 点击遮罩关闭
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).classList.contains('modal-overlay')) {
+      onClose()
+    }
+  }
+
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
       <div ref={dialogRef} className={`unified-dialog unified-dialog--${size} ${className}`} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="ud-header">
@@ -145,8 +167,10 @@ export const UDToggle: React.FC<{ checked: boolean; onChange: (v: boolean) => vo
   <button
     className={`ud-toggle${checked ? ' on' : ''}${size === 'md' ? ' ud-toggle--md' : ''}`}
     onClick={() => onChange(!checked)}
+    onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onChange(!checked) } }}
     role="switch"
     aria-checked={checked}
+    tabIndex={0}
   >
     <span className="ud-toggle-thumb" />
   </button>
