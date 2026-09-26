@@ -21,7 +21,7 @@ function findMatchingParen(str: string, start: number): number {
 }
 
 function convertMarkdownToHtml(md: string): string {
-  let html = md
+  let html = md.replace(/\r/g, '')
 
   // ── Code blocks (fenced) ──
   const codeBlocks: string[] = []
