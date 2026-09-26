@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import hljs from 'highlight.js'
 import { CODE_THEMES } from '../../styles/code-themes'
 import { PanelContainer, UDSection, UDSettingRow } from '../ui/PanelContainer'
-import { LFSCombo } from '../../components/ui/LFSCombo'
+import { SelectBox } from '../../components/ui/SelectBox'
+import { Checkbox } from '../../components/ui/Checkbox'
 
 const LANGUAGES = [
   'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -101,13 +102,10 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
           {/* 语言 + Mac 样式 */}
           <UDSection label="选项设置">
             <UDSettingRow icon="ri-code-box-line" label="编程语言" desc="代码高亮语言">
-              <LFSCombo value={language} onChange={setLanguage} options={LANGUAGES.map(l => ({ value: l, label: l }))} style={{ minWidth: 160 }} />
+              <SelectBox value={language} onChange={setLanguage} options={LANGUAGES.map(l => ({ value: l, label: l }))} style={{ minWidth: 160 }} />
             </UDSettingRow>
             <UDSettingRow icon="ri-apple-fill" label="Mac 窗口样式" desc="代码块添加红黄绿三点装饰栏">
-              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <input type="checkbox" checked={macStyle} onChange={e => setMacStyle(e.target.checked)}
-                  style={{ width: 18, height: 18, accentColor: 'var(--accent-primary)' }} />
-              </label>
+              <Checkbox checked={macStyle} onChange={setMacStyle} />
             </UDSettingRow>
           </UDSection>
 

@@ -36,24 +36,26 @@ body {
 
 /* ── Spring-like button press feedback (Response §1) ── */
 button, .toolbar-pill, .ai-toolbar-btn, .format-card, .style-set-btn, .preview-mode-btn,
-.image-mode-tab, .link-mode-tab, .toggle-btn, .lfs-combo-trigger, .lfs-input,
+.image-mode-tab, .link-mode-tab, .toggle-btn, .lf-select-trigger, .lfs-input,
 .sync-provider-card, .theme-card, .lang-item, .ai-chip, .ai-action-btn,
 .settings-nav-item, .settings-reset-btn, .settings-cancel-btn, .settings-save-btn,
-.menu-btn, [role="button"], input[type="checkbox"], input[type="radio"] {
+.menu-btn, [role="button"], input[type="checkbox"], input[type="radio"],
+.lf-checkbox {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
 button:active, .toolbar-pill:active, .ai-toolbar-btn:active,
 .format-card:active, .style-set-btn:active, .preview-mode-btn:active,
-.toggle-btn:active, .lfs-combo-trigger:active {
+.toggle-btn:active, .lf-select-trigger:active {
   transform: scale(0.97);
   transition: transform 80ms ease-out;
 }
 
 
 button:focus-visible, .toolbar-pill:focus-visible, .lfs-input:focus-visible,
-.lfs-combo-trigger:focus-visible, input:focus-visible {
+.lf-select-trigger:focus-visible, input:focus-visible,
+.lf-select-trigger:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--accent-a20);
 }
@@ -136,7 +138,7 @@ select.lfs-input:focus-visible, select:focus-visible {
 /* ── Reduced transparency ── */
 @media (prefers-reduced-transparency: reduce) {
   .toolbar, .ai-panel, .settings-dialog, .export-dialog,
-  .language-selector, .lfs-combo-dropdown, .toolbar-dropdown,
+  .language-selector, .lf-select-dropdown, .toolbar-dropdown,
   .toolbar-submenu {
     backdrop-filter: none !important;
     background: var(--bg-overlay) !important;

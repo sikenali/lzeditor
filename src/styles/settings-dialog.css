@@ -314,54 +314,6 @@
 .toggle-desc  { font-size: 12px; color: var(--text-muted); }
 .setting-divider { height: 1px; background: var(--bg-hover); }
 
-/* ── Checkbox Toggle ── */
-.toggle-checkbox {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px; height: 22px;
-  cursor: pointer;
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-.toggle-checkbox-box {
-  width: 22px; height: 22px;
-  border-radius: 5px;
-  border: 1.5px solid var(--border-default);
-  background: var(--background-elevated);
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
-}
-.toggle-checkbox-box .remix {
-  font-size: 13px;
-  color: var(--text-on-accent);
-  line-height: 1;
-  opacity: 0;
-  transform: scale(0.6);
-  transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
-}
-.toggle-checkbox.active .toggle-checkbox-box {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--accent-a15);
-}
-.toggle-checkbox.active .toggle-checkbox-box .remix {
-  opacity: 1;
-  transform: scale(1);
-}
-.toggle-checkbox:hover:not(.active) .toggle-checkbox-box {
-  border-color: var(--accent-border);
-  background: var(--bg-hover);
-}
-.toggle-checkbox:focus-visible .toggle-checkbox-box {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--accent-a10);
-}
-
 /* ── Preview Card ── */
 .preview-card {
   background: var(--background-elevated);
@@ -1262,10 +1214,6 @@
   box-shadow: none;
   color: var(--accent-primary);
 }
-[data-theme="light"] .toggle-checkbox-box {
-  background: var(--background-elevated);
-  border-color: var(--border-default);
-}
 
 /* ── AI Settings ── */
 .ai-key-test-btn {
@@ -1546,46 +1494,6 @@
 }
 .ud-setting-control { flex-shrink: 0; }
 
-/* ── Toggle (square checkbox with checkmark) ── */
-.ud-toggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  user-select: none;
-}
-.ud-toggle-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  pointer-events: none;
-}
-.ud-toggle-box {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  border: 1.5px solid var(--border-default);
-  background: var(--background-elevated);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
-  flex-shrink: 0;
-}
-.ud-toggle:hover .ud-toggle-box { border-color: var(--accent-border); background: var(--bg-hover); }
-.ud-toggle:focus-visible .ud-toggle-box { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-a10); }
-.ud-toggle.checked .ud-toggle-box { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; box-shadow: 0 0 0 3px var(--accent-a15); }
-.ud-toggle.checked .remix { color: #fff; }
-[data-theme="dark"] .ud-toggle-box { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.25); }
-[data-theme="dark"] .ud-toggle:hover .ud-toggle-box { background: rgba(255,255,255,0.08); }
-
 /* ── Select ── */
 .ud-select {
   appearance: none;
@@ -1820,9 +1728,8 @@
 }
 
 /* ── Ensure toggles are always clickable ── */
-.ud-setting-row .ud-toggle,
 .ud-setting-row input[type="checkbox"],
-.toggle-checkbox { pointer-events: auto !important; }
+.lf-checkbox { pointer-events: auto !important; }
 .ud-setting-row { pointer-events: auto !important; }
 .settings-content { min-height: 0; overflow: visible; }
 .settings-section { pointer-events: auto !important; }
@@ -1913,4 +1820,155 @@
   font-size: 15px;
   color: var(--accent-primary);
   opacity: 0.8;
+}
+
+/* ── Checkbox (square toggle with checkmark) ── */
+.lf-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  user-select: none;
+}
+.lf-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+   pointer-events: none;
+}
+.lf-checkbox-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-default);
+  background: var(--background-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  flex-shrink: 0;
+}
+.lf-checkbox-box .remix {
+  font-size: 11px;
+  color: var(--text-on-accent);
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.12s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.lf-checkbox.checked .lf-checkbox-box {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--accent-a15);
+}
+.lf-checkbox.checked .lf-checkbox-box .remix {
+  opacity: 1;
+  transform: scale(1);
+}
+.lf-checkbox:hover:not(.checked) .lf-checkbox-box {
+  border-color: var(--accent-border);
+  background: var(--bg-hover);
+}
+.lf-checkbox:focus-visible .lf-checkbox-box {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-a10);
+}
+.lf-checkbox.disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* ── SelectBox (custom dropdown) ── */
+.lf-select {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+.lf-select-trigger {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  padding: 7px 28px 7px 12px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  letter-spacing: -0.01em;
+}
+.lf-select-trigger:hover:not(:disabled) { border-color: var(--accent-primary); }
+.lf-select-trigger:focus-visible { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-a10); }
+.lf-select-trigger.open:not(:disabled) { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-a10); }
+.lf-select-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+.lf-select-trigger:active:not(:disabled) { transform: scale(0.98); }
+.lf-select-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+.lf-select-trigger:disabled .lf-select-label { color: var(--text-muted); }
+.lf-select-arrow { font-size: 14px; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); }
+.lf-select-trigger.open .lf-select-arrow { transform: rotate(180deg); }
+.lf-select-dropdown {
+  background: var(--background-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  animation: lf-select-slide-in 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 320px;
+  overflow-y: auto;
+}
+@keyframes lf-select-slide-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lf-select-option {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  transition: background 0.1s;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  outline: none;
+}
+.lf-select-option:hover { background: var(--accent-a5); color: var(--text-primary); }
+.lf-select-option:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-a40); outline: none; }
+.lf-select-option:active { transform: scale(0.98); }
+.lf-select-option.active { background: var(--accent-a10); color: var(--accent-primary); font-weight: 500; }
+.lf-select-opt-icon { font-size: 15px; flex-shrink: 0; opacity: 0.7; }
+.lf-select-opt-label { flex: 1; }
+.lf-select-check { font-size: 14px; flex-shrink: 0; color: var(--accent-primary); }
+.lf-select-empty {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: italic;
 }

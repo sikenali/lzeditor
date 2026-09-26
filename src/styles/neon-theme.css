@@ -121,7 +121,7 @@ input:focus, textarea:focus {
 
 @media (prefers-reduced-transparency: reduce) {
   .toolbar, .ai-panel, .settings-dialog, .export-dialog,
-  .language-selector, .lfs-combo-dropdown, .toolbar-dropdown,
+  .language-selector, .lf-select-dropdown, .toolbar-dropdown,
   .toolbar-submenu {
     backdrop-filter: none !important;
     background: var(--bg-overlay) !important;

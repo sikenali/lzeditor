@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
-import { LFSCombo } from '../../components/ui/LFSCombo'
+import { SelectBox } from '../../components/ui/SelectBox'
+import { Checkbox } from '../../components/ui/Checkbox'
 import { useEditorStore } from '../../store/editorStore'
 
 interface Props {
@@ -156,15 +157,8 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
                 </div>
               </UDSection>
               <UDSection label="打开方式">
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={newTab}
-                    onChange={e => setNewTab(e.target.checked)}
-                    style={{ accentColor: 'var(--accent-primary)' }}
-                  />
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>点击从新标签中打开</span>
-                </label>
+                <Checkbox checked={newTab} onChange={setNewTab} />
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginLeft: 10 }}>点击从新标签中打开</span>
               </UDSection>
             </>
           )}
@@ -183,7 +177,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
 
               {/* 2. 文档来源 */}
               <UDSection label="文档来源">
-                <LFSCombo value={docSource} onChange={setDocSource} options={[
+                <SelectBox value={docSource} onChange={setDocSource} options={[
                   { value: '', label: '请选择文档...' },
                   ...docs.map((d: any) => ({ value: d.title || d.id, label: d.title || d.id }))
                 ]} style={{ width: '100%' }} />
@@ -191,7 +185,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
 
               {/* 3. 章节引用 */}
               <UDSection label="章节引用">
-                <LFSCombo value={chapterRef} onChange={setChapterRef} options={[
+                <SelectBox value={chapterRef} onChange={setChapterRef} options={[
                   { value: '', label: '整篇文档' },
                   ...chapters.map(c => ({ value: c.text, label: `${'　'.repeat(c.level - 1)}${c.text}` }))
                 ]} style={{ width: '100%' }} />

@@ -3,7 +3,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
 import { CODE_THEMES } from '../../styles/code-themes'
-import { LFSCombo } from '../../components/ui/LFSCombo'
+import { SelectBox } from '../../components/ui/SelectBox'
 
 const FONT_OPTIONS = [
   { value: 'sans-serif', label: '无衬线' },
@@ -143,7 +143,7 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
             <div className="beautify-section-title">字体与排版</div>
             <div className="beautify-row">
               <label className="beautify-label">字体</label>
-              <LFSCombo value={fontFamily} onChange={v => setFontFamily(v)} options={FONT_OPTIONS.map(f => ({ value: f.value, label: f.label }))} style={{ minWidth: 160 }} />
+              <SelectBox value={fontFamily} onChange={v => setFontFamily(v)} options={FONT_OPTIONS.map(f => ({ value: f.value, label: f.label }))} style={{ minWidth: 160 }} />
             </div>
             <div className="beautify-row">
               <label className="beautify-label">字号</label>

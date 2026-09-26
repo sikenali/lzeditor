@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import * as echartsLib from 'echarts'
 const echarts: any = echartsLib
 import { PanelContainer, UDSection, UDSettingRow, UDInput } from '../ui/PanelContainer'
+import { Checkbox } from '../ui/Checkbox'
 
 
 type ChartType = 'line' | 'bar' | 'pie' | 'scatter'
@@ -12,13 +13,6 @@ const CHART_TYPES: { id: ChartType; label: string; icon: string }[] = [
   { id: 'pie', label: '饼图', icon: 'ri-pie-chart-box-fill' },
   { id: 'scatter', label: '散点图', icon: 'ri-node-tree' },
 ]
-
-const UDCheckbox: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
-  <label className="ud-toggle">
-    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="ud-toggle-input" aria-checked={checked} />
-    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
-  </label>
-)
 
 export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: string, type: string) => void }> = ({ onClose, onInsert }) => {
   const [chartType, setChartType] = useState<ChartType>('line')
@@ -116,7 +110,7 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
             </div>
           </UDSection>
           <UDSettingRow icon="ri-eye-line" label="显示图例" desc="在图表底部显示数据系列图例">
-            <UDCheckbox checked={showLegend} onChange={setShowLegend} />
+            <Checkbox checked={showLegend} onChange={setShowLegend} />
           </UDSettingRow>
           <UDSection label="预览">
             <div ref={chartRef} style={{ width: '100%', height: 220, borderRadius: 8 }} />

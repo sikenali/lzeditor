@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { Checkbox } from '../ui/Checkbox'
 
 interface SearchPanelProps {
   onClose: () => void
@@ -88,42 +89,18 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
       <div className="search-panel-inner">
         {/* Options column */}
         <div className="search-options-col">
-          <label className="search-option">
-            <span className={`search-checkbox ${caseSensitive ? 'checked' : ''}`}>
-              <span className="checkmark"><span className="remix ri-check-line"></span></span>
-            </span>
-            <input
-              type="checkbox"
-              checked={caseSensitive}
-              onChange={e => setCaseSensitive(e.target.checked)}
-              className="search-option-input"
-            />
-            <span>区分大小写</span>
-          </label>
-          <label className="search-option">
-            <span className={`search-checkbox ${wholeWord ? 'checked' : ''}`}>
-              <span className="checkmark"><span className="remix ri-check-line"></span></span>
-            </span>
-            <input
-              type="checkbox"
-              checked={wholeWord}
-              onChange={e => setWholeWord(e.target.checked)}
-              className="search-option-input"
-            />
-            <span>全字匹配</span>
-          </label>
-          <label className="search-option">
-            <span className={`search-checkbox ${useRegex ? 'checked' : ''}`}>
-              <span className="checkmark"><span className="remix ri-check-line"></span></span>
-            </span>
-            <input
-              type="checkbox"
-              checked={useRegex}
-              onChange={e => setUseRegex(e.target.checked)}
-              className="search-option-input"
-            />
-            <span>使用正则</span>
-          </label>
+           <label className="search-option">
+             <Checkbox checked={caseSensitive} onChange={setCaseSensitive} />
+             <span>区分大小写</span>
+           </label>
+           <label className="search-option">
+             <Checkbox checked={wholeWord} onChange={setWholeWord} />
+             <span>全字匹配</span>
+           </label>
+           <label className="search-option">
+             <Checkbox checked={useRegex} onChange={setUseRegex} />
+             <span>使用正则</span>
+           </label>
         </div>
 
         {/* Operations column */}
