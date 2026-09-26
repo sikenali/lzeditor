@@ -7,8 +7,8 @@ import { PanelContainer } from '../ui/PanelContainer'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
-  if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-  return getDocMd(activeDocId || 'welcome')
+  if (docsMd[activeDocId || 'readme']) return docsMd[activeDocId || 'readme']
+  return getDocMd(activeDocId || 'readme')
 }
 
 export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {

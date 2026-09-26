@@ -83,8 +83,8 @@ export const StyleMainPanel: React.FC = () => {
 
   const effectiveMd = useMemo(() => {
     if (mdContent) return mdContent
-    if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-    return getDocMd(activeDocId || 'welcome')
+    if (docsMd[activeDocId || 'readme']) return docsMd[activeDocId || 'readme']
+    return getDocMd(activeDocId || 'readme')
   }, [activeDocId, mdContent, docsMd])
 
   const renderedHtml = useMemo(() => {
@@ -94,7 +94,7 @@ export const StyleMainPanel: React.FC = () => {
 
   const initialHtml = useMemo(() => {
     if (docHTML) return docHTML
-    return getDocHtml(activeDocId || 'welcome')
+    return getDocHtml(activeDocId || 'readme')
   }, [docHTML, activeDocId])
 
   const defaultHtml = useMemo(() => {

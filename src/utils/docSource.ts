@@ -1,4 +1,4 @@
-import { DEFAULT_CONTENT } from '../components/editor/constants'
+import { DEFAULT_CONTENT, README_CONTENT } from '../components/editor/constants'
 import a01 from '../content/a01-特色功能.md?raw'
 import a02 from '../content/a02-文档库和文档.md?raw'
 import a03 from '../content/a03-基本格式.md?raw'
@@ -46,6 +46,7 @@ export const BUILTIN_DOCS: Record<string, string> = {
 const BUILTIN_IDS = Object.keys(BUILTIN_DOCS)
 
 export function getDocMd(id: string): string {
+  if (id === 'readme') return README_CONTENT
   if (id === 'welcome') return DEFAULT_CONTENT
   if (BUILTIN_DOCS[id]) return BUILTIN_DOCS[id]
   try {
@@ -59,6 +60,7 @@ export function getDocMd(id: string): string {
 }
 
 export function getDocHtml(id: string): string {
+  if (id === 'readme') return ''
   if (id === 'welcome') return ''
   if (BUILTIN_IDS.includes(id)) return ''
   try {

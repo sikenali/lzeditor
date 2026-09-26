@@ -4,7 +4,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES, getTypographyTheme } from '../../styles/typography-themes'
 import { useScrollSpy } from '../../hooks/useScrollSpy'
-import { DEFAULT_CONTENT } from '../../components/editor/constants'
+import { DEFAULT_CONTENT, README_CONTENT } from '../../components/editor/constants'
 import { getDocHtml } from '../../utils/docSource'
 
 type Layout = 'narrow' | 'normal' | 'wide'
@@ -46,7 +46,7 @@ export const ReadMode: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   // ── Content fallback: store → localStorage → DEFAULT_CONTENT ──
   const initialHtml = useMemo(() => {
     if (docHTML) return docHTML
-    return getDocHtml(activeDocId || 'welcome')
+    return getDocHtml(activeDocId || 'readme')
   }, [docHTML, activeDocId])
 
   const defaultHtml = useMemo(() => {

@@ -6,16 +6,11 @@ import type { AIModel, SettingsGroup, ApiKeyEntry } from '../../shared/types'
 import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography-themes'
 import { CODE_THEMES, getCodeTheme } from '../../styles/code-themes'
 import { LFSInput } from '../../components/ui/LFInput'
-import { LFSCombo } from '../../components/ui/LFSCombo'
+import { SelectBox } from '../../components/ui/SelectBox'
+import { Checkbox } from '../../components/ui/Checkbox'
 import { UDSettingRow, UDSection } from '../../components/ui/PanelContainer'
 import { PanelContainer } from '../../components/ui/PanelContainer'
 
-const UDCheckbox: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
-  <label className="ud-toggle">
-    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="ud-toggle-input" aria-checked={checked} />
-    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
-  </label>
-)
 
 /* ── Nav categories ── */
 const NAV_ITEMS: { id: SettingsGroup; label: string; desc: string; icon: string }[] = [
@@ -100,6 +95,8 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const setActiveGroup = useSettingsStore(s => s.setActiveGroup)
   const setSubTab      = useSettingsStore(s => s.setSubTab)
   const subTab = useSettingsStore(s => s.subTab ?? '')
+  const settings = useSettingsStore(s => s)
+  const updateSetting = useSettingsStore(s => s.updateSetting)
 
   const subs: SubTab[] = activeGroup === 'theme'     ? THEME_SUBS
               : activeGroup === 'editor'    ? EDITOR_SUBS
@@ -122,7 +119,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     setSubTab(subs[0]?.id ?? '')
   }, [activeGroup])
   const handleSave = () => {
-    saveSettingsToStorage(useSettingsStore.getState())
+    saveSettingsToStorage(settings)
     onClose()
   }
   const handleReset = () => {
@@ -130,7 +127,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     setActiveGroup('theme'); setSubTab('mode')
   }
 
-  const currentProvider = getProvider(useSettingsStore.getState().provider)
+  const currentProvider = getProvider(settings.provider)
   const models: AIModel[] = currentProvider?.models || []
   const activeSubIndex = Math.max(0, subs.findIndex(t => t.id === subTab))
 
@@ -170,11 +167,11 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const settingsContent = (
     <>
       <div className="settings-content">
-        {activeGroup === 'theme' && renderThemeContent(subTab)}
-        {activeGroup === 'editor' && renderEditorContent(subTab)}
-        {activeGroup === 'app'     && renderAppSettings()}
+        {activeGroup === 'theme' && renderThemeContent(subTab, settings, updateSetting)}
+        {activeGroup === 'editor' && renderEditorContent(subTab, settings, updateSetting)}
+        {activeGroup === 'app'     && renderAppSettings(settings, updateSetting)}
         {activeGroup === 'shortcut' && renderShortcutContent(subTab)}
-        {activeGroup === 'sync'    && renderSyncContent(subTab)}
+        {activeGroup === 'sync'    && renderSyncContent(subTab, settings, updateSetting)}
         {activeGroup === 'about'   && renderAboutSection()}
         <AISettings activeGroup={activeGroup} subTab={subTab} />
       </div>
@@ -209,10 +206,10 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 /* ═══════════════════════════════════════════
    THEME
 ═══════════════════════════════════════════ */
-function renderThemeContent(tab: string) {
-  const theme   = useSettingsStore.getState().theme
-  const accent  = useSettingsStore.getState().accentColor
-  const update  = useSettingsStore.getState().updateSetting
+function renderThemeContent(tab: string, s: any, u: any) {
+  const theme   = s.theme
+  const accent  = s.accentColor
+  const update  = u
 
   if (tab === 'mode') return (
     <div className="settings-section">
@@ -237,7 +234,7 @@ function renderThemeContent(tab: string) {
   )
 
   if (tab === 'typography') {
-    const activeId = useSettingsStore.getState().typographyTheme || 'classic'
+  const activeId = s.typographyTheme || 'classic'
     return (
       <div className="settings-section">
         <div className="settings-section-title"><span>内容样式</span><span className="settings-section-desc">文章内容、插入块、预览与导出的视觉风格</span></div>
@@ -246,7 +243,7 @@ function renderThemeContent(tab: string) {
             <button
               key={t.id}
               className={`theme-card ${activeId === t.id ? 'active' : ''}`}
-              onClick={() => { applyTypographyTheme(t.id); useSettingsStore.getState().updateSetting('typographyTheme', t.id) }}
+              onClick={() => { applyTypographyTheme(t.id); u('typographyTheme', t.id) }}
             >
               <div
                 className="theme-preview typography-preview"
@@ -308,9 +305,9 @@ function renderThemeContent(tab: string) {
 /* ═══════════════════════════════════════════
    NAV MODE
 ═══════════════════════════════════════════ */
-function renderNavModeContent() {
-  const navMode = useSettingsStore.getState().navMode || 'top'
-  const update = useSettingsStore.getState().updateSetting
+function renderNavModeContent(s: any, u: any) {
+  const navMode = s.navMode || 'top'
+  const update = u
   return (
     <div className="settings-section">
       <div className="settings-section-title"><span>导航样式</span><span className="settings-section-desc">选择编辑器整体布局模式</span></div>
@@ -381,14 +378,11 @@ function renderNavModeContent() {
 /* ═══════════════════════════════════════════
    EDITOR
 ═══════════════════════════════════════════ */
-function renderEditorContent(tab: string) {
-  const s = useSettingsStore.getState()
-  const u = useSettingsStore.getState().updateSetting
-
+function renderEditorContent(tab: string, s: any, u: any) {
   if (tab === 'general') return renderGeneralSection(s, u)
   if (tab === 'local')   return renderLocalizationSection(s, u)
   if (tab === 'mode')    return renderEditModeSection(s, u)
-  if (tab === 'layout')  return renderNavModeContent()
+  if (tab === 'layout')  return renderNavModeContent(s, u)
   return renderEditModeSection(s, u)
 }
 
@@ -399,7 +393,7 @@ function renderGeneralSection(s: any, u: any) {
         <div className="settings-section-title"><span>排版</span><span className="settings-section-desc">字体、字号与行距</span></div>
         <div className="setting-row" style={{ marginBottom: 16 }}>
           <div className="setting-label"><span>默认字体</span><span className="setting-hint">编辑区默认字体族</span></div>
-          <LFSCombo value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
+          <SelectBox value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
         </div>
         <div className="setting-row" style={{ marginBottom: 16 }}>
           <div className="setting-label"><span>默认字号</span><span className="setting-hint">编辑区默认字体大小</span></div>
@@ -431,55 +425,53 @@ function renderGeneralSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>段落排版</span><span className="settings-section-desc">首行缩进与对齐方式</span></div>
         <UDSettingRow icon="ri-text-spacing" label="首行缩进" desc="每个段落首行缩进两个字符">
-        <UDCheckbox checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
+        <Checkbox checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-align-justify" label="两端对齐" desc="段落文字左右两端对齐">
-        <UDCheckbox checked={ s.textJustify || false } onChange={ v => u('textJustify', v) } />
+        <Checkbox checked={ s.textJustify || false } onChange={ v => u('textJustify', v) } />
       </UDSettingRow>
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
         <UDSettingRow icon="ri-apps-2-fill" label="显示所有工具栏按钮" desc="关闭后精简为：格式、图片、链接、表格、插入；右侧隐藏 AI">
-        <UDCheckbox checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
+        <Checkbox checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="在图标下方显示文字标签">
-        <UDCheckbox checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
+        <Checkbox checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
       </UDSettingRow>
       </div>
     </>
   )
 }
 
-function renderAppSettings() {
-  const s = useSettingsStore.getState()
-  const u = useSettingsStore.getState().updateSetting
+function renderAppSettings(s: any, u: any) {
   return (
     <div className="settings-section">
       <div className="settings-section-title"><span>启动行为</span><span className="settings-section-desc">应用启动与窗口管理</span></div>
       <UDSettingRow icon="ri-window-fill" label="启动标签页" desc="应用启动时显示多文档标签栏">
-        <UDCheckbox checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
+        <Checkbox checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-clipboard-fill" label="启动保存剪切板内容" desc="每次启动时自动保存当前剪切板内容">
-        <UDCheckbox checked={ s.saveClipboardOnLaunch || false } onChange={ v => u('saveClipboardOnLaunch', v) } />
+        <Checkbox checked={ s.saveClipboardOnLaunch || false } onChange={ v => u('saveClipboardOnLaunch', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-notification-3-line" label="显示托盘图标" desc="在系统托盘显示应用图标">
-        <UDCheckbox checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
+        <Checkbox checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-file-list-3-fill" label="下次启动时自动打开最后编辑的文档" desc="记住上次编辑的文档，下次启动自动打开">
-        <UDCheckbox checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />
+        <Checkbox checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
         <UDSettingRow icon="ri-window-line" label="从文件资源管理器打开文档时总在新窗口中打开" desc="双击文件总是在新窗口中打开">
-        <UDCheckbox checked={ s.openInNewWindow || false } onChange={ v => u('openInNewWindow', v) } />
+        <Checkbox checked={ s.openInNewWindow || false } onChange={ v => u('openInNewWindow', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-close-circle-fill" label="当所有窗口关闭时退出应用程序" desc="关闭最后一个窗口后完全退出应用">
-        <UDCheckbox checked={ s.quitWhenAllWindowsClosed !== false } onChange={ v => u('quitWhenAllWindowsClosed', v) } />
+        <Checkbox checked={ s.quitWhenAllWindowsClosed !== false } onChange={ v => u('quitWhenAllWindowsClosed', v) } />
       </UDSettingRow>
     </div>
   )
@@ -491,43 +483,43 @@ function renderLocalizationSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>拼写检查</span><span className="settings-section-desc">文字输入辅助</span></div>
         <UDSettingRow icon="ri-spell-check-line" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
-        <UDCheckbox checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
+        <Checkbox checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
       </UDSettingRow>
         <div style={{ padding: '8px 0 0 44px', marginBottom: 8 }}>
           <div className="setting-row" style={{ marginBottom: 0 }}>
             <div className="setting-label" style={{ minWidth: 80 }}><span>检查语言</span></div>
-            <LFSCombo value={s.spellCheckLang || 'zh-CN'} onChange={v => u('spellCheckLang', v)} options={SPELL_CHECK_LANGS.map(l => ({ value: l.value, label: l.label }))} style={{ maxWidth: 200 }} />
+            <SelectBox value={s.spellCheckLang || 'zh-CN'} onChange={v => u('spellCheckLang', v)} options={SPELL_CHECK_LANGS.map(l => ({ value: l.value, label: l.label }))} style={{ maxWidth: 200 }} />
           </div>
         </div>
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>Markdown 快捷符号</span><span className="settings-section-desc">自动格式化与补全</span></div>
         <UDSettingRow icon="ri-asterisk" label="允许使用符号键 (* _ + ~ = 和 `) 设置选中的文本的格式" desc="选中文字后按 * 加粗、_ 斜体等">
-        <UDCheckbox checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
+        <Checkbox checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-braces-fill" label="自动补完 Markdown 符号对" desc="输入 ( 时自动补全 )，输入 「 时自动补全 」 等">
-        <UDCheckbox checked={ s.autoCompleteMarkdownPairs !== false } onChange={ v => u('autoCompleteMarkdownPairs', v) } />
+        <Checkbox checked={ s.autoCompleteMarkdownPairs !== false } onChange={ v => u('autoCompleteMarkdownPairs', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-double-quotes-l" label="自动替换引号为智能引号（即双引号和单引号）" desc="英文弯引号，提升可读性">
-           <UDCheckbox checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
+           <Checkbox checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-language-fill" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
-        <UDCheckbox checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
+        <Checkbox checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-double-quotes-r" label={'自动替换引号为直角引号（即「」和『』）'} desc={'将 "" 替换为 「」，将 \'\' 替换为 『』'}>
-           <UDCheckbox checked={s.cornerQuotes || false} onChange={v => u('cornerQuotes', v)} />
+           <Checkbox checked={s.cornerQuotes || false} onChange={v => u('cornerQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
         <UDSettingRow icon="ri-translate-2" label="自动替换半角符号为全角符号（仅限，、;符号）" desc="将半角 , 和 ; 替换为全角 ，和 ；">
-        <UDCheckbox checked={ s.fullwidthSymbols || false } onChange={ v => u('fullwidthSymbols', v) } />
+        <Checkbox checked={ s.fullwidthSymbols || false } onChange={ v => u('fullwidthSymbols', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-list-ordered" label="显示行号" desc="在编辑器左侧显示行号">
-        <UDCheckbox checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
+        <Checkbox checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
       </UDSettingRow>
        </div>
     </>
@@ -540,23 +532,23 @@ function renderEditModeSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>编辑模式</span><span className="settings-section-desc">编辑器功能开关</span></div>
         <UDSettingRow icon="ri-markdown-fill" label="Markdown 标记常显" desc="始终显示 ### 与列表符号">
-        <UDCheckbox checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
+        <Checkbox checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
          <UDSettingRow icon="ri-diff" label="快照差异高亮" desc="红底为删除、绿底为新增">
-        <UDCheckbox checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
+        <Checkbox checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-cursor-fill" label="打字机模式" desc="光标始终居中垂直位置">
-        <UDCheckbox checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
+        <Checkbox checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
          <UDSettingRow icon="ri-focus-2" label="专注模式" desc="仅高亮当前段落，其余淡化">
-        <UDCheckbox checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
+        <Checkbox checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-eye-line" label="预览模式" desc="编辑模式与代码模式下默认显示右侧预览">
-           <UDCheckbox checked={s.previewModeEnabled !== false} onChange={v => {
+           <Checkbox checked={s.previewModeEnabled !== false} onChange={v => {
              u('previewModeEnabled', v)
              useEditorStore.getState().setShowPreview(v)
            }} />
@@ -602,21 +594,20 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
   }, [])
   const [testResult, setTestResult] = useState<Record<string, 'success' | 'failed'>>({})
 
-  const s = useSettingsStore.getState()
-  const u = useSettingsStore.getState().updateSetting
+  const s = useSettingsStore(s => s)
+  const u = useSettingsStore(s => s.updateSetting)
   const apiKeys: ApiKeyEntry[] = s.apiKeys || []
-  const setSelectedModelId = useSettingsStore.getState().setSelectedModelId
-  const toggleApiKey = useSettingsStore.getState().toggleApiKey
-  const removeApiKey = useSettingsStore.getState().removeApiKey
-  const addApiKey = useSettingsStore.getState().addApiKey
+  const setSelectedModelId = useSettingsStore(s => s.setSelectedModelId)
+  const toggleApiKey = useSettingsStore(s => s.toggleApiKey)
+  const removeApiKey = useSettingsStore(s => s.removeApiKey)
+  const addApiKey = useSettingsStore(s => s.addApiKey)
 
   useEffect(() => {
-    const state = useSettingsStore.getState()
-    if (state.customApiFormat) setCustomFormat(state.customApiFormat)
-    if (state.customEndpoint) setCustomEndpoint(state.customEndpoint)
-    if (state.customModelId) setCustomModelId(state.customModelId)
-    if (state.selectedProvider) setSelectedProvider(state.selectedProvider)
-    if (state.selectedModelName) setSelectedModel(state.selectedModelName)
+    if (s.customApiFormat) setCustomFormat(s.customApiFormat)
+    if (s.customEndpoint) setCustomEndpoint(s.customEndpoint)
+    if (s.customModelId) setCustomModelId(s.customModelId)
+    if (s.selectedProvider) setSelectedProvider(s.selectedProvider)
+    if (s.selectedModelName) setSelectedModel(s.selectedModelName)
   }, [activeGroup])
 
   const currentModels = selectedProvider ? (PROVIDER_CONFIGS[selectedProvider]?.models || []) : []
@@ -680,12 +671,12 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
           <div className="settings-section-title"><span>预设服务商</span><span className="settings-section-desc">从预设列表中快速添加 API Key</span></div>
           <div className="setting-row">
             <div className="setting-label"><span>服务商</span></div>
-            <LFSCombo value={selectedProvider} onChange={v => { setSelectedProvider(v); setSelectedModel('') }} options={PROVIDER_NAMES.map(p => ({ value: p, label: p }))} style={{ flex: 1, maxWidth: 300 }} />
+            <SelectBox value={selectedProvider} onChange={v => { setSelectedProvider(v); setSelectedModel('') }} options={PROVIDER_NAMES.map(p => ({ value: p, label: p }))} style={{ flex: 1, maxWidth: 300 }} />
           </div>
           {selectedProvider && (
             <div className="setting-row">
               <div className="setting-label"><span>模型</span></div>
-              <LFSCombo value={selectedModel} onChange={setSelectedModel} options={currentModels.map(m => ({ value: m, label: m }))} style={{ flex: 1, maxWidth: 300 }} />
+              <SelectBox value={selectedModel} onChange={setSelectedModel} options={currentModels.map(m => ({ value: m, label: m }))} style={{ flex: 1, maxWidth: 300 }} />
             </div>
           )}
         </div>
@@ -761,7 +752,7 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
                     </button>
                     <button className="ai-key-edit-btn" onClick={() => startEdit(key)} title="编辑"><span className="remix ri-edit-line"></span></button>
                     <button className="ai-key-delete-btn" onClick={() => { if (confirm(`删除 ${key.modelName || key.model}？`)) removeApiKey(key.id) }} title="删除"><span className="remix ri-delete-bin-line"></span></button>
-                    <UDCheckbox checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
+                    <Checkbox checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
                     {isActive && <span className="remix ri-checkbox-circle-fill" style={{ fontSize: 16, color: 'var(--accent-primary)' }} />}
                   </div>
                 </div>
@@ -877,10 +868,7 @@ function renderShortcutContent(tab: string) {
 /* ═══════════════════════════════════════════
    SYNC
 ═══════════════════════════════════════════ */
-function renderSyncContent(tab: string) {
-  const s = useSettingsStore.getState()
-  const u = useSettingsStore.getState().updateSetting
-
+function renderSyncContent(tab: string, s: any, u: any) {
   if (tab === 'net') return (
     <div className="settings-section">
       <div className="settings-section-title"><span>网络备份</span><span className="settings-section-desc">GitHub / Gitee 远程同步</span></div>
@@ -923,7 +911,7 @@ function renderSyncContent(tab: string) {
       <div className="setting-divider" style={{ margin: '16px 0' }} />
       <div className="setting-row">
         <div className="setting-label"><span>自动备份间隔</span><span className="setting-hint">每隔多久自动保存快照</span></div>
-        <LFSCombo value={s.backupInterval || '30s'} onChange={v => u('backupInterval', v)} options={[{ value: '30s', label: '30 秒' }, { value: '1m', label: '1 分钟' }, { value: '5m', label: '5 分钟' }, { value: '10m', label: '10 分钟' }]} />
+        <SelectBox value={s.backupInterval || '30s'} onChange={v => u('backupInterval', v)} options={[{ value: '30s', label: '30 秒' }, { value: '1m', label: '1 分钟' }, { value: '5m', label: '5 分钟' }, { value: '10m', label: '10 分钟' }]} />
       </div>
       <div className="setting-row">
         <div className="setting-label"><span>备份保留数量</span><span className="setting-hint">最多保留的历史快照数</span></div>

@@ -6,7 +6,7 @@ import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getDocMd } from '../../utils/docSource'
-import { DEFAULT_CONTENT } from '../../components/editor/constants'
+import { DEFAULT_CONTENT, README_CONTENT } from '../../components/editor/constants'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
@@ -14,8 +14,8 @@ const DEFAULT_WIDTH = 400
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
-  if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-  return getDocMd(activeDocId || 'welcome')
+  if (docsMd[activeDocId || 'readme']) return docsMd[activeDocId || 'readme']
+  return getDocMd(activeDocId || 'readme')
 }
 
 /** Convert ProseMirror HTML → Markdown → rendered HTML for the preview. */

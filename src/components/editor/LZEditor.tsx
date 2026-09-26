@@ -17,7 +17,7 @@ import { FloatingToolbar } from './FloatingToolbar'
 import { SlashCommand } from './SlashCommand'
 import { useDocumentSelection } from '../../hooks/useDocumentSelection'
 import type { AIAction } from '../../shared/types'
-import { DEFAULT_CONTENT } from './constants'
+import { DEFAULT_CONTENT, README_CONTENT } from './constants'
 import { CodeHighlight } from './extensions/CodeHighlight'
 import { Superscript, Subscript } from './extensions/SupSub'
 import { Mathematics } from './extensions/Mathematics'
@@ -79,9 +79,9 @@ export const LZEditor = () => {
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
-    const docId = activeDocId || 'welcome'
+    const docId = activeDocId || 'readme'
     if (docsMd?.[docId]) return docsMd[docId]
-    return getDocMd(docId) || (docId === 'welcome' ? DEFAULT_CONTENT : '')
+    return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
   }, [activeDocId, docsMd])
 
   const renderedHtml = useMemo(() => {
@@ -98,10 +98,10 @@ export const LZEditor = () => {
 
   // 同步 mdContent 到 store：优先使用 docsMd，其次用 getDocMd 兜底
   useEffect(() => {
-    const docId = activeDocId || 'welcome'
+    const docId = activeDocId || 'readme'
     const mdFromDocsMd = docsMd?.[docId] || ''
     const mdFromSource = getDocMd(docId)
-    // docsMd 有内容时优先用 docsMd（避免对 welcome 做 htmlToMarkdown 往返）
+    // docsMd 有内容时优先用 docsMd（避免对 readme 做 htmlToMarkdown 往返）
     const targetMd = mdFromDocsMd || mdFromSource || ''
     if (targetMd && mdContent !== targetMd) {
       setMdContent(targetMd)
@@ -111,7 +111,7 @@ export const LZEditor = () => {
   // 确保阅读模式有内容：如果 docHTML 为空，从 docsMd 生成
   const readContent = useMemo(() => {
     if (docHTML) return docHTML
-    const docId = activeDocId || 'welcome'
+    const docId = activeDocId || 'readme'
     const md = docsMd?.[docId] || getDocMd(docId)
     if (md && md.trim()) {
       try {
@@ -121,7 +121,7 @@ export const LZEditor = () => {
         return md
       }
     }
-    return docId === 'welcome' ? DEFAULT_CONTENT : ''
+    return docId === 'readme' ? README_CONTENT : ''
   }, [docHTML, docsMd, activeDocId])
 
   const LAYOUTS = ['narrow', 'normal', 'wide'] as const
@@ -212,8 +212,8 @@ export const LZEditor = () => {
       ServerAiToolkit,
     ],
     content: (() => {
-      const docId = activeDocId || 'welcome'
-      const md = docsMd?.[docId] || getDocMd(docId) || (docId === 'welcome' ? DEFAULT_CONTENT : '')
+      const docId = activeDocId || 'readme'
+      const md = docsMd?.[docId] || getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
       if (!md) return ''
       return mdToHtml(md)
     })(),
@@ -227,8 +227,8 @@ export const LZEditor = () => {
         html = cleanContentHtml(html)
         const text = editor.getText()
         setDocHTML(html)
-        // welcome 文档不往返转换：直接用原始 Markdown，避免 htmlToMarkdown 破坏代码块格式
-        if (docId === 'welcome') {
+        // readme 文档不往返转换：直接用原始 Markdown，避免 htmlToMarkdown 破坏代码块格式
+        if (docId === 'readme') {
           const rawMd = getDocMd(docId)
           setMdContent(rawMd)
         } else {
@@ -237,7 +237,7 @@ export const LZEditor = () => {
         setWordCount(text.split(/\s+/).filter(Boolean).length)
         setCharCount(text.length)
         takeSnapshot(editor)
-        if (docId !== 'welcome') {
+        if (docId !== 'readme') {
           const key = `lzeditor-doc-${docId}`
           localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
         }
@@ -252,7 +252,7 @@ export const LZEditor = () => {
       setCharCount(text.length)
       const docId = useEditorStore.getState().activeDocId
       updateDoc({ html, md, docsMd: docId ? { [docId]: md } : undefined })
-      if (docId && docId !== 'welcome') {
+        if (docId && docId !== 'readme') {
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
       }
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
@@ -278,10 +278,10 @@ export const LZEditor = () => {
     setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
   }, [])
 
-  // 每次挂载清除 welcome 的 localStorage 旧 HTML，确保始终从 welcome.md 文件读取干净内容
+  // 每次挂载清除 readme 的 localStorage 旧 HTML，确保始终从 readme.md 文件读取干净内容
   React.useEffect(() => {
-    if (activeDocId === 'welcome') {
-      localStorage.removeItem('lzeditor-doc-welcome')
+    if (activeDocId === 'readme') {
+      localStorage.removeItem('lzeditor-doc-readme')
     }
   }, [])
 
@@ -453,7 +453,7 @@ export const LZEditor = () => {
     if (!editor || !activeDocId) return
     if (activeDocId === lastDocIdRef.current) return
     lastDocIdRef.current = activeDocId
-    const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'welcome' ? DEFAULT_CONTENT : '')
+    const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'readme' ? README_CONTENT : '')
     const html = md ? mdToHtml(md) : ''
     editor.commands.setContent(html)
   }, [activeDocId, editor, docsMd])
@@ -464,7 +464,7 @@ export const LZEditor = () => {
     const docId = activeDocId
     const mdFromDocsMd = docsMd?.[docId] || ''
     const mdFromSource = getDocMd(docId)
-    const targetMd = mdFromDocsMd || mdFromSource || (docId === 'welcome' ? DEFAULT_CONTENT : '')
+    const targetMd = mdFromDocsMd || mdFromSource || (docId === 'readme' ? README_CONTENT : '')
     if (targetMd && mdContent !== targetMd) setMdContent(targetMd)
   }, [codeMode, activeDocId, docsMd])
 
@@ -685,7 +685,7 @@ export const LZEditor = () => {
       try {
         const html = mdToHtml(value || '')
         updateDoc({ md: value, html, docsMd: docId ? { [docId]: value } : undefined })
-        if (docId && docId !== 'welcome') {
+      if (docId && docId !== 'readme') {
           localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
         }
         editor?.commands.setContent(html, { emitUpdate: false })

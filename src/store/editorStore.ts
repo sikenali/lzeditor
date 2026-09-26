@@ -62,7 +62,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
 
   // ── Multi-tab ──
   docs: [
-    { id: 'welcome',                title: '欢迎文档',       path: 'Default',        libraryId: 'default' },
+    { id: 'readme',                   title: 'README.md',        path: 'Default',        libraryId: 'default' },
     { id: 'a01-特色功能',           title: 'A01 特色功能',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
     { id: 'a02-文档库和文档',       title: 'A02 文档库和文档', path: '使用手册·基础篇', libraryId: 'manual', system: true },
     { id: 'a03-基本格式',           title: 'A03 基本格式',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
@@ -84,7 +84,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     { id: 'b09-LaTeX数学公式',      title: 'B09 LaTeX 数学公式', path: '使用手册·高级篇', libraryId: 'manual', system: true },
     { id: 'b10-高级格式',           title: 'B10 高级格式',   path: '使用手册·高级篇', libraryId: 'manual', system: true },
   ] as Array<{ id: string; title: string; path: string; libraryId?: string; system?: boolean }>,
-  activeDocId: 'welcome' as string | null,
+  activeDocId: 'readme' as string | null,
   docsMd: {} as Record<string, string>,
   nextUntitledIdx: 1,
 

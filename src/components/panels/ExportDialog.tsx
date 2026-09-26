@@ -5,21 +5,16 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { PanelContainer, UDSection, UDSettingRow, UDPreviewCard } from '../ui/PanelContainer'
-import { LFSCombo } from '../ui/LFSCombo'
+import { SelectBox } from '../ui/SelectBox'
+import { Checkbox } from '../ui/Checkbox'
 import { getDocMd } from '../../utils/docSource'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
-  if (docsMd[activeDocId || 'welcome']) return docsMd[activeDocId || 'welcome']
-  return getDocMd(activeDocId || 'welcome')
+  if (docsMd[activeDocId || 'readme']) return docsMd[activeDocId || 'readme']
+  return getDocMd(activeDocId || 'readme')
 }
 
-const UDCheckbox: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
-  <label className="ud-toggle">
-    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="ud-toggle-input" aria-checked={checked} />
-    <span className="ud-toggle-box"><span className="remix ri-check-line"></span></span>
-  </label>
-)
 
 const EXPORT_FORMATS = [
   { id: 'pdf',   name: 'PDF',   icon: 'ri-file-pdf-fill',    desc: '可打印',   color: '#e74c3c' },
@@ -127,13 +122,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           <UDSection label="样式选项">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <UDSettingRow icon="ri-menu-fill" label="包含目录" desc="在文档开头插入目录">
-                <UDCheckbox checked={state.includeTOC !== false} onChange={v => updateSetting('includeTOC', v)} />
+                <Checkbox checked={state.includeTOC !== false} onChange={v => updateSetting('includeTOC', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-number-1" label="代码行号" desc="导出代码块时显示行号">
-                <UDCheckbox checked={state.includeLineNumbers || false} onChange={v => updateSetting('includeLineNumbers', v)} />
+                <Checkbox checked={state.includeLineNumbers || false} onChange={v => updateSetting('includeLineNumbers', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-numbers-fill" label="页码" desc="为每页添加页码">
-                <UDCheckbox checked={state.includePageNumbers || false} onChange={v => updateSetting('includePageNumbers', v)} />
+                <Checkbox checked={state.includePageNumbers || false} onChange={v => updateSetting('includePageNumbers', v)} />
               </UDSettingRow>
             </div>
           </UDSection>
@@ -141,11 +136,11 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>纸张</div>
-                <LFSCombo value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.value, label: p.label }))} style={{ minWidth: 0 }} />
+                <SelectBox value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.value, label: p.label }))} style={{ minWidth: 0 }} />
               </div>
               <div style={{ flex: 1 }}>
                 <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>方向</div>
-                <LFSCombo value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.value, label: o.label }))} style={{ minWidth: 0 }} />
+                <SelectBox value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.value, label: o.label }))} style={{ minWidth: 0 }} />
               </div>
             </div>
           </UDSection>

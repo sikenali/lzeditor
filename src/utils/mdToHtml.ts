@@ -32,15 +32,15 @@ function convertMarkdownToHtml(md: string): string {
   })
 
   // ── Inline code ──
-  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>')
+   html = html.replace(/`([^`\n]+)`/g, (_m: string, code: string) => `<code>${escapeHtml(code)}</code>`)
 
   // ── Headings ──
-  html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>')
-  html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>')
-  html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
-  html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
-  html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
-  html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
+   html = html.replace(/^######\s+(.+)$/gm, (_m: string, text: string) => `<h6>${text}</h6>`)
+   html = html.replace(/^#####\s+(.+)$/gm, (_m: string, text: string) => `<h5>${text}</h5>`)
+   html = html.replace(/^####\s+(.+)$/gm, (_m: string, text: string) => `<h4>${text}</h4>`)
+   html = html.replace(/^###\s+(.+)$/gm, (_m: string, text: string) => `<h3>${text}</h3>`)
+   html = html.replace(/^##\s+(.+)$/gm, (_m: string, text: string) => `<h2>${text}</h2>`)
+   html = html.replace(/^#\s+(.+)$/gm, (_m: string, text: string) => `<h1>${text}</h1>`)
 
   // ── Horizontal rule ──
   html = html.replace(/^(---+|\*\*\*+|___+)\s*$/gm, '<hr>')
@@ -97,24 +97,24 @@ function convertMarkdownToHtml(md: string): string {
   })
 
   // ── Links ──
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m: string, text: string, url: string) => `<a href="${url}">${text}</a>`)
 
   // ── Bold + Italic ──
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-  html = html.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>')
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>')
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  html = html.replace(/_(.+?)_/g, '<em>$1</em>')
-  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>')
+   html = html.replace(/\*\*\*(.+?)\*\*\*/g, (_m: string, text: string) => `<strong><em>${text}</em></strong>`)
+   html = html.replace(/___(.+?)___/g, (_m: string, text: string) => `<strong><em>${text}</em></strong>`)
+   html = html.replace(/\*\*(.+?)\*\*/g, (_m: string, text: string) => `<strong>${text}</strong>`)
+   html = html.replace(/__(.+?)__/g, (_m: string, text: string) => `<strong>${text}</strong>`)
+   html = html.replace(/\*(.+?)\*/g, (_m: string, text: string) => `<em>${text}</em>`)
+   html = html.replace(/_(.+?)_/g, (_m: string, text: string) => `<em>${text}</em>`)
+   html = html.replace(/~~(.+?)~~/g, (_m: string, text: string) => `<del>${text}</del>`)
 
   // ── Task lists ──
-  html = html.replace(/^- \[x\]\s+(.+)$/gmi, '<li class="task-item checked"><input type="checkbox" checked disabled> $1</li>')
-  html = html.replace(/^- \[\s\]\s+(.+)$/gmi, '<li class="task-item"><input type="checkbox" disabled> $1</li>')
+   html = html.replace(/^- \[x\]\s+(.+)$/gmi, (_m: string, text: string) => `<li class="task-item checked"><input type="checkbox" checked disabled> ${text}</li>`)
+   html = html.replace(/^- \[\s\]\s+(.+)$/gmi, (_m: string, text: string) => `<li class="task-item"><input type="checkbox" disabled> ${text}</li>`)
 
   // ── List items (支持 emoji 前缀如 * 📝 ...) ──
-  html = html.replace(/^[\s\S]*?[-*+]\s+(.+)$/gm, '<li>$1</li>')
-  html = html.replace(/^[\s\S]*?\d+\.\s+(.+)$/gm, '<li>$1</li>')
+   html = html.replace(/^[\s\S]*?[-*+]\s+(.+)$/gm, (_m: string, text: string) => `<li>${text}</li>`)
+   html = html.replace(/^[\s\S]*?\d+\.\s+(.+)$/gm, (_m: string, text: string) => `<li>${text}</li>`)
 
   // ── Wrap consecutive <li> ──
   html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, (match: string) => {
@@ -124,7 +124,7 @@ function convertMarkdownToHtml(md: string): string {
   })
 
   // ── Paragraphs ──
-  html = html.replace(/^(?!<[a-z])(?!%%CODEBLOCK)([^\n]+)$/gm, '<p>$1</p>')
+   html = html.replace(/^(?!<[a-z])(?!%%CODEBLOCK)([^\n]+)$/gm, (_m: string, text: string) => `<p>${text}</p>`)
   html = html.replace(/<\/p>\s*<p>/g, '\n')
 
   // ── Restore code blocks ──
