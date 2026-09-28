@@ -15,7 +15,6 @@ import { FilePanel } from './components/panels/FilePanel'
 import { PreviewPanel } from './components/panels/PreviewPanel'
 import { SidebarOutline } from './components/sidebar/SidebarOutline'
 import { SidebarPreview } from './components/sidebar/SidebarPreview'
-import { AIPanel } from './components/editor/AIPanel'
 import { ImageDialog } from './components/panels/ImageDialog'
 import { LinkDialog } from './components/panels/LinkDialog'
 import { CodeDialog } from './components/panels/CodeDialog'
@@ -138,7 +137,8 @@ function App() {
   }
   const insertCode = (code: string, lang: string) => {
     if (!editor) return
-    editor.chain().focus().insertContent({ type: 'codeBlock', attrs: { language: lang }, content: [{ type: 'text', text: code }] }).run()
+    const md = `\`\`\`${lang}\n${code}\n\`\`\``
+    editor.chain().focus().insertContent(md).run()
     closeInsert()
   }
   const insertLink = (text: string, url: string, newTab?: boolean) => {
@@ -275,14 +275,12 @@ function App() {
         </div>
       )}
 
-      {openPanel === 'settings' && (() => { console.log('[App] SettingsDialog rendering, openPanel=', openPanel); return <SettingsDialog onClose={closePanel} />; })()}
-      {openPanel === 'export' && (() => { console.log('[App] ExportDialog rendering, openPanel=', openPanel); return <ExportDialog onClose={closePanel} />; })()}
+      {openPanel === 'settings' && <SettingsDialog onClose={closePanel} />}
+      {openPanel === 'export' && <ExportDialog onClose={closePanel} />}
       {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
-
-      <AIPanel />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
       {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}

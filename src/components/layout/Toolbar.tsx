@@ -1,7 +1,6 @@
 import { mdToHtml } from '../../utils/mdToHtml'
 import React, { useState, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { useAIStore } from '../../store/aiStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { BeautifyDialog } from '../panels/BeautifyDialog'
 
@@ -450,10 +449,12 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Right ── */}
         <div className={`toolbar-group${compactToolbar ? ' toolbar-group--compact' : ''}`}>
-          {compactToolbar && <button className="toolbar-btn" onClick={() => useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })}>
-            <span className="remix toolbar-icon ri-openai-fill"></span>
-            <span className="toolbar-label">AI</span>
-          </button>}
+          {compactToolbar && <a href="https://openknowledge.a" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <button className="toolbar-btn" title="AI 助手">
+              <span className="remix toolbar-icon ri-openai-fill"></span>
+              <span className="toolbar-label">AI</span>
+            </button>
+          </a>}
           <div className="toolbar-menu-btn" onClick={() => openMenu('mode')}>
             <button ref={modeBtnRef} className={`toolbar-btn ${menuOpen === 'mode' ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-eye-2-fill"></span>

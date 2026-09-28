@@ -10,13 +10,9 @@ import { TableHeader } from '@tiptap/extension-table-header'
 import { TableRow } from '@tiptap/extension-table-row'
 import { SearchAndReplace } from '@memfoldai/tiptap-search-and-replace'
 import { Emoji } from '@tiptap/extension-emoji'
-import { useAIStore } from '../../store/aiStore'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { FloatingToolbar } from './FloatingToolbar'
 import { SlashCommand } from './SlashCommand'
-import { useDocumentSelection } from '../../hooks/useDocumentSelection'
-import type { AIAction } from '../../shared/types'
 import { DEFAULT_CONTENT, README_CONTENT } from './constants'
 import { CodeHighlight } from './extensions/CodeHighlight'
 import { Superscript, Subscript } from './extensions/SupSub'
@@ -30,7 +26,6 @@ import { getDocMd } from '../../utils/docSource'
 import { renderMdWithMath } from '../../utils/mdWithMath'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
-import { ServerAiToolkit } from '@tiptap/ai-toolkit'
 
 const CONTENT_WIDTH_MAP: Record<string, string> = {
   '960': '960px',
@@ -45,7 +40,6 @@ export const LZEditor = () => {
   const editorInitialized = useRef(false)
   const readTocRef = useRef<HTMLDivElement>(null)
   const codeAreaRef = useRef<HTMLTextAreaElement>(null)
-  const { toolbar } = useDocumentSelection(editorRef)
   const setWordCount = useEditorStore((s: any) => s.setWordCount)
   const setCharCount = useEditorStore((s: any) => s.setCharCount)
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
@@ -209,7 +203,6 @@ export const LZEditor = () => {
         searchResultClass: 'search-result',
         disableRegex: false,
       }),
-      ServerAiToolkit,
     ],
     content: (() => {
       const docId = activeDocId || 'readme'
@@ -671,12 +664,6 @@ export const LZEditor = () => {
     return () => { alive = false; editor.off('update', updateLines) }
   }, [editor])
 
-  const handleToolbarAction = useCallback((action: AIAction) => {
-    const selectedText = editor ? editor.state.doc.textContent.slice(editor.state.selection.from, editor.state.selection.to) : ''
-    const pos = toolbar.position
-    useAIStore.getState().showPanel(action, selectedText, pos)
-  }, [editor, toolbar])
-
   const handleCodeModeChange = useCallback((value: string) => {
     if (remarkTimerRef.current) clearTimeout(remarkTimerRef.current)
     remarkTimerRef.current = setTimeout(() => {
@@ -945,11 +932,6 @@ export const LZEditor = () => {
         filter={slashFilter}
         onClose={hideSlash}
         editor={editor}
-      />
-      <FloatingToolbar
-        position={toolbar.position}
-        visible={toolbar.visible}
-        onAction={handleToolbarAction}
       />
     </div>
   )
