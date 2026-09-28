@@ -19,7 +19,6 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
   const previousFocus = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
-    console.log('[PanelContainer] mount:', title)
     document.body.style.overflow = 'hidden'
     previousFocus.current = document.activeElement as HTMLElement
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -33,7 +32,6 @@ export const PanelContainer: React.FC<PanelContainerProps> = ({
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      console.log('[PanelContainer] backdrop clicked')
       onClose()
     }
   }
