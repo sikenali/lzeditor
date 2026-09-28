@@ -449,12 +449,10 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Right ── */}
         <div className={`toolbar-group${compactToolbar ? ' toolbar-group--compact' : ''}`}>
-          {compactToolbar && <a href="https://openknowledge.a" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-            <button className="toolbar-btn" title="AI 助手">
-              <span className="remix toolbar-icon ri-openai-fill"></span>
-              <span className="toolbar-label">AI</span>
-            </button>
-          </a>}
+          {compactToolbar && <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'ai' ? 'none' : 'ai')} title="AI 助手">
+            <span className="remix toolbar-icon ri-openai-fill"></span>
+            <span className="toolbar-label">AI</span>
+          </button>}
           <div className="toolbar-menu-btn" onClick={() => openMenu('mode')}>
             <button ref={modeBtnRef} className={`toolbar-btn ${menuOpen === 'mode' ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-eye-2-fill"></span>

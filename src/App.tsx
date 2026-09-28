@@ -20,6 +20,7 @@ import { LinkDialog } from './components/panels/LinkDialog'
 import { CodeDialog } from './components/panels/CodeDialog'
 import { FormulaDialog } from './components/panels/FormulaDialog'
 import { TableDropdown } from './components/panels/TableDropdown'
+import { OpenKnowledgePanel } from './components/panels/OpenKnowledgePanel'
 import { EmojiDialog } from './components/panels/EmojiDialog'
 import { ChartDialog } from './components/panels/ChartDialog'
 import { useEditorStore } from './store/editorStore'
@@ -281,6 +282,7 @@ function App() {
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
+      {openPanel === 'ai' && <OpenKnowledgePanel onClose={closePanel} />}
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
       {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}

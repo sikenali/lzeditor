@@ -77,7 +77,7 @@ export interface EditorStoreState {
   cursorPosition: { line: number; column: number }
   isPreview: boolean
   syncStatus: 'synced' | 'saving' | 'error'
-  openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export'
+  openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export' | 'ai'
   insertPanel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart'
   panelOpen: boolean
    showOutline: boolean
