@@ -3,7 +3,7 @@ import hljs from 'highlight.js'
 import { CODE_THEMES } from '../../styles/code-themes'
 import { PanelContainer, UDSection, UDSettingRow } from '../ui/PanelContainer'
 import { SelectBox } from '../../components/ui/SelectBox'
-import { Checkbox } from '../../components/ui/Checkbox'
+import { Switch } from '@heroui/react'
 
 const LANGUAGES = [
   'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -105,7 +105,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
               <SelectBox value={language} onChange={setLanguage} options={LANGUAGES.map(l => ({ value: l, label: l }))} style={{ minWidth: 160 }} />
             </UDSettingRow>
             <UDSettingRow icon="ri-apple-fill" label="Mac 窗口样式" desc="代码块添加红黄绿三点装饰栏">
-              <Checkbox checked={macStyle} onChange={setMacStyle} />
+              <Switch size="sm" isSelected={macStyle} onValueChange={setMacStyle} />
             </UDSettingRow>
           </UDSection>
 

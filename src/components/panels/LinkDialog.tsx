@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
 import { SelectBox } from '../../components/ui/SelectBox'
-import { Checkbox } from '../../components/ui/Checkbox'
+import { Switch } from '@heroui/react'
 import { useEditorStore } from '../../store/editorStore'
 
 interface Props {
@@ -157,7 +157,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
                 </div>
               </UDSection>
               <UDSection label="打开方式">
-                <Checkbox checked={newTab} onChange={setNewTab} />
+                <Switch size="sm" isSelected={newTab} onValueChange={setNewTab} />
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginLeft: 10 }}>点击从新标签中打开</span>
               </UDSection>
             </>

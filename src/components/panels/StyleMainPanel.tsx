@@ -19,7 +19,7 @@ export const StyleMainPanel: React.FC = () => {
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const fontSize = useEditorStore((s) => s.fontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
-  const updateSetting = useSettingsStore.getState().updateSetting
+  const updateSetting = useSettingsStore(s => s.updateSetting)
   const readFontSize = useEditorStore((s) => s.readFontSize)
   const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
   const readLayout = useEditorStore((s) => s.readLayout)

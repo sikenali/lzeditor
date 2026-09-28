@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { Checkbox } from '../ui/Checkbox'
+import { Switch } from '@heroui/react'
 
 interface SearchPanelProps {
   onClose: () => void
@@ -90,15 +90,15 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
         {/* Options column */}
         <div className="search-options-col">
            <label className="search-option">
-             <Checkbox checked={caseSensitive} onChange={setCaseSensitive} />
+             <Switch size="sm" isSelected={caseSensitive} onValueChange={setCaseSensitive} />
              <span>区分大小写</span>
            </label>
            <label className="search-option">
-             <Checkbox checked={wholeWord} onChange={setWholeWord} />
+             <Switch size="sm" isSelected={wholeWord} onValueChange={setWholeWord} />
              <span>全字匹配</span>
            </label>
            <label className="search-option">
-             <Checkbox checked={useRegex} onChange={setUseRegex} />
+             <Switch size="sm" isSelected={useRegex} onValueChange={setUseRegex} />
              <span>使用正则</span>
            </label>
         </div>

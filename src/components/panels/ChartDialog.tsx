@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import * as echartsLib from 'echarts'
 const echarts: any = echartsLib
 import { PanelContainer, UDSection, UDSettingRow, UDInput } from '../ui/PanelContainer'
-import { Checkbox } from '../ui/Checkbox'
+import { Switch } from '@heroui/react'
 
 
 type ChartType = 'line' | 'bar' | 'pie' | 'scatter'
@@ -110,7 +110,7 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
             </div>
           </UDSection>
           <UDSettingRow icon="ri-eye-line" label="显示图例" desc="在图表底部显示数据系列图例">
-            <Checkbox checked={showLegend} onChange={setShowLegend} />
+            <Switch size="sm" isSelected={showLegend} onValueChange={setShowLegend} />
           </UDSettingRow>
           <UDSection label="预览">
             <div ref={chartRef} style={{ width: '100%', height: 220, borderRadius: 8 }} />

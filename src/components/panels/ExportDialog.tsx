@@ -6,7 +6,7 @@ import { getTypographyTheme } from '../../styles/typography-themes'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { PanelContainer, UDSection, UDSettingRow, UDPreviewCard } from '../ui/PanelContainer'
 import { SelectBox } from '../ui/SelectBox'
-import { Checkbox } from '../ui/Checkbox'
+import { Switch } from '@heroui/react'
 import { getDocMd } from '../../utils/docSource'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
@@ -42,12 +42,22 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   const docsMd = useEditorStore(s => s.docsMd || {})
   const activeDocId = useEditorStore(s => s.activeDocId)
   const typographyTheme = useSettingsStore(s => s.typographyTheme)
-  const state = useSettingsStore.getState()
-  const updateSetting = useSettingsStore.getState().updateSetting
+  const includeTOC = useSettingsStore(s => s.includeTOC)
+  const includeLineNumbers = useSettingsStore(s => s.includeLineNumbers)
+  const includePageNumbers = useSettingsStore(s => s.includePageNumbers)
+  const codeTheme = useSettingsStore(s => s.codeTheme)
+  const macCodeBlock = useSettingsStore(s => s.macCodeBlock)
+  const defaultFontSize = useSettingsStore(s => s.defaultFontSize)
+  const lineHeight = useSettingsStore(s => s.lineHeight)
+  const editorFont = useSettingsStore(s => s.editorFont)
+  const textIndent = useSettingsStore(s => s.textIndent)
+  const textJustify = useSettingsStore(s => s.textJustify)
+  const headingStyles = useSettingsStore(s => s.headingStyles)
+  const updateSetting = useSettingsStore(s => s.updateSetting)
 
-  const [format, setFormat] = useState<any>((state.exportFormat as any) || 'pdf')
-  const [paperSize, setPaperSize] = useState(state.paperSize || 'a4')
-  const [orientation, setOrientation] = useState(state.orientation || 'portrait')
+  const [format, setFormat] = useState<any>('pdf')
+  const [paperSize, setPaperSize] = useState('a4')
+  const [orientation, setOrientation] = useState('portrait')
   const [exporting, setExporting] = useState(false)
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
@@ -83,14 +93,14 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     try {
       await exportDocument({
         title: safeTitle, content: format === 'md' ? mdContent || html : html, format,
-        options: isPrintFormat ? {
-          typographyTheme: state.typographyTheme || 'classic', codeTheme: state.codeTheme || 'atom-one-dark',
-          macCodeBlock: state.macCodeBlock || false, includeTOC: state.includeTOC !== false,
-          includeLineNumbers: state.includeLineNumbers || false, includePageNumbers: state.includePageNumbers || false,
-          paperSize, orientation, fontSize: state.defaultFontSize, lineHeight: state.lineHeight,
-          fontFamily: state.editorFont, textIndent: state.textIndent, textJustify: state.textJustify,
-          headingStyles: state.headingStyles,
-        } : {},
+          options: isPrintFormat ? {
+            typographyTheme: typographyTheme || 'classic', codeTheme: codeTheme || 'atom-one-dark',
+            macCodeBlock: macCodeBlock || false, includeTOC: includeTOC !== false,
+            includeLineNumbers: includeLineNumbers || false, includePageNumbers: includePageNumbers || false,
+            paperSize, orientation, fontSize: defaultFontSize, lineHeight: lineHeight,
+            fontFamily: editorFont, textIndent: textIndent, textJustify: textJustify,
+            headingStyles: headingStyles,
+          } : {},
       })
     } catch (err) { console.error('export failed', err) }
     setExporting(false)
@@ -122,13 +132,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           <UDSection label="样式选项">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <UDSettingRow icon="ri-menu-fill" label="包含目录" desc="在文档开头插入目录">
-                <Checkbox checked={state.includeTOC !== false} onChange={v => updateSetting('includeTOC', v)} />
+                <Switch size="sm" isSelected={includeTOC !== false} onValueChange={v => updateSetting('includeTOC', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-number-1" label="代码行号" desc="导出代码块时显示行号">
-                <Checkbox checked={state.includeLineNumbers || false} onChange={v => updateSetting('includeLineNumbers', v)} />
+                <Switch size="sm" isSelected={includeLineNumbers || false} onValueChange={v => updateSetting('includeLineNumbers', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-numbers-fill" label="页码" desc="为每页添加页码">
-                <Checkbox checked={state.includePageNumbers || false} onChange={v => updateSetting('includePageNumbers', v)} />
+                <Switch size="sm" isSelected={includePageNumbers || false} onValueChange={v => updateSetting('includePageNumbers', v)} />
               </UDSettingRow>
             </div>
           </UDSection>
