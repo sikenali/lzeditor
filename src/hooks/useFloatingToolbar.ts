@@ -17,10 +17,10 @@ export function useFloatingToolbar() {
     setSelectedText(text)
 
     if (rect) {
-      const maxX = window.innerWidth - 380
-      const maxX2 = rect.right - 190
-      const x = Math.min(Math.max(8, maxX2), maxX)
-      const y = Math.min(rect.bottom + 8, window.innerHeight - 60)
+      const toolbarW = 60
+      const toolbarH = 44
+      const x = Math.min(Math.max(8, rect.left + rect.width / 2 - toolbarW / 2), window.innerWidth - toolbarW - 8)
+      const y = Math.min(rect.bottom + 8, window.innerHeight - toolbarH - 8)
       setPosition({ x, y })
     }
 

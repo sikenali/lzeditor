@@ -107,7 +107,7 @@ export const Toolbar: React.FC = () => {
 
   const navMode = useSettingsStore((s) => s.navMode)
   useEffect(() => {
-    if (navMode !== 'left' || !menuOpen || !menuRef.current) {
+    if (!menuOpen || !menuRef.current) {
       if (menuRef.current) {
         menuRef.current.style.position = ''
         menuRef.current.style.left = ''
@@ -131,12 +131,12 @@ export const Toolbar: React.FC = () => {
     requestAnimationFrame(() => {
       const mw = el.offsetWidth || 180
       const mh = el.offsetHeight || 240
-      const left = Math.min(rect.right + 4, vw - mw - 8)
-      const top = Math.min(rect.top, vh - mh - 8)
+      const left = Math.min(Math.max(4, rect.left), vw - mw - 4)
+      const top = Math.min(Math.max(rect.bottom + 6, 4), vh - mh - 4)
       el.style.left = `${left}px`
       el.style.top = `${top}px`
     })
-  }, [menuOpen, navMode])
+  }, [menuOpen])
 
   useEffect(() => {
     if (!menuOpen && menuRef.current) {

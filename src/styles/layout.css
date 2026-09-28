@@ -166,8 +166,8 @@
 
 /* ── Submenu (inline dropdown) ── */
 .toolbar-submenu {
-  position: absolute;
-  top: calc(100% + 6px);
+  position: fixed;
+  top: 0;
   left: 0;
   z-index: 500;
   min-width: 160px; max-width: 220px;

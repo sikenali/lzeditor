@@ -11,14 +11,10 @@ interface FloatingToolbarProps {
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ position, visible, onAction }) => {
   if (!visible) return null
 
-  const TOOLBAR_W = 60
-  const clampedX = Math.min(position.x, window.innerWidth - TOOLBAR_W - 8)
-  const clampedY = Math.min(position.y, window.innerHeight - 40)
-
   return (
     <div
       className="ai-floating-toolbar"
-      style={{ left: clampedX, top: clampedY }}
+      style={{ left: position.x, top: position.y }}
     >
       <button
         className="ai-toolbar-btn"

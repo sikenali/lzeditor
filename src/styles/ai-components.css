@@ -1,6 +1,6 @@
 /* ── AI Floating Toolbar — Apple glass bubble ── */
 .ai-floating-toolbar {
-  position: absolute;
+  position: fixed;
   display: flex; align-items: center; gap: 4px;
   padding: 6px 10px;
   background: var(--bg-secondary);

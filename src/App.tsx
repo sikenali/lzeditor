@@ -275,8 +275,8 @@ function App() {
         </div>
       )}
 
-      {openPanel === 'settings' && <SettingsDialog onClose={closePanel} />}
-      {openPanel === 'export' && <ExportDialog onClose={closePanel} />}
+      {openPanel === 'settings' && (() => { console.log('[App] SettingsDialog rendering, openPanel=', openPanel); return <SettingsDialog onClose={closePanel} />; })()}
+      {openPanel === 'export' && (() => { console.log('[App] ExportDialog rendering, openPanel=', openPanel); return <ExportDialog onClose={closePanel} />; })()}
       {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
