@@ -52,8 +52,8 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const [typographyTheme, setTypographyTheme] = useState(state.typographyTheme || 'classic')
   const [codeTheme, setCodeTheme] = useState(state.codeTheme || 'atom-one-dark')
   const [showLineNumbers, setShowLineNumbers] = useState(state.showLineNumbers || false)
-  const [useIndent, setUseIndent] = useState(false)
-  const [useJustify, setUseJustify] = useState(false)
+  const [useIndent, setUseIndent] = useState(state.textIndent || false)
+  const [useJustify, setUseJustify] = useState(state.textJustify || false)
   const [macCodeBlock, setMacCodeBlock] = useState(state.macCodeBlock || false)
   const [applying, setApplying] = useState(false)
 
@@ -66,6 +66,9 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     updateSetting('typographyTheme', typographyTheme)
     updateSetting('codeTheme', codeTheme)
     updateSetting('macCodeBlock', macCodeBlock)
+    updateSetting('showLineNumbers', showLineNumbers)
+    updateSetting('textIndent', useIndent)
+    updateSetting('textJustify', useJustify)
     try {
       const prettier = await import('prettier')
       const currentMd = useEditorStore.getState().mdContent || ''

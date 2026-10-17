@@ -10,10 +10,6 @@ function renderAppSettings(s: any, u: any) {
         <UiSwitch size="sm" checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
-      <UDSettingRow icon="ri-clipboard-fill" label="启动保存剪切板内容" desc="每次启动时自动保存当前剪切板内容">
-        <UiSwitch size="sm" checked={ s.saveClipboardOnLaunch || false } onChange={ v => u('saveClipboardOnLaunch', v) } />
-      </UDSettingRow>
-      <div className="setting-divider" />
       <UDSettingRow icon="ri-notification-3-line" label="显示托盘图标" desc="在系统托盘显示应用图标">
         <UiSwitch size="sm" checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
       </UDSettingRow>

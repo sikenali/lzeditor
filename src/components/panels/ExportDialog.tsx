@@ -16,7 +16,7 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
 
 const EXPORT_FORMATS = [
   { id: 'pdf',   name: 'PDF',   icon: 'ri-file-pdf-fill',    desc: '可打印',   color: '#e74c3c' },
-  { id: 'docx',  name: 'DOCX',  icon: 'ri-file-word-fill',   desc: 'Word',     color: '#2980b9' },
+  { id: 'docx',  name: 'DOCX',  icon: 'ri-file-word-fill',   desc: 'Word（HTML 编码，Word 可打开）', color: '#2980b9' },
   { id: 'html',  name: 'HTML',  icon: 'ri-html5-fill',       desc: '网页',     color: '#e67e22' },
   { id: 'epub',  name: 'EPUB',  icon: 'ri-book-open-fill',   desc: '电子书',   color: '#8e44ad' },
   { id: 'md',    name: 'MD',    icon: 'ri-markdown-fill',    desc: '源码',     color: '#27ae60' },

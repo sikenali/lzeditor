@@ -36,7 +36,7 @@ const CHART_TYPES: { id: ChartType; label: string; icon: string }[] = [
   { id: 'scatter', label: '散点图', icon: 'ri-node-tree' },
 ]
 
-export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: string, type: string) => void }> = ({ onClose, onInsert }) => {
+export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string, alt: string, type: string) => void }> = ({ onClose, onInsert }) => {
   const [chartType, setChartType] = useState<ChartType>('line')
   const [title, setTitle] = useState('图表标题')
   const [dataStr, setDataStr] = useState('10,20,15,30,25')
@@ -74,16 +74,19 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
   }, [chartType, title, dataStr, labelsStr, showLegend])
 
   const handleInsert = () => {
-    if (!chartInstanceRef.current) { onClose(); return }
-    const svgUrl = chartInstanceRef.current.getConnectors?.()?.[0]?.getAttribute('src') || ''
-    const imgSrc = chartInstanceRef.current.getDataURL?.({ type: 'png', pixelRatio: 2 }) || ''
-    if (imgSrc) {
-      onInsert(`![](${imgSrc})`, chartType)
-    } else {
-      onInsert(`![${title}](${svgUrl})`, chartType)
-    }
+    const chart = chartInstanceRef.current
+    if (!chart) { onClose(); return }
+    // ECharts 无法在 TipTap 文档内交互，只能导出为静态图片插入
+    const dataUrl = chart.getDataURL?.({ type: 'png', pixelRatio: 2, backgroundColor: 'transparent' })
+    if (!dataUrl) { onClose(); return }
+    onInsert(dataUrl, title || '图表', chartType)
     onClose()
   }
+
+  useEffect(() => () => {
+    chartInstanceRef.current?.dispose()
+    chartInstanceRef.current = null
+  }, [])
 
   return (
     <UiModal

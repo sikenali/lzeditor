@@ -250,6 +250,10 @@ export const LZEditor = () => {
       }
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
       snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
+      // 保存指示器：写入完成后标记为已保存
+      useEditorStore.getState().setSyncStatus('saving')
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => useEditorStore.getState().setSyncStatus('synced'), 600)
     },
     onSelectionUpdate: ({ editor }: any) => {
       const pos = editor.state.selection
@@ -262,6 +266,7 @@ export const LZEditor = () => {
   })
 
   const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastDocIdRef = useRef<string | null>(null)
   const pmDomRef = useRef<HTMLElement | null>(null)
   const remarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -409,10 +414,36 @@ export const LZEditor = () => {
 
   // ── Spell check ──
   const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck)
+  const spellCheckLang = useSettingsStore((s) => s.spellCheckLang)
   useEffect(() => {
     const pm = editorRef.current?.querySelector('.ProseMirror') as HTMLElement | null
-    if (pm) pm.setAttribute('spellcheck', enableSpellCheck ? 'true' : 'false')
-  }, [enableSpellCheck])
+    if (!pm) return
+    pm.setAttribute('spellcheck', enableSpellCheck ? 'true' : 'false')
+    if (spellCheckLang) pm.setAttribute('lang', spellCheckLang)
+  }, [enableSpellCheck, spellCheckLang])
+
+  // ── Markdown 符号键：选中文字后按 * _ ~ = 快速设置格式 ──
+  const allowMarkdownSymbols = useSettingsStore((s) => s.allowMarkdownSymbols)
+  useEffect(() => {
+    const el = editorRef.current
+    if (!el) return
+    const SYMBOL_MAP: Record<string, () => any> = {
+      '*': () => editor.chain().focus().toggleBold().run(),
+      '_': () => editor.chain().focus().toggleItalic().run(),
+      '~': () => editor.chain().focus().toggleStrike().run(),
+      '=': () => editor.chain().focus().toggleMark('highlight').run(),
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!allowMarkdownSymbols || !editor || !editor.state) return
+      const sel = editor.state.selection
+      if (!sel || sel.empty) return
+      if (!SYMBOL_MAP[e.key]) return
+      e.preventDefault()
+      SYMBOL_MAP[e.key]()
+    }
+    el.addEventListener('keydown', onKeyDown)
+    return () => el.removeEventListener('keydown', onKeyDown)
+  }, [editor, allowMarkdownSymbols])
 
   // Initialize docsMd: merge missing docs from localStorage (never overwrite existing)
   React.useEffect(() => {

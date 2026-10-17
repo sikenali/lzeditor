@@ -16,9 +16,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onMenuNew: (callback: () => void) => ipcRenderer.on('menu-new', callback),
   onMenuOpen: (callback: () => void) => ipcRenderer.on('menu-open', callback),
   onMenuExport: (callback: () => void) => ipcRenderer.on('menu-export', callback),
+  // 从资源管理器打开的本地文件路径
+  onMenuOpenFile: (callback: (filePath: string) => void) =>
+    ipcRenderer.on('menu-open-file', (_event, filePath: string) => callback(filePath)),
+  readLocalFile: (filePath: string) => ipcRenderer.invoke('file:read', filePath),
   offMenuNew: (callback: () => void) => ipcRenderer.removeListener('menu-new', callback),
   offMenuOpen: (callback: () => void) => ipcRenderer.removeListener('menu-open', callback),
   offMenuExport: (callback: () => void) => ipcRenderer.removeListener('menu-export', callback),
+
+  // 把渲染进程的行为设置同步给主进程（托盘图标、关窗即退等）
+  sendSettings: (settings: Record<string, unknown>) => ipcRenderer.send('app:settings', settings),
 
   // Platform
   platform: process.platform,

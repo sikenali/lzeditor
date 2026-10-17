@@ -36,10 +36,6 @@ export const DEFAULT_API_KEYS: ApiKeyEntry[] = [
 ]
 
 export const DEFAULT_SETTINGS: SettingsState = {
-  provider: 'anthropic',
-  model: 'claude-3-5-sonnet-20241022',
-  apiKey: '',
-  customBaseUrl: '',
   temperature: 0.7,
   maxTokens: 1024,
   apiKeys: DEFAULT_API_KEYS,
@@ -70,17 +66,13 @@ export const DEFAULT_SETTINGS: SettingsState = {
   focusMode: false,
   previewModeEnabled: true,
   navMode: 'top' as 'top' | 'left',
-  toolbarCollapsed: false,
-  toolbarWidth: 220,
   // ── Toolbar defaults ──
   compactToolbar: true,
   showToolbarLabels: true,
   // ── Startup / app behavior defaults ──
   enableTabs: true,
-  saveClipboardOnLaunch: false,
   showTrayIcon: true,
   reopenLastDoc: true,
-  stylePreviewMode: 'none',
   openInNewWindow: false,
   quitWhenAllWindowsClosed: true,
   // ── Localization defaults ──
@@ -99,12 +91,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   textJustify: false,
   linkColor: '',
   blockquoteBackground: '',
-  // ── Sync / Backup defaults ──
-  syncProvider: '',
-  backupInterval: '30s',
-  backupKeep: 50,
   // ── AI Settings (bid-maker style) ──
-  configTab: 'provider',
   customApiFormat: 'openai',
   customEndpoint: '',
   customModelId: '',
@@ -149,8 +136,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   setSelectedModelId: (id) => set({ selectedModelId: id }),
 }))
 
-/** Resolve the effective accent color for a given preset id. */
+/** Resolve the effective accent color for a given preset id (or a raw hex). */
 export function getAccentColor(presetId: string): string {
+  if (presetId && /^#[0-9a-fA-F]{6}$/.test(presetId)) return presetId
   return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#BE3B2E'
 }
 

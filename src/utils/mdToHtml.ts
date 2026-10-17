@@ -7,6 +7,16 @@ export function mdToHtml(md: string): string {
   return convertMarkdownToHtml(md)
 }
 
+/** 标题文本 → 稳定的页内锚点 id（中文、英文、数字均可）。 */
+export function headingId(raw: string): string {
+  return raw
+    .replace(/<[^>]+>/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\w\s-]/gu, '')
+    .trim()
+    .replace(/\s+/g, '-')
+}
+
 /** Find the index of the closing paren that matches the opening paren at `start`. */
 function findMatchingParen(str: string, start: number): number {
   let depth = 1
@@ -34,13 +44,13 @@ function convertMarkdownToHtml(md: string): string {
   // ── Inline code ──
    html = html.replace(/`([^`\n]+)`/g, (_m: string, code: string) => `<code>${escapeHtml(code)}</code>`)
 
-  // ── Headings ──
-   html = html.replace(/^######\s+(.+)$/gm, (_m: string, text: string) => `<h6>${text}</h6>`)
-   html = html.replace(/^#####\s+(.+)$/gm, (_m: string, text: string) => `<h5>${text}</h5>`)
-   html = html.replace(/^####\s+(.+)$/gm, (_m: string, text: string) => `<h4>${text}</h4>`)
-   html = html.replace(/^###\s+(.+)$/gm, (_m: string, text: string) => `<h3>${text}</h3>`)
-   html = html.replace(/^##\s+(.+)$/gm, (_m: string, text: string) => `<h2>${text}</h2>`)
-   html = html.replace(/^#\s+(.+)$/gm, (_m: string, text: string) => `<h1>${text}</h1>`)
+  // ── Headings (带锚点 id，供页内跳转与内部链接使用) ──
+   html = html.replace(/^######\s+(.+)$/gm, (_m: string, text: string) => `<h6 id="${headingId(text)}">${text}</h6>`)
+   html = html.replace(/^#####\s+(.+)$/gm, (_m: string, text: string) => `<h5 id="${headingId(text)}">${text}</h5>`)
+   html = html.replace(/^####\s+(.+)$/gm, (_m: string, text: string) => `<h4 id="${headingId(text)}">${text}</h4>`)
+   html = html.replace(/^###\s+(.+)$/gm, (_m: string, text: string) => `<h3 id="${headingId(text)}">${text}</h3>`)
+   html = html.replace(/^##\s+(.+)$/gm, (_m: string, text: string) => `<h2 id="${headingId(text)}">${text}</h2>`)
+   html = html.replace(/^#\s+(.+)$/gm, (_m: string, text: string) => `<h1 id="${headingId(text)}">${text}</h1>`)
 
   // ── Horizontal rule ──
   html = html.replace(/^(---+|\*\*\*+|___+)\s*$/gm, '<hr>')

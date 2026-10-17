@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from '../../utils/toast'
 import { UiModal, UiInput, UiButton } from '../ui'
 
 const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
@@ -43,34 +44,37 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
     }
   }
 
-  const handleGenerateUrl = async () => {
+  const handleGenerateUrl = () => {
     if (!uploadFile) return
     setGenerating(true)
-    try {
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const base64 = e.target?.result as string
-        try {
-          const resp = await fetch('https://imgant.com/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64.split(',')[1] }),
-          })
-          const data = await resp.json()
-          if (data.url) {
-            setUrl(data.url)
-            setUseUrl(true) // 上传成功后切换到 URL 模式
-          } else {
-            alert('图床上传失败，请手动复制图片链接')
-          }
-        } catch {
-          alert('图床服务不可用，请使用其他图床或手动上传')
-        }
-      }
-      reader.readAsDataURL(uploadFile)
-    } finally {
+    const reader = new FileReader()
+    reader.onerror = () => {
       setGenerating(false)
+      toast('图片读取失败')
     }
+    reader.onload = async (e) => {
+      try {
+        const base64 = e.target?.result as string
+        const resp = await fetch('https://imgant.com/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64.split(',')[1] }),
+        })
+        const data = await resp.json()
+        if (data.url) {
+          setUrl(data.url)
+          setUseUrl(true)
+          toast('图床上传成功')
+        } else {
+          toast('图床上传失败，可改用本地嵌入')
+        }
+      } catch {
+        toast('图床服务不可用，可改用本地嵌入')
+      } finally {
+        setGenerating(false)
+      }
+    }
+    reader.readAsDataURL(uploadFile)
   }
 
   return (

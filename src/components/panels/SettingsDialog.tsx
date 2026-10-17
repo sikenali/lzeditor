@@ -199,17 +199,15 @@ function renderAccentSection(s: any, u: any) {
             {accent === p.id && <span className="remix color-card-check ri-check-line"></span>}
           </button>
         ))}
-        <button
-          className="color-card color-card-custom"
-          title="自定义颜色"
-          onClick={() => {
-            const c = prompt('输入颜色值 (如 #FF0000):')
-            if (c) update('accentColor', c.startsWith('#') ? c : '#' + c)
-          }}
-        >
+        <label className="color-card color-card-custom" title="自定义颜色">
+          <input
+            type="color"
+            value={getAccentColor(accent)}
+            onChange={(e) => update('accentColor', e.target.value)}
+          />
           <span className="remix color-card-icon ri-add-line"></span>
           <span className="color-card-name">自定义</span>
-        </button>
+        </label>
       </div>
       <div className="color-current-value" style={{ marginTop: 10 }}>
         <span className="color-current-label">当前</span>

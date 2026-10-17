@@ -26,6 +26,7 @@ import { EmojiDialog } from './components/panels/EmojiDialog'
 import { ChartDialog } from './components/panels/ChartDialog'
 import { useEditorStore } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
+import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
 
 const escapeTableText = (s: string) =>
@@ -82,6 +83,135 @@ function App() {
     if (appMode === 'code' && !codeMode) setCodeMode(true)
     if (appMode === 'edit' && codeMode) setCodeMode(false)
   }, [appMode, codeMode, setCodeMode])
+
+  // 启动时按「下次启动自动打开最后编辑的文档」还原
+  useEffect(() => {
+    try {
+      if (useSettingsStore.getState().reopenLastDoc === false) return
+      const last = localStorage.getItem('lzeditor-last-doc')
+      if (!last) return
+      const es = useEditorStore.getState()
+      if (es.docs.some((d: any) => d.id === last)) es.switchDoc(last)
+    } catch {}
+  }, [])
+
+  // 内部链接：点击跳转到对应文档与章节
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest?.('a[href]') as HTMLAnchorElement | null
+      if (!a) return
+      const href = a.getAttribute('href') || ''
+      if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:')) return
+      const es = useEditorStore.getState()
+      const hashAt = href.indexOf('#')
+      const docKey = hashAt === -1 ? href : href.slice(0, hashAt)
+      const anchor = hashAt === -1 ? '' : href.slice(hashAt + 1)
+      const target = es.docs.find((d: any) => d.id === docKey || d.title === docKey)
+      if (!target) return
+      e.preventDefault()
+      es.switchDoc(target.id)
+      es.setAppMode('edit')
+      if (anchor) {
+        setTimeout(() => {
+          document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 250)
+      }
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
+
+  // 全局快捷键（与「快捷键设置」页列出的组合一致）
+  useEffect(() => {
+    const mod = (e: KeyboardEvent) => e.ctrlKey || e.metaKey
+    const ed = () => useEditorStore.getState().editor
+
+    const toggleAI = () => {
+      const s = useAIStore.getState()
+      if (s.panelVisible) s.hidePanel()
+      else s.showPanel('question', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
+    }
+
+    const onKey = (e: KeyboardEvent) => {
+      if (!mod(e)) return
+      const es = useEditorStore.getState()
+      const key = e.key.toLowerCase()
+
+      // 标题：Ctrl+Alt+1..6
+      if (e.altKey && /^[1-6]$/.test(e.key)) {
+        e.preventDefault()
+        ed()?.chain?.().focus().toggleHeading({ level: Number(e.key) }).run()
+        return
+      }
+      if (key === 'n') {
+        e.preventDefault(); es.createDoc('untitled.md')
+      } else if (key === 'o') {
+        e.preventDefault(); es.setOpenPanel('file')
+      } else if (key === 's') {
+        e.preventDefault(); es.setLastEditTime(Date.now())
+      } else if (key === 'e' && !e.altKey) {
+        e.preventDefault(); es.setOpenPanel('export')
+      } else if (e.key === ',') {
+        e.preventDefault(); es.setOpenPanel('settings')
+      } else if (key === 'f' && !e.shiftKey) {
+        e.preventDefault(); es.setShowSearch(true)
+      } else if (key === 'h' && e.shiftKey) {
+        e.preventDefault(); es.setShowSearch(true)
+      } else if (key === 'f' && e.shiftKey) {
+        e.preventDefault()
+        if (document.fullscreenElement) document.exitFullscreen?.()
+        else document.body.requestFullscreen?.()
+      } else if (key === 'p') {
+        e.preventDefault(); window.print()
+      } else if (e.key === '/') {
+        e.preventDefault(); toggleAI()
+      } else if (e.altKey && key === 'c') {
+        e.preventDefault(); ed()?.chain?.().focus().toggleCodeBlock().run()
+      } else if (key === '8' && e.shiftKey) {
+        e.preventDefault(); ed()?.chain?.().focus().toggleBulletList().run()
+      } else if (key === '7' && e.shiftKey) {
+        e.preventDefault(); ed()?.chain?.().focus().toggleOrderedList().run()
+      } else if (key === '9' && e.shiftKey) {
+        e.preventDefault(); ed()?.chain?.().focus().toggleTaskList().run()
+      } else if (key === 'b' && e.shiftKey) {
+        e.preventDefault(); ed()?.chain?.().focus().toggleBlockquote().run()
+      } else if (e.key === 'Enter') {
+        e.preventDefault(); ed()?.chain?.().focus().hardBreak().run()
+      }
+    }
+
+    document.addEventListener('keydown', onKey)
+    const api = (window as any).electronAPI
+    api?.onMenuNew?.(() => useEditorStore.getState().createDoc('untitled.md'))
+    api?.onMenuOpen?.(() => useEditorStore.getState().setOpenPanel('file'))
+    api?.onMenuExport?.(() => useEditorStore.getState().setOpenPanel('export'))
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Electron：同步行为设置给主进程，并处理「从资源管理器打开文档」
+  useEffect(() => {
+    const api = (window as any).electronAPI
+    if (!api) return
+    const pushSettings = () => api.sendSettings?.(useSettingsStore.getState())
+    pushSettings()
+    const unsub = useSettingsStore.subscribe(pushSettings)
+
+    const onLocalFile = async (filePath: string) => {
+      try {
+        const res = await api.readLocalFile(filePath)
+        if (!res?.ok || !res.text) return
+        const name = String(res.name || filePath.split(/[\\/]/).pop() || 'untitled.md')
+        const es = useEditorStore.getState()
+        const id = es.createDoc(name)
+        const html = mdToHtml(res.text)
+        es.updateDoc({ md: res.text, html, docsMd: { [id]: res.text } })
+        try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md: res.text, html, savedAt: Date.now() })) } catch {}
+        es.editor?.commands?.setContent(html)
+      } catch {}
+    }
+    api.onMenuOpenFile?.(onLocalFile)
+    return () => unsub()
+  }, [])
 
   const [libraryClosing, setLibraryClosing] = useState(false)
   const prevShowLibrary = useRef(showLibrary)
@@ -160,8 +290,12 @@ function App() {
   }
   const insertCode = (code: string, lang: string) => {
     if (!editor) return
-    const md = `\`\`\`${lang}\n${code}\n\`\`\``
-    editor.chain().focus().insertContent(md).run()
+    // 以 JSON 节点插入代码块，字符串会被当成 HTML 解析
+    editor.commands.insertContent({
+      type: 'codeBlock',
+      attrs: { language: lang },
+      content: [{ type: 'text', text: code }],
+    })
     closeInsert()
   }
   const insertLink = (text: string, url: string, newTab?: boolean) => {
@@ -183,9 +317,10 @@ function App() {
     editor.chain().focus().insertMath(formula).run()
     closeInsert()
   }
-  const insertChart = (html: string, type: string) => {
+  const insertChart = (src: string, alt: string, _type: string) => {
     if (!editor) return
-    editor.chain().focus().insertContent(html).run()
+    // 必须以 JSON 节点插入，字符串会被当成 HTML 解析而无法渲染成图片
+    editor.commands.insertContent({ type: 'image', attrs: { src, alt } })
     closeInsert()
   }
   const insertEmoji = (text: string) => {

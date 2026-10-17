@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage } from 'electron'
+import * as fs from 'fs'
 import * as path from 'path'
 import * as url from 'url'
 
@@ -49,8 +50,15 @@ app.whenReady().then(() => {
   })
 })
 
+// 关闭最后一个窗口时是否退出：由「行为设置 → 当所有窗口关闭时退出应用程序」控制
+// （默认值与 macOS 一致：darwin 上保留在 dock，其他平台退出）
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  const shouldQuit = appSettings['quitWhenAllWindowsClosed']
+  if (process.platform === 'darwin') {
+    if (shouldQuit === true) app.quit()
+  } else if (shouldQuit === false) {
+    // 保持后台存活
+  } else {
     app.quit()
   }
 })
@@ -67,6 +75,8 @@ ipcMain.on('window-maximize', () => {
     mainWindow?.maximize()
   }
 })
+
+ipcMain.handle('window-is-maximized', () => mainWindow?.isMaximized() ?? false)
 
 ipcMain.on('window-close', () => {
   mainWindow?.close()
@@ -87,6 +97,59 @@ ipcMain.handle('secrets:get', (_event, key: string) => {
 ipcMain.handle('secrets:delete', (_event, key: string) => {
   secretsStore.delete(key)
   return true
+})
+
+// 渲染进程的行为设置（enableTabs / showTrayIcon / openInNewWindow / quitWhenAllWindowsClosed）
+let appSettings: Record<string, unknown> = {}
+
+function getSetting<K extends string>(key: K, fallback: unknown): unknown {
+  return appSettings[key] === undefined ? fallback : appSettings[key]
+}
+
+let tray: Tray | null = null
+
+function applyTray() {
+  const icon = nativeImage.createFromPath(path.join(__dirname, '../../public/icon.png'))
+  if (getSetting('showTrayIcon', true) === false) {
+    if (tray) { tray.destroy(); tray = null }
+    return
+  }
+  if (tray) return
+  tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon)
+  tray.setToolTip('lzeditor')
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: '显示主窗口', click: () => { mainWindow?.show(); mainWindow?.focus() } },
+    { type: 'separator' },
+    { label: '退出', click: () => app.quit() },
+  ]))
+  tray.on('click', () => { mainWindow?.show(); mainWindow?.focus() })
+}
+
+ipcMain.on('app:settings', (_event, settings: Record<string, unknown>) => {
+  appSettings = settings || {}
+  applyTray()
+})
+
+// 文件关联：从资源管理器双击 .md/.markdown/.txt 打开
+app.on('second-instance', (_event, argv) => {
+  const file = argv.slice(1).pop()
+  if (!file) return
+  const ext = path.extname(file).toLowerCase()
+  if (!['.md', '.markdown', '.txt'].includes(ext)) return
+  if (getSetting('openInNewWindow', false) === true) {
+    createWindow()
+  }
+  BrowserWindow.getAllWindows().slice(-1)[0]?.webContents.send('menu-open-file', file)
+})
+
+// 读取本地文件（供「打开文档」使用，返回文本内容）
+ipcMain.handle('file:read', async (_event, filePath: string) => {
+  try {
+    const text = await fs.promises.readFile(filePath, 'utf8')
+    return { ok: true, text, name: path.basename(filePath) }
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'read failed', name: path.basename(filePath) }
+  }
 })
 
 // Menu

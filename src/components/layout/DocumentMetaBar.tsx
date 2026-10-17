@@ -1,12 +1,16 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 
 export const DocumentMetaBar: React.FC = () => {
   const docs = useEditorStore((s: any) => s.docs)
   const activeDocId = useEditorStore((s: any) => s.activeDocId)
   const switchDoc = useEditorStore((s: any) => s.switchDoc)
   const closeDoc = useEditorStore((s: any) => s.closeDoc)
+  const enableTabs = useSettingsStore((s) => s.enableTabs !== false)
   const [hoveredTab, setHoveredTab] = useState<string | null>(null)
+
+  if (!enableTabs) return null
 
   return (
     <div className="document-meta-bar">

@@ -85,7 +85,8 @@ export function useAI() {
 
     try {
       if (activeKey.format === 'anthropic') {
-        const url = `${activeKey.endpoint?.replace(/\/$/, '') || 'https://api.anthropic.com'}/v1/messages`
+        const base = (activeKey.endpoint || 'https://api.anthropic.com').replace(/\/v1$/, '').replace(/\/$/, '')
+        const url = `${base}/v1/messages`
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'x-api-key': activeKey.key,
@@ -99,7 +100,8 @@ export function useAI() {
         useAIStore.getState().setPanelOutput(accumulated)
         useAIStore.getState().setPanelStatus('result')
       } else {
-        const url = `${activeKey.endpoint?.replace(/\/$/, '') || 'https://api.openai.com'}/v1/chat/completions`
+        const base = (activeKey.endpoint || 'https://api.openai.com').replace(/\/v1$/, '').replace(/\/$/, '')
+        const url = `${base}/v1/chat/completions`
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${activeKey.key}`,

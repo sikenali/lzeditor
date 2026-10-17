@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { UiModal, UiInput, UiSelect, UiSwitch, UiButton } from '../ui'
 import { useEditorStore } from '../../store/editorStore'
+import { headingId } from '../../utils/mdToHtml'
 
 const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
   <div className="ud-section">
@@ -31,73 +32,48 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const docsMd = useEditorStore((s) => s.docsMd || {})
 
-  // 提取文档中的章节标题
-  const extractHeadings = (html: string): { id: string; text: string; level: number }[] => {
-    const headings: { id: string; text: string; level: number }[] = []
-    const regex = /<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi
-    let match
-    let index = 0
-    while ((match = regex.exec(html)) !== null) {
-      const level = parseInt(match[1])
-      const text = match[2].replace(/<[^>]+>/g, '').trim()
-      if (text) {
-        headings.push({
-          id: `heading-${index++}`,
-          text,
-          level
-        })
-      }
-    }
-    return headings
-  }
-
-  // 获取当前选中文档的章节列表
-  const chapters = useMemo(() => {
-    if (!docSource) return []
-    // 查找匹配的文档
-    const doc = docs.find((d: any) => d.title === docSource || d.id === docSource)
-    if (!doc) return []
-    const md = docsMd[doc.id] || ''
-    if (!md) return []
-    // 从 Markdown 提取标题 - 支持 # 标题 和 #### 标题 等格式
+  // 提取文档中的章节标题（id 为真实锚点，与 mdToHtml 生成的 h1..h6 id 一致）
+  const extractChapters = (md: string): { id: string; text: string; level: number }[] => {
     const headingRegex = /^#{1,6}\s+.+$/gm
     const headings: { id: string; text: string; level: number }[] = []
     let match
-    let index = 0
     while ((match = headingRegex.exec(md)) !== null) {
       const line = match[0]
       const hashMatch = line.match(/^(#+)/)
       const level = hashMatch ? hashMatch[1].length : 1
       const text = line.replace(/^#+\s+/, '').trim()
-      if (text) {
-        headings.push({
-          id: `heading-${index++}`,
-          text,
-          level
-        })
-      }
+      if (text) headings.push({ id: headingId(text), text, level })
     }
     return headings
+  }
+
+  // 获取目标文档的章节列表（按文档 id 检索）
+  const chapters = useMemo(() => {
+    if (!docSource) return []
+    const doc = docs.find((d: any) => d.id === docSource || d.title === docSource)
+    if (!doc) return []
+    const md = docsMd[doc.id] || ''
+    return md ? extractChapters(md) : []
   }, [docSource, docs, docsMd])
 
   // 默认选择当前文档
   useEffect(() => {
     const currentDoc = docs.find((d: any) => d.id === activeDocId)
-    if (currentDoc) {
-      setDocSource(currentDoc.title || currentDoc.id)
-    }
+    if (currentDoc) setDocSource(currentDoc.id)
   }, [docs, activeDocId])
 
   const handleInsert = () => {
     if (linkType === 'external') {
       if (!url.trim()) return
-      const linkText = text.trim() || url.trim()
-      onInsert(linkText, url.trim(), newTab)
+      onInsert(text.trim() || url.trim(), url.trim(), newTab)
     } else {
-      // 内部链接
-      const linkText = text.trim() || docSource
-      const chapterHash = chapterRef ? `#${chapterRef}` : ''
-      const internalUrl = `${docSource}${chapterHash}`
+      if (!docSource) return
+      const doc = docs.find((d: any) => d.id === docSource)
+      const linkText = text.trim() || doc?.title || docSource
+      // 跨文档：docId#章节锚点；同文档：#章节锚点
+      const internalUrl = chapterRef
+        ? `${docSource === (docs.find((d: any) => d.id === activeDocId)?.id || '') ? '' : docSource}#${chapterRef}`
+        : docSource
       onInsert(linkText, internalUrl)
     }
     onClose()
@@ -189,9 +165,9 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
 
               {/* 2. 文档来源 */}
               <UDSection label="文档来源">
-                <UiSelect value={docSource} onChange={setDocSource} options={[
+                <UiSelect value={docSource} onChange={v => { setDocSource(v); setChapterRef('') }} options={[
                   { value: '', label: '请选择文档...' },
-                  ...docs.map((d: any) => ({ value: d.title || d.id, label: d.title || d.id }))
+                  ...docs.map((d: any) => ({ value: d.id, label: d.title || d.id }))
                 ]} />
               </UDSection>
 
@@ -199,13 +175,13 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
               <UDSection label="章节引用">
                 <UiSelect value={chapterRef} onChange={setChapterRef} options={[
                   { value: '', label: '整篇文档' },
-                  ...chapters.map(c => ({ value: c.text, label: `${'　'.repeat(c.level - 1)}${c.text}` }))
+                  ...chapters.map(c => ({ value: c.id, label: `${'　'.repeat(c.level - 1)}${c.text}` }))
                 ]} />
               </UDSection>
 
               <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px', background: 'var(--bg-code)', borderRadius: 6 }}>
                 <span className="remix ri-information-line" style={{ marginRight: 6 }}></span>
-                内部链接将生成锚点链接，格式为 #章节标题
+                内部链接在应用内跳转：选择其他文档时打开该文档，选择章节时滚动到对应标题
               </div>
             </>
           )}

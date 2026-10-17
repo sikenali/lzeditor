@@ -161,10 +161,6 @@ export interface EditorStoreState {
 export type SettingsGroup = 'theme' | 'ai' | 'profile' | 'about'
 
 export interface SettingsState {
-  provider: string
-  model: string
-  apiKey: string
-  customBaseUrl: string
   temperature: number
   maxTokens: number
   apiKeys: ApiKeyEntry[]
@@ -187,15 +183,12 @@ export interface SettingsState {
   previewModeEnabled?: boolean
   // ── Navigation layout ──
   navMode?: 'top' | 'left'
-  toolbarCollapsed?: boolean
-  toolbarWidth?: number
   statusbarCollapsed?: boolean
   // ── Toolbar ──
   compactToolbar?: boolean
   showToolbarLabels?: boolean
   // ── Startup / app behavior ──
   enableTabs?: boolean
-  saveClipboardOnLaunch?: boolean
   showTrayIcon?: boolean
   reopenLastDoc?: boolean
   openInNewWindow?: boolean
@@ -211,7 +204,6 @@ export interface SettingsState {
   fullwidthSymbols?: boolean
   showLineNumbers?: boolean
   // ── AI Settings (bid-maker style) ──
-  configTab?: 'provider' | 'custom'
   customApiFormat?: 'openai' | 'anthropic'
   customEndpoint?: string
   customModelId?: string
@@ -233,13 +225,6 @@ export interface SettingsState {
   includePageNumbers?: boolean
   paperSize?: string
   orientation?: string
-  syncProvider?: string
-  backupInterval?: string
-  backupKeep?: number
-  devTools?: boolean
-  hardwareAccel?: boolean
-  logLevel?: string
-  stylePreviewMode?: string
 }
 
 export interface ThemeState {

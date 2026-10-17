@@ -1,4 +1,3 @@
-import { mdToHtml } from '../../utils/mdToHtml'
 import React, { useState, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -53,6 +52,7 @@ const TABLE_ITEMS = [
 ]
 
 const MODE_ITEMS = [
+  { icon: 'ri-eye-2-line', label: '分屏预览', action: 'preview' },
   { icon: 'ri-code-s-line', label: '代码模式', action: 'code' },
   { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
 ]
@@ -186,25 +186,7 @@ export const Toolbar: React.FC = () => {
   }, [createDoc])
 
   const handleOpenFile = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.md,.markdown,.txt'
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0]
-      if (!file) return
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        const text = ev.target?.result as string
-        const id = createDoc(file.name.replace(/\.\w+$/, ''), '', undefined)
-        const ed = useEditorStore.getState().editor
-        if (ed) {
-          const html = mdToHtml(text)
-          ed.commands.setContent(html)
-        }
-      }
-      reader.readAsText(file)
-    }
-    input.click()
+    useEditorStore.getState().setOpenPanel('file')
   }
 
   const handleFormatAction = (action: string) => {
@@ -345,6 +327,9 @@ export const Toolbar: React.FC = () => {
   const handleModeAction = (action: string) => {
     setMenuOpen(null)
     switch (action) {
+      case 'preview':
+        setOpenPanel(openPanel === 'preview' ? 'none' : 'preview')
+        break
       case 'code':
         setAppMode('code')
         break
@@ -395,7 +380,7 @@ export const Toolbar: React.FC = () => {
             </button>
             <SubMenu menuKey="preview" items={[
               { icon: 'ri-file-add-line', label: '新建文档', action: 'new' },
-              { icon: 'ri-folder-open-line', label: '打开本地文件', action: 'open' },
+              { icon: 'ri-folder-open-line', label: '打开本地文件 / 模板', action: 'open' },
             ]} onAction={(a) => { if (a === 'new') handleNewFile(); else handleOpenFile(); setMenuOpen(null) }} />
           </div>
           <button className="toolbar-btn" onClick={() => setShowOutline(!showOutline)}>

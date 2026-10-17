@@ -27,12 +27,18 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
   const [apiKey, setApiKey] = useState('')
   const [keyVisible, setKeyVisible] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [testId, setTestId] = useState<string | null>(null)
   const testTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const testTimerRef2 = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    return () => { if (testTimerRef.current) clearTimeout(testTimerRef.current); if (testTimerRef2.current) clearTimeout(testTimerRef2.current) }
+    return () => {
+      if (testTimerRef.current) clearTimeout(testTimerRef.current)
+      if (testTimerRef2.current) clearTimeout(testTimerRef2.current)
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
+    }
   }, [])
   const [testResult, setTestResult] = useState<Record<string, 'success' | 'failed'>>({})
 
@@ -101,6 +107,18 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
       endpoint: customEndpoint || undefined, format: customFormat,
     } : k)
     u('apiKeys', updated); cancelEdit()
+  }
+
+  // 二次确认删除，避免误删
+  const handleDelete = (id: string) => {
+    if (confirmDeleteId === id) {
+      removeApiKey(id)
+      setConfirmDeleteId(null)
+    } else {
+      setConfirmDeleteId(id)
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
+      deleteTimerRef.current = setTimeout(() => setConfirmDeleteId(null), 2500)
+    }
   }
 
   return (
@@ -174,7 +192,7 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
               const isActive = s.selectedModelId === key.id
               const ts = testResult[key.id]
               return (
-                <div key={key.id} className={`api-key-item${isActive ? ' active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: isActive ? 'var(--accent-a10)' : 'var(--bg-code)', borderRadius: 10, border: `1px solid ${isActive ? 'var(--accent-primary)' : 'var(--border-subtle)'}` }}>
+                <div key={key.id} className={`api-key-item${isActive ? ' active' : ''}`} onClick={() => setSelectedModelId(key.id)} title="点击设为当前模型" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', background: isActive ? 'var(--accent-a10)' : 'var(--bg-code)', borderRadius: 10, border: `1px solid ${isActive ? 'var(--accent-primary)' : 'var(--border-subtle)'}` }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-heading)' }}>{key.modelName || key.model}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -191,7 +209,7 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
                         : <span className="remix ri-play-line" style={{ fontSize: 13 }} />}
                     </button>
                     <button className="ai-key-edit-btn" onClick={() => startEdit(key)} title="编辑"><span className="remix ri-edit-line"></span></button>
-                    <button className="ai-key-delete-btn" onClick={() => { if (confirm(`删除 ${key.modelName || key.model}？`)) removeApiKey(key.id) }} title="删除"><span className="remix ri-delete-bin-line"></span></button>
+                    <button className="ai-key-delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(key.id) }} title={confirmDeleteId === key.id ? '再点一次确认删除' : '删除'}>{confirmDeleteId === key.id ? <span style={{ fontSize: 11 }}>确认?</span> : <span className="remix ri-delete-bin-line"></span>}</button>
                     <UiSwitch size="sm" checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
                     {isActive && <span className="remix ri-checkbox-circle-fill" style={{ fontSize: 16, color: 'var(--accent-primary)' }} />}
                   </div>

@@ -74,7 +74,7 @@ function renderShortcutContent(tab: string) {
       <div className="settings-section-title"><span className="remix ri-code-box-line shortcut-section-icon"></span><span>代码块</span></div>
       <div className="shortcut-list">
         {row('代码块', `${mod}+${alt}+C`)}
-        {row('行内代码', `${mod}+E`)}
+        {row('软换行', `${mod}+Enter`)}
         {row('缩进（列表项）', `${alt}+Tab`)}
         {row('取消缩进（列表项）', `${alt}+${shift}+Tab`)}
       </div>

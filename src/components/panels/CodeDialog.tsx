@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import hljs from 'highlight.js'
 import { CODE_THEMES } from '../../styles/code-themes'
+import { useSettingsStore } from '../../store/settingsStore'
 import { UiModal, UiSelect, UiSwitch, UiButton } from '../ui'
 
 const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
@@ -61,7 +62,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   const [language, setLanguage] = useState('python')
   const [code, setCode] = useState(DEFAULTS.python)
   const [themeId, setThemeId] = useState('atom-one-dark')
-  const [macStyle, setMacStyle] = useState(false)
+  const [macStyle, setMacStyle] = useState(useSettingsStore.getState().macCodeBlock || false)
 
   useEffect(() => {
     const link = document.querySelector('link[data-code-dialog-theme]') as HTMLLinkElement | null
@@ -124,8 +125,8 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
             <UDSettingRow icon="ri-code-box-line" label="编程语言" desc="代码高亮语言">
               <UiSelect value={language} onChange={setLanguage} options={LANGUAGES.map(l => ({ value: l, label: l }))} className="code-dialog-lang-select" />
             </UDSettingRow>
-            <UDSettingRow icon="ri-apple-fill" label="Mac 窗口样式" desc="代码块添加红黄绿三点装饰栏">
-              <UiSwitch size="sm" checked={macStyle} onChange={setMacStyle} />
+            <UDSettingRow icon="ri-apple-fill" label="Mac 窗口样式" desc="所有代码块添加红黄绿三点装饰栏">
+              <UiSwitch size="sm" checked={macStyle} onChange={v => { setMacStyle(v); useSettingsStore.getState().updateSetting('macCodeBlock', v) }} />
             </UDSettingRow>
           </UDSection>
 

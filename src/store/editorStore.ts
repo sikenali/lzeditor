@@ -229,6 +229,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       activeLibraryId: doc.libraryId || s.activeLibraryId,
       lastEditTime: Date.now(),
     })
+    try { localStorage.setItem('lzeditor-last-doc', id) } catch {}
   },
    closeDoc: (id: string) => {
     const { docs, activeDocId } = get()
