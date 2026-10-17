@@ -114,29 +114,6 @@
   background: var(--chrome-surface);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.settings-subtab-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 12px; border-radius: 10px;
-  font-size: 14px; color: var(--text-secondary);
-  background: transparent; border: none; cursor: pointer;
-  transition: all 0.15s; letter-spacing: -0.01em; width: 100%; text-align: left;
-}
-.settings-subtab-btn:hover {
-  background: var(--glass-bg-hover);
-  color: var(--glass-text);
-  border-color: var(--glass-border);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15);
-}
-.settings-subtab-btn.active {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
-  color: var(--accent-primary);
-  font-weight: 500;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.18);
-}
-.settings-subtab-btn .subtab-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; opacity: 0.7; }
-
-.settings-nav-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border-subtle); }
 .settings-section:last-child { margin-bottom: 0; }
 
 /* ── msst amber divider ── */
@@ -337,9 +314,6 @@
 .preview-deleted    { background: var(--red-soft); color: var(--red-text); padding: 0 6px; border-radius: 4px; }
 .preview-added      { background: var(--green-soft); color: var(--accent-primary); padding: 0 6px; border-radius: 4px; }
 .preview-selected   { background: var(--danger-bg); color: var(--danger-text); padding: 0 6px; border-radius: 4px; }
-
-.nav-item-icon { font-size: 14px; color: var(--green-accent-soft); width: 18px; text-align: center; }
-.settings-nav-item.active .nav-item-icon { color: var(--accent-primary); }
 
 /* ── Shortcut List ── */
 .shortcut-list { display: flex; flex-direction: column; gap: 8px; }
@@ -1734,14 +1708,6 @@
 .settings-content { min-height: 0; overflow: visible; }
 .settings-section { pointer-events: auto !important; }
 
-/* ── Settings sub-tabs (compact UDSection style) ── */
-.settings-subtabs .ud-section-label {
-  display: none;
-}
-.settings-subtabs .ud-section-content {
-  padding: 0;
-}
-
 /* ═══════════════════════════════════════════
    Panel Container — 统一窗口大小，切换标签不变
    ═══════════════════════════════════════════ */
@@ -1971,4 +1937,169 @@
   font-size: 14px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* ═══════════════════════════════════════════
+   Settings shell (DESIGN.md §3) — left nav + right sub-tabs + section cards
+══════════════════════════════════════════════ */
+.settings-shell {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.settings-nav {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--color-bg-white);
+  border: 0.7px solid var(--color-border-soft);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 52px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.settings-nav-item:hover:not(.active) { background: var(--color-bg-secondary); }
+.settings-nav-item.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.settings-nav-icon {
+  font-size: 20px;
+  color: var(--color-text-body);
+  flex-shrink: 0;
+}
+.settings-nav-item.active .settings-nav-icon { color: var(--color-primary); }
+
+.settings-nav-text { display: flex; flex-direction: column; min-width: 0; }
+.settings-nav-title {
+  font-size: 15px;
+  color: var(--color-text-body);
+  line-height: 1.3;
+}
+.settings-nav-item.active .settings-nav-title {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+.settings-nav-sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-nav-item.active .settings-nav-sub {
+  color: var(--color-primary);
+  opacity: 0.72;
+}
+
+.settings-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-bg-white);
+  border: 0.7px solid var(--color-border-soft);
+  border-radius: 12px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.settings-subtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.settings-subtab .remix { font-size: 15px; }
+.settings-subtab:hover:not(.active) {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+.settings-subtab.active {
+  background: var(--color-bg-secondary);
+  color: var(--color-primary);
+  font-weight: 500;
+  box-shadow: var(--shadow-xs);
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0;
+  font-size: 15px;
+}
+.settings-content .settings-section { margin-bottom: 0; }
+
+/* Section card chrome (DESIGN.md) */
+.settings-section {
+  background: var(--color-bg-white);
+  border: 0.7px solid var(--color-border-soft);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: var(--shadow-xs);
+}
+.settings-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.settings-section-title > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-section-desc {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
 }

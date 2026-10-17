@@ -17,10 +17,11 @@ export interface UiSelectProps {
   size?: 'sm' | 'md'
   disabled?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 export const UiSelect: React.FC<UiSelectProps> = ({
-  value, onChange, options, placeholder = '请选择', size = 'md', disabled, className,
+  value, onChange, options, placeholder = '请选择', size = 'md', disabled, className, style,
 }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -42,7 +43,7 @@ export const UiSelect: React.FC<UiSelectProps> = ({
 
   return (
     <div className={`ui-select${size === 'sm' ? ' ui-select--sm' : ''}${className ? ` ${className}` : ''}`}
-      ref={ref}>
+      ref={ref} style={style}>
       <button type="button" className="ui-select-trigger" disabled={disabled}
         onClick={() => setOpen(o => !o)}>
         <span className={selected ? 'ui-select-label' : 'ui-select-label ui-select-placeholder'}>

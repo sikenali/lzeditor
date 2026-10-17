@@ -158,7 +158,7 @@ export interface EditorStoreState {
   updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => void
 }
 
-export type SettingsGroup = 'theme' | 'editor' | 'app' | 'ai' | 'shortcut' | 'export' | 'sync' | 'advanced' | 'about'
+export type SettingsGroup = 'theme' | 'ai' | 'profile' | 'about'
 
 export interface SettingsState {
   provider: string

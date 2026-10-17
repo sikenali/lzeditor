@@ -5,58 +5,41 @@ import { PROVIDERS, getProvider } from '../../services/aiProvider'
 import type { AIModel, SettingsGroup, ApiKeyEntry } from '../../shared/types'
 import { TYPOGRAPHY_THEMES, applyTypographyTheme } from '../../styles/typography-themes'
 import { CODE_THEMES, getCodeTheme } from '../../styles/code-themes'
-import { LFSInput } from '../../components/ui/LFInput'
-import { SelectBox } from '../../components/ui/SelectBox'
-import { Switch } from '@heroui/react'
-import { UDSettingRow, UDSection } from '../../components/ui/PanelContainer'
-import { PanelContainer } from '../../components/ui/PanelContainer'
+import { UiModal, UiSwitch, UiSelect, UiInput, UiButton, UDSection, UDSettingRow } from '../../components/ui'
 
 
-/* ── Nav categories ── */
-const NAV_ITEMS: { id: SettingsGroup; label: string; desc: string; icon: string }[] = [
-  { id: 'theme',     label: '主题设置', desc: '界面、内容与强调色', icon: 'ri-palette-fill' },
-  { id: 'editor',    label: '编辑设置', desc: '编辑器行为与本地化', icon: 'ri-edit-2-fill' },
-  { id: 'app',       label: '应用设置', desc: '启动、窗口与系统行为', icon: 'ri-window-line' },
-  { id: 'ai',        label: 'AI 设置',  desc: '模型供应商与连接', icon: 'ri-openai-fill' },
-  { id: 'shortcut',  label: '快捷键设置', desc: '文档、编辑与应用操作', icon: 'ri-keyboard-fill' },
-  { id: 'sync',      label: '同步备份', desc: '网络与 NAS 备份', icon: 'ri-refresh-line' },
-  { id: 'about',     label: '关于',     desc: '版本与项目信息', icon: 'ri-information-fill' },
-]
 type SubTab = { id: string; label: string; icon: string }
 
-/* ── Sub-tab definitions per category ── */
-const THEME_SUBS: SubTab[] = [
-  { id: 'mode',          label: '界面主题', icon: 'ri-sun-fill' },
-  { id: 'typography',    label: '内容样式', icon: 'ri-font-size' },
-  { id: 'accent',        label: '强调色', icon: 'ri-circle-fill' },
-]
-const EDITOR_SUBS: SubTab[] = [
-  { id: 'general',   label: '通用设置', icon: 'ri-settings-3-line' },
-  { id: 'local',     label: '本地化',   icon: 'ri-translate-2' },
-  { id: 'mode',      label: '编辑模式', icon: 'ri-edit-2-line' },
-  { id: 'layout',    label: '导航布局', icon: 'ri-layout-top-fill' },
-]
-const AI_SUBS: SubTab[] = [
-  { id: 'keys',    label: '模型制造商', icon: 'ri-key-line' },
-  { id: 'add',     label: '自定义配置', icon: 'ri-add-circle-line' },
-]
-
-const SHORTCUT_SUBS: SubTab[] = [
-  { id: 'doc',       label: '文档操作', icon: 'ri-file-lines-line' },
-  { id: 'edit',      label: '编辑操作', icon: 'ri-text-spacing' },
-  { id: 'common',    label: '常规操作', icon: 'ri-list-check' },
-  { id: 'heading',   label: '标题与段落', icon: 'ri-h-1' },
-  { id: 'code',      label: '代码块', icon: 'ri-code-box-line' },
-  { id: 'system',    label: '系统级',   icon: 'ri-apps-line' },
-]
-
-const APP_SUBS: SubTab[] = [
-  { id: 'behavior',  label: '应用行为', icon: 'ri-apps-line' },
-]
-
-const SYNC_SUBS: SubTab[] = [
-  { id: 'net',       label: '网络备份', icon: 'ri-cloud-line' },
-  { id: 'nas',       label: 'NAS备份',  icon: 'ri-hard-drive-2-line' },
+/* ── Top-level nav groups + their sub-tabs ── */
+const NAV_GROUPS: { id: SettingsGroup; label: string; desc: string; icon: string; subs: SubTab[] }[] = [
+  {
+    id: 'theme', label: '主题设置', desc: '界面主题、内容与强调色', icon: 'ri-palette-fill',
+    subs: [
+      { id: 'mode',       label: '界面主题', icon: 'ri-sun-fill' },
+      { id: 'typography', label: '内容样式', icon: 'ri-font-size' },
+      { id: 'accent',     label: '强调色',   icon: 'ri-circle-fill' },
+      { id: 'layout',     label: '导航布局', icon: 'ri-layout-top-fill' },
+    ],
+  },
+  {
+    id: 'ai', label: '模型管理', desc: '模型供应商与密钥', icon: 'ri-openai-fill',
+    subs: [
+      { id: 'keys', label: '模型制造商', icon: 'ri-key-line' },
+      { id: 'add',  label: '自定义配置', icon: 'ri-add-circle-line' },
+    ],
+  },
+  {
+    id: 'profile', label: '个性设置', desc: '内容、编辑与应用偏好', icon: 'ri-edit-2-fill',
+    subs: [
+      { id: 'content',  label: '内容样式',   icon: 'ri-font-size' },
+      { id: 'editor',   label: '编辑设置',   icon: 'ri-edit-2-line' },
+      { id: 'app',      label: '应用行为',   icon: 'ri-apps-line' },
+      { id: 'shortcut', label: '快捷键设置', icon: 'ri-keyboard-fill' },
+    ],
+  },
+  {
+    id: 'about', label: '关于', desc: '版本与项目信息', icon: 'ri-information-fill', subs: [],
+  },
 ]
 
 const TOP_PROVIDERS: (AIModel & { icon: string; color: string })[] = [
@@ -98,109 +81,117 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const settings = useSettingsStore(s => s)
   const updateSetting = useSettingsStore(s => s.updateSetting)
 
-  const subs: SubTab[] = activeGroup === 'theme'     ? THEME_SUBS
-              : activeGroup === 'editor'    ? EDITOR_SUBS
-              : activeGroup === 'app'       ? APP_SUBS
-              : activeGroup === 'ai'        ? AI_SUBS
-              : activeGroup === 'shortcut'  ? SHORTCUT_SUBS
-              : activeGroup === 'sync'      ? SYNC_SUBS
-              : []
+  const group = NAV_GROUPS.find(g => g.id === activeGroup) ?? NAV_GROUPS[0]
+  const subs = group.subs
 
-  // Set subTab to first tab on mount, or when switching categories
+  // Set subTab to the first tab on mount, or when switching categories
   const mountedRef = useRef(false)
   useEffect(() => {
     if (!mountedRef.current) {
-      // First mount: set to first tab of current group
       mountedRef.current = true
       if (subs.length) setSubTab(subs[0].id)
       return
     }
-    // Switching category: reset to first tab
     setSubTab(subs[0]?.id ?? '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGroup])
+
   const handleSave = () => {
     saveSettingsToStorage(settings)
     onClose()
   }
-  const handleReset = () => {
-    useSettingsStore.setState({ ...DEFAULT_SETTINGS })
-    setActiveGroup('theme'); setSubTab('mode')
-  }
-
-  const currentProvider = getProvider(settings.provider)
-  const models: AIModel[] = currentProvider?.models || []
-  const activeSubIndex = Math.max(0, subs.findIndex(t => t.id === subTab))
 
   const leftNav = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {NAV_ITEMS.map((item, i) => (
-        <React.Fragment key={item.id}>
-          {i > 0 && i === 6 && <div className="ud-chip-sep" />}
-          <button className={`ud-chip${activeGroup === item.id ? ' active' : ''}`}
-            onClick={() => { setActiveGroup(item.id); setSubTab(subs[0]?.id ?? '') }}>
-            <span className={`remix ud-chip-icon ${item.icon}`}></span>
-            <div><div className="ud-chip-label">{item.label}</div><div className="ud-chip-desc">{item.desc}</div></div>
-          </button>
-        </React.Fragment>
+    <div className="settings-nav">
+      {NAV_GROUPS.map(item => (
+        <button
+          key={item.id}
+          className={`settings-nav-item${activeGroup === item.id ? ' active' : ''}`}
+          onClick={() => { setActiveGroup(item.id); setSubTab(item.subs[0]?.id ?? '') }}
+        >
+          <span className={`remix settings-nav-icon ${item.icon}`}></span>
+          <div className="settings-nav-text">
+            <div className="settings-nav-title">{item.label}</div>
+            <div className="settings-nav-sub">{item.desc}</div>
+          </div>
+        </button>
       ))}
     </div>
   )
 
-  const rightTop = activeGroup !== 'about' ? (
-    <UDSection label="">
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${subs.length}, 1fr)`, gap: 8 }}>
-        {subs.map((tab, i) => (
-          <button
-            key={tab.id}
-            className={`ud-btn${subTab === tab.id ? ' ud-btn--primary' : ''}`}
-            onClick={() => setSubTab(tab.id)}
-            style={{ flexDirection: 'column', gap: 6, padding: '14px 10px', justifyContent: 'center' }}
-          >
-            <span className={`remix ${tab.icon}`} style={{ fontSize: 18 }}></span>
-            <span style={{ fontSize: 12 }}>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-    </UDSection>
+  const rightTop = subs.length > 1 ? (
+    <div className="settings-subtabs">
+      {subs.map(tab => (
+        <button
+          key={tab.id}
+          className={`settings-subtab${subTab === tab.id ? ' active' : ''}`}
+          onClick={() => setSubTab(tab.id)}
+        >
+          <span className={`remix ${tab.icon}`}></span>
+          <span>{tab.label}</span>
+        </button>
+      ))}
+    </div>
   ) : null
 
   const settingsContent = (
-    <>
-      <div className="settings-content">
-        {activeGroup === 'theme' && renderThemeContent(subTab, settings, updateSetting)}
-        {activeGroup === 'editor' && renderEditorContent(subTab, settings, updateSetting)}
-        {activeGroup === 'app'     && renderAppSettings(settings, updateSetting)}
-        {activeGroup === 'shortcut' && renderShortcutContent(subTab)}
-        {activeGroup === 'sync'    && renderSyncContent(subTab, settings, updateSetting)}
-        {activeGroup === 'about'   && renderAboutSection()}
-        <AISettings activeGroup={activeGroup} subTab={subTab} />
-      </div>
-    </>
+    <div className="settings-content">
+      {group.id === 'theme'   && renderThemeContent(subTab, settings, updateSetting)}
+      {group.id === 'profile' && renderProfileContent(subTab, settings, updateSetting)}
+      {group.id === 'about'   && renderAboutSection()}
+      <AISettings activeGroup={activeGroup} subTab={subTab} />
+    </div>
   )
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
-      icon="ri-settings-3-fill"
-      title="设置"
-      subtitle={`${NAV_ITEMS.find(g => g.id === activeGroup)?.label}${activeGroup !== 'about' && subs.length ? ` · ${subs.find(t => t.id === subTab)?.label}` : ''}`}
+      icon="ri-settings-3-line"
+      title="设置中心"
+      radius={16}
+      width="1320px"
+      closeOnOverlay={false}
+      subtitle={`${group.label}${group.subs.length ? ` · ${group.subs.find(t => t.id === subTab)?.label ?? ''}` : ''}`}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleSave}>保存</button>
-        </div>
+        <>
+          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton onClick={handleSave}>保存</UiButton>
+        </>
       }
-      size="lg"
     >
-      <div className="ud-body ud-body-split">
-        <div className="ud-left">{leftNav}</div>
-        <div className="ud-right">
-          {rightTop && <div className="ud-right-top">{rightTop}</div>}
-          <div className="ud-right-content">{settingsContent}</div>
+      <div className="settings-shell">
+        {leftNav}
+        <div className="settings-panel">
+          {rightTop}
+          {settingsContent}
         </div>
       </div>
-    </PanelContainer>
+    </UiModal>
   )
+}
+
+/* ═══════════════════════════════════════════
+   PROFILE — 内容样式 / 编辑设置 / 应用行为 / 快捷键设置
+═══════════════════════════════════════════════ */
+function renderProfileContent(tab: string, s: any, u: any) {
+  if (tab === 'content')  return renderThemeContent('typography', s, u)
+  if (tab === 'editor')   return (
+    <>
+      {renderGeneralSection(s, u)}
+      {renderLocalizationSection(s, u)}
+      {renderEditModeSection(s, u)}
+    </>
+  )
+  if (tab === 'app')      return renderAppSettings(s, u)
+  if (tab === 'shortcut') return (
+    <>
+      {['doc', 'edit', 'common', 'heading', 'code', 'system'].map(t => (
+        <div key={t} className="settings-section">{renderShortcutContent(t)}</div>
+      ))}
+    </>
+  )
+  return renderGeneralSection(s, u)
 }
 
 /* ═══════════════════════════════════════════
@@ -219,9 +210,8 @@ function renderThemeContent(tab: string, s: any, u: any) {
       </div>
       <div className="theme-mode-grid">
         {([
-          { id: 'light', label: '浅色', icon: 'ri-sun-fill' },
-          { id: 'dark',  label: '深色', icon: 'ri-moon-fill' },
-          { id: 'system',label: '跟随系统', icon: 'ri-laptop-fill' },
+          { id: 'parchment', label: '浅色', icon: 'ri-sun-fill' },
+          { id: 'dark',      label: '深色', icon: 'ri-moon-fill' },
         ] as const).map(m => (
           <button key={m.id} className={`theme-mode-card ${theme === m.id ? 'active' : ''}`} onClick={() => update('theme', m.id)}>
             <span className={`remix theme-mode-icon ${m.icon}`}></span>
@@ -264,6 +254,8 @@ function renderThemeContent(tab: string, s: any, u: any) {
       </div>
     )
   }
+
+  if (tab === 'layout') return renderNavModeContent(s, u)
 
   return (
     <div className="settings-section">
@@ -378,14 +370,6 @@ function renderNavModeContent(s: any, u: any) {
 /* ═══════════════════════════════════════════
    EDITOR
 ═══════════════════════════════════════════ */
-function renderEditorContent(tab: string, s: any, u: any) {
-  if (tab === 'general') return renderGeneralSection(s, u)
-  if (tab === 'local')   return renderLocalizationSection(s, u)
-  if (tab === 'mode')    return renderEditModeSection(s, u)
-  if (tab === 'layout')  return renderNavModeContent(s, u)
-  return renderEditModeSection(s, u)
-}
-
 function renderGeneralSection(s: any, u: any) {
   return (
     <>
@@ -393,7 +377,7 @@ function renderGeneralSection(s: any, u: any) {
         <div className="settings-section-title"><span>排版</span><span className="settings-section-desc">字体、字号与行距</span></div>
         <div className="setting-row" style={{ marginBottom: 16 }}>
           <div className="setting-label"><span>默认字体</span><span className="setting-hint">编辑区默认字体族</span></div>
-          <SelectBox value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
+          <UiSelect value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
         </div>
         <div className="setting-row" style={{ marginBottom: 16 }}>
           <div className="setting-label"><span>默认字号</span><span className="setting-hint">编辑区默认字体大小</span></div>
@@ -425,21 +409,21 @@ function renderGeneralSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>段落排版</span><span className="settings-section-desc">首行缩进与对齐方式</span></div>
         <UDSettingRow icon="ri-text-spacing" label="首行缩进" desc="每个段落首行缩进两个字符">
-        <Switch size="sm" isSelected={ s.textIndent || false } onValueChange={ v => u('textIndent', v) } />
+        <UiSwitch size="sm" checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-align-justify" label="两端对齐" desc="段落文字左右两端对齐">
-        <Switch size="sm" isSelected={ s.textJustify || false } onValueChange={ v => u('textJustify', v) } />
+        <UiSwitch size="sm" checked={ s.textJustify || false } onChange={ v => u('textJustify', v) } />
       </UDSettingRow>
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
         <UDSettingRow icon="ri-apps-2-fill" label="显示所有工具栏按钮" desc="关闭后精简为：格式、图片、链接、表格、插入；右侧隐藏 AI">
-        <Switch size="sm" isSelected={ !s.compactToolbar } onValueChange={ v => u('compactToolbar', !v) } />
+        <UiSwitch size="sm" checked={ !s.compactToolbar } onChange={ v => u('compactToolbar', !v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="在图标下方显示文字标签">
-        <Switch size="sm" isSelected={ s.showToolbarLabels !== false } onValueChange={ v => u('showToolbarLabels', v) } />
+        <UiSwitch size="sm" checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
       </UDSettingRow>
       </div>
     </>
@@ -451,27 +435,27 @@ function renderAppSettings(s: any, u: any) {
     <div className="settings-section">
       <div className="settings-section-title"><span>启动行为</span><span className="settings-section-desc">应用启动与窗口管理</span></div>
       <UDSettingRow icon="ri-window-fill" label="启动标签页" desc="应用启动时显示多文档标签栏">
-        <Switch size="sm" isSelected={ s.enableTabs !== false } onValueChange={ v => u('enableTabs', v) } />
+        <UiSwitch size="sm" checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-clipboard-fill" label="启动保存剪切板内容" desc="每次启动时自动保存当前剪切板内容">
-        <Switch size="sm" isSelected={ s.saveClipboardOnLaunch || false } onValueChange={ v => u('saveClipboardOnLaunch', v) } />
+        <UiSwitch size="sm" checked={ s.saveClipboardOnLaunch || false } onChange={ v => u('saveClipboardOnLaunch', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-notification-3-line" label="显示托盘图标" desc="在系统托盘显示应用图标">
-        <Switch size="sm" isSelected={ s.showTrayIcon !== false } onValueChange={ v => u('showTrayIcon', v) } />
+        <UiSwitch size="sm" checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-file-list-3-fill" label="下次启动时自动打开最后编辑的文档" desc="记住上次编辑的文档，下次启动自动打开">
-        <Switch size="sm" isSelected={ s.reopenLastDoc !== false } onValueChange={ v => u('reopenLastDoc', v) } />
+        <UiSwitch size="sm" checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
         <UDSettingRow icon="ri-window-line" label="从文件资源管理器打开文档时总在新窗口中打开" desc="双击文件总是在新窗口中打开">
-        <Switch size="sm" isSelected={ s.openInNewWindow || false } onValueChange={ v => u('openInNewWindow', v) } />
+        <UiSwitch size="sm" checked={ s.openInNewWindow || false } onChange={ v => u('openInNewWindow', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <UDSettingRow icon="ri-close-circle-fill" label="当所有窗口关闭时退出应用程序" desc="关闭最后一个窗口后完全退出应用">
-        <Switch size="sm" isSelected={ s.quitWhenAllWindowsClosed !== false } onValueChange={ v => u('quitWhenAllWindowsClosed', v) } />
+        <UiSwitch size="sm" checked={ s.quitWhenAllWindowsClosed !== false } onChange={ v => u('quitWhenAllWindowsClosed', v) } />
       </UDSettingRow>
     </div>
   )
@@ -483,43 +467,43 @@ function renderLocalizationSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>拼写检查</span><span className="settings-section-desc">文字输入辅助</span></div>
         <UDSettingRow icon="ri-spell-check-line" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
-        <Switch size="sm" isSelected={ s.enableSpellCheck !== false } onValueChange={ v => u('enableSpellCheck', v) } />
+        <UiSwitch size="sm" checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
       </UDSettingRow>
         <div style={{ padding: '8px 0 0 44px', marginBottom: 8 }}>
           <div className="setting-row" style={{ marginBottom: 0 }}>
             <div className="setting-label" style={{ minWidth: 80 }}><span>检查语言</span></div>
-            <SelectBox value={s.spellCheckLang || 'zh-CN'} onChange={v => u('spellCheckLang', v)} options={SPELL_CHECK_LANGS.map(l => ({ value: l.value, label: l.label }))} style={{ maxWidth: 200 }} />
+            <UiSelect value={s.spellCheckLang || 'zh-CN'} onChange={v => u('spellCheckLang', v)} options={SPELL_CHECK_LANGS.map(l => ({ value: l.value, label: l.label }))} style={{ maxWidth: 200 }} />
           </div>
         </div>
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>Markdown 快捷符号</span><span className="settings-section-desc">自动格式化与补全</span></div>
         <UDSettingRow icon="ri-asterisk" label="允许使用符号键 (* _ + ~ = 和 `) 设置选中的文本的格式" desc="选中文字后按 * 加粗、_ 斜体等">
-        <Switch size="sm" isSelected={ s.allowMarkdownSymbols !== false } onValueChange={ v => u('allowMarkdownSymbols', v) } />
+        <UiSwitch size="sm" checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-braces-fill" label="自动补完 Markdown 符号对" desc="输入 ( 时自动补全 )，输入 「 时自动补全 」 等">
-        <Switch size="sm" isSelected={ s.autoCompleteMarkdownPairs !== false } onValueChange={ v => u('autoCompleteMarkdownPairs', v) } />
+        <UiSwitch size="sm" checked={ s.autoCompleteMarkdownPairs !== false } onChange={ v => u('autoCompleteMarkdownPairs', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-double-quotes-l" label="自动替换引号为智能引号（即双引号和单引号）" desc="英文弯引号，提升可读性">
-           <Switch size="sm" isSelected={s.smartQuotes !== false} onValueChange={v => u('smartQuotes', v)} />
+           <UiSwitch size="sm" checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-language-fill" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
-        <Switch size="sm" isSelected={ s.autoSpaceCJK !== false } onValueChange={ v => u('autoSpaceCJK', v) } />
+        <UiSwitch size="sm" checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
          <UDSettingRow icon="ri-double-quotes-r" label={'自动替换引号为直角引号（即「」和『』）'} desc={'将 "" 替换为 「」，将 \'\' 替换为 『』'}>
-           <Switch size="sm" isSelected={s.cornerQuotes || false} onValueChange={v => u('cornerQuotes', v)} />
+           <UiSwitch size="sm" checked={s.cornerQuotes || false} onChange={v => u('cornerQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
         <UDSettingRow icon="ri-translate-2" label="自动替换半角符号为全角符号（仅限，、;符号）" desc="将半角 , 和 ; 替换为全角 ，和 ；">
-        <Switch size="sm" isSelected={ s.fullwidthSymbols || false } onValueChange={ v => u('fullwidthSymbols', v) } />
+        <UiSwitch size="sm" checked={ s.fullwidthSymbols || false } onChange={ v => u('fullwidthSymbols', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-list-ordered" label="显示行号" desc="在编辑器左侧显示行号">
-        <Switch size="sm" isSelected={ s.showLineNumbers || false } onValueChange={ v => u('showLineNumbers', v) } />
+        <UiSwitch size="sm" checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
       </UDSettingRow>
        </div>
     </>
@@ -532,23 +516,23 @@ function renderEditModeSection(s: any, u: any) {
       <div className="settings-section">
         <div className="settings-section-title"><span>编辑模式</span><span className="settings-section-desc">编辑器功能开关</span></div>
         <UDSettingRow icon="ri-markdown-fill" label="Markdown 标记常显" desc="始终显示 ### 与列表符号">
-        <Switch size="sm" isSelected={ s.showMarkdownMarkers !== false } onValueChange={ v => u('showMarkdownMarkers', v) } />
+        <UiSwitch size="sm" checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
          <UDSettingRow icon="ri-diff" label="快照差异高亮" desc="红底为删除、绿底为新增">
-        <Switch size="sm" isSelected={ s.showDiffHighlight !== false } onValueChange={ v => u('showDiffHighlight', v) } />
+        <UiSwitch size="sm" checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
         <UDSettingRow icon="ri-cursor-fill" label="打字机模式" desc="光标始终居中垂直位置">
-        <Switch size="sm" isSelected={ s.typewriterMode || false } onValueChange={ v => u('typewriterMode', v) } />
+        <UiSwitch size="sm" checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
          <UDSettingRow icon="ri-focus-2" label="专注模式" desc="仅高亮当前段落，其余淡化">
-        <Switch size="sm" isSelected={ s.focusMode || false } onValueChange={ v => u('focusMode', v) } />
+        <UiSwitch size="sm" checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
           <UDSettingRow icon="ri-eye-line" label="预览模式" desc="编辑模式与代码模式下默认显示右侧预览">
-            <Switch size="sm" isSelected={s.previewModeEnabled !== false} onValueChange={v => {
+            <UiSwitch size="sm" checked={s.previewModeEnabled !== false} onChange={v => {
               u('previewModeEnabled', v)
               useEditorStore.getState().setShowPreview(v)
             }} />
@@ -671,12 +655,12 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
           <div className="settings-section-title"><span>预设服务商</span><span className="settings-section-desc">从预设列表中快速添加 API Key</span></div>
           <div className="setting-row">
             <div className="setting-label"><span>服务商</span></div>
-            <SelectBox value={selectedProvider} onChange={v => { setSelectedProvider(v); setSelectedModel('') }} options={PROVIDER_NAMES.map(p => ({ value: p, label: p }))} style={{ flex: 1, maxWidth: 300 }} />
+            <UiSelect value={selectedProvider} onChange={v => { setSelectedProvider(v); setSelectedModel('') }} options={PROVIDER_NAMES.map(p => ({ value: p, label: p }))} style={{ flex: 1, maxWidth: 300 }} />
           </div>
           {selectedProvider && (
             <div className="setting-row">
               <div className="setting-label"><span>模型</span></div>
-              <SelectBox value={selectedModel} onChange={setSelectedModel} options={currentModels.map(m => ({ value: m, label: m }))} style={{ flex: 1, maxWidth: 300 }} />
+              <UiSelect value={selectedModel} onChange={setSelectedModel} options={currentModels.map(m => ({ value: m, label: m }))} style={{ flex: 1, maxWidth: 300 }} />
             </div>
           )}
         </div>
@@ -752,7 +736,7 @@ const AISettings: React.FC<{ activeGroup: SettingsGroup; subTab: string }> = ({ 
                     </button>
                     <button className="ai-key-edit-btn" onClick={() => startEdit(key)} title="编辑"><span className="remix ri-edit-line"></span></button>
                     <button className="ai-key-delete-btn" onClick={() => { if (confirm(`删除 ${key.modelName || key.model}？`)) removeApiKey(key.id) }} title="删除"><span className="remix ri-delete-bin-line"></span></button>
-                    <Switch size="sm" isSelected={key.enabled} onValueChange={() => toggleApiKey(key.id)} />
+                    <UiSwitch size="sm" checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
                     {isActive && <span className="remix ri-checkbox-circle-fill" style={{ fontSize: 16, color: 'var(--accent-primary)' }} />}
                   </div>
                 </div>
@@ -865,61 +849,7 @@ function renderShortcutContent(tab: string) {
   )
 }
 
-/* ═══════════════════════════════════════════
-   SYNC
-═══════════════════════════════════════════ */
-function renderSyncContent(tab: string, s: any, u: any) {
-  if (tab === 'net') return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>网络备份</span><span className="settings-section-desc">GitHub / Gitee 远程同步</span></div>
-      <div className="sync-provider-grid">
-        {[
-          { id: 'github',  name: 'GitHub',  desc: '全球最大的代码托管平台', icon: 'ri-github-fill' },
-          { id: 'gitee',   name: 'Gitee',   desc: '国内最大的代码托管平台', icon: 'ri-git-merge-line' },
-        ].map(p => (
-          <div key={p.id} className={`sync-provider-card ${s.syncProvider === p.id ? 'selected' : ''}`} onClick={() => u('syncProvider', p.id)}>
-            <div className="sync-provider-icon"><span className={`remix ${p.icon}`}></span></div>
-            <div className="sync-provider-info">
-              <div className="sync-provider-name">{p.name}</div>
-              <div className="sync-provider-desc">{p.desc}</div>
-            </div>
-            <div className={`sync-status-dot ${s.syncProvider === p.id ? 'connected' : ''}`} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
 
-  return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>NAS 备份</span><span className="settings-section-desc">WebDAV / 挂载网盘</span></div>
-      <div className="sync-provider-grid">
-        {[
-          { id: 'webdav',  name: 'WebDAV',    desc: '自定义 WebDAV 服务器', icon: 'ri-webcam-fill' },
-          { id: 'dav',     name: '挂载网盘',   desc: '通过 WebDAV 挂载云盘', icon: 'ri-cloud-fill' },
-        ].map(p => (
-          <div key={p.id} className={`sync-provider-card ${s.syncProvider === p.id ? 'selected' : ''}`} onClick={() => u('syncProvider', p.id)}>
-            <div className="sync-provider-icon"><span className={`remix ${p.icon}`}></span></div>
-            <div className="sync-provider-info">
-              <div className="sync-provider-name">{p.name}</div>
-              <div className="sync-provider-desc">{p.desc}</div>
-            </div>
-            <div className={`sync-status-dot ${s.syncProvider === p.id ? 'connected' : ''}`} />
-          </div>
-        ))}
-      </div>
-      <div className="setting-divider" style={{ margin: '16px 0' }} />
-      <div className="setting-row">
-        <div className="setting-label"><span>自动备份间隔</span><span className="setting-hint">每隔多久自动保存快照</span></div>
-        <SelectBox value={s.backupInterval || '30s'} onChange={v => u('backupInterval', v)} options={[{ value: '30s', label: '30 秒' }, { value: '1m', label: '1 分钟' }, { value: '5m', label: '5 分钟' }, { value: '10m', label: '10 分钟' }]} />
-      </div>
-      <div className="setting-row">
-        <div className="setting-label"><span>备份保留数量</span><span className="setting-hint">最多保留的历史快照数</span></div>
-        <LFSInput type="number" value={s.backupKeep || 50} onChange={v => u('backupKeep', parseInt(v) || 50)} style={{ width: 100 }} />
-      </div>
-    </div>
-  )
-}
 
 /* ═══════════════════════════════════════════
    ABOUT
