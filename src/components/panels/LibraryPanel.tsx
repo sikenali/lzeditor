@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { PanelContainer, UDSection } from '../ui/PanelContainer'
+import { UiModal, UDSection } from '../ui'
 import { LibraryTree, buildTree } from './LibraryTree'
 import { ImportButtons, CATEGORIES } from './ImportButtons'
 
@@ -217,7 +217,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     )
   }
 
-  // Dialog mode - now using PanelContainer instead of UnifiedDialog
   const leftNav = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {CATEGORIES.map(cat => (
@@ -278,13 +277,14 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   )
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={handleClose}
       icon="ri-archive-2-line"
       title="文档库"
       subtitle={CATEGORIES.find(c => c.id === category)?.label || '文档库'}
       footer={footer}
-      size="lg"
+      width={900}
     >
       <div className="ud-body ud-body-split">
         <div className="ud-left">{leftNav}</div>
@@ -292,6 +292,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
           <div className="ud-right-content">{rightContent}</div>
         </div>
       </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

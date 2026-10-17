@@ -4,9 +4,7 @@ import { exportDocument } from '../../services/exportService'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { mdToHtml } from '../../utils/mdToHtml'
-import { PanelContainer, UDSection, UDSettingRow, UDPreviewCard } from '../ui/PanelContainer'
-import { SelectBox } from '../ui/SelectBox'
-import { Switch } from '@heroui/react'
+import { UDSection, UDSettingRow, UDPreviewCard, UiModal, UiSelect, UiSwitch } from '../ui'
 import { getDocMd } from '../../utils/docSource'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
@@ -132,13 +130,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           <UDSection label="样式选项">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <UDSettingRow icon="ri-menu-fill" label="包含目录" desc="在文档开头插入目录">
-                <Switch size="sm" isSelected={includeTOC !== false} onValueChange={v => updateSetting('includeTOC', v)} />
+                <UiSwitch size="sm" checked={includeTOC !== false} onChange={v => updateSetting('includeTOC', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-number-1" label="代码行号" desc="导出代码块时显示行号">
-                <Switch size="sm" isSelected={includeLineNumbers || false} onValueChange={v => updateSetting('includeLineNumbers', v)} />
+                <UiSwitch size="sm" checked={includeLineNumbers || false} onChange={v => updateSetting('includeLineNumbers', v)} />
               </UDSettingRow>
               <UDSettingRow icon="ri-numbers-fill" label="页码" desc="为每页添加页码">
-                <Switch size="sm" isSelected={includePageNumbers || false} onValueChange={v => updateSetting('includePageNumbers', v)} />
+                <UiSwitch size="sm" checked={includePageNumbers || false} onChange={v => updateSetting('includePageNumbers', v)} />
               </UDSettingRow>
             </div>
           </UDSection>
@@ -146,11 +144,15 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>纸张</div>
-                <SelectBox value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.value, label: p.label }))} style={{ minWidth: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <UiSelect value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.value, label: p.label }))} />
+                </div>
               </div>
               <div style={{ flex: 1 }}>
                 <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>方向</div>
-                <SelectBox value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.value, label: o.label }))} style={{ minWidth: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <UiSelect value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.value, label: o.label }))} />
+                </div>
               </div>
             </div>
           </UDSection>
@@ -171,11 +173,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   )
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-download-2-line"
       title="导出文档"
       subtitle="选择左侧的文件类型导出文件"
+      width={900}
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
@@ -184,7 +188,6 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           </button>
         </div>
       }
-      size="lg"
     >
       <div className="ud-body ud-body-split">
         <div className="ud-left">{leftNav}</div>
@@ -193,6 +196,6 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           <div className="ud-right-content">{previewContent}</div>
         </div>
       </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { LFSInput } from '../ui/LFInput'
-import { PanelContainer, UDSection } from '../ui/PanelContainer'
+import { UiModal, UiInput, UDSection } from '../ui'
 
 const FILE_TEMPLATES = [
   { id: 'blank', name: '空白文档', desc: '从头开始', icon: 'ri-file-line' },
@@ -67,7 +66,7 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const rightContent = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <UDSection label="搜索">
-        <LFSInput value={searchText} onChange={setSearchText} placeholder="搜索模板…" />
+        <UiInput value={searchText} onChange={setSearchText} placeholder="搜索模板…" />
       </UDSection>
       <UDSection label="快速打开">
         <button className="ud-btn" onClick={handleOpen} style={{ width: '100%', justifyContent: 'center' }}>
@@ -78,12 +77,13 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   )
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-file-list-2-line"
       title="文件"
       subtitle="新建或打开文档"
-      size="md"
+      width={900}
     >
       <div className="ud-body ud-body-split">
         <div className="ud-left">{leftNav}</div>
@@ -91,6 +91,6 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="ud-right-content">{rightContent}</div>
         </div>
       </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { UDSection } from '../ui/PanelContainer'
+import { UDSection } from '../ui'
 
 export const CATEGORIES = [
   { id: 'docs', label: '文档库', icon: 'ri-folder-fill', desc: '本地 MD 文件目录' },
