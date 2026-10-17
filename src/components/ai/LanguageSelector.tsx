@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { LANGUAGES } from '../../shared/languages'
 import type { LanguageCode } from '../../shared/languages'
-import { LFSInput } from '../ui/LFInput'
+import { UiInput } from '../ui'
 
 // Re-export for convenience
 export type { LanguageCode }
@@ -51,7 +51,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ targetLang, 
 
         <div className="lang-search">
           <span className="remix lang-search-icon ri-search-line"></span>
-          <LFSInput
+          <UiInput
             placeholder="搜索语言..."
             value={search}
             onChange={setSearch}

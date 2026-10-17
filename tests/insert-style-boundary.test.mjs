@@ -5,7 +5,6 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 
 const toolbar = read('src/components/layout/Toolbar.tsx')
 const slash = read('src/components/editor/SlashCommand.tsx')
-const insertDropdown = read('src/components/panels/InsertDropdown.tsx')
 const globals = read('src/styles/globals.css')
 
 for (const [name, source] of [
@@ -17,7 +16,9 @@ for (const [name, source] of [
   assert.match(source, /lz-insert-footnote-ref/, `${name} footnote insert should use a styled content class`)
 }
 
-assert.doesNotMatch(insertDropdown, /style\.cssText/, 'InsertDropdown should not inject inline styles into document content')
+for (const f of ['ImageDialog.tsx', 'LinkDialog.tsx', 'CodeDialog.tsx', 'FormulaDialog.tsx', 'TableDropdown.tsx', 'EmojiDialog.tsx', 'ChartDialog.tsx', 'BeautifyDialog.tsx']) {
+  assert.doesNotMatch(read(`src/components/panels/${f}`), /style\.cssText/, `${f} should not inject inline styles into document content`)
+}
 
 for (const selector of [
   '.lz-editor-content .lz-insert',

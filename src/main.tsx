@@ -4,7 +4,6 @@ import App from './App'
 import { useSettingsStore, loadSettingsFromStorage, DEFAULT_SETTINGS } from './store/settingsStore'
 import { applyTheme } from './hooks/useTheme'
 import { applyTypographyTheme } from './styles/typography-themes'
-import { HeroUIProvider } from '@heroui/system'
 import './styles/tokens.css'
 import './styles/ui.css'
 import './styles/globals.css'
@@ -24,8 +23,6 @@ applyTypographyTheme(state.typographyTheme || 'classic')
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <HeroUIProvider>
-      <App />
-    </HeroUIProvider>
+    <App />
   </React.StrictMode>,
 )
