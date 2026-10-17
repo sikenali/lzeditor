@@ -6,7 +6,7 @@ import { BUILTIN_DOCS } from '../utils/docSource'
 const MAX_VERSIONS = 10
 
 /** Load persisted layout state from localStorage. */
-function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLibrary: boolean } {
+function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLibrary: boolean; statusbarCollapsed: boolean } {
   try {
     const raw = localStorage.getItem('lzeditor-layout')
     if (raw) {
@@ -15,11 +15,18 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
         showOutline: typeof parsed.showOutline === 'boolean' ? parsed.showOutline : false,
         showPreview: typeof parsed.showPreview === 'boolean' ? parsed.showPreview : false,
         showLibrary: typeof parsed.showLibrary === 'boolean' ? parsed.showLibrary : false,
+        statusbarCollapsed: typeof parsed.statusbarCollapsed === 'boolean' ? parsed.statusbarCollapsed : false,
       }
     }
   } catch {}
-  return { showOutline: false, showPreview: false, showLibrary: false }
+  return { showOutline: false, showPreview: false, showLibrary: false, statusbarCollapsed: false }
 }
+
+function saveLayoutState(partial: Partial<ReturnType<typeof loadLayoutState>>): void {
+  try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), ...partial })) } catch {}
+}
+
+const initialLayout = loadLayoutState()
 
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
   docTitle: DEFAULT_DOC_TITLE,
@@ -37,6 +44,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   showPreview: false,
   showLibrary: false,
   showRightPanel: false,
+  statusbarCollapsed: initialLayout.statusbarCollapsed,
   showSearch: false,
   codeMode: false,
   codeModeCursor: 0,
@@ -118,17 +126,21 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setPanelOpen: (open: boolean) => set({ panelOpen: open }),
   setShowOutline: (showOutline: boolean) => {
     set({ showOutline })
-    try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showOutline })) } catch {}
+    saveLayoutState({ showOutline })
   },
   setShowPreview: (showPreview: boolean) => {
     set({ showPreview })
-    try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showPreview })) } catch {}
+    saveLayoutState({ showPreview })
   },
   setShowSearch: (showSearch: boolean) => set({ showSearch }),
   setShowRightPanel: (showRightPanel: boolean) => set({ showRightPanel }),
   setShowLibrary: (showLibrary: boolean) => {
     set({ showLibrary })
-    try { localStorage.setItem('lzeditor-layout', JSON.stringify({ ...loadLayoutState(), showLibrary })) } catch {}
+    saveLayoutState({ showLibrary })
+  },
+  setStatusbarCollapsed: (statusbarCollapsed: boolean) => {
+    set({ statusbarCollapsed })
+    saveLayoutState({ statusbarCollapsed })
   },
   setCodeMode: (codeMode: boolean) => set({ codeMode }),
   setCodeModeCursor: (codeModeCursor: number) => set({ codeModeCursor }),

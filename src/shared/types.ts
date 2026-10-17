@@ -82,8 +82,9 @@ export interface EditorStoreState {
   panelOpen: boolean
    showOutline: boolean
    showPreview: boolean
-   showLibrary: boolean
-   showRightPanel: boolean
+  showLibrary: boolean
+  showRightPanel: boolean
+  statusbarCollapsed: boolean
    showSearch: boolean
   codeMode: boolean
   appMode: 'edit' | 'code' | 'style' | 'history' | 'read'
@@ -117,8 +118,9 @@ export interface EditorStoreState {
    setShowOutline: (showOutline: boolean) => void
    setShowPreview: (showPreview: boolean) => void
    setShowLibrary: (showLibrary: boolean) => void
-   setShowRightPanel: (showRightPanel: boolean) => void
-   setShowSearch: (showSearch: boolean) => void
+  setShowRightPanel: (showRightPanel: boolean) => void
+  setShowSearch: (showSearch: boolean) => void
+  setStatusbarCollapsed: (statusbarCollapsed: boolean) => void
   setCodeMode: (codeMode: boolean) => void
   setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void
   setCodeModeCursor: (offset: number) => void

@@ -72,7 +72,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   navMode: 'top' as 'top' | 'left',
   toolbarCollapsed: false,
   toolbarWidth: 220,
-  statusbarCollapsed: false,
   // ── Toolbar defaults ──
   compactToolbar: true,
   showToolbarLabels: true,

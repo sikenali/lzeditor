@@ -40,4 +40,10 @@ assert.match(leftNav, /left-nav-hover-label/, 'LeftNav must render hover label e
 assert.match(layout1, /\.left-nav-hover-label\s*\{[\s\S]*box-shadow:\s*var\(--shadow-md\)/, 'hover label must use shadow-md')
 assert.match(layout1, /\.left-nav-sep\s*\{[\s\S]*margin/, 'nav groups must have visual spacing')
 
+const statusBar = read('src/components/layout/StatusBar.tsx')
+assert.match(statusBar, /statusbar-collapse/, 'StatusBar must render a collapse control')
+assert.doesNotMatch(statusBar, /statusbar-center/, 'center outline/preview/style pills must move to footer')
+const editorStore = read('src/store/editorStore.ts')
+assert.match(editorStore, /statusbarCollapsed/, 'store must persist statusbarCollapsed')
+
 console.log('theme boundary checks passed')

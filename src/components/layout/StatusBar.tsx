@@ -21,6 +21,9 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
   const lastEditTime   = useEditorStore(s => s.lastEditTime)
   const showSearch     = useEditorStore(s => s.showSearch)
   const setShowSearch  = useEditorStore(s => s.setShowSearch)
+  const activeDocId    = useEditorStore(s => s.activeDocId)
+  const statusbarCollapsed = useEditorStore(s => s.statusbarCollapsed)
+  const setStatusbarCollapsed = useEditorStore(s => s.setStatusbarCollapsed)
 
   const [formattedTime, setFormattedTime] = useState('')
   useEffect(() => {
@@ -39,6 +42,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
   const syncIcon = syncStatus === 'synced' ? 'ri-check-line' : syncStatus === 'saving' ? 'ri-loader-4-line spin' : 'ri-error-warning-line'
   const syncColor = syncStatus === 'synced' ? 'var(--accent-primary)' : syncStatus === 'saving' ? 'var(--text-muted)' : 'var(--accent-red)'
   const isVertical = className === 'statusbar-vertical'
+
+  if (activeDocId == null) return null
+
+  const collapseButton = (
+    <button className="statusbar-collapse" data-title={statusbarCollapsed ? '展开状态栏' : '收起状态栏'}
+      onClick={() => setStatusbarCollapsed(!statusbarCollapsed)}>
+      <span className={`remix ${statusbarCollapsed ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}`}></span>
+    </button>
+  )
 
   if (isVertical) {
     return (
@@ -90,10 +102,17 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
     )
   }
 
+  if (statusbarCollapsed) {
+    return (
+      <div className="statusbar statusbar--collapsed">
+        {collapseButton}
+      </div>
+    )
+  }
+
   return (
     <div className="statusbar">
       <div className="statusbar-left">
-        <img className="statusbar-logo" src="/logo.svg" alt="LZEditor" />
         <div className="statusbar-sync">
           <span className={`remix ${syncIcon}`} style={{ color: syncColor }}></span>
           <span className="statusbar-sync-text">{syncStatus === 'synced' ? '已保存' : syncStatus === 'saving' ? '实时保存中' : '保存失败'}</span>
@@ -103,17 +122,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
           <span className="remix ri-clock-fill"></span>
           <span>{formattedTime}</span>
         </div>
-      </div>
-      <div className="statusbar-center">
-        <button className={`statusbar-pill ${showOutline ? 'active' : ''}`} onClick={() => setShowOutline(!showOutline)} data-title="大纲">
-          <span className="remix ri-list-unordered"></span>
-        </button>
-        <button className={`statusbar-pill ${showPreview ? 'active' : ''}`} onClick={() => { const n = !showPreview; setShowPreview(n); updateSetting('previewModeEnabled', n) }} data-title="即时预览">
-          <span className="remix ri-eye-line"></span>
-        </button>
-        <button className={`statusbar-pill ${appMode === 'style' ? 'active' : ''}`} onClick={() => setAppMode(appMode === 'style' ? 'edit' : 'style')} data-title="样式预览">
-          <span className="remix ri-palette-fill"></span>
-        </button>
       </div>
       <div className="statusbar-right">
         <button className={`statusbar-action ${showSearch ? 'active' : ''}`} data-title="查找与替换" onClick={() => setShowSearch(!showSearch)}>
@@ -134,6 +142,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({ className }) => {
           <span className="remix ri-cursor-fill"></span>
           <span>行 {cursorPosition.line} 列 {cursorPosition.column}</span>
         </div>
+        <div className="statusbar-divider" />
+        {collapseButton}
       </div>
     </div>
   )
