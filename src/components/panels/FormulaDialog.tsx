@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
+import { UiModal, UiInput, UiButton } from '../ui'
 
 const EXAMPLES = [
   { label: '二次公式', formula: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}', icon: 'ri-function-fill' },
@@ -9,6 +9,15 @@ const EXAMPLES = [
   { label: '导数', formula: '\\frac{d}{dx}x^n = nx^{n-1}', icon: 'ri-leaf-fill' },
   { label: '化学方程式', formula: '2H_2 + O_2 \\rightarrow 2H_2O', icon: 'ri-flask-fill' },
 ] as const
+
+const Section: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+  <div className="ud-section">
+    <div className="ud-section-head">
+      <span className="ud-section-label">{label}</span>
+    </div>
+    <div className="ud-section-body">{children}</div>
+  </div>
+)
 
 export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: string) => void }> = ({ onClose, onInsert }) => {
   const [formula, setFormula] = useState<string>(EXAMPLES[0].formula)
@@ -30,48 +39,45 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
   }
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-function-fill"
       title="数学公式"
       subtitle="使用 LaTeX 语法输入公式"
-      size="lg"
+      width={900}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={!formula.trim()}>
-            插入公式
-          </button>
-        </div>
+        <>
+          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton onClick={handleInsert} disabled={!formula.trim()}>插入公式</UiButton>
+        </>
       }
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
-        <UDSection label="公式模板">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-              {EXAMPLES.map(ex => (
-                <button key={ex.label} className={`ud-btn${formula === ex.formula ? ' ud-btn--primary' : ''}`}
-                  onClick={() => setFormula(ex.formula)} style={{ flexDirection: 'column', gap: 4, padding: '10px 8px' }}>
-                  <span className={`remix ${ex.icon}`} style={{ fontSize: 18 }}></span>
-                  <span style={{ fontSize: 11 }}>{ex.label}</span>
-                </button>
-              ))}
-            </div>
-          </UDSection>
-          <UDSection label="公式编辑器">
-            <UDInput
-              value={formula} onChange={e => setFormula(e.target.value)}
-              placeholder="输入 LaTeX 公式，如 E = mc^2"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}
-            />
-          </UDSection>
-          <UDSection label="实时预览">
-            <div ref={previewRef} style={{
-              background: 'var(--bg-code)', borderRadius: 8, padding: '16px 20px',
-              minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              overflowX: 'auto'
-            }} />
-          </UDSection>
-        </div>
-    </PanelContainer>
+        <Section label="公式模板">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {EXAMPLES.map(ex => (
+              <button key={ex.label} className={`ud-btn${formula === ex.formula ? ' ud-btn--primary' : ''}`}
+                onClick={() => setFormula(ex.formula)} style={{ flexDirection: 'column', gap: 4, padding: '10px 8px' }}>
+                <span className={`remix ${ex.icon}`} style={{ fontSize: 18 }}></span>
+                <span style={{ fontSize: 11 }}>{ex.label}</span>
+              </button>
+            ))}
+          </div>
+        </Section>
+        <Section label="公式编辑器">
+          <div style={{ fontFamily: 'var(--font-mono)' }}>
+            <UiInput value={formula} onChange={setFormula} placeholder="输入 LaTeX 公式，如 E = mc^2" />
+          </div>
+        </Section>
+        <Section label="实时预览">
+          <div ref={previewRef} style={{
+            background: 'var(--bg-code)', borderRadius: 8, padding: '16px 20px',
+            minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflowX: 'auto'
+          }} />
+        </Section>
+      </div>
+    </UiModal>
   )
 }

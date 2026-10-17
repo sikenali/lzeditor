@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
-import { SelectBox } from '../../components/ui/SelectBox'
-import { Switch } from '@heroui/react'
+import { UiModal, UiInput, UiSelect, UiSwitch, UiButton } from '../ui'
 import { useEditorStore } from '../../store/editorStore'
+
+const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
+  <div className="ud-section">
+    <div className="ud-section-head">
+      <span className="ud-section-label">{label}</span>
+      {desc && <span className="ud-section-desc">{desc}</span>}
+    </div>
+    <div className="ud-section-body">{children}</div>
+  </div>
+)
 
 interface Props {
   onClose: () => void
@@ -96,19 +104,20 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   }
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-link"
       title="插入链接"
       subtitle="链接将插入到当前光标位置"
-      size="lg"
+      width={720}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={linkType === 'external' ? !url.trim() : !docSource}>
+        <>
+          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton onClick={handleInsert} disabled={linkType === 'external' ? !url.trim() : !docSource}>
             插入链接
-          </button>
-        </div>
+          </UiButton>
+        </>
       }
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
@@ -139,26 +148,29 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div>
                     <label style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, display: 'block' }}>显示文字</label>
-                    <UDInput
+                    <UiInput
                       value={text}
-                      onChange={e => setText(e.target.value)}
+                      onChange={setText}
                       placeholder="链接文字（可选，留空使用 URL）"
                     />
                   </div>
                   <div>
                     <label style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, display: 'block' }}>URL 地址</label>
-                    <UDInput
-                      value={url}
-                      onChange={e => setUrl(e.target.value)}
-                      placeholder="https://..."
-                      style={{ fontFamily: 'var(--font-mono)' }}
-                    />
+                    <div style={{ fontFamily: 'var(--font-mono)' }}>
+                      <UiInput
+                        value={url}
+                        onChange={setUrl}
+                        placeholder="https://..."
+                      />
+                    </div>
                   </div>
                 </div>
               </UDSection>
               <UDSection label="打开方式">
-                <Switch size="sm" isSelected={newTab} onValueChange={setNewTab} />
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginLeft: 10 }}>点击从新标签中打开</span>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <UiSwitch size="sm" checked={newTab} onChange={setNewTab} />
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginLeft: 10 }}>点击从新标签中打开</span>
+                </div>
               </UDSection>
             </>
           )}
@@ -168,27 +180,27 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
             <>
               {/* 1. 显示文字 */}
               <UDSection label="显示文字">
-                <UDInput
+                <UiInput
                   value={text}
-                  onChange={e => setText(e.target.value)}
+                  onChange={setText}
                   placeholder="链接文字（可选，留空使用文档名）"
                 />
               </UDSection>
 
               {/* 2. 文档来源 */}
               <UDSection label="文档来源">
-                <SelectBox value={docSource} onChange={setDocSource} options={[
+                <UiSelect value={docSource} onChange={setDocSource} options={[
                   { value: '', label: '请选择文档...' },
                   ...docs.map((d: any) => ({ value: d.title || d.id, label: d.title || d.id }))
-                ]} style={{ width: '100%' }} />
+                ]} />
               </UDSection>
 
               {/* 3. 章节引用 */}
               <UDSection label="章节引用">
-                <SelectBox value={chapterRef} onChange={setChapterRef} options={[
+                <UiSelect value={chapterRef} onChange={setChapterRef} options={[
                   { value: '', label: '整篇文档' },
                   ...chapters.map(c => ({ value: c.text, label: `${'　'.repeat(c.level - 1)}${c.text}` }))
-                ]} style={{ width: '100%' }} />
+                ]} />
               </UDSection>
 
               <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px', background: 'var(--bg-code)', borderRadius: 6 }}>
@@ -198,6 +210,6 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
             </>
           )}
         </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

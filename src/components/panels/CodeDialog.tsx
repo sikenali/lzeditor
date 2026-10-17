@@ -1,9 +1,30 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import hljs from 'highlight.js'
 import { CODE_THEMES } from '../../styles/code-themes'
-import { PanelContainer, UDSection, UDSettingRow } from '../ui/PanelContainer'
-import { SelectBox } from '../../components/ui/SelectBox'
-import { Switch } from '@heroui/react'
+import { UiModal, UiSelect, UiSwitch, UiButton } from '../ui'
+
+const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
+  <div className="ud-section">
+    <div className="ud-section-head">
+      <span className="ud-section-label">{label}</span>
+      {desc && <span className="ud-section-desc">{desc}</span>}
+    </div>
+    <div className="ud-section-body">{children}</div>
+  </div>
+)
+
+const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string; children: React.ReactNode }> = ({ icon, label, desc, children }) => (
+  <div className="ud-setting-row">
+    <div className="ud-setting-label">
+      <span className={`remix ud-setting-icon ${icon}`}></span>
+      <div>
+        <span className="ud-setting-name">{label}</span>
+        {desc && <span className="ud-setting-desc">{desc}</span>}
+      </div>
+    </div>
+    <div className="ud-setting-control">{children}</div>
+  </div>
+)
 
 const LANGUAGES = [
   'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -66,19 +87,18 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   }
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-code-box-line"
       title="插入代码块"
       subtitle={`${language} · ${THEME_OPTIONS.find(t => t.id === themeId)?.name || ''}`}
-      size="lg"
+      width={900}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={!code.trim()}>
-            插入代码块
-          </button>
-        </div>
+        <>
+          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton onClick={handleInsert} disabled={!code.trim()}>插入代码块</UiButton>
+        </>
       }
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
@@ -102,10 +122,10 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
           {/* 语言 + Mac 样式 */}
           <UDSection label="选项设置">
             <UDSettingRow icon="ri-code-box-line" label="编程语言" desc="代码高亮语言">
-              <SelectBox value={language} onChange={setLanguage} options={LANGUAGES.map(l => ({ value: l, label: l }))} style={{ minWidth: 160 }} />
+              <UiSelect value={language} onChange={setLanguage} options={LANGUAGES.map(l => ({ value: l, label: l }))} className="code-dialog-lang-select" />
             </UDSettingRow>
             <UDSettingRow icon="ri-apple-fill" label="Mac 窗口样式" desc="代码块添加红黄绿三点装饰栏">
-              <Switch size="sm" isSelected={macStyle} onValueChange={setMacStyle} />
+              <UiSwitch size="sm" checked={macStyle} onChange={setMacStyle} />
             </UDSettingRow>
           </UDSection>
 
@@ -141,6 +161,6 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
             )}
           </UDSection>
         </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

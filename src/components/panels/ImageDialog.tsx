@@ -1,5 +1,15 @@
 import React, { useState } from 'react'
-import { PanelContainer, UDSection, UDInput } from '../ui/PanelContainer'
+import { UiModal, UiInput, UiButton } from '../ui'
+
+const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
+  <div className="ud-section">
+    <div className="ud-section-head">
+      <span className="ud-section-label">{label}</span>
+      {desc && <span className="ud-section-desc">{desc}</span>}
+    </div>
+    <div className="ud-section-body">{children}</div>
+  </div>
+)
 
 interface Props {
   onClose: () => void
@@ -64,19 +74,20 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
   }
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-image-line"
       title="插入图片"
       subtitle="支持 URL 或本地上传"
-      size="lg"
+      width={720}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleInsert} disabled={useUrl ? !url.trim() : !uploadFile}>
+        <>
+          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton onClick={handleInsert} disabled={useUrl ? !url.trim() : !uploadFile}>
             插入图片
-          </button>
-        </div>
+          </UiButton>
+        </>
       }
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
@@ -133,12 +144,13 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
             <>
               <UDSection label="图片地址">
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <UDInput
-                    value={url}
-                    onChange={e => setUrl(e.target.value)}
-                    placeholder="https://..."
-                    style={{ fontFamily: 'var(--font-mono)', flex: 1 }}
-                  />
+                  <div style={{ flex: 1, fontFamily: 'var(--font-mono)' }}>
+                    <UiInput
+                      value={url}
+                      onChange={setUrl}
+                      placeholder="https://..."
+                    />
+                  </div>
                   <button
                     className="ud-btn"
                     onClick={() => window.open('https://imgant.com', '_blank')}
@@ -150,9 +162,9 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
                 </div>
               </UDSection>
               <UDSection label="替代文字">
-                <UDInput
+                <UiInput
                   value={alt}
-                  onChange={e => setAlt(e.target.value)}
+                  onChange={setAlt}
                   placeholder="图片描述（可选）"
                 />
               </UDSection>
@@ -175,6 +187,6 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
             </div>
           </UDSection>
         </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

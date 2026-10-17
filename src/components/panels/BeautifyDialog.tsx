@@ -3,7 +3,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
 import { CODE_THEMES } from '../../styles/code-themes'
-import { SelectBox } from '../../components/ui/SelectBox'
+import { UiSelect, UiSwitch } from '../ui'
 
 const FONT_OPTIONS = [
   { value: 'sans-serif', label: '无衬线' },
@@ -143,7 +143,9 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
             <div className="beautify-section-title">字体与排版</div>
             <div className="beautify-row">
               <label className="beautify-label">字体</label>
-              <SelectBox value={fontFamily} onChange={v => setFontFamily(v)} options={FONT_OPTIONS.map(f => ({ value: f.value, label: f.label }))} style={{ minWidth: 160 }} />
+              <div style={{ minWidth: 160 }}>
+                <UiSelect value={fontFamily} onChange={setFontFamily} options={FONT_OPTIONS} />
+              </div>
             </div>
             <div className="beautify-row">
               <label className="beautify-label">字号</label>
@@ -247,6 +249,6 @@ export const BeautifyDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 const ToggleOption: React.FC<{ title: string; checked: boolean; onChange: (v: boolean) => void }> = ({ title, checked, onChange }) => (
   <label className="beautify-toggle-row">
     <span className="beautify-toggle-label">{title}</span>
-    <span className={`beautify-toggle ${checked ? 'on' : ''}`} onClick={() => onChange(!checked)} />
+    <UiSwitch size="sm" checked={checked} onChange={onChange} />
   </label>
 )

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { PanelContainer, UDSection } from '../ui/PanelContainer'
+import { UiModal, UiButton } from '../ui'
 
 interface TableDropdownProps {
   open: boolean
@@ -157,22 +157,21 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
   if (!open) return null
 
   return (
-    <PanelContainer
+    <UiModal
+      open={open}
       onClose={() => onToggle(false)}
       icon="ri-table-2"
       title="插入表格"
       subtitle="选择表格类型并编辑内容"
-      size="lg"
+      width={900}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={() => onToggle(false)}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleInsert}>
-            插入表格
-          </button>
-        </div>
+        <>
+          <UiButton variant="ghost" onClick={() => onToggle(false)}>取消</UiButton>
+          <UiButton onClick={handleInsert}>插入表格</UiButton>
+        </>
       }
     >
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
         {/* 表格类型切换 */}
           <div style={{ display: 'flex', gap: 8 }}>
             {TABLE_TYPES.map(t => (
@@ -189,7 +188,11 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
           </div>
 
           {/* 表格预览 */}
-          <UDSection label="表格预览">
+          <div className="ud-section">
+            <div className="ud-section-head">
+              <span className="ud-section-label">表格预览</span>
+            </div>
+            <div className="ud-section-body">
             <div style={{ overflow: 'auto', maxHeight: 320 }}>
               <table className="table-editable" style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <tbody>
@@ -291,8 +294,9 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
               <span><kbd>⇧Tab</kbd> 上一列</span>
               <span><kbd>Esc</kbd> 退出编辑</span>
             </div>
-          </UDSection>
+            </div>
+          </div>
         </div>
-    </PanelContainer>
+    </UiModal>
   )
 }

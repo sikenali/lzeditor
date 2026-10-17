@@ -1,8 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react'
 import * as echartsLib from 'echarts'
 const echarts: any = echartsLib
-import { PanelContainer, UDSection, UDSettingRow, UDInput } from '../ui/PanelContainer'
-import { Switch } from '@heroui/react'
+import { UiModal, UiInput, UiSwitch, UiButton } from '../ui'
+
+const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
+  <div className="ud-section">
+    <div className="ud-section-head">
+      <span className="ud-section-label">{label}</span>
+      {desc && <span className="ud-section-desc">{desc}</span>}
+    </div>
+    <div className="ud-section-body">{children}</div>
+  </div>
+)
+
+const UDSettingRow: React.FC<{ icon: string; label: string; desc?: string; children: React.ReactNode }> = ({ icon, label, desc, children }) => (
+  <div className="ud-setting-row">
+    <div className="ud-setting-label">
+      <span className={`remix ud-setting-icon ${icon}`}></span>
+      <div>
+        <span className="ud-setting-name">{label}</span>
+        {desc && <span className="ud-setting-desc">{desc}</span>}
+      </div>
+    </div>
+    <div className="ud-setting-control">{children}</div>
+  </div>
+)
 
 
 type ChartType = 'line' | 'bar' | 'pie' | 'scatter'
@@ -64,19 +86,18 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
   }
 
   return (
-    <PanelContainer
+    <UiModal
+      open
       onClose={onClose}
       icon="ri-bar-chart-2-line"
       title="插入图表"
       subtitle="生成 ECharts 图表并插入文档"
-      size="lg"
+      width={900}
       footer={
-        <div className="ud-actions">
-          <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
-          <button className="ud-btn ud-btn--primary" onClick={handleInsert}>
-            插入图表
-          </button>
-        </div>
+        <>
+          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton onClick={handleInsert}>插入图表</UiButton>
+        </>
       }
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
@@ -95,28 +116,27 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (html: strin
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
                 <label style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, display: 'block' }}>图表标题</label>
-                <UDInput value={title} onChange={e => setTitle(e.target.value)} placeholder="图表标题" />
+                <UiInput value={title} onChange={setTitle} placeholder="图表标题" />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
                   <label style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, display: 'block' }}>数据值</label>
-                  <UDInput value={dataStr} onChange={e => setDataStr(e.target.value)} placeholder="10,20,15,30" style={{ fontFamily: 'var(--font-mono)' }} />
+                  <UiInput value={dataStr} onChange={setDataStr} placeholder="10,20,15,30" />
                 </div>
                 <div>
                   <label style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, display: 'block' }}>分类标签</label>
-                  <UDInput value={labelsStr} onChange={e => setLabelsStr(e.target.value)} placeholder="A,B,C,D" style={{ fontFamily: 'var(--font-mono)' }} />
+                  <UiInput value={labelsStr} onChange={setLabelsStr} placeholder="A,B,C,D" />
                 </div>
               </div>
             </div>
           </UDSection>
           <UDSettingRow icon="ri-eye-line" label="显示图例" desc="在图表底部显示数据系列图例">
-            <Switch size="sm" isSelected={showLegend} onValueChange={setShowLegend} />
+            <UiSwitch size="sm" checked={showLegend} onChange={setShowLegend} />
           </UDSettingRow>
           <UDSection label="预览">
             <div ref={chartRef} style={{ width: '100%', height: 220, borderRadius: 8 }} />
           </UDSection>
         </div>
-    </PanelContainer>
+    </UiModal>
   )
 }
-
