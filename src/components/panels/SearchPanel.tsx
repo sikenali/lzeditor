@@ -6,6 +6,15 @@ interface SearchPanelProps {
   onClose: () => void
 }
 
+// The SearchAndReplace extension always treats the term as a raw regex
+// (configured with disableRegex: false), so literal mode must escape on our side.
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const buildRegexPattern = (raw: string, opts: { wholeWord: boolean; useRegex: boolean }) => {
+  const term = opts.useRegex ? raw : escapeRegex(raw)
+  return opts.wholeWord ? `(?<!\\S)${term}(?!\\S)` : term
+}
+
 export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const editor = useEditorStore((s) => s.editor)
   const [searchTerm, setSearchTerm] = useState('')
@@ -15,6 +24,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const [useRegex, setUseRegex] = useState(false)
   const [resultCount, setResultCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [patternError, setPatternError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -46,10 +56,17 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
 
   const handleSearch = useCallback(() => {
     if (!editor || !searchTerm.trim()) return
-    editor.commands.setSearchTerm(searchTerm)
+    let pattern: string
+    try {
+      pattern = buildRegexPattern(searchTerm, { wholeWord, useRegex })
+      new RegExp(pattern, caseSensitive ? 'gu' : 'gui')
+    } catch {
+      setPatternError('正则表达式无效')
+      return
+    }
+    setPatternError(null)
+    editor.commands.setSearchTerm(pattern)
     editor.commands.setCaseSensitive(caseSensitive)
-    editor.commands.setWholeWord(wholeWord)
-    editor.commands.setRegex(useRegex)
     editor.commands.resetIndex()
     if (editor.view) {
       editor.view.dispatch(editor.view.state.tr)
@@ -62,13 +79,17 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
     if (!editor || !searchTerm.trim()) return
     editor.commands.setReplaceTerm(replaceTerm)
     editor.commands.replace()
-  }, [editor, searchTerm, replaceTerm])
+    editor.commands.resetIndex()
+    refreshCounts()
+  }, [editor, searchTerm, replaceTerm, refreshCounts])
 
   const handleReplaceAll = useCallback(() => {
     if (!editor || !searchTerm.trim()) return
     editor.commands.setReplaceTerm(replaceTerm)
     editor.commands.replaceAll()
-  }, [editor, searchTerm, replaceTerm])
+    editor.commands.resetIndex()
+    refreshCounts()
+  }, [editor, searchTerm, replaceTerm, refreshCounts])
 
   const handleNext = useCallback(() => {
     if (!editor) return
@@ -102,6 +123,12 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
              <span>使用正则</span>
            </label>
         </div>
+        {patternError && (
+          <div className="search-pattern-error">
+            <span className="remix ri-error-warning-fill"></span>
+            <span>{patternError}</span>
+          </div>
+        )}
 
         {/* Operations column */}
         <div className="search-ops-col">

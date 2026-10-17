@@ -37,6 +37,8 @@ function getActionKey(action: AIAction): string {
 
 const ACTIONS: AIAction[] = ['rewrite', 'polish', 'continue', 'summarize', 'translate', 'question']
 
+const TRANSLATE_LANGS = ['中文', '英文', '日文', '韩文', '繁体中文']
+
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value))
 }
@@ -51,7 +53,7 @@ function clampPanelY(y: number, h: number): number {
 
 export const AIPanel: React.FC = () => {
   const state = useAIStore()
-  const { send, isStreaming, applyToDoc, undo, copyOutput } = useAI()
+  const { send, isStreaming, stop, applyToDoc, undo, copyOutput } = useAI()
   const editorRef = useEditorStore(s => s.editorRef)
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -147,6 +149,21 @@ export const AIPanel: React.FC = () => {
         ))}
       </div>
 
+      {/* Translate target language */}
+      {state.panelAction === 'translate' && (
+        <div className="ai-lang-row">
+          {TRANSLATE_LANGS.map((lang) => (
+            <button
+              key={lang}
+              className={`ai-lang-chip${state.panelInput.trim() === lang ? ' active' : ''}`}
+              onClick={() => useAIStore.getState().setPanelInput(lang)}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Input area */}
       {(state.panelStatus === 'idle' || state.panelStatus === 'thinking' || state.panelStatus === 'error') && (
         <div className="ai-input-wrapper">
@@ -169,11 +186,23 @@ export const AIPanel: React.FC = () => {
         </div>
       )}
 
+      {/* Streaming / result output */}
+      {state.panelOutput && state.panelStatus !== 'applied' && (
+        <div className="ai-output">
+          <div className="ai-output-content">{state.panelOutput}</div>
+        </div>
+      )}
+
       {/* Thinking indicator */}
       {state.panelStatus === 'thinking' && (
-        <div className="ai-loading-dots">
-          <span></span><span></span><span></span>
-          <span className="ai-loading-text">AI 思考中…</span>
+        <div className="ai-thinking-row">
+          <div className="ai-loading-dots">
+            <span></span><span></span><span></span>
+            <span className="ai-loading-text">AI 思考中…</span>
+          </div>
+          <button className="ai-stop-btn" onClick={stop} title="停止生成">
+            <span className="remix ri-stop-fill"></span> 停止
+          </button>
         </div>
       )}
 
@@ -188,24 +217,19 @@ export const AIPanel: React.FC = () => {
         </div>
       )}
 
-      {/* Result */}
+      {/* Result actions */}
       {state.panelStatus === 'result' && state.panelOutput && (
-        <>
-          <div className="ai-output">
-            <div className="ai-output-content">{state.panelOutput}</div>
-          </div>
-          <div className="ai-actions">
-            <button className="ai-action-btn primary" onClick={applyToDoc}>
-              <span className="remix ri-checkbox-fill"></span> 应用到文档
-            </button>
-            <button className="ai-action-btn secondary" onClick={undo}>
-              <span className="remix ri-arrow-go-back-line"></span> 撤销
-            </button>
-            <button className="ai-action-btn secondary" onClick={copyOutput}>
-              <span className="remix ri-file-copy-line"></span> 复制
-            </button>
-          </div>
-        </>
+        <div className="ai-actions">
+          <button className="ai-action-btn primary" onClick={applyToDoc}>
+            <span className="remix ri-checkbox-fill"></span> 应用到文档
+          </button>
+          <button className="ai-action-btn secondary" onClick={undo}>
+            <span className="remix ri-arrow-go-back-line"></span> 撤销
+          </button>
+          <button className="ai-action-btn secondary" onClick={copyOutput}>
+            <span className="remix ri-file-copy-line"></span> 复制
+          </button>
+        </div>
       )}
 
       {/* Applied confirmation */}

@@ -172,19 +172,42 @@
 
 /* Loading dots */
 .ai-loading-dots { display: flex; align-items: center; gap: 5px; padding: 10px 16px; }
-.ai-loading-dots span {
+.ai-loading-dots > span:not(.ai-loading-text) {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--accent-primary);
   animation: ai-dot-pulse 1.2s infinite cubic-bezier(0.32, 0.72, 0, 1);
   opacity: 0.5;
 }
-.ai-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.ai-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+.ai-loading-dots > span:nth-child(2):not(.ai-loading-text) { animation-delay: 0.2s; }
+.ai-loading-dots > span:nth-child(3):not(.ai-loading-text) { animation-delay: 0.4s; }
 .ai-loading-text { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
 @keyframes ai-dot-pulse {
   0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
   40%            { opacity: 1; transform: scale(1.1); }
 }
+
+/* Thinking row: dots + stop button */
+.ai-thinking-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; }
+.ai-thinking-row .ai-loading-dots { padding: 0; }
+.ai-stop-btn {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 5px 10px; border-radius: 7px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated); color: var(--text-secondary);
+  font-size: 11px; cursor: pointer; transition: all 0.15s ease;
+}
+.ai-stop-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.ai-stop-btn .remix { font-size: 13px; }
+
+/* Translate target language */
+.ai-lang-row { display: flex; gap: 5px; flex-wrap: wrap; padding: 10px 16px 0; }
+.ai-lang-chip {
+  padding: 3px 9px; border-radius: 6px;
+  border: 1px solid var(--border-subtle); background: transparent;
+  color: var(--text-muted); font-size: 11px; cursor: pointer; transition: all 0.12s ease;
+}
+.ai-lang-chip:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.ai-lang-chip.active { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
 
 /* Output */
 .ai-output { padding: 12px 14px; border-top: 1px solid var(--border-subtle); }

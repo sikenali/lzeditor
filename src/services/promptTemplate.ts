@@ -81,10 +81,23 @@ ${v.schema_context || 'N/A'}
 \`\`\`
 
 ${v.selected_text}`,
-}
+
+  question: (v) => `你是一个有帮助的写作助手，请回答用户的问题。如果提供了上下文内容，请结合上下文作答，并给出简洁、可直接采用的回答。
+
+编辑器 Schema 上下文：
+\`\`\`
+${v.schema_context || 'N/A'}
+\`\`\`
+
+上下文内容：
+${v.selected_text || '（无）'}
+
+用户问题：
+${v.user_instruction || ''}`,
+  }
 
 export function buildPrompt(action: string, vars: PromptVars): string {
   const template = TEMPLATES[action]
-  if (!template) return vars.selected_text
+  if (!template) return [vars.user_instruction, vars.selected_text].filter(Boolean).join('\n\n')
   return template(vars)
 }

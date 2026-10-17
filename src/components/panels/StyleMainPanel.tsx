@@ -35,6 +35,7 @@ export const StyleMainPanel: React.FC = () => {
   const [previewVisible, setPreviewVisible] = useState(true)
   const [exportOpen, setExportOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [styleMenuOpen, setStyleMenuOpen] = useState(false)
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -226,10 +227,30 @@ export const StyleMainPanel: React.FC = () => {
             <div className="style-toolbar">
               <div className="style-label-group">
                 <span className="style-label-text">文档样式:</span>
-                <button className="style-select-btn">
-                  <span>{activeStyleData.name}</span>
-                  <span className="remix ri-arrow-down-s-line"></span>
-                </button>
+                <div className="style-select-wrap">
+                  <button className="style-select-btn" onClick={() => setStyleMenuOpen(v => !v)}>
+                    <span>{activeStyleData.name}</span>
+                    <span className="remix ri-arrow-down-s-line"></span>
+                  </button>
+                  {styleMenuOpen && (
+                    <>
+                      <div className="style-select-backdrop" onClick={() => setStyleMenuOpen(false)} />
+                      <div className="style-select-menu">
+                        {TYPOGRAPHY_THEMES.map(t => (
+                          <button
+                            key={t.id}
+                            className={`style-select-item${t.id === activeStyle ? ' active' : ''}`}
+                            onClick={() => { setActiveStyle(t.id); updateSetting('typographyTheme', t.id); setStyleMenuOpen(false) }}
+                          >
+                            <span className="style-select-dot" style={{ background: t.color }} />
+                            <span>{t.name}</span>
+                            {t.id === activeStyle && <span className="remix ri-check-line style-select-check"></span>}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
                 <span className={`remix ${previewVisible ? 'ri-eye-off-line' : 'ri-eye-line'}`}></span>

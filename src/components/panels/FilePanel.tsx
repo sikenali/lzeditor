@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { UiModal, UiInput, UDSection } from '../ui'
 
+import { mdToHtml } from '../../utils/mdToHtml'
+
 const FILE_TEMPLATES = [
   { id: 'blank', name: '空白文档', desc: '从头开始', icon: 'ri-file-line' },
   { id: 'markdown', name: 'Markdown 模板', desc: '标准 Markdown 结构', icon: 'ri-markdown-fill' },
@@ -9,9 +11,61 @@ const FILE_TEMPLATES = [
   { id: 'notes', name: '会议记录', desc: '日程与待办', icon: 'ri-article-line' },
 ]
 
+const TEMPLATE_MD: Record<string, string> = {
+  blank: '',
+  markdown: `# 标题
+
+简要描述文档主题。
+
+## 背景
+
+## 目标
+
+## 方案
+
+## 结论
+`,
+  report: `# 技术报告
+
+> 作者：　　日期：
+
+## 摘要
+
+## 背景与动机
+
+## 方案设计
+
+## 实现细节
+
+## 测试结果
+
+## 后续计划
+`,
+  notes: `# 会议记录
+
+- 时间：
+- 参与人：
+
+## 议题
+
+## 待办
+
+- [ ] 待办事项 1
+- [ ] 待办事项 2
+`,
+}
+
+/** Create a doc tab, load markdown into it and persist it. */
+function loadNewDoc(title: string, md: string): void {
+  const store = useEditorStore.getState()
+  const id = store.createDoc(title)
+  const html = mdToHtml(md)
+  store.updateDoc({ md, html, docsMd: { [id]: md } })
+  try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md, html, savedAt: Date.now() })) } catch {}
+  store.editor?.commands?.setContent(html)
+}
+
 export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const setTitle = useEditorStore((s: any) => s.setTitle)
-  const setDocPath = useEditorStore((s: any) => s.setDocPath)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const [searchText, setSearchText] = useState('')
 
@@ -22,8 +76,7 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       report: 'technical-report.md',
       notes: 'meeting-notes.md',
     }
-    setTitle(names[templateId] || 'untitled.md')
-    setDocPath('')
+    loadNewDoc(names[templateId] || 'untitled.md', TEMPLATE_MD[templateId] ?? '')
     setOpenPanel('none')
     onClose()
   }
@@ -32,14 +85,13 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.md,.txt,.markdown'
-    input.onchange = (e: any) => {
+    input.onchange = async (e: any) => {
       const file = e.target.files?.[0]
-      if (file) {
-        setTitle(file.name)
-        setDocPath(file.name)
-        setOpenPanel('none')
-        onClose()
-      }
+      if (!file) return
+      const md = await file.text().catch(() => '')
+      loadNewDoc(file.name, md)
+      setOpenPanel('none')
+      onClose()
     }
     input.click()
   }

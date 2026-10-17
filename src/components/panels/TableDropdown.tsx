@@ -4,7 +4,7 @@ import { UiModal, UiButton } from '../ui'
 interface TableDropdownProps {
   open: boolean
   onToggle: (v: boolean) => void
-  onInsert: (rows: number, cols: number, data: string[][]) => void
+  onInsert: (rows: number, cols: number, data: string[][], withHeaderRow: boolean) => void
 }
 
 const TABLE_TYPES = [
@@ -145,9 +145,9 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
   }, [rows])
 
   const handleInsert = useCallback(() => {
-    onInsert(rows, cols, cells)
+    onInsert(rows, cols, cells, tableType === 'with-header')
     onToggle(false)
-  }, [rows, cols, cells, onInsert, onToggle])
+  }, [rows, cols, cells, tableType, onInsert, onToggle])
 
   const handleChangeTableType = useCallback((type: 'with-header' | 'without-header') => {
     setTableType(type)
@@ -266,25 +266,54 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                   ))}
                   <tr>
                     <td className="table-drag-col" style={{ height: 36 }}></td>
-                    <td colSpan={cols + 1}>
-                      <button
-                        className="table-add-row-btn"
-                        onClick={handleAddRow}
-                        title="添加行"
-                        style={{
-                          width: '100%',
-                          padding: '8px 12px',
-                          border: '1px dashed var(--border-subtle)',
-                          borderRadius: 4,
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          color: 'var(--text-muted)',
-                          fontSize: 13
-                        }}
-                      >
-                        <span className="remix ri-add-line"></span> 添加行
-                      </button>
-                    </td>
+                     <td colSpan={cols + 1}>
+                       <div style={{ display: 'flex', gap: 8 }}>
+                       <button
+                         className="table-add-row-btn"
+                         onClick={handleAddRow}
+                         title="添加行"
+                         style={{
+                           width: '50%',
+                           padding: '8px 12px',
+                           border: '1px dashed var(--border-subtle)',
+                           borderRadius: 4,
+                           background: 'transparent',
+                           cursor: 'pointer',
+                           color: 'var(--text-muted)',
+                           fontSize: 13,
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'center',
+                           gap: 6
+                         }}
+                       >
+                         <span className="remix ri-add-line"></span> 添加行
+                       </button>
+                       <button
+                         className="table-add-row-btn"
+                         onClick={() => { if (activeCell) handleDeleteCol(activeCell.c) }}
+                         disabled={!activeCell || cols <= 1}
+                         title="删除当前列"
+                         style={{
+                           width: '50%',
+                           padding: '8px 12px',
+                           border: '1px dashed var(--border-subtle)',
+                           borderRadius: 4,
+                           background: 'transparent',
+                           cursor: 'pointer',
+                           color: 'var(--text-muted)',
+                           fontSize: 13,
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'center',
+                           gap: 6,
+                           opacity: (!activeCell || cols <= 1) ? 0.4 : 1
+                         }}
+                       >
+                         <span className="remix ri-delete-column-line"></span> 删除列
+                       </button>
+                       </div>
+                     </td>
                   </tr>
                 </tbody>
               </table>

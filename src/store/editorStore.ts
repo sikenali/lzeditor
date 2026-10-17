@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
-import { BUILTIN_DOCS } from '../utils/docSource'
+import { htmlToMarkdown } from '../utils/htmlToMd'
 
 const MAX_VERSIONS = 10
 
@@ -204,8 +204,33 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     })
     return id
   },
-  switchDoc: (id: string) => set({ activeDocId: id }),
-  closeDoc: (id: string) => {
+   switchDoc: (id: string) => {
+    const s = get()
+    const doc = s.docs.find((d: any) => d.id === id)
+    if (!doc) return
+    if (id === s.activeDocId) {
+      set({ docTitle: doc.title, docPath: doc.path || '', activeLibraryId: doc.libraryId || s.activeLibraryId })
+      return
+    }
+    // 切换前把未落盘的编辑写回当前文档，避免切走丢失
+    if (s.activeDocId) {
+      try {
+        const html = s.editor?.getHTML?.()
+        const md = html ? htmlToMarkdown(html) : (s.mdContent || '')
+        if (md && md !== s.docsMd?.[s.activeDocId]) {
+          s.updateDoc({ md, docsMd: { [s.activeDocId]: md } })
+        }
+      } catch {}
+    }
+    set({
+      activeDocId: id,
+      docTitle: doc.title,
+      docPath: doc.path || '',
+      activeLibraryId: doc.libraryId || s.activeLibraryId,
+      lastEditTime: Date.now(),
+    })
+  },
+   closeDoc: (id: string) => {
     const { docs, activeDocId } = get()
     const idx = docs.findIndex((d: any) => d.id === id)
     if (idx === -1) return
@@ -214,7 +239,12 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     if (activeDocId === id) {
       nextActiveId = nextDocs[Math.min(idx, nextDocs.length - 1)]?.id ?? null
     }
-    set({ docs: nextDocs, activeDocId: nextActiveId })
+    const nextDoc = nextDocs.find((d: any) => d.id === nextActiveId)
+    set({
+      docs: nextDocs,
+      activeDocId: nextActiveId,
+      ...(nextDoc ? { docTitle: nextDoc.title, docPath: nextDoc.path || '', activeLibraryId: nextDoc.libraryId || get().activeLibraryId } : {}),
+    })
   },
   renameDoc: (id: string, title: string) => {
     set((s: any) => ({

@@ -6,9 +6,38 @@ import { useSettingsStore } from '../store/settingsStore'
 import { buildPrompt } from '../services/promptTemplate'
 import type { AIAction, ChatMessage } from '../shared/types'
 
+/** Parse one SSE event block and append its text payload. */
+const extractSSEText = (frame: string, acc: string): { acc: string; done: boolean } => {
+  for (const rawLine of frame.split('\n')) {
+    const line = rawLine.trim()
+    if (!line.startsWith('data:')) continue
+    const payload = line.slice(5).trim()
+    if (!payload) continue
+    if (payload === '[DONE]') return { acc, done: true }
+    try {
+      const json = JSON.parse(payload)
+      const chunk =
+        json.choices?.[0]?.delta?.content ??
+        json.choices?.[0]?.message?.content ??
+        json.output ??
+        json.text
+      if (typeof chunk === 'string') acc += chunk
+    } catch {
+      acc += payload
+    }
+  }
+  return { acc, done: false }
+}
+
 export function useAI() {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+
+  const stop = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setIsStreaming(false)
+  }, [])
 
   const send = useCallback(async (action: AIAction, input: string, selectedText: string) => {
     const settings = useSettingsStore.getState()
@@ -17,12 +46,20 @@ export function useAI() {
 
     if (!activeKey?.key) {
       useAIStore.getState().setPanelError('请先在设置中配置 API Key')
+      useAIStore.getState().setPanelStatus('error')
       return
     }
+    if (abortRef.current) return
 
-    useAIStore.getState().setPanelStatus('thinking')
-    useAIStore.getState().setPanelError(null)
+    const store = useAIStore.getState()
+    store.setPanelStatus('thinking')
+    store.setPanelError(null)
+    store.setPanelOutput('')
     setIsStreaming(true)
+
+    const controller = new AbortController()
+    abortRef.current = controller
+    const signal = controller.signal
 
     const editor = useEditorStore.getState().editor
     let schemaContext = ''
@@ -40,53 +77,89 @@ export function useAI() {
       vars.context_before = selectedText
     }
     if (action === 'translate') vars.target = input || '中文'
+    if (action === 'question') vars.user_instruction = input
 
     const prompt = buildPrompt(action || 'question', vars)
     const messages: ChatMessage[] = [{ role: 'user', content: prompt }]
+    let accumulated = ''
 
     try {
       if (activeKey.format === 'anthropic') {
-        const url = `${activeKey.endpoint || 'https://api.anthropic.com'}/v1/messages`
+        const url = `${activeKey.endpoint?.replace(/\/$/, '') || 'https://api.anthropic.com'}/v1/messages`
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'x-api-key': activeKey.key,
           'anthropic-version': '2023-06-01',
         }
         const body = JSON.stringify({ model: activeKey.model, max_tokens: maxTokens, temperature, messages })
-        const resp = await fetch(url, { method: 'POST', headers, body })
+        const resp = await fetch(url, { method: 'POST', headers, body, signal })
         if (!resp.ok) throw new Error(`API Error: ${resp.status}`)
         const data = await resp.json()
-        useAIStore.getState().setPanelOutput(data.content?.[0]?.text || '')
+        accumulated = data.content?.[0]?.text || ''
+        useAIStore.getState().setPanelOutput(accumulated)
         useAIStore.getState().setPanelStatus('result')
       } else {
-        const url = `${activeKey.endpoint || 'https://api.openai.com'}/v1/chat/completions`
+        const url = `${activeKey.endpoint?.replace(/\/$/, '') || 'https://api.openai.com'}/v1/chat/completions`
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${activeKey.key}`,
         }
         const body = JSON.stringify({ model: activeKey.model, messages, temperature, max_tokens: maxTokens, stream: true })
-        const resp = await fetch(url, { method: 'POST', headers, body })
-        if (!resp.ok) throw new Error(`API Error: ${resp.status}`)
+        const resp = await fetch(url, { method: 'POST', headers, body, signal })
+        if (!resp.ok) {
+          let detail = ''
+          try { detail = await resp.text() } catch {}
+          throw new Error(`API Error: ${resp.status}${detail ? ' ' + detail.slice(0, 160) : ''}`)
+        }
         const reader = resp.body?.getReader()
         if (!reader) {
-          const text = await resp.text()
-          useAIStore.getState().setPanelOutput(text)
+          accumulated = await resp.text()
+          useAIStore.getState().setPanelOutput(accumulated)
           useAIStore.getState().setPanelStatus('result')
           return
         }
-        let accumulated = ''
-        while (true) {
+        const decoder = new TextDecoder()
+        let buffer = ''
+        for (;;) {
           const { done, value } = await reader.read()
           if (done) break
-          accumulated += new TextDecoder().decode(value)
+          if (signal.aborted) break
+          buffer += decoder.decode(value, { stream: true })
+          const frames: string[] = []
+          let cursor = 0
+          let sep: number
+          while ((sep = buffer.indexOf('\n\n', cursor)) !== -1) {
+            frames.push(buffer.slice(cursor, sep))
+            cursor = sep + 2
+          }
+          buffer = buffer.slice(cursor)
+          for (const frame of frames) {
+            const r = extractSSEText(frame, accumulated)
+            accumulated = r.acc
+            useAIStore.getState().setPanelOutput(accumulated)
+          }
+        }
+        if (buffer.trim()) {
+          accumulated = extractSSEText(buffer, accumulated).acc
           useAIStore.getState().setPanelOutput(accumulated)
         }
-        useAIStore.getState().setPanelStatus('result')
+        useAIStore.getState().setPanelStatus(signal.aborted ? (accumulated ? 'result' : 'idle') : 'result')
       }
+      useAIStore.getState().appendConversation({ role: 'user', content: prompt })
     } catch (err: any) {
-      useAIStore.getState().setPanelError(err.message || '请求失败')
-      useAIStore.getState().setPanelStatus('error')
+      if (err?.name === 'AbortError') {
+        if (accumulated) {
+          useAIStore.getState().setPanelOutput(accumulated)
+          useAIStore.getState().setPanelStatus('result')
+        } else {
+          useAIStore.getState().setPanelStatus('idle')
+        }
+      } else {
+        useAIStore.getState().setPanelError(err?.message || '请求失败')
+        useAIStore.getState().setPanelStatus('error')
+      }
     } finally {
+      abortRef.current = null
       setIsStreaming(false)
     }
   }, [])
@@ -96,10 +169,11 @@ export function useAI() {
     if (state.panelStatus !== 'result') return
     const editor = useEditorStore.getState().editor
     const output = state.panelOutput || ''
+    let range: { from: number; to: number } | null = null
     if (editor) {
-      const selectedText = state.panelSelectedText || ''
       const { from, to } = editor.state.selection
-      if (selectedText && from !== to) {
+      range = { from, to }
+      if (from !== to) {
         editor.chain().focus().deleteRange({ from, to }).insertContent(output).run()
       } else {
         editor.chain().focus().insertContent(output).run()
@@ -109,19 +183,32 @@ export function useAI() {
       action: state.panelAction,
       originalText: state.panelSelectedText,
       newText: output,
-      position: { from: 0, to: state.panelSelectedText.length },
+      position: range && range.from !== range.to ? range : { from: 0, to: state.panelSelectedText.length },
     })
     useAIStore.getState().setPanelStatus('applied')
   }, [])
 
   const undo = useCallback(() => {
     const record = useAIStore.getState().getUndoRecord()
-    if (record) useAIStore.getState().undoLastApply()
+    if (!record) return
+    const editor = useEditorStore.getState().editor
+    if (editor) {
+      const len = editor.state.doc.content.size
+      const from = Math.min(Math.max(0, record.position.from), len)
+      const to = Math.min(from + Math.max(0, record.position.to - record.position.from), len)
+      try {
+        editor.chain().focus().deleteRange({ from, to }).insertContent(record.originalText || '').run()
+      } catch {
+        // 记录位置已失效，仅清除历史
+      }
+    }
+    useAIStore.getState().undoLastApply()
+    useAIStore.getState().setPanelStatus('result')
   }, [])
 
   const copyOutput = useCallback(() => {
     navigator.clipboard.writeText(useAIStore.getState().panelOutput)
   }, [])
 
-  return { send, isStreaming, applyToDoc, undo, copyOutput }
+  return { send, isStreaming, stop, applyToDoc, undo, copyOutput }
 }

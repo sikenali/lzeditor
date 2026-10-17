@@ -34,6 +34,14 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     onClose?.()
   }
 
+  // 重播：把选中版本载入编辑器，但不关闭面板，便于对照查看
+  const handleReplay = () => {
+    if (!selected) return
+    if (editor) editor.commands.setContent(selected.html)
+    setDocHTML(selected.html)
+    setMdContent(selected.md)
+  }
+
   const handleBarClick = (id: string) => {
     setSelectedVersion(id)
   }
@@ -74,11 +82,11 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
                 <span className="history-version-date">{selected.date} {selected.time}</span>
               </span>
               <div className="history-version-actions">
-                <button className="history-action-btn" onClick={handleRollback}>
+                <button className="history-action-btn" onClick={handleRollback} title="恢复到该版本并关闭面板">
                   <span className="remix ri-arrow-go-back-line"></span>
                   <span>回滚</span>
                 </button>
-                <button className="history-action-btn" onClick={() => {}}>
+                <button className="history-action-btn" onClick={handleReplay} title="载入该版本内容，保持面板可继续对照">
                   <span className="remix ri-restart-line"></span>
                   <span>重播</span>
                 </button>

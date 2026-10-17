@@ -21,12 +21,33 @@ import { LinkDialog } from './components/panels/LinkDialog'
 import { CodeDialog } from './components/panels/CodeDialog'
 import { FormulaDialog } from './components/panels/FormulaDialog'
 import { TableDropdown } from './components/panels/TableDropdown'
-import { OpenKnowledgePanel } from './components/panels/OpenKnowledgePanel'
+import { AIPanel } from './components/editor/AIPanel'
 import { EmojiDialog } from './components/panels/EmojiDialog'
 import { ChartDialog } from './components/panels/ChartDialog'
 import { useEditorStore } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
 import { useTheme } from './hooks/useTheme'
+
+const escapeTableText = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+const buildTableHtml = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
+  const trs: string[] = []
+  for (let r = 0; r < rows; r++) {
+    const isHeader = withHeaderRow && r === 0
+    const tds: string[] = []
+    for (let c = 0; c < cols; c++) {
+      const text = (data?.[r]?.[c] || '').trim()
+      const inner = text
+        ? `<p>${escapeTableText(text).replace(/\n/g, '<br>')}</p>`
+        : '<p></p>'
+      const tag = isHeader ? 'th' : 'td'
+      tds.push(`<${tag}>${inner}</${tag}>`)
+    }
+    trs.push(`<tr>${tds.join('')}</tr>`)
+  }
+  return `<table><tbody>${trs.join('')}</tbody></table>`
+}
 
 function App() {
   useTheme()
@@ -172,23 +193,9 @@ function App() {
     editor.chain().focus().insertContent(text).run()
     closeInsert()
   }
-  const insertTable = (rows: number, cols: number, data?: string[][]) => {
+  const insertTable = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
     if (!editor || rows <= 0 || cols <= 0) return
-    editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run()
-    if (data && data.length > 0) {
-      const ed = useEditorStore.getState().editor
-      if (ed) {
-        let pos = 0
-        for (let r = 0; r < data.length; r++) {
-          for (let c = 0; c < cols && c < data[r].length; c++) {
-            ed.chain().focus().insertTableContent(data[r][c]).run()
-            pos++
-            if (c < cols - 1) ed.chain().focus().goToNextCell().run()
-          }
-          if (r < data.length - 1) ed.chain().focus().goToNextRow().run()
-        }
-      }
-    }
+    editor.chain().focus().insertContent(buildTableHtml(rows, cols, data, withHeaderRow)).run()
     closeInsert()
   }
 
@@ -287,7 +294,7 @@ function App() {
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
-      {openPanel === 'ai' && <OpenKnowledgePanel onClose={closePanel} />}
+      <AIPanel />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
       {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}

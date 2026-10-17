@@ -246,7 +246,7 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
       exportSVG(title, content)
       break
     case 'xlsx':
-      exportXLSX(title, content)
+      await exportXLSX(title, content)
       break
     case 'drawio':
       exportDrawio(title, content)
@@ -443,26 +443,37 @@ async function exportSVG(title: string, content: string): Promise<void> {
   }
 }
 
-function exportXLSX(title: string, content: string): void {
-  const { utils, writeFile } = require('xlsx')
+async function exportXLSX(title: string, content: string): Promise<void> {
+  const XLSX = await import('xlsx')
+  const { utils, writeFile } = XLSX
   // Extract tables from content
+  const stripTags = (html: string) => decodeEntities(html.replace(/<[^>]+>/g, '')).trim()
   const tableMatches = content.match(/<table[^>]*>([\s\S]*?)<\/table>/gi) || []
   const rows: string[][] = [['内容']]
   if (tableMatches.length > 0) {
     tableMatches.forEach(tbl => {
       const cells = tbl.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || []
-      const rowData = cells.map(c => c.replace(/<[^>]+>/g, '').trim())
+      const rowData = cells.map(stripTags)
       if (rowData.length) rows.push(rowData)
     })
   } else {
     const paragraphs = content.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || []
-    paragraphs.slice(0, 50).forEach(p => rows.push([p.replace(/<[^>]+>/g, '').trim()]))
+    paragraphs.slice(0, 50).forEach(p => rows.push([stripTags(p)]))
   }
   const ws = utils.aoa_to_sheet(rows)
   const wb = utils.book_new()
   utils.book_append_sheet(wb, ws, '文档内容')
   writeFile(wb, `${title}.xlsx`)
 }
+
+const decodeEntities = (s: string) =>
+  s.replace(/&nbsp;/g, ' ')
+   .replace(/&lt;/g, '<')
+   .replace(/&gt;/g, '>')
+   .replace(/&quot;/g, '"')
+   .replace(/&#39;|&apos;/g, "'")
+   .replace(/&amp;/g, '&')
+   .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
 
 function exportDrawio(title: string, content: string): void {
   // Export raw HTML as .drawio for manual import into draw.io
