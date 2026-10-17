@@ -1638,6 +1638,64 @@
   line-height: 1;
 }
 
+/* ── Sidebar icon rail (navMode: left) — icon only, floating hover label ── */
+.left-nav {
+  width: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  overflow: visible;
+}
+.left-nav .left-nav-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+.left-nav .left-nav-btn:hover {
+  transform: none;
+}
+.left-nav .left-nav-icon {
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.left-nav .left-nav-label {
+  display: none;
+}
+.left-nav-hover-label {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: var(--color-bg-white);
+  color: var(--color-text-body);
+  font-size: var(--text-sm);
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border: 0.7px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  z-index: var(--z-popover);
+}
+.left-nav-btn:hover .left-nav-hover-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+.left-nav .left-nav-sep {
+  width: 24px;
+  height: 1px;
+  background: var(--color-border-soft);
+  margin: 8px 0;
+}
+
 /* ── Vertical StatusBar ── */
 .statusbar--vertical {
   display: flex;

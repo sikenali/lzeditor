@@ -72,7 +72,7 @@ export const LeftNav: React.FC = () => {
               title={item.label}
             >
               <span className={`remix left-nav-icon ${item.icon}`}></span>
-              <span className="left-nav-label">{item.label}</span>
+              <span className="left-nav-hover-label">{item.label}</span>
             </button>
       )}
     </nav>

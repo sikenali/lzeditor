@@ -35,4 +35,9 @@ const layout1 = read('src/styles/layout.css')
 assert.match(layout1, /\.navtop\s*\{[\s\S]*height:\s*72px/, 'navtop must be 72px tall')
 assert.match(read('src/components/layout/Toolbar.tsx'), /navtop/, 'Toolbar must render navtop class')
 
+const leftNav = read('src/components/layout/LeftNav.tsx')
+assert.match(leftNav, /left-nav-hover-label/, 'LeftNav must render hover label element')
+assert.match(layout1, /\.left-nav-hover-label\s*\{[\s\S]*box-shadow:\s*var\(--shadow-md\)/, 'hover label must use shadow-md')
+assert.match(layout1, /\.left-nav-sep\s*\{[\s\S]*margin/, 'nav groups must have visual spacing')
+
 console.log('theme boundary checks passed')
