@@ -378,7 +378,7 @@ export const Toolbar: React.FC = () => {
 
   return (
     <>
-      <div className={`toolbar${!showToolbarLabels ? ' toolbar-icon-only' : ''}`}>
+      <div className={`navtop toolbar${!showToolbarLabels ? ' toolbar-icon-only' : ''}`}>
         {/* ── Left ── */}
         <div className="toolbar-group">
           <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)}>

@@ -31,4 +31,8 @@ assert.match(settingsStore, /theme: 'parchment'/, 'default theme must be parchme
 assert.doesNotMatch(settingsStore, /ACCEPT_PRESETS|id: 'red'/, 'legacy accent ids must be gone')
 assert.match(settingsStore, /vermilion/, 'new accent presets must be used')
 
+const layout1 = read('src/styles/layout.css')
+assert.match(layout1, /\.navtop\s*\{[\s\S]*height:\s*72px/, 'navtop must be 72px tall')
+assert.match(read('src/components/layout/Toolbar.tsx'), /navtop/, 'Toolbar must render navtop class')
+
 console.log('theme boundary checks passed')

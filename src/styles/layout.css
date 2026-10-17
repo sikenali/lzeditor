@@ -23,6 +23,23 @@
 .toolbar-group { display: flex; align-items: center; gap: 1px; flex-shrink: 0; }
 .toolbar-group--middle { flex: 1; justify-content: center; }
 
+/* ── navtop — DESIGN.md TopNav: 72px, parchment/dark aware ── */
+.navtop {
+  height: 72px;
+  padding: 0 24px;
+  background: var(--color-bg-white);
+  border-bottom: 0.7px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.navtop .toolbar-group {
+  gap: 6px;
+}
+.navtop .toolbar-group--middle {
+  margin: 0 auto;
+}
+
 /* ── Toolbar Button — 76px wide, vertical icon+label ── */
 .toolbar-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
