@@ -1685,6 +1685,8 @@
   position: relative;
   width: 40px;
   height: 40px;
+  padding: 0;
+  gap: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1829,9 +1831,68 @@
 
 /* ── Left-nav three-panel layout ── */
 .app-left-layout {
-  display: flex; flex: 1; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;
   background: var(--background);
 }
+.app-left-body {
+  display: flex; flex: 1; min-height: 0; overflow: hidden;
+}
+
+/* ── Footer (DESIGN.md PageFooter) ── */
+.app-footer {
+  height: 58px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to bottom, var(--color-bg-white), var(--color-bg-secondary));
+  border-top: 1px solid var(--color-border-soft);
+  flex-shrink: 0;
+  gap: 24px;
+}
+.app-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-body);
+  font-size: var(--text-md);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.app-footer-logo { width: 20px; height: 20px; flex-shrink: 0; }
+.app-footer-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.app-footer-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+.app-footer-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+  transform: translateY(-2px);
+}
+.app-footer-btn .remix { font-size: 14px; }
+.app-footer-right {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.app-footer-link { color: var(--color-primary); text-decoration: none; }
+.app-footer-link:hover { text-decoration: underline; }
 
 /* 大纲面板（左侧） */
 .app-outline-panel {
@@ -1846,12 +1907,13 @@
 
 /* 左导航栏 */
 .app-left-nav {
-  width: 200px; flex-shrink: 0;
+  width: 60px; flex-shrink: 0;
   display: flex; flex-direction: column;
+  align-items: center;
   background: var(--chrome-surface);
   border-right: 1px solid var(--glass-border);
-  padding: 8px 6px; gap: 2px;
-  overflow-y: auto; overflow-x: hidden;
+  padding: 8px 2px; gap: 2px;
+  overflow: visible;
   z-index: 50;
 }
 .app-left-nav::-webkit-scrollbar { width: 3px; }

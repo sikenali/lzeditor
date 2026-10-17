@@ -4,6 +4,7 @@ import { Toolbar } from './components/layout/Toolbar'
 import { LeftNav } from './components/layout/LeftNav'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
 import { StatusBar } from './components/layout/StatusBar'
+import { Footer } from './components/layout/Footer'
 import { SettingsDialog } from './components/panels/SettingsDialog'
 import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
@@ -229,12 +230,14 @@ function App() {
         {(showPreview) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
       </div>
       <StatusBar />
+      <Footer />
     </>
   )
 
   // ── 左侧布局：大纲 + 左导航 + 中编辑区 + 右面板 ──
   const leftLayout = (
     <div className="app-left-layout">
+      <div className="app-left-body">
       {/* 大纲面板 */}
       {showOutline && (
         <div className="app-outline-panel">
@@ -264,6 +267,8 @@ function App() {
           {showPreview && <SidebarPreview />}
         </div>
       )}
+      </div>
+      <Footer />
     </div>
   )
 

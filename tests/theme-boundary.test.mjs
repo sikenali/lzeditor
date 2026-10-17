@@ -46,4 +46,13 @@ assert.doesNotMatch(statusBar, /statusbar-center/, 'center outline/preview/style
 const editorStore = read('src/store/editorStore.ts')
 assert.match(editorStore, /statusbarCollapsed/, 'store must persist statusbarCollapsed')
 
+const footer = read('src/components/layout/Footer.tsx')
+assert.match(layout1, /\.app-footer\s*\{[\s\S]*height:\s*58px/, 'footer must be 58px tall')
+assert.match(footer, /懒猫编辑器/, 'footer must show brand name')
+assert.match(footer, /https:\/\/lazycat\.cloud\//, 'footer must link to lazycat.cloud')
+assert.match(footer, /Powered by\s*<a[^>]*>LightOS<\/a>/, 'footer must credit LightOS')
+const app = read('src/App.tsx')
+assert.match(app, /<Footer/, 'App must render Footer')
+assert.match(app, /<StatusBar/, 'App must render StatusBar')
+
 console.log('theme boundary checks passed')
