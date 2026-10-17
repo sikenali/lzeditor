@@ -167,7 +167,7 @@ export interface SettingsState {
   maxTokens: number
   apiKeys: ApiKeyEntry[]
   selectedModelId: string
-  theme: 'dark' | 'light' | 'system'
+  theme: 'parchment' | 'dark'
   accentColor: string
   shortcut: string
   activeGroup: SettingsGroup
@@ -187,6 +187,7 @@ export interface SettingsState {
   navMode?: 'top' | 'left'
   toolbarCollapsed?: boolean
   toolbarWidth?: number
+  statusbarCollapsed?: boolean
   // ── Toolbar ──
   compactToolbar?: boolean
   showToolbarLabels?: boolean
@@ -240,7 +241,7 @@ export interface SettingsState {
 }
 
 export interface ThemeState {
-  mode: 'dark' | 'light' | 'system'
+  mode: 'parchment' | 'dark'
   accentColor: string
 }
 

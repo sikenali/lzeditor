@@ -139,13 +139,4 @@ export function useTheme() {
     if (macCodeBlock) root.setAttribute('data-mac-code', 'true')
     else root.removeAttribute('data-mac-code')
   }, [macCodeBlock])
-
-  // Follow OS theme while in "system" mode
-  useEffect(() => {
-    if (theme !== 'system') return
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => applyTheme(theme, accentColor)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [theme, accentColor])
 }

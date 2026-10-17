@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import type { SettingsState, SettingsGroup, ApiKeyEntry } from '../shared/types'
+import { ACCENT_PRESETS } from '../styles/themes'
+
+export { ACCENT_PRESETS } from '../styles/themes'
 
 export const DEFAULT_API_KEYS: ApiKeyEntry[] = [
   {
@@ -41,8 +44,8 @@ export const DEFAULT_SETTINGS: SettingsState = {
   maxTokens: 1024,
   apiKeys: DEFAULT_API_KEYS,
   selectedModelId: 'anthropic-claude',
-  theme: 'light',
-  accentColor: 'ink',
+  theme: 'parchment',
+  accentColor: 'vermilion',
   shortcut: 'Ctrl+/',
   activeGroup: 'theme',
   subTab: '',
@@ -69,6 +72,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   navMode: 'top' as 'top' | 'left',
   toolbarCollapsed: false,
   toolbarWidth: 220,
+  statusbarCollapsed: false,
   // ── Toolbar defaults ──
   compactToolbar: true,
   showToolbarLabels: true,
@@ -109,14 +113,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   selectedModelName: '',
 }
 
-export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [
-  { id: 'red',    name: '朱红',   color: '#c43d3d' },
-  { id: 'teal',   name: '云蓝',   color: '#6b8fa3' },
-  { id: 'green',  name: '玉绿',   color: '#5b8c5a' },
-  { id: 'gold',   name: '金色',   color: '#c9a96e' },
-  { id: 'ink',    name: '墨色',   color: '#3d2b1f' },
-]
-
 type SettingsStore = SettingsState & {
   setActiveGroup: (group: SettingsGroup) => void
   setSubTab: (subTab: string) => void
@@ -156,13 +152,15 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
 /** Resolve the effective accent color for a given preset id. */
 export function getAccentColor(presetId: string): string {
-  return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#5b8c5a'
+  return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#BE3B2E'
 }
 
 export function saveSettingsToStorage(settings: Partial<SettingsState>) {
   try {
     const { apiKeys, ...rest } = settings
     localStorage.setItem('lzeditor-settings', JSON.stringify(rest))
+    if (settings.theme) localStorage.setItem('lzeditor-theme', settings.theme)
+    if (settings.accentColor) localStorage.setItem('lzeditor-accent', getAccentColor(settings.accentColor))
     if (apiKeys) {
       localStorage.setItem('lzeditor-api-keys', JSON.stringify(apiKeys))
     }
@@ -180,6 +178,14 @@ export function loadSettingsFromStorage(): Partial<SettingsState> {
         const keysSaved = localStorage.getItem('lzeditor-api-keys')
         if (keysSaved) parsed.apiKeys = JSON.parse(keysSaved)
       } catch {}
+      const themeSaved = localStorage.getItem('lzeditor-theme')
+      if (themeSaved) parsed.theme = themeSaved as SettingsState['theme']
+      const accentSaved = localStorage.getItem('lzeditor-accent')
+      if (accentSaved) {
+        parsed.accentColor = ACCENT_PRESETS.find(
+          p => p.id === accentSaved || p.color.toLowerCase() === accentSaved.toLowerCase(),
+        )?.id ?? parsed.accentColor
+      }
       return parsed
     }
   } catch {

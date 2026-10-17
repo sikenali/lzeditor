@@ -26,4 +26,9 @@ assert.match(themes, /parchment/, 'themes.ts must define parchment')
 assert.match(themes, /dark/, 'themes.ts must define dark')
 assert.doesNotMatch(colorTokens, /\[data-theme=/, 'color-tokens.css must not keep [data-theme] override blocks')
 
+const settingsStore = read('src/store/settingsStore.ts')
+assert.match(settingsStore, /theme: 'parchment'/, 'default theme must be parchment')
+assert.doesNotMatch(settingsStore, /ACCEPT_PRESETS|id: 'red'/, 'legacy accent ids must be gone')
+assert.match(settingsStore, /vermilion/, 'new accent presets must be used')
+
 console.log('theme boundary checks passed')
