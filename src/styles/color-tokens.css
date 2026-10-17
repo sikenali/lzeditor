@@ -1,0 +1,193 @@
+/* ============================================================
+   LZEditor — Legacy semantic tokens (compatibility bridge)
+   The single source of truth is now the bid-maker `--color-*`
+   system (src/styles/tokens.css + src/styles/themes.ts, applied
+   by JS in hooks/useTheme.ts). Every legacy token below aliases
+   a --color-* token so content/editor/panel CSS keeps working
+   without per-rule rewrites. No [data-theme] override blocks.
+   ============================================================ */
+
+:root {
+  /* Backgrounds */
+  --background:           var(--color-bg-main);
+  --background-card:      var(--color-bg-card);
+  --background-elevated:  var(--color-bg-white);
+  --background-hover:     var(--color-bg-secondary);
+  --background-input:     var(--color-bg-secondary);
+  --background-code:      var(--color-bg-secondary);
+  --background-quote:     var(--color-bg-secondary);
+  --background-muted:     var(--color-bg-secondary);
+
+  /* Text */
+  --foreground:           var(--color-text-primary);
+  --foreground-secondary: var(--color-text-secondary);
+  --foreground-muted:     var(--color-text-muted);
+  --foreground-heading:   var(--color-text-primary);
+  --foreground-heading-2: var(--color-text-secondary);
+
+  /* Accent */
+  --accent:               var(--color-primary);
+  --accent-foreground:    #ffffff;
+  --accent-hover:         var(--accent-a20);
+  --accent-primary:       var(--color-primary);
+
+  /* Accent alpha variants (overwritten dynamically by useTheme for the active accent) */
+  --accent-a3:  rgba(190, 59, 46, 0.03);
+  --accent-a5:  rgba(190, 59, 46, 0.05);
+  --accent-a8:  rgba(190, 59, 46, 0.08);
+  --accent-a10: rgba(190, 59, 46, 0.10);
+  --accent-a15: rgba(190, 59, 46, 0.15);
+  --accent-a20: rgba(190, 59, 46, 0.20);
+  --accent-a30: rgba(190, 59, 46, 0.30);
+  --accent-a40: rgba(190, 59, 46, 0.40);
+  --accent-a60: rgba(190, 59, 46, 0.60);
+
+  /* Borders */
+  --border:         var(--color-border);
+  --border-default: var(--color-border);
+  --border-subtle:  var(--color-border-soft);
+  --border-input:   var(--color-border);
+  --border-light:   rgba(255, 255, 255, 0.08);
+  --border-lighter: rgba(255, 255, 255, 0.12);
+
+  /* Additional semantic tokens */
+  --scrollbar-track:       transparent;
+  --scrollbar-thumb:       rgba(128, 128, 128, 0.30);
+  --scrollbar-thumb-hover: rgba(128, 128, 128, 0.50);
+  --selection-bg:          var(--accent-a30);
+  --selection-text:        var(--color-text-primary);
+  --focus-ring:            var(--accent-a40);
+
+  /* Fixed chrome — isolated from content typography themes */
+  --chrome-toolbar-bg:             var(--color-bg-white);
+  --chrome-toolbar-hover-bg:       var(--color-bg-secondary);
+  --chrome-toolbar-active-bg:      var(--color-primary-soft);
+  --chrome-toolbar-icon:           var(--color-text-secondary);
+  --chrome-toolbar-icon-hover:     var(--color-text-primary);
+  --chrome-toolbar-label:          var(--color-text-muted);
+  --chrome-toolbar-label-hover:    var(--color-text-primary);
+  --chrome-toolbar-active:         var(--color-primary);
+  --chrome-toolbar-border:         var(--color-border);
+
+  --chrome-surface:           var(--color-bg-white);
+  --chrome-surface-hover:     var(--color-bg-secondary);
+  --chrome-surface-border:    var(--color-border-soft);
+  --chrome-surface-text:      var(--color-text-body);
+  --chrome-surface-text-dim:  var(--color-text-muted);
+
+  /* Histogram */
+  --histo-dark:         var(--color-bg-card);
+  --histo-light:        var(--color-border-soft);
+  --histo-current-dark: var(--color-primary-soft);
+  --histo-label:        var(--color-text-muted);
+  --histo-tip:          var(--color-primary);
+
+  /* Glass morphism */
+  --glass-bg:           linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  --glass-bg-hover:     linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
+  --glass-bg-active:    linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --glass-border:       rgba(255, 255, 255, 0.12);
+  --glass-border-hover: rgba(255, 255, 255, 0.22);
+  --glass-shadow:       0 4px 24px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --glass-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --glass-blur:         blur(20px);
+  --glass-text:         var(--color-text-primary);
+  --glass-text-dim:     var(--color-text-muted);
+
+  --chrome-statusbar-bg:                   var(--color-bg-white);
+  --chrome-statusbar-text:                 var(--color-text-body);
+  --chrome-statusbar-muted:                var(--color-text-muted);
+  --chrome-statusbar-divider:              var(--color-border-soft);
+  --chrome-statusbar-seal-bg:              linear-gradient(135deg, var(--color-primary), var(--accent-a60));
+  --chrome-statusbar-pill-border:          var(--color-border);
+  --chrome-statusbar-pill-hover-bg:        var(--accent-a10);
+  --chrome-statusbar-pill-hover-border:    var(--accent-a30);
+  --chrome-statusbar-pill-hover-text:      var(--color-primary);
+  --chrome-statusbar-icon-bg:              var(--color-bg-secondary);
+  --chrome-statusbar-icon-text:            var(--color-text-body);
+  --chrome-statusbar-icon-hover:           var(--accent-a30);
+  --chrome-statusbar-badge-bg:             var(--color-bg-secondary);
+  --chrome-statusbar-badge-border:         var(--color-border-soft);
+
+  /* Toolbar aliases (menus/panels hover materials) */
+  --toolbar-bg:          var(--chrome-toolbar-bg);
+  --toolbar-hover:       var(--chrome-toolbar-hover-bg);
+  --toolbar-active:      var(--chrome-toolbar-active-bg);
+  --toolbar-active-bg:   var(--chrome-toolbar-active-bg);
+  --toolbar-icon:        var(--chrome-toolbar-icon);
+  --toolbar-icon-hover:  var(--chrome-toolbar-icon-hover);
+  --toolbar-label:       var(--chrome-toolbar-label);
+  --toolbar-label-hover: var(--chrome-toolbar-label-hover);
+  --toolbar-active-icon: var(--chrome-toolbar-active);
+  --toolbar-border:      var(--chrome-toolbar-border);
+  --card:                var(--color-bg-card);
+  --card-border:         var(--color-border);
+
+  /* AI panel */
+  --ai-panel-bg:        var(--color-bg-card);
+  --ai-panel-border:    var(--accent-a30);
+  --ai-panel-shadow:    0 8px 40px rgba(0, 0, 0, 0.20), 0 0 1px rgba(0, 0, 0, 0.04);
+  --ai-loading-dot:     var(--accent-a60);
+
+  /* Scrim / overlay */
+  --bg-scrim: rgba(0, 0, 0, 0.50);
+
+  /* Auxiliary — mapped onto functional colors */
+  --amber:        var(--color-warning);
+  --amber-soft:   var(--color-warning-soft);
+  --amber-dim:    var(--color-warning);
+  --red:          var(--color-error);
+  --red-soft:     var(--color-error-soft);
+  --red-text:     var(--color-error);
+  --yellow:       var(--color-warning);
+  --green:        var(--color-success);
+  --green-soft:   var(--color-success-soft);
+  --green-accent: var(--color-success-strong);
+
+  /* Feedback surfaces */
+  --success-bg:     var(--color-success-soft);
+  --success-border: var(--color-success);
+  --danger-bg:      var(--color-error-soft);
+  --note-bg:        var(--color-warning-soft);
+  --note-border:    var(--color-warning);
+
+  /* Shadows */
+  --shadow-color-1: rgba(0, 0, 0, 0.12);
+  --shadow-color-2: rgba(0, 0, 0, 0.18);
+  --shadow-strong:  rgba(0, 0, 0, 0.25);
+  --shadow-lg:      0 20px 60px var(--shadow-strong);
+  --shadow-modal:   0 24px 80px rgba(0, 0, 0, 0.35), 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.16);
+  --shadow-glass:   0 8px 32px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* Fonts */
+  --font-sans: var(--font-family);
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Seal accent */
+  --accent-seal:       var(--color-primary);
+  --accent-seal-light: var(--color-primary);
+
+  /* Backward-compat aliases */
+  --bg-primary:       var(--background);
+  --bg-secondary:     var(--background-card);
+  --bg-tertiary:      var(--background-muted);
+  --bg-code:          var(--background-code);
+  --bg-elevated:      var(--background-elevated);
+  --bg-overlay:       var(--background-card);
+  --bg-hover:         var(--background-hover);
+  --bg-input:         var(--background-input);
+  --bg-quote:         var(--background-quote);
+  --text-primary:     var(--foreground);
+  --text-secondary:   var(--foreground-secondary);
+  --text-muted:       var(--foreground-muted);
+  --text-heading:     var(--foreground-heading);
+  --text-heading-2:   var(--foreground-heading-2);
+  --text-body:        var(--color-text-body);
+  --text-on-accent:   var(--accent-foreground);
+  --accent-a70:       var(--accent-a60);
+  --green-accent-soft: var(--color-success-soft);
+  --red-border-soft:  var(--color-error-soft);
+  --accent-tint-bg:   var(--color-success-soft);
+  --danger-text:      var(--color-warning);
+}
