@@ -185,7 +185,7 @@ export interface SettingsState {
   navMode?: 'top' | 'left'
   statusbarCollapsed?: boolean
   // ── Toolbar ──
-  compactToolbar?: boolean
+  quickFormatButtons?: boolean
   showToolbarLabels?: boolean
   // ── Startup / app behavior ──
   enableTabs?: boolean

@@ -67,7 +67,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   previewModeEnabled: true,
   navMode: 'top' as 'top' | 'left',
   // ── Toolbar defaults ──
-  compactToolbar: true,
+  quickFormatButtons: true,
   showToolbarLabels: true,
   // ── Startup / app behavior defaults ──
   enableTabs: true,

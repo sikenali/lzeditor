@@ -81,7 +81,7 @@ export const Toolbar: React.FC = () => {
   const editor = useEditorStore((s: any) => s.editor)
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const createDoc = useEditorStore((s) => s.createDoc)
-  const compactToolbar = useSettingsStore((s) => s.compactToolbar)
+  const quickFormatButtons = useSettingsStore((s) => s.quickFormatButtons !== false)
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
   const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
   const [menuOpen, setMenuOpen] = useState<MenuKey>(null)
@@ -395,7 +395,7 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Middle ── */}
         <div className="toolbar-group toolbar-group--middle">
-          {compactToolbar && <>
+          {quickFormatButtons && <>
             <button className="toolbar-btn" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className="toolbar-label">粗体</span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
             <button className="toolbar-btn" onClick={() => applyCmd('underline')}><span className="remix toolbar-icon ri-underline"></span><span className="toolbar-label">下划线</span></button>
@@ -435,7 +435,7 @@ export const Toolbar: React.FC = () => {
         </div>
 
         {/* ── Right ── */}
-        <div className={`toolbar-group${compactToolbar ? ' toolbar-group--compact' : ''}`}>
+        <div className={`toolbar-group${quickFormatButtons ? ' toolbar-group--compact' : ''}`}>
           <button
             className={`toolbar-btn${aiPanelVisible ? ' toolbar-btn--active' : ''}`}
             onClick={() => {
