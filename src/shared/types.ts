@@ -153,6 +153,8 @@ export interface EditorStoreState {
   switchDoc: (id: string) => void
   closeDoc: (id: string) => void
   renameDoc: (id: string, title: string) => void
+  // 把内置文档（使用手册）还原成出厂内容：清掉本地覆盖，重读内置 md
+  resetDocContent: (id: string) => void
   docsMd: Record<string, string>
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void
   updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => void

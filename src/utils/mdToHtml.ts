@@ -30,27 +30,71 @@ function findMatchingParen(str: string, start: number): number {
   return -1
 }
 
+/** 提取围栏代码块，返回把代码块替换成 %%CODEBLOCK_n%% 占位符后的文本。 */
+function extractFencedCodeBlocks(md: string, out: string[]): string {
+  const lines = md.split('\n')
+  const result: string[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    const m = /^ {0,3}(`{3,}|~{3,})\s*([^\s`]*)\s*$/.exec(lines[i])
+    if (!m) {
+      result.push(lines[i])
+      i++
+      continue
+    }
+
+    const fence = m[1]
+    const fenceLen = fence.length
+    const lang = m[2]
+    const closeRe = new RegExp('^ {0,3}' + (fence[0] === '`' ? '`' : '~') + `{${fenceLen},}\\s*$`)
+
+    let j = i + 1
+    while (j < lines.length && !closeRe.test(lines[j])) j++
+
+    // 围栏没闭合就原样保留，避免把后半篇文档都吞进代码块
+    if (j >= lines.length) {
+      result.push(lines[i])
+      i++
+      continue
+    }
+
+    const code = lines.slice(i + 1, j).join('\n')
+    out.push(`<pre><code${lang ? ` class="language-${escapeHtml(lang)}"` : ''}>${escapeHtml(code)}</code></pre>`)
+    result.push(`%%CODEBLOCK_${out.length - 1}%%`)
+    i = j + 1
+  }
+
+  return result.join('\n')
+}
+
 function convertMarkdownToHtml(md: string): string {
   let html = md.replace(/\r/g, '')
 
   // ── Code blocks (fenced) ──
+  // 支持 3 个及以上的 ``` 和 ~~~，并保证闭合围栏的长度不小于起始围栏。
+  // 之前用 /```(\w*)\n([\s\S]*?)```/ 有两个问题：
+  //   1. 四个反引号包裹三反引号内容的写法（手册 B07 就在用）会被先切开；
+  //   2. 语言标签 \w* 匹配不全，c++ / object-c 这类会被截断。
   const codeBlocks: string[] = []
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m: string, lang: string, code: string) => {
-    const idx = codeBlocks.length
-    codeBlocks.push(`<pre><code${lang ? ` class="language-${lang}"` : ''}>${escapeHtml(code.replace(/\n$/, ''))}</code></pre>`)
-    return `%%CODEBLOCK_${idx}%%`
-  })
+  html = extractFencedCodeBlocks(html, codeBlocks)
 
   // ── Inline code ──
    html = html.replace(/`([^`\n]+)`/g, (_m: string, code: string) => `<code>${escapeHtml(code)}</code>`)
 
-  // ── Headings (带锚点 id，供页内跳转与内部链接使用) ──
-   html = html.replace(/^######\s+(.+)$/gm, (_m: string, text: string) => `<h6 id="${headingId(text)}">${text}</h6>`)
-   html = html.replace(/^#####\s+(.+)$/gm, (_m: string, text: string) => `<h5 id="${headingId(text)}">${text}</h5>`)
-   html = html.replace(/^####\s+(.+)$/gm, (_m: string, text: string) => `<h4 id="${headingId(text)}">${text}</h4>`)
-   html = html.replace(/^###\s+(.+)$/gm, (_m: string, text: string) => `<h3 id="${headingId(text)}">${text}</h3>`)
-   html = html.replace(/^##\s+(.+)$/gm, (_m: string, text: string) => `<h2 id="${headingId(text)}">${text}</h2>`)
-   html = html.replace(/^#\s+(.+)$/gm, (_m: string, text: string) => `<h1 id="${headingId(text)}">${text}</h1>`)
+   // ── Headings (带锚点 id，供页内跳转与内部链接使用) ──
+   const headingSeen = new Map<string, number>()
+   const headingAnchor = (text: string) => {
+     let base = headingId(text)
+     if (!base) base = 'section'
+     const n = headingSeen.get(base) || 0
+     headingSeen.set(base, n + 1)
+     return n ? `${base}-${n + 1}` : base
+   }
+   html = html.replace(/^(#{1,6})[ \t]*(.+)$/gm, (_m: string, hashes: string, text: string) => {
+     const level = hashes.length
+     return `<h${level} id="${headingAnchor(text)}">${text}</h${level}>`
+   })
 
   // ── Horizontal rule ──
   html = html.replace(/^(---+|\*\*\*+|___+)\s*$/gm, '<hr>')
@@ -123,8 +167,11 @@ function convertMarkdownToHtml(md: string): string {
    html = html.replace(/^- \[\s\]\s+(.+)$/gmi, (_m: string, text: string) => `<li class="task-item"><input type="checkbox" disabled> ${text}</li>`)
 
   // ── List items (支持 emoji 前缀如 * 📝 ...) ──
-   html = html.replace(/^[\s\S]*?[-*+]\s+(.+)$/gm, (_m: string, text: string) => `<li>${text}</li>`)
-   html = html.replace(/^[\s\S]*?\d+\.\s+(.+)$/gm, (_m: string, text: string) => `<li>${text}</li>`)
+  // 注意：这里不能写 ^[\s\S]*? —— [\s\S] 会跨行，把前面的 <h1>/<h2> 全部
+  // 当成正则的「前导内容」一起吃掉，整篇文档的标题就没了。
+  // 只允许行内空白缩进。
+   html = html.replace(/^[ \t]*[-*+]\s+(.+)$/gm, (_m: string, text: string) => `<li>${text}</li>`)
+   html = html.replace(/^[ \t]*\d+\.\s+(.+)$/gm, (_m: string, text: string) => `<li>${text}</li>`)
 
   // ── Wrap consecutive <li> ──
   html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, (match: string) => {

@@ -36,6 +36,21 @@
 .navtop .toolbar-group {
   gap: 6px;
 }
+/* 20 个工具栏按钮均为固定宽度，窄屏下会整排溢出、把「导出/设置」推出可视区。
+   按断点收窄按钮宽度，保证任意常见屏宽下都能完整排下。 */
+@media (max-width: 1720px) {
+  .navtop .toolbar-btn { width: 66px; }
+  .navtop .toolbar-group { gap: 5px; }
+}
+@media (max-width: 1480px) {
+  .navtop .toolbar-btn { width: 56px; }
+  .navtop .toolbar-group { gap: 4px; }
+}
+@media (max-width: 1300px) {
+  .navtop .toolbar-btn { width: 48px; }
+  .navtop .toolbar-group { gap: 3px; }
+  .navtop .toolbar-label { font-size: 11px; }
+}
 .navtop .toolbar-group--middle {
   margin: 0 auto;
 }
@@ -1441,6 +1456,29 @@
   background: var(--accent-a10);
   color: var(--accent-primary);
   flex-shrink: 0;
+}
+/* 内置手册条目的「还原为出厂内容」按钮：默认收起，hover 才出现，
+   避免 20 篇文章的树被一排小按钮撑满 */
+.tree-reset-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s, background 0.12s;
+}
+.library-tree-item:hover .tree-reset-btn { opacity: 1; }
+.tree-reset-btn:hover {
+  color: var(--accent-primary);
+  background: var(--accent-a10);
 }
 .tree-children {
   display: flex;

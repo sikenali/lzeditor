@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
 import { htmlToMarkdown } from '../utils/htmlToMd'
+import { getDocMd } from '../utils/docSource'
+import { mdToHtml } from '../utils/mdToHtml'
 
 const MAX_VERSIONS = 10
 
@@ -252,6 +254,18 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       docs: s.docs.map((d: any) => d.id === id ? { ...d, title } : d),
       ...(s.activeDocId === id ? { docTitle: title } : {}),
     }))
+  },
+  resetDocContent: (id: string) => {
+    // 清掉本地覆盖，内置文档就自动回到出厂内容
+    try { localStorage.removeItem('lzeditor-doc-' + id) } catch {}
+    const s = get()
+    const next = { ...(s.docsMd || {}) }
+    delete next[id]
+    const md = getDocMd(id)
+    set({ docsMd: next, ...(s.activeDocId === id ? { mdContent: md } : {}) })
+    if (s.activeDocId === id) {
+      try { s.editor?.commands?.setContent(mdToHtml(md), { emitUpdate: false }) } catch {}
+    }
   },
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
     docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,

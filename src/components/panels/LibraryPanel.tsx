@@ -17,7 +17,15 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const setDocGitMeta = useEditorStore((s: any) => s.setDocGitMeta)
   const [renameTargetId, setRenameTargetId] = useState<string | null>(null)
   const [category, setCategory] = useState('docs')
-  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>(() => {
+    // 内置使用手册的分组默认展开，否则 20 篇文章藏在两层折叠里等于不存在
+    const init: Record<string, boolean> = {}
+    for (const d of useEditorStore.getState().docs) {
+      const path = (d as any).path || ''
+      if (path) init[`folder-${path.replace(/\//g, '-')}`] = true
+    }
+    return init
+  })
   const [searchText, setSearchText] = useState('')
 
   const handleClose = () => {
@@ -54,7 +62,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   }
 
   const flatDocs = useMemo(() => {
-    const visible = docs.filter((d: any) => !d.system)
+    // 注意：不要再过滤 d.system。内置使用手册 20 篇都标了 system，
+    // 之前在这里被整包藏掉，用户除了「关于」页的第一篇外一篇都打不开。
+    const visible = docs
     if (searchText) {
       return visible.filter((d: any) =>
         d.title.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -202,6 +212,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
                 expandedFolders={expandedFolders}
                 onToggleFolder={toggleFolder}
                 onSelectDoc={(id) => { useEditorStore.getState().switchDoc(id); handleClose() }}
+                onResetDoc={(id) => useEditorStore.getState().resetDocContent(id)}
                 searchActive={!!searchText}
               />
             </div>

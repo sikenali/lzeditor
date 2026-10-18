@@ -1,4 +1,5 @@
 import { DEFAULT_CONTENT, README_CONTENT } from '../components/editor/constants'
+import { htmlToMarkdown } from './htmlToMd'
 import a01 from '../content/a01-特色功能.md?raw'
 import a02 from '../content/a02-文档库和文档.md?raw'
 import a03 from '../content/a03-基本格式.md?raw'
@@ -45,30 +46,40 @@ export const BUILTIN_DOCS: Record<string, string> = {
 
 const BUILTIN_IDS = Object.keys(BUILTIN_DOCS)
 
-export function getDocMd(id: string): string {
-  if (id === 'readme') return README_CONTENT
-  if (id === 'welcome') return DEFAULT_CONTENT
-  if (BUILTIN_DOCS[id]) return BUILTIN_DOCS[id]
+function readLocalDoc(id: string): { md?: string; html?: string } | null {
   try {
     const s = localStorage.getItem(`lzeditor-doc-${id}`)
-    if (s) {
-      const d = JSON.parse(s)
-      if (d.md) return d.md
-    }
-  } catch {}
-  return ''
+    return s ? (JSON.parse(s) as { md?: string; html?: string }) : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 取一篇文档的 Markdown。
+ * 本地有用户改动过的版本就返回本地版本（内置手册也是文档，改了就得留住），
+ * 否则回落到内置内容。还原出厂内容走 resetDocContent。
+ *
+ * readme 是特例：它的富文本加载走 HTML（见 getDocHtml），因为 htmlToMarkdown
+ * 往返会破坏里面的居中段落和原始 HTML。所以 readme 的 markdown 只是按需派生，
+ * 供代码模式、导出、侧边预览这类只能吃 markdown 的地方使用。
+ */
+export function getDocMd(id: string): string {
+  if (id === 'readme') {
+    const local = readLocalDoc(id)
+    return local?.md || (local?.html ? htmlToMarkdown(local.html) : '') || README_CONTENT
+  }
+  if (id === 'welcome') return DEFAULT_CONTENT
+  const local = readLocalDoc(id)
+  if (local?.md) return local.md
+  return BUILTIN_DOCS[id] || ''
 }
 
 export function getDocHtml(id: string): string {
-  if (id === 'readme') return ''
-  if (id === 'welcome') return ''
-  if (BUILTIN_IDS.includes(id)) return ''
+  const local = readLocalDoc(id)
+  if (local?.html) return local.html
+  if (id === 'readme' || id === 'welcome') return ''
   try {
-    const s = localStorage.getItem(`lzeditor-doc-${id}`)
-    if (s) {
-      const d = JSON.parse(s)
-      if (d.html) return d.html
-    }
     const old = localStorage.getItem('lzeditor-doc')
     if (old) {
       const d = JSON.parse(old)
@@ -76,4 +87,9 @@ export function getDocHtml(id: string): string {
     }
   } catch {}
   return ''
+}
+
+/** 是否为一篇内置文档（使用手册，或内置的 README）。这类文档可以还原出厂内容。 */
+export function isBuiltinDoc(id: string): boolean {
+  return BUILTIN_IDS.includes(id) || id === 'readme'
 }

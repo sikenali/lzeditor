@@ -1,20 +1,3 @@
-declare module 'better-sqlite3' {
-  interface Database {
-    exec(sql: string): Database
-    prepare(sql: string): PreparedStatement
-  }
-  interface PreparedStatement {
-    get(...args: any[]): any
-    run(...args: any[]): { changes: number; lastInsertRowid: number }
-  }
-  class Database {
-    constructor(path: string)
-    exec(sql: string): Database
-    prepare(sql: string): PreparedStatement
-  }
-  export default Database
-}
-
 declare module 'bcryptjs' {
   function hashSync(value: string, salt: number): string
   function compareSync(value: string, hash: string): boolean

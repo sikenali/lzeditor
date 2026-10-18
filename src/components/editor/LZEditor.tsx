@@ -19,10 +19,11 @@ import { Superscript, Subscript } from './extensions/SupSub'
 import { Mathematics } from './extensions/Mathematics'
 import { ImageExt } from './extensions/ImageExt'
 import { StyledInsertAttributes } from './extensions/StyledInsertAttributes'
+import { HeadingAnchors } from './extensions/HeadingAnchors'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
-import { getDocMd } from '../../utils/docSource'
+import { getDocMd, getDocHtml } from '../../utils/docSource'
 import { renderMdWithMath } from '../../utils/mdWithMath'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
@@ -190,6 +191,7 @@ export const LZEditor = () => {
       Superscript,
       Subscript,
       StyledInsertAttributes,
+      HeadingAnchors,
       Mathematics,
       ImageExt,
       TaskList,
@@ -206,6 +208,10 @@ export const LZEditor = () => {
     ],
     content: (() => {
       const docId = activeDocId || 'readme'
+      // readme 优先用本地存好的 HTML：它能 1:1 还原用户敲进去的内容，
+      // 而 markdown 往返会丢掉居中段落和原始 HTML。
+      const localHtml = docId === 'readme' ? getDocHtml(docId) : ''
+      if (localHtml) return localHtml
       const md = docsMd?.[docId] || getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
       if (!md) return ''
       return mdToHtml(md)
@@ -218,21 +224,18 @@ export const LZEditor = () => {
         useEditorStore.getState().setLastEditTime(Date.now())
         let html = editor.getHTML()
         html = cleanContentHtml(html)
+        const md = htmlToMarkdown(html)
         const text = editor.getText()
         setDocHTML(html)
-        // readme 文档不往返转换：直接用原始 Markdown，避免 htmlToMarkdown 破坏代码块格式
-        if (docId === 'readme') {
-          const rawMd = getDocMd(docId)
-          setMdContent(rawMd)
-        } else {
-          setMdContent(htmlToMarkdown(html))
-        }
+        setMdContent(md)
         setWordCount(text.split(/\s+/).filter(Boolean).length)
         setCharCount(text.length)
         takeSnapshot(editor)
+        // readme 不在 onCreate 里回写：刚加载出来的内容照原样写回去，只会把
+        // 规整的 README_CONTENT 换成一次 htmlToMarkdown 往返的结果。
+        // 用户真正编辑内容由 onUpdate 负责持久化。
         if (docId !== 'readme') {
-          const key = `lzeditor-doc-${docId}`
-          localStorage.setItem(key, JSON.stringify({ md: htmlToMarkdown(html), html, savedAt: Date.now() }))
+          localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
         }
       }
     },
@@ -240,12 +243,16 @@ export const LZEditor = () => {
       useEditorStore.getState().setLastEditTime(Date.now())
       const text = editor.getText()
       const html = cleanContentHtml(editor.getHTML())
+      const docId = useEditorStore.getState().activeDocId
+      // readme 的 markdown 只是派生视图（供代码模式/导出/侧边预览用），
+      // 富文本内容以 HTML 为准，所以往返不会污染编辑器。
       const md = htmlToMarkdown(html)
       setWordCount(text.split(/\s+/).filter(Boolean).length)
       setCharCount(text.length)
-      const docId = useEditorStore.getState().activeDocId
-      updateDoc({ html, md, docsMd: docId ? { [docId]: md } : undefined })
-        if (docId && docId !== 'readme') {
+      // readme 不写进 docsMd：docsMd 里的 markdown 会被当作内容来源，
+      // 一写进去，切文档再切回来就会用旧的 markdown 覆盖掉刚编辑的内容。
+      updateDoc({ html, md, docsMd: docId && docId !== 'readme' ? { [docId]: md } : undefined })
+      if (docId) {
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
       }
       if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
@@ -274,13 +281,6 @@ export const LZEditor = () => {
   React.useEffect(() => {
     setEditorRef(editorRef.current)
     setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
-  }, [])
-
-  // 每次挂载清除 readme 的 localStorage 旧 HTML，确保始终从 readme.md 文件读取干净内容
-  React.useEffect(() => {
-    if (activeDocId === 'readme') {
-      localStorage.removeItem('lzeditor-doc-readme')
-    }
   }, [])
 
   // Apply editor style settings from store
@@ -477,8 +477,10 @@ export const LZEditor = () => {
     if (!editor || !activeDocId) return
     if (activeDocId === lastDocIdRef.current) return
     lastDocIdRef.current = activeDocId
+    // readme 同样优先用本地 HTML，和上面的初始加载保持一致
+    const localHtml = activeDocId === 'readme' ? getDocHtml(activeDocId) : ''
     const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'readme' ? README_CONTENT : '')
-    const html = md ? mdToHtml(md) : ''
+    const html = localHtml || (md ? mdToHtml(md) : '')
     editor.commands.setContent(html)
   }, [activeDocId, editor, docsMd])
 
@@ -702,8 +704,9 @@ export const LZEditor = () => {
       const docId = useEditorStore.getState().activeDocId
       try {
         const html = mdToHtml(value || '')
-        updateDoc({ md: value, html, docsMd: docId ? { [docId]: value } : undefined })
-      if (docId && docId !== 'readme') {
+        // readme 的 markdown 只作为派生视图，不进 docsMd（见 onUpdate 的说明）
+        updateDoc({ md: value, html, docsMd: docId && docId !== 'readme' ? { [docId]: value } : undefined })
+        if (docId) {
           localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
         }
         editor?.commands.setContent(html, { emitUpdate: false })

@@ -1,21 +1,22 @@
 /** Strip all DOM nodes that have data-read-frog-* attributes (browser extension injection). */
 export function stripReadFrogNodes(container: HTMLElement | null): void {
   if (!container) return
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
-    acceptNode(node: Node) {
-      if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_REJECT
+  // 注意：不能用 acceptNode 返回 ACCEPT/REJECT 来区分「要不要删」。
+  // nextNode() 只产出 acceptNode 返回 ACCEPT 的节点，之前那段逻辑把 ACCEPT
+  // 当成了「要删除」，结果把整篇文档全部删掉、只留下插件注入的节点。
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT)
+  const toRemove: HTMLElement[] = []
+  let node: Node | null = walker.nextNode()
+  while (node) {
+    if (node instanceof HTMLElement) {
       for (const attr of node.attributes) {
-        if (attr.name.startsWith('data-read-frog-') || attr.name === 'data-read-frog-walked') {
-          return NodeFilter.FILTER_REJECT
+        if (attr.name.startsWith('data-read-frog-')) {
+          toRemove.push(node)
+          break
         }
       }
-      return NodeFilter.FILTER_ACCEPT
-    },
-  })
-  const toRemove: HTMLElement[] = []
-  let node: Node | null
-  while ((node = walker.nextNode())) {
-    if (node instanceof HTMLElement) toRemove.push(node)
+    }
+    node = walker.nextNode()
   }
   // Remove deepest nodes first to avoid DOM mutation issues
   toRemove.sort((a, b) => {

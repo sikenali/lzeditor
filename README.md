@@ -8,7 +8,7 @@
   <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-4.21-000000?logo=express&logoColor=white">
-  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-Embedded-003B57?logo=sqlite&logoColor=white">
+  <img alt="JSON Store" src="https://img.shields.io/badge/Data%20Store-JSON%20File-003B57?logo=json&logoColor=white">
   <img alt="Electron" src="https://img.shields.io/badge/Electron-31-4790?logo=electron&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow">
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Win%20|%20Mac%20|%20Linux-lightgrey">
@@ -18,7 +18,7 @@
 
 ## 项目介绍
 
-**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + TipTap，后端采用 Express + SQLite，同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
+**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + TipTap，后端采用 Express + 本地 JSON 文件存储（无外部原生依赖），同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
 
 ### 核心功能
 
@@ -30,7 +30,7 @@
 | **多文档管理** | 文档列表、新建/重命名/删除、快捷搜索、最近打开记录 |
 | **历史版本** | 自动保存编辑历史，随时回退到任意版本，支持版本对比 |
 | **导出格式** | 支持导出为 Markdown、HTML、PDF（通过 Electron）、纯文本 |
-| **API Key 安全存储** | SQLite 加密存储 API Key，bcrypt 哈希，不上传至任何第三方 |
+| **API Key 安全存储** | 仅保存在本地，明文不离开设备、不上传任何第三方；服务端以 SHA-256 加盐哈希入库 |
 | **主题外观** | 浅色/深色主题，编辑区宽度调节，字体大小自定义 |
 | **桌面客户端** | Electron 打包，支持 macOS / Windows / Linux，离线可用 |
 | **LPK 云部署** | 懒猫云一键部署，公网访问，数据持久化到 `/lzcapp/var/data` |
@@ -170,7 +170,7 @@ lzeditor/
 └──────────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────────┐
 │                    后端服务 (server/src/)                        │
-│  Express + SQLite                                                │
+│  Express + JSON 文件存储                                          │
 │  - API 路由 (路由层)                                             │
 │  - AI Provider 适配 (providers/)                                 │
 │  - LPK 云部署兼容                                                │
@@ -221,9 +221,9 @@ LZEditor (TipTap Core)
 
 ### 文档持久化
 
-- **桌面端**: SQLite 本地数据库，文档存储在 `~/AppData/Roaming/lzeditor/` 或 `~/.config/lzeditor/`
-- **云部署 (LPK)**: SQLite 持久化到 `/lzcapp/var/data`
-- **API Key**: bcrypt 哈希后存入 SQLite，内存中临时解密供 IPC 使用
+- **浏览器 / 桌面端**: 文档与 API Key 只写在本地 `localStorage`，不上传服务器
+- **服务端**: 文档与密钥存入 JSON 数据文件（`docs.json` / `api-keys.json`），无外部原生依赖
+- **API Key**: 服务端以 SHA-256 加盐哈希存储，仅用于存在性校验，不可反向解出明文
 
 ### 导出链路
 
@@ -279,7 +279,7 @@ docker run -d -p 3001:3001 -v $(pwd)/data:/app/data lzeditor
 
 2. **AI 服务依赖**：AI 辅助功能依赖用户自行配置的 API Key 与服务端点。工具本身不提供 AI 模型，不对任何 AI 服务的可用性、准确性或内容安全性负责。
 
-3. **API Key 安全责任**：AI 服务密钥（API Key）仅保存在本地 SQLite 数据库中，采用 bcrypt 哈希存储。服务器 / 部署环境的运维安全、访问权限管控、防泄露防护工作由使用者全权负责，开发者不承担因服务器漏洞、配置不当导致的数据泄露责任。
+3. **API Key 安全责任**：AI 服务密钥（API Key）仅保存在本机——浏览器端存于 `localStorage`，服务端以 SHA-256 加盐哈希落盘（非加密，不可解密，仅用于存在性校验）。服务器 / 部署环境的运维安全、访问权限管控、防泄露防护工作由使用者全权负责，开发者不承担因服务器漏洞、配置不当导致的数据泄露责任。
 
 4. **平台接口限制说明**：各大 AI 服务商存在 API 调用频次限制、安全策略动态更新机制，使用工具过程中若出现接口限流、账号受限等问题，请根据服务商官方规范自行调整使用方式。
 

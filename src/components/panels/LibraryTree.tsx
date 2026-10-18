@@ -9,6 +9,8 @@ interface DocNode {
   children?: DocNode[]
   gitPath?: string
   isFromGit?: boolean
+  isDoc?: boolean
+  system?: boolean
 }
 
 function buildTree(docs: any[]): DocNode[] {
@@ -33,6 +35,7 @@ function buildTree(docs: any[]): DocNode[] {
     const docNode: DocNode = {
       id: doc.id, title: doc.title, path: doc.path,
       libraryId: doc.libraryId, gitPath: doc.gitPath, isFromGit: doc.isFromGit,
+      isDoc: true, system: doc.system,
     }
     currentArr.push(docNode)
   }
@@ -44,15 +47,20 @@ export const LibraryTree: React.FC<{
   expandedFolders: Record<string, boolean>
   onToggleFolder: (id: string) => void
   onSelectDoc?: (id: string) => void
+  onResetDoc?: (id: string) => void
   searchActive?: boolean
-}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, searchActive }) => {
-  const docs = useEditorStore((s) => s.docs)
+}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, onResetDoc, searchActive }) => {
+  const activeDocId = useEditorStore((s) => s.activeDocId)
 
   const renderNode = (node: DocNode, depth: number): React.ReactNode => {
-    const isFolder = !node.id.startsWith('doc-')
+    // 不能只靠 id 前缀判断：内置手册的 id 是 a01-特色功能 这类，不是 doc- 开头，
+    // 会被误判成文件夹而点开就没了。
+    const isFolder = !(node.isDoc || node.id.startsWith('doc-'))
     const hasChildren = isFolder && node.children && node.children.length > 0
     const isExpanded = expandedFolders[node.id]
-    const isActive = !isFolder && node.id === docs.find((d: any) => d.id === node.id)?.id
+    // 之前写成 node.id === docs.find(d => d.id === node.id)?.id，右边永远等于 node.id，
+    // 于是每个文档都亮成"当前打开"，用户在树里根本看不出自己看的是哪篇。
+    const isActive = !isFolder && node.id === activeDocId
 
     if (isFolder) {
       return (
@@ -73,7 +81,7 @@ export const LibraryTree: React.FC<{
       )
     }
     return (
-      <button
+      <div
         key={node.id}
         className={`library-tree-item doc-item${isActive ? ' active' : ''}`}
         style={{ paddingLeft: `${depth * 16 + 28}px` }}
@@ -83,7 +91,19 @@ export const LibraryTree: React.FC<{
         <span className={`remix ${node.isFromGit ? 'ri-git-repository-line' : 'ri-file-text-line'} tree-icon`}></span>
         <span className="tree-label">{node.title}</span>
         {node.isFromGit && <span className="tree-git-badge">git</span>}
-      </button>
+        {/* node.system 覆盖使用手册 20 篇；readme 不在 system 里（它要留在 Default 库、
+            也要出现在打开的文档标签上），但它同样是内置文档，改了也该能还原。 */}
+        {(node.system || node.id === 'readme') && onResetDoc && (
+          <button
+            type="button"
+            className="tree-reset-btn"
+            title="还原为出厂内容"
+            onClick={(e) => { e.stopPropagation(); onResetDoc(node.id) }}
+          >
+            <span className="remix ri-replay-line"></span>
+          </button>
+        )}
+      </div>
     )
   }
 

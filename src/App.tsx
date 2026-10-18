@@ -101,8 +101,24 @@ function App() {
       const a = (e.target as HTMLElement).closest?.('a[href]') as HTMLAnchorElement | null
       if (!a) return
       const href = a.getAttribute('href') || ''
-      if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:')) return
+      if (!href || href.startsWith('http') || href.startsWith('mailto:')) return
       const es = useEditorStore.getState()
+
+      // 同文档锚点：Chrome 在 contenteditable 内不会执行 fragment 跳转，
+      // 必须自己 preventDefault 并滚动，否则点内链完全没反应。
+      if (href.startsWith('#')) {
+        const anchor = decodeURIComponent(href.slice(1))
+        const el = document.getElementById(anchor)
+        if (!el) return
+        e.preventDefault()
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        es.setActiveTocId(anchor)
+        if (location.hash !== href) {
+          try { window.history.replaceState(null, '', href) } catch { /* ignore */ }
+        }
+        return
+      }
+
       const hashAt = href.indexOf('#')
       const docKey = hashAt === -1 ? href : href.slice(0, hashAt)
       const anchor = hashAt === -1 ? '' : href.slice(hashAt + 1)
@@ -137,12 +153,9 @@ function App() {
       const es = useEditorStore.getState()
       const key = e.key.toLowerCase()
 
-      // 标题：Ctrl+Alt+1..6
-      if (e.altKey && /^[1-6]$/.test(e.key)) {
-        e.preventDefault()
-        ed()?.chain?.().focus().toggleHeading({ level: Number(e.key) }).run()
-        return
-      }
+      // 标题 Ctrl+Alt+1..6 由 TipTap 的 Heading 扩展自带 Mod-Alt-N 绑定处理；
+      // 这里再调一次会变成「开→关」双重触发，等于什么都没发生，所以不再重复绑定。
+
       if (key === 'n') {
         e.preventDefault(); es.createDoc('untitled.md')
       } else if (key === 'o') {
@@ -176,7 +189,9 @@ function App() {
       } else if (key === 'b' && e.shiftKey) {
         e.preventDefault(); ed()?.chain?.().focus().toggleBlockquote().run()
       } else if (e.key === 'Enter') {
-        e.preventDefault(); ed()?.chain?.().focus().hardBreak().run()
+        // TipTap v3 把 hardBreak 命令改名为 setHardBreak；旧名调用会直接抛错
+        e.preventDefault()
+        ed()?.chain?.().focus().setHardBreak?.().run()
       }
     }
 
