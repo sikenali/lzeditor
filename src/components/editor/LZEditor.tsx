@@ -24,7 +24,7 @@ import { mdToHtml } from '../../utils/mdToHtml'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
 import { getDocMd, getDocHtml } from '../../utils/docSource'
-import { renderMdWithMath } from '../../utils/mdWithMath'
+
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
 
@@ -78,11 +78,6 @@ export const LZEditor = () => {
     if (docsMd?.[docId]) return docsMd[docId]
     return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
   }, [activeDocId, docsMd])
-
-  const renderedHtml = useMemo(() => {
-    if (!mdContent) return ''
-    try { return renderMdWithMath(mdContent) } catch { return mdContent }
-  }, [mdContent])
 
   const codeEditMdRef = useRef(mdContent)
   const [codeEditMd, setCodeEditMd] = useState(mdContent)
@@ -764,15 +759,23 @@ export const LZEditor = () => {
     }
   }, [editor, editorRef])
 
-  return (
-    <div className={`lz-editor${showLineNumbers ? ' has-line-numbers' : ''}`} ref={editorRef}>
-      {showLineNumbers && (
+  // 行号块只在行数变化时重建；LZEditor 每次击键都会重渲染，
+  // 但 200 行 span 的 JSX 构建不该跟着每次都跑一遍
+  const lineNumbersEl = useMemo(
+    () =>
+      showLineNumbers ? (
         <div className="lz-line-numbers">
           {Array.from({ length: lineCount }, (_, i) => (
             <span key={i + 1} className="lz-line-number">{i + 1}</span>
           ))}
         </div>
-      )}
+      ) : null,
+    [showLineNumbers, lineCount]
+  )
+
+  return (
+    <div className={`lz-editor${showLineNumbers ? ' has-line-numbers' : ''}`} ref={editorRef}>
+      {lineNumbersEl}
       <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}${appMode === 'read' ? ' lz-editor-content--read' : ''}`}>
         {appMode === 'read' && (
           <div className="read-mode-inline">

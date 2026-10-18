@@ -1,10 +1,14 @@
+import { sanitizeHtml } from './sanitizeHtml'
+
 /**
  * Convert markdown to HTML safely, preserving data URIs in images.
  * Works around remark-html bug that drops src from data: URLs.
  */
 export function mdToHtml(md: string): string {
   if (!md) return ''
-  return convertMarkdownToHtml(md)
+  // 消毒在入口做一次，所有调用方（预览/阅读/导出/进编辑器）都不会拿到
+  // markdown 里夹带的 <script> 或 onerror 之类的事件属性
+  return sanitizeHtml(convertMarkdownToHtml(md))
 }
 
 /** 标题文本 → 稳定的页内锚点 id（中文、英文、数字均可）。 */

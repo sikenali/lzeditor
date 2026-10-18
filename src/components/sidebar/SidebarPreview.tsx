@@ -80,20 +80,6 @@ export const SidebarPreview: React.FC = () => {
     }
   }, [previewHtml, typographyTheme, previewEl])
 
-  // Also update on editor mutations (keep in sync when ProseMirror updates)
-  useEffect(() => {
-    if (!editorRef) return
-    const observer = new MutationObserver(() => {
-      requestAnimationFrame(() => {
-        if (previewEl) {
-          previewEl.innerHTML = previewHtml || ''
-        }
-      })
-    })
-    observer.observe(editorRef, { childList: true, subtree: true, characterData: true })
-    return () => observer.disconnect()
-  }, [editorRef, previewHtml, previewEl])
-
   // ── Scroll sync via hook (non-React, no re-renders) ──
   useScrollSync(
     { current: editorContentRef },

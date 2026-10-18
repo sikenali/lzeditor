@@ -99,7 +99,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   nextUntitledIdx: 1,
 
   setTitle: (title: string) => set({ docTitle: title }),
-  setDocPath: (path: string) => set({ docPath: path }),
   setWordCount: (count: number) => set({ wordCount: count }),
   setCharCount: (count: number) => set({ charCount: count }),
   setCursorPosition: (pos: { line: number; column: number }) => set({ cursorPosition: pos }),
@@ -125,7 +124,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     }
     set({ insertPanel: panel, panelOpen: panel !== 'none' })
   },
-  setPanelOpen: (open: boolean) => set({ panelOpen: open }),
   setShowOutline: (showOutline: boolean) => {
     set({ showOutline })
     saveLayoutState({ showOutline })
@@ -145,7 +143,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     saveLayoutState({ statusbarCollapsed })
   },
   setCodeMode: (codeMode: boolean) => set({ codeMode }),
-  setCodeModeCursor: (codeModeCursor: number) => set({ codeModeCursor }),
   setAppMode: (appMode: 'edit' | 'code' | 'style' | 'history' | 'read') => set({ appMode }),
   createLibrary: (name: string) => {
     const title = (name || '').trim() || `Library ${get().docLibraries.length + 1}`
@@ -182,7 +179,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     if (versions.length > 0 && versions[versions.length - 1].html === version.html) return
     set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
   },
-  clearVersions: () => set({ versions: [] }),
   setDocGitMeta: (meta: { gitPath?: string; isFromGit?: boolean }) => set((s: any) => ({
     docs: s.docs.map((d: any) => d.id === s.activeDocId ? { ...d, gitPath: meta.gitPath, isFromGit: meta.isFromGit } : d),
   })),
@@ -248,12 +244,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       activeDocId: nextActiveId,
       ...(nextDoc ? { docTitle: nextDoc.title, docPath: nextDoc.path || '', activeLibraryId: nextDoc.libraryId || get().activeLibraryId } : {}),
     })
-  },
-  renameDoc: (id: string, title: string) => {
-    set((s: any) => ({
-      docs: s.docs.map((d: any) => d.id === id ? { ...d, title } : d),
-      ...(s.activeDocId === id ? { docTitle: title } : {}),
-    }))
   },
   resetDocContent: (id: string) => {
     // 清掉本地覆盖，内置文档就自动回到出厂内容

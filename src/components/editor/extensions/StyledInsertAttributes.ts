@@ -18,6 +18,18 @@ export const StyledInsertAttributes = Extension.create({
         },
       },
       {
+        types: ['paragraph'],
+        attributes: {
+          // markdown 里的 <p align="center"> 必须显式声明成 attr：
+          // ProseMirror 解析未知属性会直接丢弃，保存后居中段落就再也回不来。
+          align: {
+            default: null,
+            parseHTML: element => element.getAttribute('align') || null,
+            renderHTML: attributes => attributes.align ? { align: attributes.align } : {},
+          },
+        },
+      },
+      {
         types: ['blockquote', 'codeBlock', 'horizontalRule', 'superscript'],
         attributes: {
           class: {

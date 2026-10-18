@@ -105,7 +105,6 @@ export interface EditorStoreState {
   versions: DocVersion[]
   editor: any
   setTitle: (title: string) => void
-  setDocPath: (path: string) => void
   setWordCount: (count: number) => void
   setCharCount: (count: number) => void
   setCursorPosition: (pos: { line: number; column: number }) => void
@@ -114,7 +113,6 @@ export interface EditorStoreState {
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
   setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
   setInsertPanel: (panel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart') => void
-  setPanelOpen: (open: boolean) => void
    setShowOutline: (showOutline: boolean) => void
    setShowPreview: (showPreview: boolean) => void
    setShowLibrary: (showLibrary: boolean) => void
@@ -123,7 +121,6 @@ export interface EditorStoreState {
   setStatusbarCollapsed: (statusbarCollapsed: boolean) => void
   setCodeMode: (codeMode: boolean) => void
   setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void
-  setCodeModeCursor: (offset: number) => void
   createLibrary: (name: string) => string
   setActiveLibrary: (id: string) => void
   setPreviewWidth: (width: number) => void
@@ -143,7 +140,6 @@ export interface EditorStoreState {
   editorContentRef: HTMLDivElement | null
   setEditor: (editor: any) => void
   addVersion: (version: DocVersion) => void
-  clearVersions: () => void
   lastEditTime: number
   setLastEditTime: (time: number) => void
   // multi-tab
@@ -152,7 +148,6 @@ export interface EditorStoreState {
   createDoc: (title?: string, path?: string, libraryId?: string) => string
   switchDoc: (id: string) => void
   closeDoc: (id: string) => void
-  renameDoc: (id: string, title: string) => void
   // 把内置文档（使用手册）还原成出厂内容：清掉本地覆盖，重读内置 md
   resetDocContent: (id: string) => void
   docsMd: Record<string, string>

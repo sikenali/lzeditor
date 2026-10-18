@@ -2,6 +2,7 @@ node_modules/
 dist/
 release/
 .electron-builder/
+
 *.log
 .env
 .env.local
@@ -9,12 +10,11 @@ release/
 coverage/
 .idea/
 .vscode/
+
 *.db
 server/data/
-*.log
-node_modules/
-
-node_modules
-server/data
-*.db
 core
+
+# electron 源码是 .ts，编译产物不入库
+electron/*.js
+electron/*.d.ts

@@ -91,11 +91,107 @@ DOCX 导出诚实标注 · 1500px 视口下工具栏完整排下、末位按钮�
    「面板是否开着」必须用 `waitForSelector` 重试，不能数一次就下结论；
    树底部的重置按钮常落在视口外，Playwright 点不动，改成对 DOM 元素直接 `.click()`。
 
-## 遗留
+## 第 4 轮：上线前全量校验（2026-10-18）
+
+探针脚本 `pre2.mjs`，30 项全绿；同时回归了已有六组探针：
+
+```
+pre2           30/30              errors: (none)
+runtime        20/20              errors: (none)
+fences-probe   内置手册 20/20      errors: (none)
+anchor-probe    5/5               errors: (none)
+readme-persist  6/6               errors: (none)   aligned=10
+crosslink-probe 4/4               errors: (none)
+npm run build  ✓ built in 40.75s
+tsc --noEmit   0 error（root + server 各自 tsconfig）
+```
+
+### 安全性：补上缺失的消毒层
+
+`src/utils/mdToHtml.ts` 与 `src/utils/mdWithMath.ts` 都会把 markdown 里的原始 HTML
+原样带出，而预览 / 阅读 / 导出 / 历史快照共 9 处是 `dangerouslySetInnerHTML` 直插，
+之前没有任何一层过滤。存一份 `<img src=x onerror=...>` 或 `<script>` 进文档，
+每次打开预览就会执行。
+
+新增 `src/utils/sanitizeHtml.ts`（DOMPurify 3.4.15），只在两个咽喉口各做一次：
+
+- `mdToHtml()` 入口
+- `renderMdWithMath()` 里 **remark 之后、katex 之前**
+
+属性白名单只做加法。默认配置已放行 `align` / `checked` / `disabled` / `data:` 图片，
+图表导出的 base64 图片不会被误删。实测保留项：`<p align="center">`、表格、
+代码块、`<input type="checkbox" checked disabled>`（已完成任务）、标题锚点 `id`。
+
+历史快照、表格单元格编辑这两处不经过上述咽喉口，单独消毒。
+
+### 修好的真 bug
+
+1. **`renderMdWithMath` 的行内公式从来没生效过。**
+   占位符用的是 `__INLINE_0__`，连续下划线被 remark-gfm 当成加粗语法，
+   占位符被渲染成 `<strong>INLINE_0</strong>`，后面 `split('__INLINE_0__')`
+   永远匹配不到，公式就永远替换不回去。改用 Unicode 私有区字符
+   `\uE000` 包裹，既不可能出现在用户文本里，也不带任何 markdown 语义。
+
+2. **居中段落在编辑器往返后丢失。**
+   `mdToHtml` 保留了 `align`，但 ProseMirror 的 paragraph 节点没有 `align`
+   属性，解析时直接丢掉，保存后居中就再也回不来。
+   在 `StyledInsertAttributes` 里给 `paragraph` 声明 `align` 全局属性。
+   实测 readme 往返后 `aligned=10` 全部保留。
+
+3. **`npm run build` 本来就是失败的。**
+   root `tsconfig.json` 的 `include` 含 `server/src`，而
+   `server/src/routes/chat.ts:91` 的 `resp as AsyncIterable<any>` 是 TS2352：
+   Anthropic SDK 的 `create()` 按 `stream` 重载，传 `as any` 时被解析成
+   非流式的 `Message` 返回类型。显式把 `resp` 标注成 `any`。
+
+### 性能
+
+- `SidebarOutline`：把 `refresh()` 从 `selectionUpdate` 上摘掉。之前每挪一次
+  光标就整篇重算一遍大纲；现在内容变更才 `collectOutline`，光标移动只算
+  「当前在哪个标题里」。`outlineItemsForSpy` 的 `items.find()` O(n²) 换成
+  `level|text` 的 Map 查找。
+- `LZEditor`：删掉没人用的 `renderedHtml`（每次击键白跑一次 remark + katex）；
+  行号块改用 `useMemo([showLineNumbers, lineCount])`，
+  200 个 span 的 JSX 构建不再跟着每次击键重跑。
+- `SidebarPreview`：删掉那个 `MutationObserver`。它监听 ProseMirror 的 DOM 变更，
+  每次击键在 rAF 里把同一份 HTML 又写一遍 `innerHTML`；
+  上一行那个 effect 已经在 `previewHtml` 变化时做过同样的事。
+
+### 冗余清理
+
+- **`dist/` 从版本库移除**（1979 个文件、21 MB 构建产物，本就在 .gitignore 里，
+  之前是强制加进去的）。`.gitignore` 同时补了 `electron/*.js`、`electron/*.d.ts`，
+  并清掉重复条目。
+- **Electron 构建产物出库**：`main.js` / `main.d.ts` / `preload.js` / `preload.d.ts`。
+  `electron/window.d.ts` 直接删——没有对应的 `window.ts` 源码，也没有任何引用。
+- **死依赖**（共 15 个）已从两个 package.json 移除，且全项目零引用：
+  前端 `mermaid`、`@hpcc-js/wasm`、`viz.js`、`@markdown-viewer/draw-uml`、
+  `@markdown-viewer/drawio2svg`、`plantuml-encoder`、`framer-motion`、
+  `react-markdown`、`@tiptap/extension-list`、`@tiptap/extension-bubble-menu`、
+  `@tiptap/extension-floating-menu`、`file-saver`、`remixicon-react`；
+  服务端 `bcryptjs`、`@types/bcryptjs`。
+  注意 `mermaid` 在 `b06-图表.md` 里只作为代码块语言标签出现，
+  项目里没有任何按语言标签渲染图表的代码路径。
+- **死文件**：`Math.tsx`、`shared/languages.ts`、`types/page-flip.d.ts`、
+  `styles/neon-theme.css`、`styles/ai-components.css`、`scripts/scan{,2,3}.mjs`。
+- **死 store setter**：`setDocPath`、`setPanelOpen`、`setCodeModeCursor`、
+  `clearVersions`、`renameDoc` —— 各只剩「类型声明 + 实现」两处，无任何调用方。
+- `src/vite-env.d.ts` 只删死模块声明（`react-katex`、`plantuml-encoder`、`viz.js`、
+  `file-saver`）。**这个文件本身必须保留**：它带 `/// <reference types="vite/client" />`，
+  还声明了 `jszip`（`epubGenerator.ts` 在用），删了整个文件会让构建直接失败。
+- 补上遗漏的依赖：`tailwindcss`、`wait-on` 加入 devDependencies
+  （`globals.css` 里 `@import 'tailwindcss'` 之前只是 phantom 依赖），
+  删掉无用的 `tailwind.config.ts`。
+
+### 遗留
 
 - `package-lock.json` 里还留着 `better-sqlite3` 的条目，需要跑一次
   `npm install` 才会被裁剪；这是有意的，避免为了删死依赖而制造大 diff。
-- 文档树里目前没有重命名 / 删除文档的入口（`renameDoc` 只声明未使用）。
+- 死依赖同理：package.json 已清干净，但 node_modules 和 lockfile 未裁剪。
 - 代码模式（直接编辑 markdown）里 `htmlToMarkdown` 的列表往返仍会把
   `- **加粗**` 折成两行，属于反向转换器的观感问题，未处理；
   富文本路径不受影响，因为 README 已改为以 HTML 为正文来源。
+- `codeModeCursor` 恒为 0：`App.tsx` 读它来定位代码模式的插入光标，
+  但从来没有任何代码写它（`setCodeModeCursor` 无调用方，本轮已删）。
+  所以代码模式插入总是落到位置 0。这是既有问题，删 setter 没有改变行为。
+- 服务端 `/api/settings` 与 `/api/chat` 前端从未调用过，路由仍在。

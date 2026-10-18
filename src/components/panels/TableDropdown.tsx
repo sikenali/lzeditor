@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { UiModal, UiButton } from '../ui'
+import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 interface TableDropdownProps {
   open: boolean
@@ -225,7 +226,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                             data-tc={`${r}-${c}`}
                             contentEditable
                             suppressContentEditableWarning
-                            dangerouslySetInnerHTML={{ __html: cell }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(cell) }}
                             onInput={e => updateCell(r, c, (e.currentTarget as HTMLElement).innerText || '')}
                             onFocus={() => setActiveCell({ r, c })}
                             onKeyDown={e => handleKeyDown(e, r, c)}

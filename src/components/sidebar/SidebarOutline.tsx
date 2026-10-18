@@ -57,32 +57,41 @@ export const SidebarOutline: React.FC = () => {
   const [activeId, setActiveId] = useState<string>('')
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  const refresh = useCallback(() => {
+  const itemsRef = useRef<OutlineItem[]>([])
+
+  // 光标移动时只算「当前在哪个标题里」，不要重新遍历整篇文档 ——
+  // 之前把 refresh() 同时挂在 update 和 selectionUpdate 上，
+  // 每挪一次光标就整篇重算一遍大纲
+  const syncActive = useCallback(() => {
     if (!editor) return
-    const next = collectOutline(editor.state.doc)
-    setItems(next)
-    // Track active heading from current cursor position
     const from = editor.state.selection.from
     let active: OutlineItem | undefined
-    for (const item of next) {
+    for (const item of itemsRef.current) {
       if (item.pos <= from) active = item
       else break
     }
     setActiveId(active ? active.id : '')
   }, [editor])
 
-  // Recompute outline + active heading on editor/selection changes
+  const refresh = useCallback(() => {
+    if (!editor) return
+    const next = collectOutline(editor.state.doc)
+    itemsRef.current = next
+    setItems(next)
+    syncActive()
+  }, [editor, syncActive])
+
+  // 内容变更才重新收集大纲；光标移动只刷新当前高亮标题
   useEffect(() => {
     refresh()
     if (!editor) return
-    const handler = () => refresh()
-    editor.on('update', handler)
-    editor.on('selectionUpdate', handler)
+    editor.on('update', refresh)
+    editor.on('selectionUpdate', syncActive)
     return () => {
-      editor.off('update', handler)
-      editor.off('selectionUpdate', handler)
+      editor.off('update', refresh)
+      editor.off('selectionUpdate', syncActive)
     }
-  }, [editor, refresh])
+  }, [editor, refresh, syncActive])
 
   // Build scroll-spy items from DOM headings (same approach as ReadMode)
   const editorContentRef = useEditorStore((s: any) => s.editorContentRef)
@@ -90,13 +99,15 @@ export const SidebarOutline: React.FC = () => {
     if (!editorContentRef) return []
     const container = editorContentRef as HTMLElement
     const domHeadings = container.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    // 按「级别|文本」建索引再查，别对每个 DOM 标题线性扫一遍 items
+    const byKey = new Map(items.map(it => [`${it.level}|${it.text}`, it]))
     return Array.from(domHeadings).map((el, i) => {
       const level = parseInt((el as HTMLElement).tagName[1])
-      // Find matching OutlineItem by text content (headings are unique in order)
-      const matchingItem = items.find(item => item.level === level && item.text === el.textContent?.trim())
+      const text = el.textContent?.trim() || ''
+      const matchingItem = byKey.get(`${level}|${text}`)
       return {
         id: matchingItem?.id || `dom-h-${i}`,
-        text: el.textContent?.trim() || '',
+        text,
         el: el as HTMLElement,
       }
     })

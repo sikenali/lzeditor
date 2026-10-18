@@ -66,7 +66,9 @@ async function runAnthropic(
   opts: { apiKey: string; model: string; baseUrl: string; messages: any[]; temperature: number; maxTokens: number; isStream: boolean },
 ): Promise<void> {
   const anthropic = new Anthropic({ apiKey: opts.apiKey, baseURL: normalizeBaseUrl(opts.baseUrl).replace(/\/v1$/, '') } as any)
-  const resp = await anthropic.messages.create({
+  // SDK 的 create() 按 stream 参数做重载，传 `as any` 时会被解析成非流式
+  // 的 Message 返回类型，后面 for await 遍历就会报类型错误 —— 这里显式放宽
+  const resp: any = await anthropic.messages.create({
     model: opts.model,
     max_tokens: opts.maxTokens,
     temperature: opts.temperature,

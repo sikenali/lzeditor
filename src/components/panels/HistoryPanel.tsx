@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const versions = useEditorStore((s) => s.versions)
@@ -58,7 +59,7 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         ) : selected ? (
           <>
             <div className="history-preview-doc">
-              <div dangerouslySetInnerHTML={{ __html: selected.html || '<p class="history-preview-empty">空快照</p>' }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selected.html) || '<p class="history-preview-empty">空快照</p>' }} />
             </div>
           </>
         ) : (

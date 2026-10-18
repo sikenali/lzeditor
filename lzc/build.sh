@@ -48,12 +48,12 @@ mkdir -p "$SCRIPT_DIR/_lpk_content/scripts"
 echo "Building backend..."
 
 # 服务器用 tsx 直接运行 TypeScript，无需预编译。
-# 复制源文件 + package.json + node_modules（含 native 模块 better-sqlite3/bcryptjs）
+# 复制源文件 + package.json + 运行时依赖（零 native 模块，纯 JS）
 cp -a "$PROJECT_ROOT/server/src/." "$SCRIPT_DIR/_lpk_content/backend/"
 cp "$PROJECT_ROOT/server/package.json" "$SCRIPT_DIR/_lpk_content/backend/"
 
-# 复制 native 模块（better-sqlite3, bcryptjs）和关键依赖
-for mod in better-sqlite3 bcryptjs express cors @anthropic-ai/sdk openai dotenv; do
+# 复制后端运行时依赖
+for mod in express cors @anthropic-ai/sdk openai; do
   if [ -d "$PROJECT_ROOT/node_modules/$mod" ]; then
     cp -a "$PROJECT_ROOT/node_modules/$mod" "$SCRIPT_DIR/_lpk_content/backend/node_modules/"
   fi
@@ -63,7 +63,7 @@ done
 cp -a "$PROJECT_ROOT/node_modules/openai" "$SCRIPT_DIR/_lpk_content/backend/node_modules/" 2>/dev/null || true
 cp -a "$PROJECT_ROOT/node_modules/@anthropic-ai" "$SCRIPT_DIR/_lpk_content/backend/node_modules/" 2>/dev/null || true
 
-# 复制数据目录（keys.db）
+# 复制数据目录（keys.json：API key 元信息，明文只在浏览器）
 cp -a "$PROJECT_ROOT/server/data/." "$SCRIPT_DIR/_lpk_content/backend/data/" 2>/dev/null || true
 
 # ========== 构建前端 ==========
@@ -86,13 +86,15 @@ set -e
 
 # 创建数据目录
 mkdir -p /lzcapp/var/data /app/logs
-# 持久化 keys.db 到持久卷
-if [ ! -f /lzcapp/var/data/keys.db ]; then
-  cp /lzcapp/pkg/content/backend/data/keys.db /lzcapp/var/data/keys.db 2>/dev/null || true
+# 持久化 keys.json 到持久卷。
+# 后端早已从 SQLite 改成 JSON 文件存储，之前持久化的是 keys.db，
+# 那是 SQLite 时代的遗留接线：既复制不到文件，SQLITE_DB_PATH 也没人读，
+# 结果 API key 元信息全写进会丢的包目录里。
+if [ ! -f /lzcapp/var/data/keys.json ]; then
+  cp /lzcapp/pkg/content/backend/data/keys.json /lzcapp/var/data/keys.json 2>/dev/null || true
 fi
-# 让后端指向持久化路径
-export SQLITE_DB_PATH=/lzcapp/var/data/keys.db
-ln -sf /lzcapp/var/data/keys.db /lzcapp/pkg/content/backend/data/keys.db 2>/dev/null || true
+# 后端固定读写 <backend>/data/keys.json，用软链把它接到持久卷
+ln -sf /lzcapp/var/data/keys.json /lzcapp/pkg/content/backend/data/keys.json 2>/dev/null || true
 
 # 启动后端（tsx 直接跑 TypeScript，PORT=3001）
 cd /lzcapp/pkg/content/backend
