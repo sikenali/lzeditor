@@ -2,6 +2,9 @@
 # 本地打包脚本：构建 contentdir → 生成 LPK → 重命名为版本化文件名
 set -euo pipefail
 
+# 脚本所在目录（lzc/），lzc-cli 从 CWD 解析 lzc-build.yml，必须切到这里执行
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # 版本号：优先使用 LPK_VERSION 环境变量，其次从 git tag 获取
 LPK_TAG="${LPK_VERSION:-}"
 LPK_TAG="${LPK_TAG#v}"
@@ -34,11 +37,12 @@ if [ -z "$CLI_BIN" ]; then
 fi
 
 echo "Using lzc-cli: $CLI_BIN"
-"$CLI_BIN" project release -o output.lpk
+# lzc-cli 从 CWD 解析 lzc-build.yml 及其中各相对路径，必须在 lzc/ 目录内执行
+( cd "$SCRIPT_DIR" && "$CLI_BIN" project release -o output.lpk )
 
 # 3. 重命名
-LPK_NAME="cloud.lazycat.app.lazycateditor-${LPK_VERSION}.lpk"
-if [ -f output.lpk ]; then
-  mv output.lpk "$LPK_NAME"
-  echo "Done: $LPK_NAME"
+LPK_NAME="cloud.lazycat.app.lzeditor-${LPK_VERSION}.lpk"
+if [ -f "$SCRIPT_DIR/output.lpk" ]; then
+  mv "$SCRIPT_DIR/output.lpk" "$SCRIPT_DIR/$LPK_NAME"
+  echo "Done: $SCRIPT_DIR/$LPK_NAME"
 fi

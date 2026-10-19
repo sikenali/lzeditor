@@ -131,7 +131,7 @@ jobs:
         run: |
           VERSION_NUM="${{ github.event.inputs.version || github.ref_name }}"
           VERSION_NUM="${VERSION_NUM#v}"
-          LPK_FILE="lzc/cloud.lazycat.app.lazycateditor-${VERSION_NUM}.lpk"
+          LPK_FILE="lzc/cloud.lazycat.app.lzeditor-${VERSION_NUM}.lpk"
           if [ -f "$LPK_FILE" ]; then
             gh release create "v${VERSION_NUM}" --title "v${VERSION_NUM}" --notes "## 更新内容\n\n- 版本 ${VERSION_NUM}" --draft
             gh release upload "v${VERSION_NUM}" "$LPK_FILE" --clobber

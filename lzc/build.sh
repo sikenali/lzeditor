@@ -15,7 +15,7 @@ echo "Building version: $VERSION"
 
 # 动态写入 package.yml
 cat > "$SCRIPT_DIR/package.yml" <<PKGEOF
-package: cloud.lazycat.app.lazycateditor
+package: cloud.lazycat.app.lzeditor
 version: ${VERSION}
 name: LZEditor
 description: 轻文档markdown编辑器，AI 辅助写作
@@ -48,22 +48,48 @@ mkdir -p "$SCRIPT_DIR/_lpk_content/scripts"
 echo "Building backend..."
 
 # 服务器用 tsx 直接运行 TypeScript，无需预编译。
-# 复制源文件 + package.json + 运行时依赖（零 native 模块，纯 JS）
-cp -a "$PROJECT_ROOT/server/src/." "$SCRIPT_DIR/_lpk_content/backend/"
+# 复制 src 目录本身（不是其内容）：index.ts 靠 ../data 定位 backend/data/keys.json，
+# start.sh 也按 backend/src/index.ts 启动。拷成 backend/index.ts 会两处都错位。
+cp -a "$PROJECT_ROOT/server/src" "$SCRIPT_DIR/_lpk_content/backend/"
 cp "$PROJECT_ROOT/server/package.json" "$SCRIPT_DIR/_lpk_content/backend/"
 
-# 复制后端运行时依赖
-for mod in express cors @anthropic-ai/sdk openai; do
-  if [ -d "$PROJECT_ROOT/node_modules/$mod" ]; then
-    cp -a "$PROJECT_ROOT/node_modules/$mod" "$SCRIPT_DIR/_lpk_content/backend/node_modules/"
-  fi
-done
+# 运行时依赖必须按传递闭包完整复制。两个历史坑：
+#   1) 之前没建 node_modules 目录，第一条 cp 因目标不存在而把 express 整体拷成了
+#      node_modules 本身，包内从此没有 express。
+#   2) 之前手工列白名单，漏掉 @anthropic-ai/sdk / openai / express 的传递依赖
+#      （node-fetch、body-parser…），后端启动即 ERR_MODULE_NOT_FOUND。
+# 这里从项目根 node_modules 递归解析闭包：离线、确定、去重。@types/* 只是类型，运行时
+# 永不加载，剔除以省体积。tsx 是 devDependency 不会被 npm 装进后端，手动列入闭包。
+BACKEND_NM="$SCRIPT_DIR/_lpk_content/backend/node_modules"
+DEPS_LIST="$SCRIPT_DIR/_backend_deps.txt"
+node -e '
+const fs=require("fs"),path=require("path");
+const root=process.argv[1];
+const roots=["express","cors","@anthropic-ai/sdk","openai","tsx","esbuild","@esbuild/linux-x64"];
+const seen=new Set(),queue=[...roots];
+while(queue.length){
+  const n=queue.pop();
+  if(seen.has(n)||n.startsWith("@types/")) continue;
+  seen.add(n);
+  const pj=path.join(root,n,"package.json");
+  if(!fs.existsSync(pj)){console.error("missing dependency: "+n);process.exit(1);}
+  for(const d of Object.keys(JSON.parse(fs.readFileSync(pj)).dependencies||{})) queue.push(d);
+}
+fs.writeFileSync(process.argv[2],[...seen].sort().join("\n")+"\n");' \
+  "$PROJECT_ROOT/node_modules" "$DEPS_LIST"
 
-# 复制运行时依赖的子包（openai 等带子路径的）
-cp -a "$PROJECT_ROOT/node_modules/openai" "$SCRIPT_DIR/_lpk_content/backend/node_modules/" 2>/dev/null || true
-cp -a "$PROJECT_ROOT/node_modules/@anthropic-ai" "$SCRIPT_DIR/_lpk_content/backend/node_modules/" 2>/dev/null || true
+mkdir -p "$BACKEND_NM/.bin"
+while IFS= read -r mod; do
+  [ -z "$mod" ] && continue
+  mkdir -p "$BACKEND_NM/$(dirname "$mod")"
+  cp -a "$PROJECT_ROOT/node_modules/$mod" "$BACKEND_NM/$mod"
+done < "$DEPS_LIST"
+rm -f "$DEPS_LIST"
+# npx 靠 node_modules/.bin 解析，盒子里没有 npm 缓存，必须自带
+ln -sf ../tsx/dist/cli.mjs "$BACKEND_NM/.bin/tsx"
 
-# 复制数据目录（keys.json：API key 元信息，明文只在浏览器）
+# 数据目录（keys.json：API key 元信息，明文只在浏览器）
+mkdir -p "$SCRIPT_DIR/_lpk_content/backend/data"
 cp -a "$PROJECT_ROOT/server/data/." "$SCRIPT_DIR/_lpk_content/backend/data/" 2>/dev/null || true
 
 # ========== 构建前端 ==========
@@ -97,8 +123,17 @@ fi
 ln -sf /lzcapp/var/data/keys.json /lzcapp/pkg/content/backend/data/keys.json 2>/dev/null || true
 
 # 启动后端（tsx 直接跑 TypeScript，PORT=3001）
+# 优先用包内自带的 tsx，避免依赖盒子上的 npx / 联网 npm install
 cd /lzcapp/pkg/content/backend
-PORT=$PORT npx tsx src/index.ts >>/app/logs/backend.log 2>&1 &
+if [ -f node_modules/tsx/dist/cli.mjs ]; then
+  TSX_CMD="node node_modules/tsx/dist/cli.mjs"
+elif command -v npx >/dev/null 2>&1; then
+  TSX_CMD="npx tsx"
+else
+  echo "ERROR: 包内无 tsx 且 npx 不可用"
+  exit 1
+fi
+PORT=$PORT $TSX_CMD src/index.ts >>/app/logs/backend.log 2>&1 &
 BACKEND_PID=$!
 
 # 等待后端就绪（最多 30 次 × 2s = 60s）

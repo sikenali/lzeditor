@@ -242,7 +242,7 @@ LZEditor (TipTap Core)
 
 ```bash
 cd lzc && bash package.sh        # 本地打包生成 .lpk
-lzc-cli lpk install cloud.lazycat.app.lazycateditor-<版本>.lpk
+lzc-cli lpk install cloud.lazycat.app.lzeditor-<版本>.lpk
 ```
 
 访问应用：`https://<子域名>.<域名>`
