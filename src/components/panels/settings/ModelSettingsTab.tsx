@@ -1,85 +1,197 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSettingsStore } from '../../../store/settingsStore'
 import type { ApiKeyEntry } from '../../../shared/types'
-import { UiSelect, UiSwitch, UiInput, UiButton } from '../../ui'
+import { UiSelect, UiSelectCard, UiInput, UiButton, UiTip, UiModal, UiSwitch } from '../../ui'
 import { toast } from '../../../utils/toast'
 
-// 内置服务商配置
-const PROVIDER_CONFIGS: Record<string, { endpoint: string; format: 'openai' | 'anthropic'; models: string[] }> = {
-  '阿里云':    { endpoint: 'https://dashscope.aliyuncs.com/compatible-mode', format: 'openai', models: ['qwen-max', 'qwen-plus', 'qwen-turbo', 'qwen-long'] },
-  '百度':     { endpoint: 'https://aip.baidubce.com/rpc/2.0/ai_custom', format: 'openai', models: ['ernie-4.0', 'ernie-3.5', 'ernie-speed'] },
-  '智谱':     { endpoint: 'https://open.bigmodel.cn/api/paas/v4', format: 'openai', models: ['glm-4', 'glm-4-plus', 'glm-4-air', 'glm-4-flash'] },
-  'DeepSeek': { endpoint: 'https://api.deepseek.com', format: 'openai', models: ['deepseek-chat', 'deepseek-coder', 'deepseek-reasoner'] },
-  'Moonshot': { endpoint: 'https://api.moonshot.cn/v1', format: 'openai', models: ['kimi-k2.6', 'moonshot-v1-128k', 'moonshot-v1-32k'] },
-  'OpenAI':   { endpoint: 'https://api.openai.com/v1', format: 'openai', models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4'] },
-  'Anthropic':{ endpoint: 'https://api.anthropic.com/v1', format: 'anthropic', models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-haiku-20240307'] },
-  'Google':   { endpoint: 'https://generativelanguage.googleapis.com/v1beta', format: 'openai', models: ['gemini-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'] },
+/* ── 内置服务商模型（bid-typesetting ModelSettingsView.vue providerModelsMap） ── */
+const PROVIDER_MODELS: Record<string, string[]> = {
+  '阿里云': ['qwen3.7-max', 'qwen3.7-plus', 'qwen3.6-plus', 'qwen3.5-plus', 'qwen3-max', 'qwen-plus', 'qwen-flash', 'qwen3-coder-plus'],
+  '百度': ['ernie-4.0', 'ernie-3.5', 'ernie-speed'],
+  '智谱': ['glm-5.1', 'glm-4.6', 'glm-4'],
+  'DeepSeek': ['deepseek-v4-pro', 'deepseek-r1', 'deepseek-chat'],
+  'Moonshot': ['kimi-k2.6', 'moonshot-v1-128k', 'moonshot-v1-32k'],
+  '零一万物': ['yi-large', 'yi-medium', 'yi-34b-chat'],
+  'OpenAI': ['gpt-5.6-sol', 'gpt-5.5', 'gpt-5.4', 'gpt-5.4-pro', 'gpt-5.3-codex', 'o4-mini', 'o3', 'gpt-4.1'],
+  'Anthropic': ['claude-fable-5', 'claude-opus-4.8', 'claude-opus-4.7', 'claude-sonnet-4.6', 'claude-haiku-4.5'],
+  'Google': ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-pro'],
+  'Mistral': ['mistral-large-3', 'mistral-medium-3', 'mistral-small-3'],
+  'Groq': ['llama-3.3-70b', 'llama-3.1-8b', 'mixtral-8x7b-32768'],
 }
 
-const PROVIDER_NAMES = Object.keys(PROVIDER_CONFIGS)
+/* 服务商 → 端点 / 协议。密钥落库时写入 key.endpoint、key.format，
+   useAI.ts 依赖这两个字段发请求，表单上不呈现（bid 侧由后端解析，此处本地化补齐） */
+const PROVIDER_ENDPOINTS: Record<string, { endpoint: string; format: 'openai' | 'anthropic' }> = {
+  '阿里云': { endpoint: 'https://dashscope.aliyuncs.com/compatible-mode', format: 'openai' },
+  '百度': { endpoint: 'https://aip.baidubce.com/rpc/2.0/ai_custom', format: 'openai' },
+  '智谱': { endpoint: 'https://open.bigmodel.cn/api/paas/v4', format: 'openai' },
+  'DeepSeek': { endpoint: 'https://api.deepseek.com', format: 'openai' },
+  'Moonshot': { endpoint: 'https://api.moonshot.cn/v1', format: 'openai' },
+  '零一万物': { endpoint: 'https://api.lingyiwanwu.com/v1', format: 'openai' },
+  'OpenAI': { endpoint: 'https://api.openai.com/v1', format: 'openai' },
+  'Anthropic': { endpoint: 'https://api.anthropic.com/v1', format: 'anthropic' },
+  'Google': { endpoint: 'https://generativelanguage.googleapis.com/v1beta', format: 'openai' },
+  'Mistral': { endpoint: 'https://api.mistral.ai/v1', format: 'openai' },
+  'Groq': { endpoint: 'https://api.groq.com/openai/v1', format: 'openai' },
+}
 
-export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
-  const [selectedProvider, setSelectedProvider] = useState('')
-  const [selectedModel, setSelectedModel] = useState('')
-  const [customFormat, setCustomFormat] = useState<'openai' | 'anthropic'>('openai')
+const PROVIDER_OPTIONS = [
+  { value: '阿里云', label: '阿里云', desc: '通义千问', group: '国内' },
+  { value: '百度', label: '百度', desc: '文心一言', group: '国内' },
+  { value: '智谱', label: '智谱', desc: 'GLM', group: '国内' },
+  { value: 'DeepSeek', label: 'DeepSeek', group: '国内' },
+  { value: 'Moonshot', label: 'Moonshot', desc: '月之暗面', group: '国内' },
+  { value: '零一万物', label: '零一万物', desc: 'Yi', group: '国内' },
+  { value: 'OpenAI', label: 'OpenAI', desc: 'GPT', group: '国外' },
+  { value: 'Anthropic', label: 'Anthropic', desc: 'Claude', group: '国外' },
+  { value: 'Google', label: 'Google', desc: 'Gemini', group: '国外' },
+  { value: 'Mistral', label: 'Mistral AI', group: '国外' },
+  { value: 'Groq', label: 'Groq', group: '国外' },
+]
+
+const FORMAT_OPTIONS = [
+  { value: 'openai', label: 'OpenAI Chat Completions 格式' },
+  { value: 'anthropic', label: 'Anthropic Messages 格式' },
+]
+
+/* 密钥只存本地且列表始终可见，必须打码 —— bid 直接渲染 k.api_key 原文，这里收敛 */
+function maskKey(key: string): string {
+  if (!key) return '••••'
+  if (key.length <= 8) return '••••••••'
+  return `${key.slice(0, 4)}••••••${key.slice(-4)}`
+}
+
+type ConfigTab = 'provider' | 'custom'
+
+export const ModelSettingsTab: React.FC = () => {
+  const s = useSettingsStore()
+  const u = s.updateSetting
+  const apiKeys: ApiKeyEntry[] = s.apiKeys || []
+
+  const [configTab, setConfigTab] = useState<ConfigTab>('provider')
+  const [keyInput, setKeyInput] = useState('')
+  const [keyVisible, setKeyVisible] = useState(false)
+
+  const [customApiFormat, setCustomApiFormat] = useState<'openai' | 'anthropic'>('openai')
   const [customEndpoint, setCustomEndpoint] = useState('')
   const [customModelId, setCustomModelId] = useState('')
-  const [apiKey, setApiKey] = useState('')
-  const [keyVisible, setKeyVisible] = useState(false)
-  const [editId, setEditId] = useState<string | null>(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [testId, setTestId] = useState<string | null>(null)
-  const testTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const testTimerRef2 = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const [selectedProvider, setSelectedProvider] = useState('')
+  const [selectedModelName, setSelectedModelName] = useState('')
+
+  // 正在编辑的密钥 id（空表示新增）
+  const [editingId, setEditingId] = useState('')
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deletingId, setDeletingId] = useState('')
+
+  const [testingKey, setTestingKey] = useState<string | null>(null)
+  const [testSuccess, setTestSuccess] = useState<Record<string, boolean>>({})
+  const [testFailed, setTestFailed] = useState<Record<string, boolean>>({})
+  const [testError, setTestError] = useState<Record<string, string>>({})
+
+  const currentModels = (selectedProvider ? (PROVIDER_MODELS[selectedProvider] || []) : [])
+    .map(m => ({ value: m, label: m }))
 
   useEffect(() => {
-    return () => {
-      if (testTimerRef.current) clearTimeout(testTimerRef.current)
-      if (testTimerRef2.current) clearTimeout(testTimerRef2.current)
-      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
-    }
-  }, [])
-  const [testResult, setTestResult] = useState<Record<string, 'success' | 'failed'>>({})
-
-  const s = useSettingsStore(s => s)
-  const u = useSettingsStore(s => s.updateSetting)
-  const apiKeys: ApiKeyEntry[] = s.apiKeys || []
-  const setSelectedModelId = useSettingsStore(s => s.setSelectedModelId)
-  const toggleApiKey = useSettingsStore(s => s.toggleApiKey)
-  const removeApiKey = useSettingsStore(s => s.removeApiKey)
-  const addApiKey = useSettingsStore(s => s.addApiKey)
-
-  useEffect(() => {
-    if (s.customApiFormat) setCustomFormat(s.customApiFormat)
+    if (s.customApiFormat) setCustomApiFormat(s.customApiFormat)
     if (s.customEndpoint) setCustomEndpoint(s.customEndpoint)
     if (s.customModelId) setCustomModelId(s.customModelId)
     if (s.selectedProvider) setSelectedProvider(s.selectedProvider)
-    if (s.selectedModelName) setSelectedModel(s.selectedModelName)
+    if (s.selectedModelName) setSelectedModelName(s.selectedModelName)
+    // 只在挂载时从 store 还原一次表单草稿
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const currentModels = selectedProvider ? (PROVIDER_CONFIGS[selectedProvider]?.models || []) : []
+  const resetForm = () => {
+    setKeyInput('')
+    setKeyVisible(false)
+    setSelectedProvider('')
+    setSelectedModelName('')
+    setCustomEndpoint('')
+    setCustomModelId('')
+    setEditingId('')
+  }
 
-  const handleAdd = () => {
-    const key = apiKey.trim()
-    if (!key) { toast('请输入 API Key'); return }
-    if (subTab === 'add') {
-      if (!selectedProvider || !selectedModel) { toast('请选择服务商和模型'); return }
-      const cfg = PROVIDER_CONFIGS[selectedProvider]
-      addApiKey({ id: `preset-${Date.now()}`, provider: selectedProvider, model: selectedModel,
-        modelName: `${selectedProvider} · ${selectedModel}`, key, enabled: true,
-        endpoint: cfg?.endpoint, format: cfg?.format || 'openai' })
-    } else {
-      if (!customModelId.trim()) { toast('请填写模型 ID'); return }
-      addApiKey({ id: `custom-${Date.now()}`, provider: '自定义', model: customModelId.trim(),
-        modelName: customModelId.trim(), key, enabled: true,
-        endpoint: customEndpoint.trim() || undefined, format: customFormat })
+  const persistKeys = (next: ApiKeyEntry[], selectId?: string) => {
+    u('apiKeys', next)
+    if (selectId) s.setSelectedModelId(selectId)
+  }
+
+  const handleSave = () => {
+    const key = keyInput.trim()
+    if (configTab === 'custom') {
+      if (!customEndpoint.trim() || !customModelId.trim()) {
+        toast('请填写自定义地址和模型 ID')
+        return
+      }
+      if (!editingId && !key) { toast('请输入 API Key'); return }
+      const provider = customApiFormat === 'anthropic' ? 'Anthropic (自定义)' : 'OpenAI (自定义)'
+      const payload = { provider, model: customModelId.trim(), modelName: customModelId.trim() }
+      if (editingId) {
+        const next = apiKeys.map(k => k.id === editingId
+          ? { ...k, ...payload, key: key || k.key, endpoint: customEndpoint.trim(), format: customApiFormat }
+          : k)
+        persistKeys(next)
+        toast('自定义配置已更新')
+      } else {
+        const entry: ApiKeyEntry = {
+          id: `custom-${Date.now()}`, ...payload, key, enabled: true,
+          endpoint: customEndpoint.trim(), format: customApiFormat,
+        }
+        persistKeys([...apiKeys, entry], entry.id)
+        toast('自定义配置已保存')
+      }
+      resetForm()
+      return
     }
-    setApiKey(''); setKeyVisible(false)
+
+    if (!selectedProvider || !selectedModelName) {
+      toast('请选择服务商和模型')
+      return
+    }
+    if (!editingId && !key) { toast('请输入 API Key'); return }
+    const endpoint = PROVIDER_ENDPOINTS[selectedProvider]
+    const format: 'openai' | 'anthropic' = endpoint?.format ?? 'openai'
+    const payload = {
+      provider: selectedProvider, model: selectedModelName,
+      modelName: `${selectedProvider} · ${selectedModelName}`,
+    }
+    if (editingId) {
+      const next = apiKeys.map(k => k.id === editingId
+        ? { ...k, ...payload, key: key || k.key, endpoint: endpoint?.endpoint, format }
+        : k)
+      persistKeys(next)
+      toast(`「${selectedProvider}」配置已更新`)
+    } else {
+      const entry: ApiKeyEntry = {
+        id: `preset-${Date.now()}`, ...payload, key, enabled: true,
+        endpoint: endpoint?.endpoint, format,
+      }
+      persistKeys([...apiKeys, entry], entry.id)
+      toast(`「${selectedProvider}」API Key 已保存`)
+    }
+    resetForm()
+  }
+
+  const openDelete = (id: string) => {
+    setDeletingId(id)
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDelete = () => {
+    if (!deletingId) return
+    s.removeApiKey(deletingId)
+    toast('已删除')
+    if (editingId === deletingId) resetForm()
+    setShowDeleteDialog(false)
+    setDeletingId('')
   }
 
   const handleTest = async (key: ApiKeyEntry) => {
-    setTestId(key.id)
+    setTestingKey(key.id)
+    setTestSuccess(p => ({ ...p, [key.id]: false }))
+    setTestFailed(p => ({ ...p, [key.id]: false }))
+    setTestError(p => ({ ...p, [key.id]: '' }))
     try {
       const endpoint = key.endpoint || 'https://api.openai.com/v1'
       const url = `${endpoint.replace(/\/v1$/, '')}/models`
@@ -87,43 +199,40 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
         ? { 'Content-Type': 'application/json', 'x-api-key': key.key, 'anthropic-version': '2023-06-01' }
         : { 'Authorization': `Bearer ${key.key}` }
       const resp = await fetch(url, { method: 'GET', headers })
-      setTestResult(prev => ({ ...prev, [key.id]: resp.ok ? 'success' : 'failed' }))
-    } catch { setTestResult(prev => ({ ...prev, [key.id]: 'failed' })) }
-    testTimerRef.current = setTimeout(() => setTestId(null), 2000)
-    testTimerRef2.current = setTimeout(() => { setTestResult(prev => { const n = { ...prev }; delete n[key.id]; return n }) }, 4000)
-  }
-
-  const startEdit = (key: ApiKeyEntry) => {
-    setEditId(key.id); setApiKey(key.key); setCustomModelId(key.model)
-    setCustomEndpoint(key.endpoint || ''); setCustomFormat(key.format || 'openai')
-    if (key.endpoint) { setSelectedProvider(''); setSelectedModel('') }
-    else { setSelectedProvider(key.provider); setSelectedModel(key.model) }
-  }
-  const cancelEdit = () => { setEditId(null); setApiKey('') }
-  const saveEdit = () => {
-    if (!editId || !customModelId.trim() || !apiKey.trim()) return
-    const updated = apiKeys.map(k => k.id === editId ? {
-      ...k, key: apiKey, model: customModelId, modelName: customModelId,
-      endpoint: customEndpoint || undefined, format: customFormat,
-    } : k)
-    u('apiKeys', updated); cancelEdit()
-  }
-
-  // 二次确认删除，避免误删
-  const handleDelete = (id: string) => {
-    if (confirmDeleteId === id) {
-      removeApiKey(id)
-      setConfirmDeleteId(null)
-    } else {
-      setConfirmDeleteId(id)
-      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
-      deleteTimerRef.current = setTimeout(() => setConfirmDeleteId(null), 2500)
+      if (resp.ok) {
+        setTestSuccess(p => ({ ...p, [key.id]: true }))
+      } else {
+        setTestFailed(p => ({ ...p, [key.id]: true }))
+        setTestError(p => ({ ...p, [key.id]: `服务返回 HTTP ${resp.status}` }))
+      }
+    } catch {
+      setTestFailed(p => ({ ...p, [key.id]: true }))
+      setTestError(p => ({ ...p, [key.id]: '网络错误：端点不可达或被跨域策略拦截' }))
+    } finally {
+      setTestingKey(null)
     }
   }
 
+  const startEdit = (key: ApiKeyEntry) => {
+    setEditingId(key.id)
+    if (key.endpoint) {
+      setConfigTab('custom')
+      setCustomApiFormat(key.format || 'openai')
+      setCustomEndpoint(key.endpoint)
+      setCustomModelId(key.model)
+    } else {
+      setConfigTab('provider')
+      setSelectedProvider(key.provider)
+      setSelectedModelName(key.model)
+    }
+    setKeyInput('')
+  }
+
+  const testErrorMsg = Object.values(testError).find(v => v)
+
   return (
-    <>
-      {/* 页面头部卡片（bid-maker .page-header-card） */}
+    <div className="model-view">
+      {/* 页面头部卡片（modal 内已按 bid 隐藏，保留 JSX 供回退） */}
       <div className="page-header-card">
         <div className="page-header-content">
           <div className="page-header-info">
@@ -132,112 +241,203 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
               <span className="sep">/</span>
               <span>设置中心</span>
               <span className="sep">/</span>
-              <span className="current">模型设置</span>
+              <span className="current">模型管理</span>
             </div>
             <div className="page-header-title">
-              <h1>模型设置</h1>
+              <h1>模型管理</h1>
               <p>配置 AI 大模型服务商与 API Key 连接</p>
             </div>
           </div>
+          <button type="button" className="page-reset-button" onClick={resetForm}>
+            <span className="remix ri-restart-line"></span>
+            清空表单
+          </button>
         </div>
       </div>
 
-      {/* 服务商/模型选择 */}
-      {subTab === 'add' && (
-        <div className="settings-section">
-          <div className="settings-section-title"><span>预设服务商</span><span className="settings-section-desc">选择模型制造商并快速添加其 API Key</span></div>
-          <div className="setting-row">
-            <div className="setting-label"><span>服务商</span></div>
-            <UiSelect value={selectedProvider} onChange={v => { setSelectedProvider(v); setSelectedModel('') }} options={PROVIDER_NAMES.map(p => ({ value: p, label: p }))} style={{ flex: 1, maxWidth: 300 }} />
-          </div>
-          {selectedProvider && (
-            <div className="setting-row">
-              <div className="setting-label"><span>模型</span></div>
-              <UiSelect value={selectedModel} onChange={setSelectedModel} options={currentModels.map(m => ({ value: m, label: m }))} style={{ flex: 1, maxWidth: 300 }} />
-            </div>
-          )}
-        </div>
-      )}
+      {/* 配置面板 */}
+      <div className="settings-section model-card">
+        <div className="settings-section-title"><span>API Key</span></div>
 
-      {/* 自定义配置 */}
-      {subTab === 'keys' && (
-        <div className="settings-section">
-          <div className="settings-section-title"><span>自定义配置</span><span className="settings-section-desc">手动输入 API 地址和模型 ID</span></div>
-          <div className="setting-row">
-            <div className="setting-label"><span>API 格式</span></div>
-            <div className="segmented-control" style={{ flex: 1, maxWidth: 200 }}>
-              <button className={`segmented-btn${customFormat === 'openai' ? ' active' : ''}`} onClick={() => setCustomFormat('openai')}>OpenAI</button>
-              <button className={`segmented-btn${customFormat === 'anthropic' ? ' active' : ''}`} onClick={() => setCustomFormat('anthropic')}>Anthropic</button>
-            </div>
-          </div>
-          <div className="setting-row">
-            <div className="setting-label"><span>自定义地址</span><span className="setting-hint">OpenAI 兼容格式</span></div>
-            <UiInput type="text" value={customEndpoint} onChange={setCustomEndpoint} placeholder="https://api.example.com/v1" style={{ flex: 1, maxWidth: 400 }} />
-          </div>
-          <div className="setting-row">
-            <div className="setting-label"><span>模型 ID</span></div>
-            <UiInput type="text" value={customModelId} onChange={setCustomModelId} placeholder="如：gpt-4o、claude-3-5-sonnet" style={{ flex: 1, maxWidth: 300, fontFamily: 'var(--font-mono)' }} />
-          </div>
+        <div className="density-group">
+          <UiSelectCard
+            selected={configTab === 'provider'}
+            title="模型制造商"
+            desc="从内置服务商列表选择模型并填写 API Key"
+            onClick={() => setConfigTab('provider')}
+          />
+          <UiSelectCard
+            selected={configTab === 'custom'}
+            title="自定义配置"
+            desc="手动填写 API 格式、端点地址和模型 ID"
+            onClick={() => setConfigTab('custom')}
+          />
         </div>
-      )}
 
-      {/* API Key 输入 */}
-      <div className="settings-section">
-        <div className="settings-section-title"><span>API Key</span><span className="settings-section-desc">本地存储，不上传服务器</span></div>
-        <div className="setting-row">
-          <div className="setting-label"><span><span className="remix ri-key-line"></span> API Key</span></div>
-          <div style={{ display: 'flex', gap: 8, flex: 1, maxWidth: 400 }}>
-            <UiInput type={keyVisible ? 'text' : 'password'} value={apiKey} onChange={setApiKey} placeholder="sk-..." style={{ flex: 1, fontFamily: 'var(--font-mono)' }} />
-            <UiButton variant="ghost" size="sm" onClick={() => setKeyVisible(!keyVisible)} title={keyVisible ? '隐藏' : '显示'}>
-              <span className={`remix ${keyVisible ? 'ri-eye-line' : 'ri-eye-off-line'}`}></span>
-            </UiButton>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-          {editId ? (
-            <><button className="settings-save-btn" onClick={saveEdit}><span className="remix ri-check-line"></span> 保存</button><button className="settings-cancel-btn" onClick={cancelEdit}>取消</button></>
+        <div className="config-form">
+          {configTab === 'provider' ? (
+            <>
+              <div className="form-field">
+                <label className="form-label">服务商</label>
+                <UiSelect
+                  value={selectedProvider}
+                  onChange={v => { setSelectedProvider(v); setSelectedModelName('') }}
+                  options={PROVIDER_OPTIONS}
+                  placeholder="请选择服务商"
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">模型</label>
+                <UiSelect
+                  value={selectedModelName}
+                  onChange={setSelectedModelName}
+                  options={currentModels}
+                  placeholder="请选择模型"
+                />
+              </div>
+            </>
           ) : (
-            <button className="settings-save-btn" onClick={handleAdd}><span className="remix ri-key-fill"></span> 添加密钥</button>
+            <>
+              <div className="form-field">
+                <label className="form-label">API格式</label>
+                <UiSelect
+                  value={customApiFormat}
+                  onChange={v => setCustomApiFormat(v as 'openai' | 'anthropic')}
+                  options={FORMAT_OPTIONS}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">自定义地址</label>
+                <UiInput
+                  value={customEndpoint}
+                  onChange={setCustomEndpoint}
+                  placeholder="https://api.example.com/v1"
+                  clearable
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">模型ID</label>
+                <UiInput
+                  value={customModelId}
+                  onChange={setCustomModelId}
+                  placeholder="例如: gpt-4"
+                  clearable
+                />
+              </div>
+            </>
           )}
-        </div>
-      </div>
 
-      {/* 已保存密钥列表 */}
-      {apiKeys.length > 0 && (
-        <div className="settings-section">
-          <div className="settings-section-title"><span>已保存的密钥</span><span className="settings-section-desc">共 {apiKeys.length} 个</span></div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {apiKeys.map((key) => {
-              const isActive = s.selectedModelId === key.id
-              const ts = testResult[key.id]
-              return (
-                <div key={key.id} className={`api-key-item${isActive ? ' active' : ''}`} onClick={() => setSelectedModelId(key.id)} title="点击设为当前模型" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', background: isActive ? 'var(--accent-a10)' : 'var(--bg-code)', borderRadius: 10, border: `1px solid ${isActive ? 'var(--accent-primary)' : 'var(--border-subtle)'}` }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-heading)' }}>{key.modelName || key.model}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                      <span>{key.provider}</span><span style={{ opacity: 0.5 }}> · </span>
-                      <span style={{ fontFamily: 'var(--font-mono)' }}>{key.model}</span>
-                      {key.endpoint && <><span style={{ opacity: 0.5 }}> · </span><span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block' }}>{key.endpoint}</span></>}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                    <button className="ai-key-test-btn" onClick={() => handleTest(key)} disabled={testId === key.id} title={ts === 'success' ? '连通成功' : ts === 'failed' ? '测试失败' : '测试连通性'}>
-                      {testId === key.id ? <span className="remix ri-loader-4-line" style={{ fontSize: 13, animation: 'spin 1s linear infinite' }} />
-                        : ts === 'success' ? <span className="remix ri-check-line" style={{ fontSize: 13, color: '#22c55e' }} />
-                        : ts === 'failed' ? <span className="remix ri-close-line" style={{ fontSize: 13, color: '#ef4444' }} />
-                        : <span className="remix ri-play-line" style={{ fontSize: 13 }} />}
-                    </button>
-                    <button className="ai-key-edit-btn" onClick={() => startEdit(key)} title="编辑"><span className="remix ri-edit-line"></span></button>
-                    <button className="ai-key-delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(key.id) }} title={confirmDeleteId === key.id ? '再点一次确认删除' : '删除'}>{confirmDeleteId === key.id ? <span style={{ fontSize: 11 }}>确认?</span> : <span className="remix ri-delete-bin-line"></span>}</button>
-                    <UiSwitch size="sm" checked={key.enabled} onChange={() => toggleApiKey(key.id)} />
-                    {isActive && <span className="remix ri-checkbox-circle-fill" style={{ fontSize: 16, color: 'var(--accent-primary)' }} />}
-                  </div>
-                </div>
-              )
-            })}
+          <div className="form-field">
+            <label className="form-label">API Key</label>
+            <div className="form-input-row">
+              <UiInput
+                value={keyInput}
+                onChange={setKeyInput}
+                type={keyVisible ? 'text' : 'password'}
+                placeholder={editingId ? '留空则保留原密钥，输入则更换' : 'sk-...'}
+                suffix={
+                  <button
+                    type="button"
+                    className="form-key-toggle"
+                    onClick={() => setKeyVisible(v => !v)}
+                    aria-label={keyVisible ? '隐藏密钥' : '显示密钥'}
+                  >
+                    <span className={`remix ${keyVisible ? 'ri-eye-line' : 'ri-eye-off-line'}`}></span>
+                  </button>
+                }
+              />
+            </div>
           </div>
         </div>
-      )}
-    </>
+
+        <div className="form-actions">
+          <button type="button" className="btn-save" onClick={handleSave}>
+            {editingId ? '更新配置' : '保存配置'}
+          </button>
+        </div>
+
+        {apiKeys.length > 0 && (
+          <div className="saved-keys">
+            <span className="saved-keys-title">已保存的密钥</span>
+            {apiKeys.map(key => (
+              <div
+                key={key.id}
+                className={`saved-key-item${s.selectedModelId === key.id ? ' active' : ''}`}
+                onClick={() => s.setSelectedModelId(key.id)}
+                title="点击设为当前模型"
+              >
+                <div className="saved-key-info">
+                  <span className="saved-key-provider">{key.provider}</span>
+                  <span className="saved-key-model">
+                    {key.model}
+                    {key.endpoint && <span className="saved-key-endpoint"> · {key.endpoint}</span>}
+                  </span>
+                </div>
+                <div className="saved-key-actions">
+                  <span className="saved-key-masked">{maskKey(key.key)}</span>
+                  <button
+                    type="button"
+                    className="saved-key-test"
+                    onClick={e => { e.stopPropagation(); handleTest(key) }}
+                    disabled={testingKey === key.id}
+                  >
+                    {testingKey === key.id
+                      ? <span className="remix spinning ri-loader-4-line"></span>
+                      : testSuccess[key.id]
+                        ? <span className="remix success ri-check-line"></span>
+                        : testFailed[key.id]
+                          ? <span className="remix failed ri-close-circle-line"></span>
+                          : <span>测试</span>}
+                  </button>
+                  <UiTip text="编辑">
+                    <button
+                      type="button"
+                      className="saved-key-edit"
+                      onClick={e => { e.stopPropagation(); startEdit(key) }}
+                    >
+                      <span className="remix ri-edit-line"></span>
+                    </button>
+                  </UiTip>
+                  <UiTip text="删除">
+                    <button
+                      type="button"
+                      className="saved-key-delete"
+                      onClick={e => { e.stopPropagation(); openDelete(key.id) }}
+                    >
+                      <span className="remix ri-delete-bin-line"></span>
+                    </button>
+                  </UiTip>
+                  <span
+                    className="saved-key-switch"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <UiSwitch size="sm" checked={key.enabled} onChange={() => s.toggleApiKey(key.id)} />
+                  </span>
+                </div>
+              </div>
+            ))}
+            {testErrorMsg && <div className="test-error-msg">{testErrorMsg}</div>}
+          </div>
+        )}
+      </div>
+
+      {/* 删除密钥确认弹窗 */}
+      <UiModal
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        title="删除密钥"
+        subtitle="删除后使用该密钥的抽取将不可用"
+        icon="ri-delete-bin-line"
+        width={480}
+        footer={
+          <div className="confirm-actions">
+            <UiButton variant="outline" size="sm" onClick={() => setShowDeleteDialog(false)}>取消</UiButton>
+            <UiButton variant="primary" size="sm" onClick={confirmDelete}>确认删除</UiButton>
+          </div>
+        }
+      >
+        <p className="confirm-text">确定删除该 API 密钥配置？</p>
+      </UiModal>
+    </div>
   )
 }
