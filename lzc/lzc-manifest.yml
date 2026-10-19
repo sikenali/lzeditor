@@ -1,7 +1,8 @@
 application:
   subdomain: lzeditor
   routes:
-    - /api/=exec://3001
+    # exec://<端口>,<可执行命令>。只写端口会被 lzcinit 判为 invalid exec protocol args
+    - /api/=exec://3001,/lzcapp/pkg/content/scripts/start.sh
     - /=file:///lzcapp/pkg/content/frontend
   environment:
     PORT: "3001"

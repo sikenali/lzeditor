@@ -88,6 +88,57 @@ rm -f "$DEPS_LIST"
 # npx 靠 node_modules/.bin 解析，盒子里没有 npm 缓存，必须自带
 ln -sf ../tsx/dist/cli.mjs "$BACKEND_NM/.bin/tsx"
 
+# ========== 打包 Node.js 运行时 ==========
+# lzcapp:3.20.3 是 musl 精简容器（Alpine 系），没有 node / npm / npx，只有
+# python3 + wget + sh。glibc 版 node 跑不起来，必须用官方 musl 构建。
+# 但 nodejs.org 的 musl 构建仍动态链接 libstdc++ / libgcc_s（Alpine 上 nodejs 包的
+# 正常依赖），容器里没有这两个库，需一并打入 backend/lib/ 再用 LD_LIBRARY_PATH 指过去。
+NODE_VERSION="v24.22.0"
+NODE_ARTIFACT="node-${NODE_VERSION}-linux-x64-musl.tar.xz"
+NODE_SHA256="a8d2897df6cd50beb83b34f958b2ca32628389225b41841f2b157d83d317a867"
+ALPINE_REPO="https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64"
+LIBSTDCXX_APK="libstdc++-14.2.0-r6.apk"
+LIBSTDCXX_SHA="939f7c99898f3e8154207a17f4acbe8bc40437e1bb1b43f5525620ca9e452a2e"
+LIBGCC_APK="libgcc-14.2.0-r6.apk"
+LIBGCC_SHA="04f3467bc967e705221a843fe4d3de5850db826e571686e0c0ed453d38cb5c59"
+
+CACHE_DIR="$SCRIPT_DIR/_runtime_cache"
+STAGE_DIR="$SCRIPT_DIR/_node_stage"
+rm -rf "$STAGE_DIR"
+mkdir -p "$CACHE_DIR" "$STAGE_DIR" "$SCRIPT_DIR/_lpk_content/backend/lib"
+
+# 下载并校验；已缓存则跳过
+fetch_verify() {
+  [ -f "$2" ] && return 0
+  echo "Downloading $1 ..."
+  curl -fsSL "$1" -o "$2.tmp"
+  echo "$3  $2.tmp" | sha256sum -c - >/dev/null || { echo "ERROR: sha256 校验失败: $1"; exit 1; }
+  mv "$2.tmp" "$2"
+}
+
+fetch_verify "https://nodejs.org/dist/${NODE_VERSION}/${NODE_ARTIFACT}" \
+  "$CACHE_DIR/$NODE_ARTIFACT" "$NODE_SHA256"
+# GNU tar 对「指定 member + --strip-components」不生效（静默不解出），先解到临时目录再 mv
+tar xJf "$CACHE_DIR/$NODE_ARTIFACT" -C "$STAGE_DIR" \
+  "node-${NODE_VERSION}-linux-x64-musl/bin/node"
+mv "$STAGE_DIR/node-${NODE_VERSION}-linux-x64-musl/bin/node" "$SCRIPT_DIR/_lpk_content/backend/node"
+chmod +x "$SCRIPT_DIR/_lpk_content/backend/node"
+
+mkdir -p "$STAGE_DIR/a1" "$STAGE_DIR/a2"
+fetch_verify "$ALPINE_REPO/$LIBSTDCXX_APK" "$CACHE_DIR/$LIBSTDCXX_APK" "$LIBSTDCXX_SHA"
+fetch_verify "$ALPINE_REPO/$LIBGCC_APK" "$CACHE_DIR/$LIBGCC_APK" "$LIBGCC_SHA"
+tar xzf "$CACHE_DIR/$LIBSTDCXX_APK" -C "$STAGE_DIR/a1" 2>/dev/null
+tar xzf "$CACHE_DIR/$LIBGCC_APK" -C "$STAGE_DIR/a2" 2>/dev/null
+STD_SO="$(find "$STAGE_DIR/a1" -name 'libstdc++.so.6.*' -type f | head -1)"
+GCC_SO="$(find "$STAGE_DIR/a2" -name 'libgcc_s.so.1*' -type f | head -1)"
+[ -z "$STD_SO" ] && { echo "ERROR: 未解出 libstdc++"; exit 1; }
+[ -z "$GCC_SO" ] && { echo "ERROR: 未解出 libgcc_s"; exit 1; }
+cp "$STD_SO" "$SCRIPT_DIR/_lpk_content/backend/lib/libstdc++.so.6"
+cp "$GCC_SO" "$SCRIPT_DIR/_lpk_content/backend/lib/libgcc_s.so.1"
+chmod 644 "$SCRIPT_DIR/_lpk_content/backend/lib/"*
+rm -rf "$STAGE_DIR"
+echo "Bundled runtime: node $(du -h "$SCRIPT_DIR/_lpk_content/backend/node" | cut -f1), libs $(du -sh "$SCRIPT_DIR/_lpk_content/backend/lib" | cut -f1)"
+
 # 数据目录（keys.json：API key 元信息，明文只在浏览器）
 mkdir -p "$SCRIPT_DIR/_lpk_content/backend/data"
 cp -a "$PROJECT_ROOT/server/data/." "$SCRIPT_DIR/_lpk_content/backend/data/" 2>/dev/null || true
@@ -110,56 +161,22 @@ cat > "$SCRIPT_DIR/_lpk_content/scripts/start.sh" << 'STARTSCRIPT'
 #!/bin/sh
 set -e
 
-# 创建数据目录
-mkdir -p /lzcapp/var/data /app/logs
-# 持久化 keys.json 到持久卷。
-# 后端早已从 SQLite 改成 JSON 文件存储，之前持久化的是 keys.db，
-# 那是 SQLite 时代的遗留接线：既复制不到文件，SQLITE_DB_PATH 也没人读，
-# 结果 API key 元信息全写进会丢的包目录里。
-if [ ! -f /lzcapp/var/data/keys.json ]; then
-  cp /lzcapp/pkg/content/backend/data/keys.json /lzcapp/var/data/keys.json 2>/dev/null || true
-fi
-# 后端固定读写 <backend>/data/keys.json，用软链把它接到持久卷
-ln -sf /lzcapp/var/data/keys.json /lzcapp/pkg/content/backend/data/keys.json 2>/dev/null || true
+# 创建持久化数据目录。
+# 后端早已从 SQLite 改成 JSON 文件存储；DATA_DIR 由 manifest 指到持久卷，
+# /lzcapp/pkg 在 compose 里是只读挂载，所以绝不能往包内 data/ 打软链（会 EROFS）。
+mkdir -p /lzcapp/var/data
 
-# 启动后端（tsx 直接跑 TypeScript，PORT=3001）
-# 优先用包内自带的 tsx，避免依赖盒子上的 npx / 联网 npm install
 cd /lzcapp/pkg/content/backend
-if [ -f node_modules/tsx/dist/cli.mjs ]; then
-  TSX_CMD="node node_modules/tsx/dist/cli.mjs"
-elif command -v npx >/dev/null 2>&1; then
-  TSX_CMD="npx tsx"
-else
-  echo "ERROR: 包内无 tsx 且 npx 不可用"
-  exit 1
-fi
-PORT=$PORT $TSX_CMD src/index.ts >>/app/logs/backend.log 2>&1 &
-BACKEND_PID=$!
 
-# 等待后端就绪（最多 30 次 × 2s = 60s）
-for i in $(seq 1 30); do
-  sleep 2
-  if wget -qO- http://127.0.0.1:$PORT/api/health >/dev/null 2>&1; then
-    echo "backend healthy after ${i}x2s"
-    break
-  fi
-  if ! kill -0 $BACKEND_PID 2>/dev/null; then
-    echo "backend exited with code $?, logs:"
-    cat /app/logs/backend.log
-    exit 1
-  fi
-done
-
-# 前端由 lzcinit 静态服务，无需额外启动
-# 任一进程退出则结束容器
-while kill -0 $BACKEND_PID 2>/dev/null; do
-  sleep 2
-done
-
-echo "container stopped: backend=$BACKEND_PID"
-echo "=== backend log ==="
-cat /app/logs/backend.log
-exit 0
+# lzcinit 通过 exec://3001 直接 exec 本脚本作为 API 进程，前台常驻，
+# stdout/stderr 由 lzcinit 采集为容器日志（不再自己写 /app/logs）。
+# 容器里没有 node/npm/npx，用包里自带的 musl 构建；tsx 直接跑 TS，免预编译。
+# node musl 构建动态链接 libstdc++ / libgcc_s（容器里没有），指向包内自带副本。
+export LD_LIBRARY_PATH="$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# lzcinit 自带 healthcheck + start_period，这里无需再等就绪。
+PORT="${PORT:-3001}"
+export PORT
+exec ./node node_modules/tsx/dist/cli.mjs src/index.ts
 STARTSCRIPT
 chmod +x "$SCRIPT_DIR/_lpk_content/scripts/start.sh"
 

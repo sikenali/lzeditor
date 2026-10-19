@@ -6,7 +6,9 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const dataDir = path.join(__dirname, '../../data')
+// LPK 运行时 /lzcapp/pkg 是只读挂载，写进包内 data/ 会 EROFS；
+// manifest 已把 DATA_DIR 指向持久卷 /lzcapp/var/data，dev 下无此变量则回落包内路径。
+const dataDir = process.env.DATA_DIR || path.join(__dirname, '../../data')
 const storePath = path.join(dataDir, 'keys.json')
 
 const router = Router()

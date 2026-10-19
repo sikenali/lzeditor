@@ -1,5 +1,5 @@
 package: cloud.lazycat.app.lzeditor
-version: 0.9.1
+version: 0.9.2
 name: LZEditor
 description: 轻文档markdown编辑器，AI 辅助写作
 author: sikenali

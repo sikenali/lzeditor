@@ -8,7 +8,8 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const dataDir = path.join(__dirname, '../data')
+// LPK 运行时 /lzcapp/pkg 只读，DATA_DIR 由 manifest 指到持久卷 /lzcapp/var/data
+const dataDir = process.env.DATA_DIR || path.join(__dirname, '../data')
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true })
 }

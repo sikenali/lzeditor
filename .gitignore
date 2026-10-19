@@ -17,6 +17,8 @@ core
 
 # lzc LPK 构建产物（本地打包生成，不入库）
 lzc/_lpk_content/
+lzc/_runtime_cache/
+lzc/_node_stage/
 lzc/_backend_deps.txt
 lzc/*.lpk
 
