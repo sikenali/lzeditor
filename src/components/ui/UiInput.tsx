@@ -22,12 +22,14 @@ export interface UiInputProps {
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
   onFocus?: React.FocusEventHandler<HTMLInputElement>
   onBlur?: React.FocusEventHandler<HTMLInputElement>
+  /** 输入框尾部自定义控件（API Key 的眼睛按钮）；渲染在 input 之后、clear 按钮之前 */
+  suffix?: React.ReactNode
 }
 
 export const UiInput: React.FC<UiInputProps> = ({
   value, onChange, type = 'text', placeholder, prefixIcon, clearable = false,
   size = 'md', autoFocus, disabled, readOnly, id, name, className, style,
-  min, max, step, onKeyDown, onFocus, onBlur,
+  min, max, step, onKeyDown, onFocus, onBlur, suffix,
 }) => {
   const Prefix = resolveIcon(prefixIcon)
   const Clear = resolveIcon('ri-close-circle-line')
@@ -54,6 +56,7 @@ export const UiInput: React.FC<UiInputProps> = ({
         onFocus={onFocus}
         onBlur={onBlur}
       />
+      {suffix}
       {clearable && value !== '' && !disabled && Clear && (
         <button type="button" className="ui-input-clear" onClick={() => onChange('')} aria-label="清除">
           <Clear size={15} />

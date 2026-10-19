@@ -17,6 +17,8 @@ export interface UiModalProps {
   children: React.ReactNode
   footer?: React.ReactNode
   radius?: number
+  /** 宽度上限（px）。设置中心用 min(92vw, 1400px) */
+  maxWidth?: number
   /** 覆盖默认阴影，例如设置中心用更浅的 0 8px 40px */
   shadow?: string
   className?: string
@@ -25,7 +27,7 @@ export interface UiModalProps {
 export const UiModal: React.FC<UiModalProps> = ({
   open, onClose, icon, title, subtitle, width = 600, height,
   closeOnOverlay = true, bodyPadding = true, children, footer, radius = 18,
-  shadow, className,
+  maxWidth, shadow, className,
 }) => {
   useEffect(() => {
     if (!open) return
@@ -53,7 +55,9 @@ export const UiModal: React.FC<UiModalProps> = ({
   // 有固定高度时把 overflow 收成 hidden：body 内部自己滚动，
   // 否则内容会把整个弹框撑高或溢出圆角边界
   const modalStyle: React.CSSProperties = {
-    width: `min(${widthCss}, 94vw)`,
+    width: maxWidth
+      ? `min(${widthCss}, ${maxWidth}px)`
+      : `min(${widthCss}, 94vw)`,
     borderRadius: radius,
     ...(shadow ? { boxShadow: shadow } : {}),
     ...(height
