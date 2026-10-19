@@ -413,18 +413,20 @@ function App() {
         <div className="app-editor-area">
           {centerContent}
         </div>
-        <StatusBar className="statusbar-vertical" />
       </div>
 
-      {/* 右面板 */}
-      {(showRightPanel || showPreview || appMode === 'history') && (
+      {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库 */}
+      {(showRightPanel || showPreview || showLibrary || appMode === 'history' || appMode === 'style') && (
         <div className={`app-right-panel${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
-          {appMode === 'history' && <HistoryPanel onClose={() => setAppMode('edit')} />}
-          {appMode === 'style' && <StyleMainPanel />}
-          {showPreview && <SidebarPreview />}
+          {appMode === 'history' ? <HistoryPanel onClose={() => setAppMode('edit')} />
+          : appMode === 'style' ? <StyleMainPanel />
+          : showPreview ? <SidebarPreview />
+          : showLibrary ? <LibraryPanel sidebar />
+          : null}
         </div>
       )}
       </div>
+      <StatusBar />
       <Footer />
     </div>
   )

@@ -1,80 +1,153 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
+import {
+  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
+  useEditorActions, useFlyout, useTableActive, ActionMenu,
+} from './editorActions'
 
-interface NavItem {
-  id: string
-  icon: string
-  label: string
-  active?: boolean
-  action: () => void
-}
+const VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0'
 
+/* 左侧 rail（bid-typesetting SideNav.vue 版式）：76px 全高，顶 logo、中 3 组、底版本号。
+   3 个分组与顶栏一致：文档 / 编辑 / 应用。 */
 export const LeftNav: React.FC = () => {
-  const showLibrary = useEditorStore(s => s.showLibrary)
-  const showOutline = useEditorStore(s => s.showOutline)
-  const showPreview = useEditorStore(s => s.showPreview)
-  const appMode = useEditorStore(s => s.appMode)
-  const setShowLibrary = useEditorStore(s => s.setShowLibrary)
-  const setShowOutline = useEditorStore(s => s.setShowOutline)
-  const setShowPreview = useEditorStore(s => s.setShowPreview)
-  const setAppMode = useEditorStore(s => s.setAppMode)
-  const setShowRightPanel = useEditorStore(s => s.setShowRightPanel)
+  const appMode = useEditorStore((s: any) => s.appMode)
+  const openPanel = useEditorStore((s: any) => s.openPanel)
+  const showLibrary = useEditorStore((s: any) => s.showLibrary)
+  const showOutline = useEditorStore((s: any) => s.showOutline)
+  const showSearch = useEditorStore((s: any) => s.showSearch)
+  const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
+  const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
+  const setShowSearch = useEditorStore((s: any) => s.setShowSearch)
+  const setShowRightPanel = useEditorStore((s: any) => s.setShowRightPanel)
+  const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
-  const toggleLibrary = useCallback(() => {
-    const next = !showLibrary
-    setShowLibrary(next)
-    if (next) setShowRightPanel(true)
-  }, [showLibrary, setShowLibrary, setShowRightPanel])
-  const toggleOutline = useCallback(() => {
-    setShowOutline(!showOutline)
-  }, [showOutline, setShowOutline])
-  const togglePreview = useCallback(() => {
-    const next = !showPreview
-    setShowPreview(next)
-    if (next) setShowRightPanel(true)
-  }, [showPreview, setShowPreview, setShowRightPanel])
-  const switchMode = useCallback((mode: 'edit' | 'code' | 'read' | 'history' | 'style') => {
-    const next = appMode === mode ? 'edit' : mode
-    setAppMode(next)
-    if (next === 'history' || next === 'style') setShowRightPanel(true)
-    else setShowRightPanel(false)
-  }, [appMode, setAppMode, setShowRightPanel])
+  const flyout = useFlyout()
+  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog } = useEditorActions()
+  const tableActive = useTableActive()
+
+  const newBtnRef = useRef<HTMLButtonElement>(null)
+  const formatBtnRef = useRef<HTMLButtonElement>(null)
+  const tableBtnRef = useRef<HTMLButtonElement>(null)
+  const insertBtnRef = useRef<HTMLButtonElement>(null)
+  const modeBtnRef = useRef<HTMLButtonElement>(null)
 
   const openAI = useCallback(() => {
-    useAIStore.getState().showPanel('question', '', { x: window.innerWidth / 2, y: 200 })
+    const s = useAIStore.getState()
+    if (s.panelVisible) s.hidePanel()
+    else s.showPanel('question', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
   }, [])
 
-  const items: NavItem[] = [
-    { id: 'library',  icon: 'ri-archive-2-line',   label: '文档库',  active: showLibrary,  action: toggleLibrary },
-    { id: 'outline',  icon: 'ri-list-unordered',   label: '大纲',    active: showOutline,  action: toggleOutline },
-    { id: 'preview',  icon: 'ri-eye-line',         label: '预览',    active: showPreview,  action: togglePreview },
-    { id: 'divider1', icon: '',                    label: '',       action: () => {} },
-    { id: 'edit',     icon: 'ri-edit-2-line',      label: '编辑',    active: appMode === 'edit', action: () => switchMode('edit') },
-    { id: 'code',     icon: 'ri-code-s-line',      label: '代码',    active: appMode === 'code', action: () => switchMode('code') },
-    { id: 'read',     icon: 'ri-book-open-line',   label: '阅读',    active: appMode === 'read', action: () => switchMode('read') },
-    { id: 'divider2', icon: '',                    label: '',       action: () => {} },
-    { id: 'history',  icon: 'ri-history-fill',     label: '历史',    active: appMode === 'history', action: () => switchMode('history') },
-    { id: 'style',    icon: 'ri-palette-fill',     label: '样式',    active: appMode === 'style', action: () => switchMode('style') },
-    { id: 'divider3', icon: '',                    label: '',       action: () => {} },
-    { id: 'ai',       icon: 'ri-openai-fill',      label: 'AI',     action: openAI },
-  ]
+  const togglePanel = useCallback((key: 'library' | 'outline' | 'search') => {
+    const st = useEditorStore.getState()
+    const cur = key === 'library' ? st.showLibrary : key === 'outline' ? st.showOutline : st.showSearch
+    if (key === 'library') st.setShowLibrary(!cur)
+    else if (key === 'outline') st.setShowOutline(!cur)
+    else st.setShowSearch(!cur)
+  }, [])
+
+  const toggleDialog = useCallback((dialog: 'export' | 'settings') => {
+    const st = useEditorStore.getState()
+    st.setOpenPanel(st.openPanel === dialog ? 'none' : dialog)
+  }, [])
+
+  const openAbout = useCallback(() => {
+    useSettingsStore.getState().setActiveGroup('about')
+    useEditorStore.getState().setOpenPanel('settings')
+  }, [])
+
+  const toggleMode = useCallback((mode: 'history' | 'style') => {
+    const st = useEditorStore.getState()
+    const next = st.appMode === mode ? 'edit' : mode
+    st.setAppMode(next)
+    st.setShowRightPanel(next === 'history' || next === 'style')
+  }, [])
+
+  const onMenuAction = (action: string) => {
+    const key = flyout.key
+    flyout.close()
+    if (key === 'new') { action === 'new' ? newDocument() : openFileDialog() }
+    else if (key === 'format') formatAction(action)
+    else if (key === 'table') tableAction(action)
+    else if (key === 'insert') insertAction(action)
+    else if (key === 'mode') modeAction(action)
+  }
+
+  const menu = (key: string, ref: React.RefObject<HTMLButtonElement>, icon: string, label: string) => (
+    <div className="rail-menu-btn" onClick={() => flyout.open(key, ref.current)}>
+      <button ref={ref} className={`rail-btn rail-btn--menu${flyout.isOpen(key) ? ' active' : ''}`} title={label}>
+        <span className={`remix rail-icon ${icon}`}></span>
+        <span className="rail-label">{label}</span>
+      </button>
+    </div>
+  )
+
+  const btn = (icon: string, label: string, onClick: () => void, active?: boolean) => (
+    <button className={`rail-btn${active ? ' active' : ''}`} onClick={onClick} title={label}>
+      <span className={`remix rail-icon ${icon}`}></span>
+      <span className="rail-label">{label}</span>
+    </button>
+  )
 
   return (
-    <nav className="left-nav">
-      {items.map(item =>
-        item.id.startsWith('divider')
-          ? <div key={item.id} className="left-nav-sep" />
-          : <button
-              key={item.id}
-              className={`left-nav-btn${item.active ? ' active' : ''}`}
-              onClick={item.action}
-              title={item.label}
-            >
-              <span className={`remix left-nav-icon ${item.icon}`}></span>
-              <span className="left-nav-hover-label">{item.label}</span>
-            </button>
+    <aside className="rail-nav">
+      <div className="rail-top">
+        <button className="rail-logo" title="LZEditor">
+          <img className="rail-logo-img" src="/logo.svg" alt="LZEditor" />
+        </button>
+      </div>
+
+      <nav className="rail-body" aria-label="编辑导航">
+        {/* 组 1：文档 */}
+        <div className="rail-group">
+          {btn('ri-archive-2-line', '文档库', () => togglePanel('library'), showLibrary)}
+          {menu('new', newBtnRef, 'ri-file-add-line', '新建')}
+          {btn('ri-list-unordered', '大纲', () => togglePanel('outline'), showOutline)}
+          {btn('ri-search-line', '查找', () => togglePanel('search'), showSearch)}
+        </div>
+
+        {/* 组 2：编辑 */}
+        <div className="rail-group">
+          {menu('format', formatBtnRef, 'ri-text-wrap', '格式')}
+          {btn('ri-image-line', '图片', () => useEditorStore.getState().setInsertPanel('image'))}
+          {btn('ri-link', '链接', () => useEditorStore.getState().setInsertPanel('link'))}
+          {menu('table', tableBtnRef, 'ri-table-2', '表格')}
+          {menu('insert', insertBtnRef, 'ri-add-circle-line', '插入')}
+        </div>
+
+        {/* 组 3：应用 */}
+        <div className="rail-group">
+          {btn('ri-openai-fill', 'AI', openAI, aiPanelVisible)}
+          {menu('mode', modeBtnRef, 'ri-eye-2-fill', '模式')}
+          {btn('ri-history-fill', '历史', () => toggleMode('history'), appMode === 'history')}
+          {btn('ri-palette-fill', '样式', () => toggleMode('style'), appMode === 'style')}
+          {btn('ri-download-2-line', '导出', () => toggleDialog('export'), openPanel === 'export')}
+          {btn('ri-settings-3-fill', '设置', () => toggleDialog('settings'), openPanel === 'settings')}
+        </div>
+      </nav>
+
+      <div className="rail-bottom">
+        <button className="rail-version" title="关于" onClick={openAbout}>
+          v{VERSION}
+        </button>
+      </div>
+
+      {flyout.key && (
+        <ActionMenu
+          refEl={flyout.menuRef}
+          anchor={flyout.rect}
+          align="right"
+          items={
+            flyout.key === 'new' ? NEW_ITEMS
+            : flyout.key === 'format' ? FORMAT_ITEMS
+            : flyout.key === 'table' ? applyTableItems(tableActive)
+            : flyout.key === 'insert' ? INSERT_ITEMS
+            : MODE_ITEMS
+          }
+          onAction={onMenuAction}
+        />
       )}
-    </nav>
+    </aside>
   )
 }
