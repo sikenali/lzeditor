@@ -17,7 +17,7 @@ echo "Building version: $VERSION"
 cat > "$SCRIPT_DIR/package.yml" <<PKGEOF
 package: cloud.lazycat.app.lzeditor
 version: ${VERSION}
-name: LZEditor
+name: 懒猫编辑器
 description: 轻文档markdown编辑器，AI 辅助写作
 author: sikenali
 license: MIT
@@ -27,7 +27,7 @@ unsupported_platforms:
   - ios
 locales:
   zh-CN:
-    name: LZEditor
+    name: 懒猫编辑器
     description: 轻文档markdown编辑器，AI 辅助写作
   en:
     name: LZEditor
@@ -118,11 +118,18 @@ fetch_verify() {
 
 fetch_verify "https://nodejs.org/dist/${NODE_VERSION}/${NODE_ARTIFACT}" \
   "$CACHE_DIR/$NODE_ARTIFACT" "$NODE_SHA256"
-# GNU tar 对「指定 member + --strip-components」不生效（静默不解出），先解到临时目录再 mv
+# GNU tar 对「指定 member + --strip-components」不生效（静默不解出），先解到临时目录再压
+NODE_BIN_SRC="$STAGE_DIR/node-${NODE_VERSION}-linux-x64-musl/bin/node"
 tar xJf "$CACHE_DIR/$NODE_ARTIFACT" -C "$STAGE_DIR" \
   "node-${NODE_VERSION}-linux-x64-musl/bin/node"
-mv "$STAGE_DIR/node-${NODE_VERSION}-linux-x64-musl/bin/node" "$SCRIPT_DIR/_lpk_content/backend/node"
-chmod +x "$SCRIPT_DIR/_lpk_content/backend/node"
+
+# 只带压缩包，不带解压后的二进制（127MB → 45MB，包体省 82MB）。
+# 必须在盒子上带：lzcapp 容器里没有 node/npm，且 apk 源不可达（容器无公网、DNS 不解析外网）。
+# 压成 .gz 而不是 .tar.xz：实测容器里只有 gzip/zcat，xz/xzcat/lzma 均未链接，.xz 解不开。
+# start.sh 首启解压到持久卷 /lzcapp/var/runtime，路径含 sha256 前缀，天然幂等。
+gzip -9 -c "$NODE_BIN_SRC" > "$SCRIPT_DIR/_lpk_content/backend/node.gz"
+echo "$(sha256sum "$NODE_BIN_SRC" | cut -d' ' -f1)  node" \
+  > "$SCRIPT_DIR/_lpk_content/backend/node.gz.sha256"
 
 mkdir -p "$STAGE_DIR/a1" "$STAGE_DIR/a2"
 fetch_verify "$ALPINE_REPO/$LIBSTDCXX_APK" "$CACHE_DIR/$LIBSTDCXX_APK" "$LIBSTDCXX_SHA"
@@ -137,7 +144,7 @@ cp "$STD_SO" "$SCRIPT_DIR/_lpk_content/backend/lib/libstdc++.so.6"
 cp "$GCC_SO" "$SCRIPT_DIR/_lpk_content/backend/lib/libgcc_s.so.1"
 chmod 644 "$SCRIPT_DIR/_lpk_content/backend/lib/"*
 rm -rf "$STAGE_DIR"
-echo "Bundled runtime: node $(du -h "$SCRIPT_DIR/_lpk_content/backend/node" | cut -f1), libs $(du -sh "$SCRIPT_DIR/_lpk_content/backend/lib" | cut -f1)"
+echo "Bundled runtime: node.gz $(du -h "$SCRIPT_DIR/_lpk_content/backend/node.gz" | cut -f1) (解压后 127M), libs $(du -sh "$SCRIPT_DIR/_lpk_content/backend/lib" | cut -f1)"
 
 # 数据目录（keys.json：API key 元信息，明文只在浏览器）
 mkdir -p "$SCRIPT_DIR/_lpk_content/backend/data"
@@ -161,22 +168,50 @@ cat > "$SCRIPT_DIR/_lpk_content/scripts/start.sh" << 'STARTSCRIPT'
 #!/bin/sh
 set -e
 
-# 创建持久化数据目录。
-# 后端早已从 SQLite 改成 JSON 文件存储；DATA_DIR 由 manifest 指到持久卷，
+# 持久化数据目录（keys.json：API key 元信息，明文只在浏览器）。
 # /lzcapp/pkg 在 compose 里是只读挂载，所以绝不能往包内 data/ 打软链（会 EROFS）。
 mkdir -p /lzcapp/var/data
 
 cd /lzcapp/pkg/content/backend
 
 # lzcinit 通过 exec://3001 直接 exec 本脚本作为 API 进程，前台常驻，
-# stdout/stderr 由 lzcinit 采集为容器日志（不再自己写 /app/logs）。
-# 容器里没有 node/npm/npx，用包里自带的 musl 构建；tsx 直接跑 TS，免预编译。
+# stdout/stderr 由 lzcinit 采集为容器日志。容器里没有 node/npm/npx，
+# 包内自带 musl 构建的 node；tsx 直接跑 TS，免预编译。
+#
+# node 以 node.gz 携带（127MB -> 45MB，包体省 82MB），首启解压到持久卷，
+# 路径含 sha256 前缀，因此天然幂等：同版本不重复解压，升级换新路径，
+# 旧件顺手清掉。用 .gz 而不是 .tar.xz —— 实测 lzcapp 容器只有
+# gzip/zcat，xz/xzcat/lzma 未链接，.xz 解不开。
+RUNTIME_DIR=/lzcapp/var/runtime
+EXPECTED="$(awk '{print $1}' node.gz.sha256)"
+PREFIX="$(printf '%s' "$EXPECTED" | cut -c1-12)"
+NODE_BIN="$RUNTIME_DIR/node-$PREFIX"
+if [ ! -x "$NODE_BIN" ]; then
+  mkdir -p "$RUNTIME_DIR"
+  echo "[start] first boot: extracting node runtime $PREFIX ..."
+  for old in "$RUNTIME_DIR"/node-*; do
+    [ -f "$old" ] || continue
+    rm -f "$old"
+  done
+  TMP="$RUNTIME_DIR/node-$PREFIX.part.$$"
+  gzip -dc node.gz > "$TMP"
+  chmod 755 "$TMP"
+  GOT="$(sha256sum "$TMP" | cut -d' ' -f1)"
+  if [ "$GOT" != "$EXPECTED" ]; then
+    rm -f "$TMP"
+    echo "ERROR: node runtime sha256 mismatch: got $GOT want $EXPECTED" >&2
+    exit 1
+  fi
+  mv "$TMP" "$NODE_BIN"
+  echo "[start] node runtime ready: $NODE_BIN"
+fi
+
 # node musl 构建动态链接 libstdc++ / libgcc_s（容器里没有），指向包内自带副本。
 export LD_LIBRARY_PATH="$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 # lzcinit 自带 healthcheck + start_period，这里无需再等就绪。
 PORT="${PORT:-3001}"
 export PORT
-exec ./node node_modules/tsx/dist/cli.mjs src/index.ts
+exec "$NODE_BIN" node_modules/tsx/dist/cli.mjs src/index.ts
 STARTSCRIPT
 chmod +x "$SCRIPT_DIR/_lpk_content/scripts/start.sh"
 

@@ -11,5 +11,7 @@ application:
     NODE_ENV: production
   health_check:
     test_url: http://127.0.0.1:3001/api/health
-    start_period: 30s
+    # 首启要先把 node.gz 解压出 127MB 二进制 + 校验 sha256 + tsx 冷启动，
+    # 慢盘上可能超过 30s。只在首次安装/升级那一次生效，之后走持久卷缓存。
+    start_period: 60s
     timeout: 10s
