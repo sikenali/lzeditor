@@ -1863,7 +1863,7 @@
 .settings-panel-content > .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   flex: 1;
   min-height: 0;
 }
@@ -2686,4 +2686,9 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 模型设置页头卡：照抄 bid-typesetting 的 SettingsModal 行为，modal 内不显示页头卡 */
+.settings-panel-content .page-header-card {
+  display: none;
 }
