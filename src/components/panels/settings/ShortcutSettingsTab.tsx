@@ -41,7 +41,7 @@ function renderShortcutContent(tab: string) {
   )
   if (tab === 'common') return (
     <div>
-      <div className="settings-section-title"><span className="remix ri-list-check shortcut-section-icon"></span><span>常规操作</span><span className="settings-section-desc">常用命令</span></div>
+      <div className="settings-section-title"><span className="remix ri-list-check shortcut-section-icon"></span><span>常规操作</span></div>
       <div className="shortcut-list">
         {row('设置面板', `${mod}+,`)}
         {row('全屏模式', `${mod}+Shift+F`)}

@@ -5,7 +5,7 @@ export const ContentStyleTab: React.FC<{ s: any; u: any }> = ({ s, u }) => {
   const activeId = s.typographyTheme || 'classic'
   return (
     <div className="settings-section">
-      <div className="settings-section-title"><span>内容样式</span><span className="settings-section-desc">文章内容、插入块、预览与导出的视觉风格</span></div>
+      <div className="settings-section-title"><span>内容样式</span></div>
       <div className="theme-grid">
         {TYPOGRAPHY_THEMES.map(t => (
           <button

@@ -25,7 +25,7 @@ function renderGeneralSection(s: any, u: any) {
   return (
     <>
       <div className="settings-section">
-        <div className="settings-section-title"><span>排版</span><span className="settings-section-desc">字体、字号与行距</span></div>
+        <div className="settings-section-title"><span>排版</span></div>
         <div className="setting-row" style={{ marginBottom: 16 }}>
           <div className="setting-label"><span>默认字体</span><span className="setting-hint">编辑区默认字体族</span></div>
           <UiSelect value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
@@ -58,7 +58,7 @@ function renderGeneralSection(s: any, u: any) {
         </div>
       </div>
       <div className="settings-section">
-        <div className="settings-section-title"><span>段落排版</span><span className="settings-section-desc">首行缩进与对齐方式</span></div>
+        <div className="settings-section-title"><span>段落排版</span></div>
         <UDSettingRow icon="ri-text-spacing" label="首行缩进" desc="每个段落首行缩进两个字符">
         <UiSwitch size="sm" checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
       </UDSettingRow>
@@ -68,7 +68,7 @@ function renderGeneralSection(s: any, u: any) {
       </UDSettingRow>
       </div>
       <div className="settings-section">
-        <div className="settings-section-title"><span>工具栏</span><span className="settings-section-desc">按钮显示与布局</span></div>
+        <div className="settings-section-title"><span>工具栏</span></div>
         <UDSettingRow icon="ri-apps-2-fill" label="显示常用格式按钮" desc="在工具栏直接显示粗体、斜体、下划线、删除线、高亮五个按钮，关闭后仅保留格式菜单">
         <UiSwitch size="sm" checked={ s.quickFormatButtons !== false } onChange={ v => u('quickFormatButtons', v) } />
       </UDSettingRow>
@@ -87,7 +87,7 @@ function renderLocalizationSection(s: any, u: any) {
   return (
     <>
       <div className="settings-section">
-        <div className="settings-section-title"><span>拼写检查</span><span className="settings-section-desc">文字输入辅助</span></div>
+        <div className="settings-section-title"><span>拼写检查</span></div>
         <UDSettingRow icon="ri-spell-check-line" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
         <UiSwitch size="sm" checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
       </UDSettingRow>
@@ -99,7 +99,7 @@ function renderLocalizationSection(s: any, u: any) {
         </div>
       </div>
       <div className="settings-section">
-        <div className="settings-section-title"><span>Markdown 快捷符号</span><span className="settings-section-desc">自动格式化与补全</span></div>
+        <div className="settings-section-title"><span>Markdown 快捷符号</span></div>
         <UDSettingRow icon="ri-asterisk" label="允许使用符号键 (* _ + ~ = 和 `) 设置选中的文本的格式" desc="选中文字后按 * 加粗、_ 斜体等">
         <UiSwitch size="sm" checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
       </UDSettingRow>
@@ -138,7 +138,7 @@ function renderEditModeSection(s: any, u: any) {
   return (
     <>
       <div className="settings-section">
-        <div className="settings-section-title"><span>编辑模式</span><span className="settings-section-desc">编辑器功能开关</span></div>
+        <div className="settings-section-title"><span>编辑模式</span></div>
         <UDSettingRow icon="ri-markdown-fill" label="Markdown 标记常显" desc="始终显示 ### 与列表符号">
         <UiSwitch size="sm" checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
       </UDSettingRow>

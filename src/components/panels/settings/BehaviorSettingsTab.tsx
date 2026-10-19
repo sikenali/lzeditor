@@ -5,7 +5,7 @@ function renderAppSettings(s: any, u: any) {
 
   return (
     <div className="settings-section">
-      <div className="settings-section-title"><span>行为设置</span><span className="settings-section-desc">应用启动与窗口管理</span></div>
+      <div className="settings-section-title"><span>行为设置</span></div>
       <UDSettingRow icon="ri-window-fill" label="启动标签页" desc="应用启动时显示多文档标签栏">
         <UiSwitch size="sm" checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
       </UDSettingRow>

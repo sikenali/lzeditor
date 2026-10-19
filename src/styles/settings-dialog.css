@@ -1831,6 +1831,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: color 0.2s ease;
 }
 .settings-nav-row.active .settings-nav-ico { color: var(--color-primary); }
 
@@ -1908,7 +1909,7 @@
 .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   padding: 0;
   font-size: 15px;
 }
@@ -1925,17 +1926,16 @@
   -webkit-backdrop-filter: none;
   box-shadow: var(--shadow-xs);
 }
+/* 裸标题 —— bid-typesetting .card-title：无分隔线、无描述位。
+   padding-bottom / border-bottom 必须显式清零：:113 那处定义带 10px + 分隔线，会穿透过来 */
 .settings-section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: block;
   font-size: 17px;
   font-weight: 500;
   color: var(--color-text-primary);
-  padding-bottom: 16px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--color-border-soft);
+  padding-bottom: 0;
+  margin-bottom: 20px;
+  border-bottom: none;
 }
 .settings-section-title > span:first-child {
   display: inline-flex;
@@ -2489,3 +2489,4 @@
 .ud-select {
   background-image: var(--t-bgi-1);
 }
+

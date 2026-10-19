@@ -17,10 +17,7 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
   { id: 'theme', label: '主题设置', icon: 'ri-palette-line', subs: [] },
   {
     id: 'ai', label: '模型设置', icon: 'ri-cpu-line',
-    subs: [
-      { id: 'add', label: '模型制造商', icon: 'ri-openai-fill' },
-      { id: 'keys', label: '自定义配置', icon: 'ri-key-line' },
-    ],
+    subs: [],
   },
   {
     id: 'profile', label: '个性设置', icon: 'ri-edit-2-fill',
@@ -34,9 +31,10 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
   { id: 'about', label: '关于', icon: 'ri-information-line', subs: [] },
 ]
 
-/* 面板固定长宽：DESIGN.md §3.1 —— 1320px × 86vh（上限 900px） */
-const PANEL_WIDTH = 1320
-const PANEL_HEIGHT = '86vh'
+/* 面板长宽：bid-typesetting SettingsModal.vue —— 92vw / 上限 1400px / 92vh */
+const PANEL_WIDTH = '92vw'
+const PANEL_HEIGHT = '92vh'
+const PANEL_MAX_WIDTH = 1400
 const PANEL_SHADOW = '0 8px 40px rgba(0,0,0,0.1)'
 
 export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -97,7 +95,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const settingsContent = (
     <div className="settings-content">
       {group.id === 'theme' && <ThemeSettingsView s={settings} u={updateSetting} />}
-      {group.id === 'ai' && <ModelSettingsTab subTab={subTab} />}
+      {group.id === 'ai' && <ModelSettingsTab />}
       {group.id === 'profile' && (
         subTab === 'content'
           ? <ContentStyleTab s={settings} u={updateSetting} />
@@ -119,6 +117,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
       title="设置中心"
       subtitle="选择要进入的设置界面"
       width={PANEL_WIDTH}
+      maxWidth={PANEL_MAX_WIDTH}
       height={PANEL_HEIGHT}
       bodyPadding={false}
       radius={16}
@@ -233,7 +232,6 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
       <div className="settings-section">
         <div className="settings-section-title">
           <span>强调色</span>
-          <span className="settings-section-desc">用于选中态、主按钮和焦点反馈</span>
         </div>
         <div className="accent-group">
           {ACCENT_PRESETS.map(p => (
@@ -270,7 +268,6 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
       <div className="settings-section">
         <div className="settings-section-title">
           <span>导航布局</span>
-          <span className="settings-section-desc">切换后刷新页面生效</span>
         </div>
         <div className="layout-group">
           {LAYOUT_OPTIONS.map(l => (
