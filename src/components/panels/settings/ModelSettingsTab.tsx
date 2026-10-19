@@ -123,6 +123,25 @@ export const ModelSettingsTab: React.FC<{ subTab: string }> = ({ subTab }) => {
 
   return (
     <>
+      {/* 页面头部卡片（bid-maker .page-header-card） */}
+      <div className="page-header-card">
+        <div className="page-header-content">
+          <div className="page-header-info">
+            <div className="page-breadcrumb">
+              <span>首页</span>
+              <span className="sep">/</span>
+              <span>设置中心</span>
+              <span className="sep">/</span>
+              <span className="current">模型设置</span>
+            </div>
+            <div className="page-header-title">
+              <h1>模型设置</h1>
+              <p>配置 AI 大模型服务商与 API Key 连接</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 服务商/模型选择 */}
       {subTab === 'add' && (
         <div className="settings-section">

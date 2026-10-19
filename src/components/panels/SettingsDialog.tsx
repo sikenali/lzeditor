@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor } from '../../store/settingsStore'
 import type { SettingsGroup } from '../../shared/types'
-import { UiModal, UiButton } from '../../components/ui'
+import { UiModal } from '../../components/ui'
+import { toast } from '../../utils/toast'
 import { ContentStyleTab } from './settings/ContentStyleTab'
 import { EditorSettingsTab } from './settings/EditorSettingsTab'
 import { BehaviorSettingsTab } from './settings/BehaviorSettingsTab'
@@ -11,76 +12,70 @@ import { AboutSettingsTab } from './settings/AboutSettingsTab'
 
 type SubTab = { id: string; label: string; icon: string }
 
-/* ── Top-level nav groups + their sub-tabs ── */
-const NAV_GROUPS: { id: SettingsGroup; label: string; desc: string; icon: string; subs: SubTab[] }[] = [
+/* ── 顶层导航（DESIGN.md §3.3 / bid-maker SettingsModal.vue） ── */
+const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab[] }[] = [
+  { id: 'theme', label: '主题设置', icon: 'ri-palette-line', subs: [] },
   {
-    id: 'theme', label: '主题设置', desc: '界面主题、强调色与导航布局', icon: 'ri-palette-fill', subs: [],
-  },
-  {
-    id: 'ai', label: '模型管理', desc: '模型供应商与密钥', icon: 'ri-openai-fill',
+    id: 'ai', label: '模型设置', icon: 'ri-cpu-line',
     subs: [
-      { id: 'add',  label: '模型制造商', icon: 'ri-openai-fill' },
+      { id: 'add', label: '模型制造商', icon: 'ri-openai-fill' },
       { id: 'keys', label: '自定义配置', icon: 'ri-key-line' },
     ],
   },
   {
-    id: 'profile', label: '个性设置', desc: '内容、编辑与应用偏好', icon: 'ri-edit-2-fill',
+    id: 'profile', label: '个性设置', icon: 'ri-edit-2-fill',
     subs: [
-      { id: 'content',  label: '内容样式',   icon: 'ri-font-size' },
-      { id: 'editor',   label: '编辑设置',   icon: 'ri-edit-2-line' },
-      { id: 'app',      label: '行为设置',   icon: 'ri-apps-line' },
+      { id: 'content', label: '内容样式', icon: 'ri-font-size' },
+      { id: 'editor', label: '编辑设置', icon: 'ri-edit-2-line' },
+      { id: 'app', label: '行为设置', icon: 'ri-apps-line' },
       { id: 'shortcut', label: '快捷键设置', icon: 'ri-keyboard-fill' },
     ],
   },
-  {
-    id: 'about', label: '关于', desc: '版本与项目信息', icon: 'ri-information-fill', subs: [],
-  },
+  { id: 'about', label: '关于', icon: 'ri-information-line', subs: [] },
 ]
 
+/* 面板固定长宽：DESIGN.md §3.1 —— 1320px × 86vh（上限 900px） */
+const PANEL_WIDTH = 1320
+const PANEL_HEIGHT = '86vh'
+const PANEL_SHADOW = '0 8px 40px rgba(0,0,0,0.1)'
+
 export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const activeGroup   = useSettingsStore(s => s.activeGroup)
-  const setActiveGroup = useSettingsStore(s => s.setActiveGroup)
-  const setSubTab      = useSettingsStore(s => s.setSubTab)
-  const subTab = useSettingsStore(s => s.subTab ?? '')
-  const settings = useSettingsStore(s => s)
-  const updateSetting = useSettingsStore(s => s.updateSetting)
+  const settings = useSettingsStore()
+  const activeGroup = settings.activeGroup
+  const setActiveGroup = settings.setActiveGroup
+  const setSubTab = settings.setSubTab
+  const subTab = settings.subTab ?? ''
+  const updateSetting = settings.updateSetting
 
   const group = NAV_GROUPS.find(g => g.id === activeGroup) ?? NAV_GROUPS[0]
   const subs = group.subs
 
-  // Set subTab to the first tab on mount, or when switching categories
-  const mountedRef = useRef(false)
+  // 分组切换时把子标签复位到第一个
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true
-      if (subs.length) setSubTab(subs[0].id)
-      return
-    }
-    setSubTab(subs[0]?.id ?? '')
+    if (subs.length && !subs.some(t => t.id === subTab)) setSubTab(subs[0].id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGroup])
 
-  const handleSave = () => {
-    saveSettingsToStorage(settings)
-    onClose()
-  }
+  // 设置中心不设「保存」按钮（对齐 bid-maker）：改动即时生效并即时落盘
+  useEffect(() => {
+    saveSettingsToStorage(useSettingsStore.getState())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings])
 
   const leftNav = (
-    <div className="settings-nav">
+    <nav className="settings-nav-list">
       {NAV_GROUPS.map(item => (
         <button
           key={item.id}
-          className={`settings-nav-item${activeGroup === item.id ? ' active' : ''}`}
+          type="button"
+          className={`settings-nav-row${activeGroup === item.id ? ' active' : ''}`}
           onClick={() => { setActiveGroup(item.id); setSubTab(item.subs[0]?.id ?? '') }}
         >
-          <span className={`remix settings-nav-icon ${item.icon}`}></span>
-          <div className="settings-nav-text">
-            <div className="settings-nav-title">{item.label}</div>
-            <div className="settings-nav-sub">{item.desc}</div>
-          </div>
+          <span className={`remix settings-nav-ico ${item.icon}`}></span>
+          <span className="settings-nav-txt">{item.label}</span>
         </button>
       ))}
-    </div>
+    </nav>
   )
 
   const rightTop = subs.length > 1 ? (
@@ -88,6 +83,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
       {subs.map(tab => (
         <button
           key={tab.id}
+          type="button"
           className={`settings-subtab${subTab === tab.id ? ' active' : ''}`}
           onClick={() => setSubTab(tab.id)}
         >
@@ -100,7 +96,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
   const settingsContent = (
     <div className="settings-content">
-      {group.id === 'theme' && renderThemeContent(settings, updateSetting)}
+      {group.id === 'theme' && <ThemeSettingsView s={settings} u={updateSetting} />}
       {group.id === 'ai' && <ModelSettingsTab subTab={subTab} />}
       {group.id === 'profile' && (
         subTab === 'content'
@@ -121,20 +117,17 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
       onClose={onClose}
       icon="ri-settings-3-line"
       title="设置中心"
+      subtitle="选择要进入的设置界面"
+      width={PANEL_WIDTH}
+      height={PANEL_HEIGHT}
+      bodyPadding={false}
       radius={16}
-      width="1320px"
+      shadow={PANEL_SHADOW}
       closeOnOverlay={false}
-      subtitle={`${group.label}${group.subs.length ? ` · ${group.subs.find(t => t.id === subTab)?.label ?? ''}` : ''}`}
-      footer={
-        <>
-          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
-          <UiButton onClick={handleSave}>保存</UiButton>
-        </>
-      }
     >
-      <div className="settings-shell">
+      <div className="settings-panel-shell">
         {leftNav}
-        <div className="settings-panel">
+        <div className="settings-panel-content">
           {rightTop}
           {settingsContent}
         </div>
@@ -144,149 +137,219 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 }
 
 /* ═══════════════════════════════════════════
-   THEME
-═══════════════════════════════════════════ */
-function renderThemeContent(s: any, u: any) {
+   主题设置 — bid-maker ThemeSettingsView
+══════════════════════════════════════════════ */
+const THEME_OPTIONS = [
+  {
+    id: 'parchment', name: '浅色主题 · 羊皮纸',
+    desc: '当前默认，长时间阅读不易疲劳',
+    skin: '#FAF7F2', topbar: '#FFFFFF', content: '#E1DCD1', previewBg: '#F7EED4',
+  },
+  {
+    id: 'dark', name: '深色主题 · 墨夜',
+    desc: '夜间或暗光环境编辑作业更护眼',
+    skin: '#333A45', topbar: '#404955', content: '#8E939A', previewBg: '#17171A',
+  },
+] as const
+
+const LAYOUT_OPTIONS = [
+  { id: 'top', name: '顶栏模式 · 居中导航', desc: '工具栏在顶栏居中排布，状态栏固定在底部' },
+  { id: 'left', name: '侧边栏模式 · 左侧导航', desc: '工具栏固定在左侧竖列居中，编辑器居中排布' },
+] as const
+
+function ThemeSettingsView({ s, u }: { s: any; u: any }) {
+  const theme = s.theme
+  const accent = s.accentColor
+  const navMode = s.navMode || 'top'
+  // accentColor 存的是预设 id 或原始 16 进制色值，后者视为「自定义」
+  const isCustomAccent = /^#[0-9a-fA-F]{6}$/.test(String(accent))
+
+  const resetAll = () => {
+    u('theme', 'parchment')
+    u('accentColor', 'vermilion')
+    u('navMode', 'top')
+    toast('已恢复默认')
+  }
+
+  // 布局切换需要整页重排，按 DESIGN.md §4.4：toast + 800ms 后刷新
+  const changeLayout = (id: 'top' | 'left') => {
+    if (id === navMode) return
+    u('navMode', id)
+    const name = LAYOUT_OPTIONS.find(l => l.id === id)?.name || ''
+    toast(`已切换布局：${name}，页面将刷新以生效`)
+    setTimeout(() => window.location.reload(), 800)
+  }
+
   return (
     <>
-      {renderThemeModeSection(s, u)}
-      {renderAccentSection(s, u)}
-      {renderNavModeContent(s, u)}
+      {/* 页面头部卡片 */}
+      <div className="page-header-card">
+        <div className="page-header-content">
+          <div className="page-header-info">
+            <div className="page-breadcrumb">
+              <span>首页</span>
+              <span className="sep">/</span>
+              <span>设置中心</span>
+              <span className="sep">/</span>
+              <span className="current">主题设置</span>
+            </div>
+            <div className="page-header-title">
+              <h1>主题设置</h1>
+              <p>统一切换外观底色、强调色与导航布局模式，修改即时生效</p>
+            </div>
+          </div>
+          <button type="button" className="page-reset-button" onClick={resetAll}>
+            <span className="remix ri-restart-line"></span>
+            恢复默认
+          </button>
+        </div>
+      </div>
+
+      {/* 外观主题 */}
+      <div className="settings-section">
+        <div className="settings-section-title"><span>外观主题</span></div>
+        <div className="theme-group">
+          {THEME_OPTIONS.map(t => (
+            <div
+              key={t.id}
+              className={`theme-preview-card${theme === t.id ? ' active' : ''}`}
+              onClick={() => u('theme', t.id)}
+            >
+              {theme === t.id && <span className="remix theme-card-check ri-check-line"></span>}
+              <div className="theme-preview-thumb" style={{ backgroundColor: t.previewBg }}>
+                <div className="theme-thumb-topbar" style={{ backgroundColor: t.topbar }}></div>
+                <div className="theme-thumb-content" style={{ backgroundColor: t.content }}></div>
+              </div>
+              <div className="theme-preview-info">
+                <div className="theme-preview-name">{t.name}</div>
+                <div className="theme-preview-desc">{t.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 强调色 */}
+      <div className="settings-section">
+        <div className="settings-section-title">
+          <span>强调色</span>
+          <span className="settings-section-desc">用于选中态、主按钮和焦点反馈</span>
+        </div>
+        <div className="accent-group">
+          {ACCENT_PRESETS.map(p => (
+            <div
+              key={p.id}
+              className="accent-item"
+              onClick={() => u('accentColor', p.id)}
+            >
+              <div className="accent-circle" style={{ backgroundColor: p.color }}>
+                {accent === p.id && <span className="remix accent-check-icon ri-check-line"></span>}
+              </div>
+              <div className={`accent-name${accent === p.id ? ' current' : ''}`}>{p.name}</div>
+            </div>
+          ))}
+          {/* 自定义色：保留 lzeditor 原有的取色能力，样式与预设色盘统一 */}
+          <label className="accent-item" title="自定义颜色">
+            <div
+              className={`accent-circle accent-circle-custom${isCustomAccent ? ' active' : ''}`}
+              style={isCustomAccent ? { backgroundColor: accent } : undefined}
+            >
+              <input
+                type="color"
+                value={getAccentColor(accent)}
+                onChange={e => u('accentColor', e.target.value)}
+              />
+              <span className={`remix ${isCustomAccent ? 'accent-check-icon ri-check-line' : 'accent-plus-icon ri-add-line'}`}></span>
+            </div>
+            <div className={`accent-name${isCustomAccent ? ' current' : ''}`}>自定义</div>
+          </label>
+        </div>
+      </div>
+
+      {/* 导航布局 */}
+      <div className="settings-section">
+        <div className="settings-section-title">
+          <span>导航布局</span>
+          <span className="settings-section-desc">切换后刷新页面生效</span>
+        </div>
+        <div className="layout-group">
+          {LAYOUT_OPTIONS.map(l => (
+            <div
+              key={l.id}
+              className={`layout-card${navMode === l.id ? ' active' : ''}`}
+              onClick={() => changeLayout(l.id)}
+            >
+              {navMode === l.id && <span className="remix layout-card-check ri-check-line"></span>}
+              <div className="layout-preview">
+                {l.id === 'top' ? <TopBarMockup /> : <SidebarMockup />}
+              </div>
+              <div className="layout-info">
+                <div className="layout-name">{l.name}</div>
+                <div className="layout-desc">{l.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   )
 }
 
-function renderThemeModeSection(s: any, u: any) {
-  const theme  = s.theme
-  const update = u
+/** 顶栏布局示意：顶栏（品牌 + 模块 + 右侧动作）+ 内容区 */
+function TopBarMockup() {
   return (
-    <div className="settings-section">
-      <div className="settings-section-title">
-        <span>界面主题</span>
-        <span className="settings-section-desc">浅色 / 深色只影响应用界面，不影响文档排版样式</span>
+    <div className="mockup-topbar">
+      <div className="mockup-mock-header">
+        <div className="mockup-brand">
+          <span className="mockup-brand-dot"></span>
+          <span className="mockup-brand-text"></span>
+          <span className="mockup-brand-text muted"></span>
+        </div>
+        <div className="mockup-modules">
+          <span className="mockup-module" style={{ background: 'var(--color-primary)' }}></span>
+          <span className="mockup-module" style={{ background: '#D3A93F' }}></span>
+          <span className="mockup-module" style={{ background: '#3E8C6E' }}></span>
+          <span className="mockup-module" style={{ background: '#4A72A8' }}></span>
+          <span className="mockup-module" style={{ background: 'var(--color-primary)' }}></span>
+        </div>
+        <div className="mockup-actions">
+          <span className="mockup-action-dot"></span>
+          <span className="mockup-action-dot"></span>
+        </div>
       </div>
-      <div className="theme-mode-grid">
-        {([
-          { id: 'parchment', label: '浅色', icon: 'ri-sun-fill' },
-          { id: 'dark',      label: '深色', icon: 'ri-moon-fill' },
-        ] as const).map(m => (
-          <button key={m.id} className={`theme-mode-card ${theme === m.id ? 'active' : ''}`} onClick={() => update('theme', m.id)}>
-            <span className={`remix theme-mode-icon ${m.icon}`}></span>
-            <span className="theme-mode-label">{m.label}</span>
-            {theme === m.id && <span className="remix theme-mode-check ri-check-line"></span>}
-          </button>
-        ))}
+      <div className="mockup-body">
+        <div className="mockup-main"></div>
       </div>
     </div>
   )
 }
 
-function renderAccentSection(s: any, u: any) {
-  const accent = s.accentColor
-  const update = u
+/** 侧边栏布局示意：左侧竖列 + 右侧（顶栏 + 内容区） */
+function SidebarMockup() {
   return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>强调色</span><span className="settings-section-desc">用于选中态、主按钮和焦点反馈，不控制工具栏文字</span></div>
-      <div className="color-card-row">
-        {ACCENT_PRESETS.map(p => (
-          <button
-            key={p.id}
-            className={`color-card ${accent === p.id ? 'active' : ''}`}
-            onClick={() => update('accentColor', p.id)}
-          >
-            <span className="color-card-dot" style={{ background: p.color }} />
-            <span className="color-card-name">{p.name}</span>
-            {accent === p.id && <span className="remix color-card-check ri-check-line"></span>}
-          </button>
-        ))}
-        <label className="color-card color-card-custom" title="自定义颜色">
-          <input
-            type="color"
-            value={getAccentColor(accent)}
-            onChange={(e) => update('accentColor', e.target.value)}
-          />
-          <span className="remix color-card-icon ri-add-line"></span>
-          <span className="color-card-name">自定义</span>
-        </label>
+    <div className="mockup-sidebar">
+      <div className="mockup-side-nav">
+        <span className="mockup-side-mod" style={{ background: '#D3A93F' }}></span>
+        <span className="mockup-side-mod" style={{ background: 'var(--color-primary)' }}></span>
+        <span className="mockup-side-mod" style={{ background: '#3E8C6E' }}></span>
+        <span className="mockup-side-mod" style={{ background: '#4A72A8' }}></span>
+        <span className="mockup-side-mod" style={{ background: '#2F3640' }}></span>
       </div>
-      <div className="color-current-value" style={{ marginTop: 10 }}>
-        <span className="color-current-label">当前</span>
-        <span className="color-current-hex" style={{ color: getAccentColor(accent) || accent }}>
-          {ACCENT_PRESETS.find(p => p.id === accent)?.name || accent}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   NAV MODE
-═══════════════════════════════════════════ */
-function renderNavModeContent(s: any, u: any) {
-  const navMode = s.navMode || 'top'
-  const update = u
-  return (
-    <div className="settings-section">
-      <div className="settings-section-title"><span>导航样式</span><span className="settings-section-desc">选择编辑器整体布局模式</span></div>
-      <div className="nav-mode-grid">
-        {([
-          { id: 'top', label: '顶栏模式', icon: 'ri-layout-top-fill', desc: '工具栏在顶部，状态栏在底部，经典布局' },
-          { id: 'left', label: '左侧模式', icon: 'ri-layout-left-fill', desc: '工具栏固定在左侧，编辑器居中，右侧预览' },
-        ] as const).map(m => (
-          <button
-            key={m.id}
-            className={`nav-mode-card ${navMode === m.id ? 'active' : ''}`}
-            onClick={() => update('navMode', m.id)}
-          >
-            {/* Preview window */}
-            <div className="nav-mode-preview">
-              {m.id === 'top' ? (
-                <div className="nav-preview-top">
-                  <div className="np-toolbar">
-                    <span className="np-dot np-dot-r" />
-                    <span className="np-dot np-dot-y" />
-                    <span className="np-dot np-dot-g" />
-                    <span className="np-toolbar-label">工具栏</span>
-                  </div>
-                  <div className="np-editor">
-                    <div className="np-editor-line np-editor-line-short" />
-                    <div className="np-editor-line" />
-                    <div className="np-editor-line" />
-                    <div className="np-editor-line np-editor-line-short" />
-                  </div>
-                  <div className="np-statusbar">
-                    <span className="np-status-item">1,234 字</span>
-                    <span className="np-status-item">行 12 · 列 34</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="nav-preview-left">
-                  <div className="np-leftbar">
-                    <div className="np-leftbar-spacer" />
-                    <div className="np-leftbar-sep" />
-                    <div className="np-leftbar-spacer" />
-                    <div className="np-leftbar-sep" />
-                    <div className="np-leftbar-status">
-                      <span className="np-status-item">已保存</span>
-                    </div>
-                  </div>
-                  <div className="np-editor-wide">
-                    <div className="np-editor-line np-editor-line-short" />
-                    <div className="np-editor-line" />
-                    <div className="np-editor-line" />
-                    <div className="np-editor-line np-editor-line-short" />
-                    <div className="np-editor-line" />
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="nav-mode-info">
-              <span className="nav-mode-label">{m.label}</span>
-              <span className="nav-mode-desc">{m.desc}</span>
-            </div>
-            {navMode === m.id && <span className="remix nav-mode-check ri-check-line"></span>}
-          </button>
-        ))}
+      <div className="mockup-side-area">
+        <div className="mockup-mock-header">
+          <div className="mockup-brand">
+            <span className="mockup-brand-dot"></span>
+            <span className="mockup-brand-text"></span>
+            <span className="mockup-brand-text muted"></span>
+          </div>
+          <div className="mockup-actions">
+            <span className="mockup-action-dot"></span>
+            <span className="mockup-action-dot"></span>
+          </div>
+        </div>
+        <div className="mockup-body">
+          <div className="mockup-main"></div>
+        </div>
       </div>
     </div>
   )

@@ -65,22 +65,15 @@
   flex-shrink: 0;
 }
 .toolbar-btn:hover { background: transparent; }
-[data-theme="dark"] .toolbar-btn:hover { background: transparent; }
 .toolbar-btn.format-btn:hover { background: transparent; }
-[data-theme="dark"] .toolbar-btn.format-btn:hover { background: transparent; }
 .toolbar-btn:active { transform: scale(0.97); transition: transform 80ms ease-out; }
 .toolbar-btn.active { background: rgba(0,0,0,0.08); }
-[data-theme="dark"] .toolbar-btn.active { background: rgba(255,255,255,0.10); }
 .toolbar-btn.active:hover { background: rgba(0,0,0,0.05); transition: background 0.15s; }
-[data-theme="dark"] .toolbar-btn.active:hover { background: rgba(255,255,255,0.06); transition: background 0.15s; }
 .toolbar-btn.menu-open { background: rgba(0,0,0,0.08); }
-[data-theme="dark"] .toolbar-btn.menu-open { background: rgba(255,255,255,0.10); }
 .toolbar-icon { font-size: 21px; color: rgba(58,58,58,1); line-height: 1; }
-[data-theme="dark"] .toolbar-icon { color: rgba(245,240,230,0.85); }
 .toolbar-btn.active .toolbar-icon { color: var(--accent-primary); }
 .toolbar-btn.menu-open .toolbar-icon { color: var(--accent-primary); }
 .toolbar-label { font-size: 12px; color: rgba(58,58,58,1); white-space: nowrap; letter-spacing: -0.01em; font-family: "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif; }
-[data-theme="dark"] .toolbar-label { color: rgba(245,240,230,0.80); }
 .toolbar-btn.active .toolbar-label { color: var(--accent-primary); }
 .toolbar-btn.menu-open .toolbar-label { color: var(--accent-primary); }
 .toolbar-label-hidden { display: none; }
@@ -116,11 +109,6 @@
   backdrop-filter: blur(8px);
   letter-spacing: 0.01em;
   line-height: 1.4;
-}
-[data-theme="dark"] .toolbar-icon-only .toolbar-btn[data-title]:hover::after {
-  background: rgba(245,240,230,0.95);
-  color: rgba(30,30,35,1);
-  border-color: rgba(0,0,0,0.1);
 }
 
 /* ── Submenu indicator dot ── */
@@ -224,11 +212,8 @@
 .toolbar-submenu-item:focus-visible { box-shadow: 0 0 0 2px rgba(196,58,43,0.3); border-radius: 6px; }
 .toolbar-submenu-item:active { transform: scale(0.98); }
 .toolbar-submenu-item .remix { font-size: 16px; color: rgba(58,58,58,0.60); flex-shrink: 0; transition: color 0.1s; }
-[data-theme="dark"] .toolbar-submenu-item .remix { color: rgba(245,240,230,0.60); }
 .toolbar-submenu-item:hover .remix { color: rgba(58,58,58,1); }
-[data-theme="dark"] .toolbar-submenu-item:hover .remix { color: rgba(255,255,255,0.90); }
 .toolbar-submenu-sep { height: 1px; background: rgba(0,0,0,0.06); margin: 4px 0; }
-[data-theme="dark"] .toolbar-submenu-sep { background: rgba(255,255,255,0.06); }
 
 /* ── Document Meta Bar ── */
 .document-meta-bar {
@@ -314,11 +299,6 @@
   flex-shrink: 0; gap: 20px;
   position: sticky; bottom: 0; z-index: 100;
   box-shadow: 0 -2px 12px rgba(0,0,0,0.12);
-}
-[data-theme="dark"] .statusbar {
-  background: var(--color-bg-white);
-  border-top-color: var(--color-border);
-  color: var(--color-text-secondary);
 }
 .statusbar-left  { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .statusbar-center { display: flex; align-items: center; gap: 8px; flex: none; justify-content: center; }
@@ -420,13 +400,6 @@
   letter-spacing: 0.02em;
   line-height: 1.4;
   font-family: "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif;
-}
-[data-theme="dark"] .statusbar-pill[data-title]:hover::after,
-[data-theme="dark"] .statusbar-action[data-title]:hover::after,
-[data-theme="dark"] .statusbar-collapse[data-title]:hover::after {
-  background: rgba(245,240,230,0.95);
-  color: rgba(30,30,35,1);
-  border-color: rgba(0,0,0,0.1);
 }
 
 /* Social-like icon buttons (right side) — glassmorphism */
@@ -585,7 +558,6 @@
   padding: 32px 16px; color: var(--text-muted); text-align: center;
 }
 .sidebar-empty .remix { font-size: 24px; opacity: 0.5; }
-[data-theme="dark"] .sidebar-empty .remix { opacity: 0.8; }
 .sidebar-empty span { font-size: 12px; letter-spacing: -0.01em; }
 
 /* ── Sidebar Preview — glassmorphism ── */
@@ -761,10 +733,6 @@
   font-size: 28px;
   color: var(--text-muted);
   opacity: 0.5;
-}
-[data-theme="dark"] .sidebar-library .library-empty-icon {
-  color: rgba(255,255,255,0.35);
-  opacity: 1;
 }
 .sidebar-library .library-empty-title {
   font-size: 13px;
@@ -1045,16 +1013,6 @@
   background: var(--background-card);
   border-left: 1px solid var(--border-subtle);
   padding: 8px 0; gap: 0; overflow-y: auto; overflow-x: hidden; z-index: 100;
-}
-[data-theme="dark"] .statusbar-vertical {
-  background: var(--background-elevated);
-  border-left-color: rgba(255,255,255,0.06);
-}
-[data-theme="dark"] .statusbar-v-section,
-[data-theme="dark"] .statusbar-pill,
-[data-theme="dark"] .statusbar-badge,
-[data-theme="dark"] .statusbar-navmode-label {
-  color: rgba(180,175,165,1);
 }
 .statusbar-logo-wrap { padding: 2px 0 6px; display: flex; align-items: center; justify-content: center; }
 .statusbar-logo-wrap .statusbar-logo { width: 20px; height: 20px; opacity: 0.6; }
@@ -2016,4 +1974,61 @@
 }
 .app-right-panel.style-panel-exit {
   animation: scaleInCenter 0.22s cubic-bezier(0.32, 0.72, 0, 1) reverse forwards;
+}
+
+/* ===== 由 [data-theme] 覆写迁移而来（见 AGENT.md §7） ===== */
+.toolbar-btn.active {
+  background: var(--t-bg-9);
+}
+
+.toolbar-btn.active:hover {
+  background: var(--t-bg-10);
+}
+
+.toolbar-btn.menu-open {
+  background: var(--t-bg-9);
+}
+
+.toolbar-icon {
+  color: var(--t-fg-8);
+}
+
+.toolbar-label {
+  color: var(--t-fg-9);
+}
+
+.toolbar-icon-only .toolbar-btn[data-title]:hover::after {
+  background: var(--t-bg-11); color: var(--t-fg-10); border-color: var(--t-bd-5);
+}
+
+.toolbar-submenu-item .remix {
+  color: var(--t-fg-11);
+}
+
+.toolbar-submenu-item:hover .remix {
+  color: var(--t-fg-12);
+}
+
+.toolbar-submenu-sep {
+  background: var(--t-bg-12);
+}
+
+.statusbar-pill[data-title]:hover::after, .statusbar-action[data-title]:hover::after, .statusbar-collapse[data-title]:hover::after {
+  background: var(--t-bg-11); color: var(--t-fg-10); border-color: var(--t-bd-5);
+}
+
+.sidebar-empty .remix {
+  opacity: var(--t-op-3);
+}
+
+.sidebar-library .library-empty-icon {
+  color: var(--t-fg-1); opacity: var(--t-op-1);
+}
+
+.statusbar-vertical {
+  background: var(--t-bg-13); border-left-color: var(--t-bdlc-1);
+}
+
+.statusbar-v-section, .statusbar-pill, .statusbar-badge, .statusbar-navmode-label {
+  color: var(--t-fg-13);
 }

@@ -790,9 +790,6 @@
   overflow: hidden;
   background: #fff;
 }
-[data-theme="dark"] .inline-preview-wrapper {
-  background: var(--background-card);
-}
 
 .inline-read-scroll {
   flex: 1;
@@ -908,11 +905,6 @@
   z-index: 20;
   transition: opacity 0.2s;
 }
-[data-theme="dark"] .inline-preview-nav {
-  background: rgba(30, 30, 30, 0.82);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
 
 .preview-nav-btn {
   width: 40px;
@@ -932,13 +924,6 @@
   background: rgba(0, 0, 0, 0.06);
   color: rgba(51, 51, 51, 1);
   transform: scale(1.08);
-}
-[data-theme="dark"] .preview-nav-btn {
-  color: rgba(245, 240, 230, 0.80);
-}
-[data-theme="dark"] .preview-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.10);
-  color: rgba(245, 240, 230, 1);
 }
 
 /* ── Footer Bar ── */
@@ -999,10 +984,6 @@
   animation: version-panel-in 0.2s cubic-bezier(0.32, 0.72, 0, 1);
   padding: 16px 0 22px 0;
 }
-[data-theme="dark"] .version-panel {
-  background: rgba(36, 36, 38, 1);
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
-}
 @keyframes version-panel-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1041,9 +1022,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-[data-theme="dark"] .version-toolbar-label {
-  color: rgba(245, 245, 247, 1);
-}
 
 .version-toolbar-actions {
   display: flex;
@@ -1071,16 +1049,9 @@
   background: rgba(0, 0, 0, 0.05);
   color: rgba(51, 51, 51, 1);
 }
-[data-theme="dark"] .version-action-btn {
-  color: rgba(245, 245, 247, 1);
-}
-[data-theme="dark"] .version-action-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
 .version-action-btn:active { transform: scale(0.96); }
 .version-action-btn .remix { font-size: 18px; color: rgba(51, 51, 51, 1); line-height: 1; }
 .version-action-btn:hover .remix { color: rgba(51, 51, 51, 1); }
-[data-theme="dark"] .version-action-btn .remix { color: rgba(245, 245, 247, 1); }
 
 /* Version timeline */
 .version-timeline {
@@ -1141,27 +1112,6 @@
   color: rgba(26, 115, 232, 1);
   font-weight: 400;
 }
-[data-theme="dark"] .version-bar-body {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(44, 44, 46, 1);
-}
-[data-theme="dark"] .version-bar.active .version-bar-body {
-  border-color: rgba(26, 115, 232, 1);
-  border-width: 2px;
-  background: rgba(36, 36, 38, 1);
-}
-[data-theme="dark"] .version-bar-base {
-  background: rgba(255, 255, 255, 0.08);
-}
-[data-theme="dark"] .version-bar.active .version-bar-base {
-  background: rgba(26, 115, 232, 1);
-}
-[data-theme="dark"] .version-bar-label {
-  color: rgba(174, 174, 178, 1);
-}
-[data-theme="dark"] .version-bar.active .version-bar-label {
-  color: rgba(26, 115, 232, 1);
-}
 
 /* Version meta */
 .version-meta {
@@ -1174,9 +1124,6 @@
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;
   background: rgba(244, 244, 244, 1);
-}
-[data-theme="dark"] .version-meta {
-  background: rgba(36, 36, 38, 1);
 }
 .version-meta-item {
   display: flex;
@@ -1200,9 +1147,6 @@
   position: relative;
   overflow: hidden;
   background: #fff;
-}
-[data-theme="dark"] .main-content-preview {
-  background: var(--background-card);
 }
 
 .main-read-scroll {
@@ -1312,18 +1256,6 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 .nav-float-btn:active { transform: translateY(0) scale(0.96); }
-[data-theme="dark"] .nav-float-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: rgba(245, 240, 230, 0.72);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-[data-theme="dark"] .nav-float-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  color: rgba(245, 240, 230, 0.95);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-}
 
 
 /* ── Version Panel (bottom of main area) ── */
@@ -1333,10 +1265,6 @@
   background: rgba(244, 244, 244, 1);
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
   animation: main-version-in 0.2s cubic-bezier(0.32, 0.72, 0, 1);
-}
-[data-theme="dark"] .main-version-panel {
-  background: rgba(36, 36, 38, 1);
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
 }
 @keyframes main-version-in {
   from { opacity: 0; transform: translateY(6px); }
@@ -1473,9 +1401,6 @@
   flex-shrink: 0;
   background: rgba(244, 244, 244, 1);
 }
-[data-theme="dark"] .main-version-meta {
-  background: rgba(36, 36, 38, 1);
-}
 .main-version-meta .remix {
   font-size: 12px;
   color: var(--accent-primary);
@@ -1525,5 +1450,81 @@
   word-wrap: break-word;
 }
 .read-article-code::placeholder { color: var(--text-muted); opacity: 0.5; }
-[data-theme="dark"] .read-article-code { background: transparent; }
 .read-article-code:focus { box-shadow: none; }
+
+/* ===== 由 [data-theme] 覆写迁移而来（见 AGENT.md §7） ===== */
+.inline-preview-wrapper {
+  background: var(--t-bg-24);
+}
+
+.inline-preview-nav {
+  background: var(--t-bg-25); border-color: var(--t-bd-11); box-shadow: var(--t-sh-6);
+}
+
+.preview-nav-btn {
+  color: var(--t-fg-17);
+}
+
+.preview-nav-btn:hover {
+  background: var(--t-bg-26); color: var(--t-fg-18);
+}
+
+.version-panel {
+  background: var(--t-bg-18); box-shadow: var(--t-sh-7);
+}
+
+.version-toolbar-label {
+  color: var(--t-fg-14);
+}
+
+.version-action-btn {
+  color: var(--t-fg-14);
+}
+
+.version-action-btn:hover {
+  background: var(--t-bg-10);
+}
+
+.version-action-btn .remix {
+  color: var(--t-fg-14);
+}
+
+.version-bar-body {
+  border-color: var(--t-bd-12); background: var(--t-bg-27);
+}
+
+.version-bar.active .version-bar-body {
+  background: var(--t-bg-28);
+}
+
+.version-bar-base {
+  background: var(--t-bg-29);
+}
+
+.version-bar-label {
+  color: var(--t-fg-19);
+}
+
+.version-meta {
+  background: var(--t-bg-18);
+}
+
+.main-content-preview {
+  background: var(--t-bg-24);
+}
+
+.nav-float-btn {
+  background: var(--t-bg-30); border-color: var(--t-bd-13); color: var(--t-fg-20); box-shadow: var(--t-sh-8);
+}
+
+.nav-float-btn:hover {
+  background: var(--t-bg-31); border-color: var(--t-bd-14); color: var(--t-fg-21); box-shadow: var(--t-sh-9);
+}
+
+.main-version-panel {
+  background: var(--t-bg-18); box-shadow: var(--t-sh-7);
+}
+
+.main-version-meta {
+  background: var(--t-bg-18);
+}

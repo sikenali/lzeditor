@@ -1,11 +1,28 @@
 /* ============================================================
    LZEditor — Legacy semantic tokens (compatibility bridge)
-   The single source of truth is now the bid-maker `--color-*`
-   system (src/styles/tokens.css + src/styles/themes.ts, applied
-   by JS in hooks/useTheme.ts). Every legacy token below aliases
-   a --color-* token so content/editor/panel CSS keeps working
-   without per-rule rewrites. No [data-theme] override blocks.
-   ============================================================ */
+   The single source of truth is the bid-maker `--color-*` token
+   system (src/styles/tokens.css + src/styles/themes.ts), written
+   inline on <html> by hooks/useTheme.ts at runtime. Every legacy
+   token below aliases a --color-* token so the older content /
+   editor / panel CSS keeps working without per-rule rewrites.
+   ============================================================
+    Theming boundary (AGENT.md §7):
+ 
+    1. Tokens are NEVER overridden in CSS per theme. This file keeps
+       only `:root` defaults; the light/dark values come from JS
+       (applyTheme → element.style.setProperty). There are no
+       `[data-theme] { --token: ... }` override blocks anywhere.
+       `data-theme` is retained only as a debug attribute.
+ 
+    2. There are NO `[data-theme]` selectors in any stylesheet. Every
+       former dark/light component override was either deleted (the
+       base rule already carried the same value) or rewritten as a
+       gateless rule that reads a per-theme pair token `--t-*` defined
+       in src/styles/themes.ts (`parchment` object = light values,
+       `dark` object = dark values), and applied inline by JS exactly
+       like the `--color-*` tokens above.
+    ============================================================ */
+
 
 :root {
   /* Backgrounds */
