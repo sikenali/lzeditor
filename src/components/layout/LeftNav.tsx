@@ -2,6 +2,7 @@ import React, { useCallback, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
+import { UiTip } from '../ui/UiTip'
 import {
   NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
@@ -75,27 +76,36 @@ export const LeftNav: React.FC = () => {
   }
 
   const menu = (key: string, ref: React.RefObject<HTMLButtonElement>, icon: string, label: string) => (
-    <div className="rail-menu-btn" onClick={() => flyout.open(key, ref.current)}>
-      <button ref={ref} className={`rail-btn rail-btn--menu${flyout.isOpen(key) ? ' active' : ''}`} title={label}>
-        <span className={`remix rail-icon ${icon}`}></span>
-        <span className="rail-label">{label}</span>
-      </button>
-    </div>
+    <UiTip text={label} placement="right">
+      <div className="rail-menu-btn" onClick={() => flyout.open(key, ref.current)}>
+        <button ref={ref} className={`rail-btn rail-btn--menu${flyout.isOpen(key) ? ' active' : ''}`} aria-label={label}>
+          <span className="rail-icon-wrap">
+            <span className={`remix rail-icon ${icon}`} aria-hidden="true"></span>
+            <span className="rail-menu-dot" aria-hidden="true"></span>
+          </span>
+          <span className="rail-label">{label}</span>
+        </button>
+      </div>
+    </UiTip>
   )
 
   const btn = (icon: string, label: string, onClick: () => void, active?: boolean) => (
-    <button className={`rail-btn${active ? ' active' : ''}`} onClick={onClick} title={label}>
-      <span className={`remix rail-icon ${icon}`}></span>
-      <span className="rail-label">{label}</span>
-    </button>
+    <UiTip text={label} placement="right">
+      <button className={`rail-btn${active ? ' active' : ''}`} onClick={onClick} aria-label={label}>
+        <span className={`remix rail-icon ${icon}`} aria-hidden="true"></span>
+        <span className="rail-label">{label}</span>
+      </button>
+    </UiTip>
   )
 
   return (
     <aside className="rail-nav">
       <div className="rail-top">
-        <button className="rail-logo" title="LZEditor">
-          <img className="rail-logo-img" src="/logo.svg" alt="LZEditor" />
-        </button>
+        <UiTip text="LZEditor" placement="right">
+          <button className="rail-logo" aria-label="LZEditor">
+            <img className="rail-logo-img" src="/logo.svg" alt="" />
+          </button>
+        </UiTip>
       </div>
 
       <nav className="rail-body" aria-label="编辑导航">
@@ -128,9 +138,11 @@ export const LeftNav: React.FC = () => {
       </nav>
 
       <div className="rail-bottom">
-        <button className="rail-version" title="关于" onClick={openAbout}>
-          v{VERSION}
-        </button>
+        <UiTip text="关于" placement="right">
+          <button className="rail-version" onClick={openAbout} aria-label="关于">
+            v{VERSION}
+          </button>
+        </UiTip>
       </div>
 
       {flyout.key && (

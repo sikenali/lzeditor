@@ -1643,12 +1643,31 @@
 }
 
 .rail-nav {
+  --rail-btn-size: 40px;
+  --rail-btn-radius: 11px;
+  --rail-group-gap: 2px;
+  --rail-body-gap: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
-  padding: 10px 0 8px;
+  padding: 8px 0 6px;
   overflow: visible;
+}
+
+/* 15 个图标按钮在矮视口下塞不进 rail，按视口高两档压缩按钮尺寸与组间距。
+   刻意不改成纵向滚动：rail-body 一旦出现裁剪盒，向右弹出的 tooltip 就被拦在 rail 内。 */
+@media (max-height: 830px) {
+  .rail-nav {
+    --rail-btn-size: 36px;
+    --rail-btn-radius: 10px;
+    --rail-group-gap: 0;
+    --rail-body-gap: 0;
+  }
+  .rail-group + .rail-group::before { margin: 0 auto 4px; }
+}
+@media (max-height: 700px) {
+  .rail-nav { --rail-btn-size: 32px; --rail-btn-radius: 8px; }
 }
 
 .rail-top {
@@ -1656,7 +1675,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
 }
 .rail-logo {
   display: flex;
@@ -1678,23 +1697,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: none;
+  justify-content: space-between;
+  gap: var(--rail-body-gap, 6px);
+  /* overflow 必须保持 visible：tooltip 以 placement=right 向右弹出，
+     任一带滚动的裁剪盒都会把气泡拦在 rail 内 */
+  overflow: visible;
 }
-.rail-body::-webkit-scrollbar { display: none; }
 
 .rail-group {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: var(--rail-group-gap, 2px);
   flex-shrink: 0;
-}
-.rail-group + .rail-group {
-  margin-top: 4px;
-  padding-top: 6px;
 }
 .rail-group + .rail-group::before {
   content: '';
@@ -1707,14 +1722,14 @@
 
 .rail-btn {
   position: relative;
-  width: 58px;
-  padding: 5px 0 4px;
+  width: var(--rail-btn-size);
+  height: var(--rail-btn-size);
+  padding: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1px;
+  justify-content: center;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--rail-btn-radius);
   background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -1726,23 +1741,40 @@
   background: var(--color-primary-soft);
   color: var(--color-primary);
 }
-.rail-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
-.rail-label { font-size: 11px; line-height: 1.1; letter-spacing: 0.2px; }
-
-.rail-btn--menu .rail-label::after {
-  content: '›';
-  margin-left: 2px;
-  font-size: 10px;
-  line-height: 1;
-  opacity: 0.55;
+/* 图标与子菜单点共处一个定位容器：点位锚定图标盒本身而非按钮，
+   故任意按钮尺寸档下间距恒定 2px，无需为每档单独换算 */
+.rail-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+.rail-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
+/* 文字不渲染，仅作 UiTip 提示内容与 aria-label 来源 */
+.rail-label { display: none; }
+
+/* 子菜单指示点：图标正右方 2px。独立元素，不依赖标签文字存在 */
+.rail-menu-dot {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 2px);
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+.rail-btn.active .rail-menu-dot { opacity: 1; }
 
 .rail-bottom {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 6px;
+  padding-top: 4px;
 }
 .rail-version {
   font-size: 10.5px;
