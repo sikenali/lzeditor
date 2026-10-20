@@ -1868,42 +1868,60 @@
   min-height: 0;
 }
 
-.settings-subtabs {
+/* 有子项的一级导航项：一级行 + 缩进子项列表，作为一个分支占位 */
+.settings-nav-branch {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  background: var(--color-bg-white);
-  border: 0.7px solid var(--color-border-soft);
-  border-radius: 12px;
-  overflow-x: auto;
+  flex-direction: column;
+  gap: 2px;
   flex-shrink: 0;
 }
-.settings-subtab {
-  display: inline-flex;
+
+/* 子项列表：左侧引导线对齐一级行图标中心，视觉上从属父项 */
+.settings-nav-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 30px;
+  padding-left: 10px;
+  border-left: 1px solid var(--color-border-soft);
+}
+
+.settings-nav-sub {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
   border: none;
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-family: inherit;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  text-align: left;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background-color 0.2s, color 0.2s;
 }
-.settings-subtab .remix { font-size: 15px; }
-.settings-subtab:hover:not(.active) {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+.settings-nav-sub .remix {
+  width: 18px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-text-body);
+  transition: color 0.2s ease;
 }
-.settings-subtab.active {
-  background: var(--color-bg-secondary);
+.settings-nav-sub .settings-nav-txt {
+  font-size: 14px;
+  color: var(--color-text-body);
+}
+.settings-nav-sub:hover { background: var(--color-bg-secondary); }
+.settings-nav-sub.active { background: var(--color-primary-soft); }
+.settings-nav-sub.active .remix,
+.settings-nav-sub.active .settings-nav-txt {
   color: var(--color-primary);
   font-weight: 500;
-  box-shadow: var(--shadow-xs);
 }
 
 .settings-content {
