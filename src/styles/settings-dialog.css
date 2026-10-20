@@ -2175,6 +2175,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .layout-name {
   font-size: 16px;
@@ -2406,8 +2407,9 @@
   background: var(--t-bg-16); backdrop-filter: var(--t-blur-4); -webkit-backdrop-filter: var(--t-blur-4); border-radius: 0;
 }
 
+/* bid .section-card border-radius: 16px —— 此处不得覆写为 0，否则区块卡片退化为平带 */
 .settings-section {
-  border-radius: 0; box-shadow: var(--t-sh-12);
+  border-radius: 16px; box-shadow: var(--t-sh-12);
 }
 
 .settings-tab-slider {
