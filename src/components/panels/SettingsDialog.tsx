@@ -60,39 +60,37 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings])
 
-  /* 4 组一级导航；有子项的组把子项内联在导航里（内容区不再放子标签条），
-     导航由 4 行变 8 行，栏底留白从 ~70% 降到 ~50%，一级导航只有一个面 */
   const leftNav = (
     <nav className="settings-nav-list">
       {NAV_GROUPS.map(item => (
-        <div key={item.id} className="settings-nav-branch">
-          <button
-            type="button"
-            className={`settings-nav-row${activeGroup === item.id ? ' active' : ''}`}
-            onClick={() => { setActiveGroup(item.id); if (item.subs.length) setSubTab(item.subs[0].id) }}
-          >
-            <span className={`remix settings-nav-ico ${item.icon}`}></span>
-            <span className="settings-nav-txt">{item.label}</span>
-          </button>
-          {item.subs.length > 0 && (
-            <div className="settings-nav-sublist">
-              {item.subs.map(tab => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`settings-nav-sub${subTab === tab.id ? ' active' : ''}`}
-                  onClick={() => setSubTab(tab.id)}
-                >
-                  <span className={`remix ${tab.icon}`}></span>
-                  <span className="settings-nav-txt">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <button
+          key={item.id}
+          type="button"
+          className={`settings-nav-row${activeGroup === item.id ? ' active' : ''}`}
+          onClick={() => { setActiveGroup(item.id); setSubTab(item.subs[0]?.id ?? '') }}
+        >
+          <span className={`remix settings-nav-ico ${item.icon}`}></span>
+          <span className="settings-nav-txt">{item.label}</span>
+        </button>
       ))}
     </nav>
   )
+
+  const rightTop = subs.length > 1 ? (
+    <div className="settings-subtabs">
+      {subs.map(tab => (
+        <button
+          key={tab.id}
+          type="button"
+          className={`settings-subtab${subTab === tab.id ? ' active' : ''}`}
+          onClick={() => setSubTab(tab.id)}
+        >
+          <span className={`remix ${tab.icon}`}></span>
+          <span>{tab.label}</span>
+        </button>
+      ))}
+    </div>
+  ) : null
 
   const settingsContent = (
     <div className="settings-content">
@@ -128,9 +126,10 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
     >
       <div className="settings-panel-shell">
         {leftNav}
-          <div className="settings-panel-content">
-            {settingsContent}
-          </div>
+        <div className="settings-panel-content">
+          {rightTop}
+          {settingsContent}
+        </div>
       </div>
     </UiModal>
   )
