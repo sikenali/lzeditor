@@ -20,14 +20,22 @@ function rgba(rgb: [number, number, number], alpha: number): string {
 
 /** Legacy accent ids → new preset colors */
 const LEGACY_ACCENTS: Record<string, string> = {
-  red: '#BE3B2E',
-  vermilion: '#BE3B2E',
+  red: '#C0392B',
+  vermilion: '#C0392B',
   gold: '#D3A93F',
   green: '#3E8C6E',
   jade: '#3E8C6E',
   teal: '#4A72A8',
   cloud: '#4A72A8',
   ink: '#2F3640',
+}
+
+/** Dark-mode boost: if the resolved accent is dimmer than the design floor
+ *  (#E05050, DESIGN.md §1), fall back to the theme's built-in brighter red.
+ *  User-picked accents with their own dark counterparts keep their own value. */
+const DARK_ACCENT_BOOST: Record<string, string> = {
+  '#C0392B': '#E05050',
+  '#BE3B2E': '#E05050',
 }
 
 /** Resolve an accent id (legacy or new) or raw hex into a hex color. */
@@ -71,7 +79,14 @@ export function applyTheme(theme: string, accent?: string): void {
   }
 
   // ── Accent colour overrides the theme default primary ──
-  const hex = resolveAccent(accent)
+  // In dark mode, DESIGN.md §1 requires accent ≥ #E05050 for contrast. If the
+  // user picked an accent that is dimmer than that floor, keep the theme's
+  // built-in bright primary instead of painting the whole UI with a dim red.
+  let hex = resolveAccent(accent)
+  if (type === 'dark') {
+    const boosted = DARK_ACCENT_BOOST[hex]
+    if (boosted) hex = boosted
+  }
   const rgb = hexToRgb(hex)
   s.setProperty('--color-primary', hex)
   s.setProperty('--accent-primary', rgba(rgb, 1))

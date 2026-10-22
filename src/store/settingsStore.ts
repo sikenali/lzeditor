@@ -139,7 +139,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 /** Resolve the effective accent color for a given preset id (or a raw hex). */
 export function getAccentColor(presetId: string): string {
   if (presetId && /^#[0-9a-fA-F]{6}$/.test(presetId)) return presetId
-  return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#BE3B2E'
+  return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#C0392B'
 }
 
 export function saveSettingsToStorage(settings: Partial<SettingsState>) {

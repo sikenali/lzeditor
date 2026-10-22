@@ -304,9 +304,9 @@ function TopBarMockup() {
         </div>
         <div className="mockup-modules">
           <span className="mockup-module" style={{ background: 'var(--color-primary)' }}></span>
-          <span className="mockup-module" style={{ background: '#D3A93F' }}></span>
-          <span className="mockup-module" style={{ background: '#3E8C6E' }}></span>
-          <span className="mockup-module" style={{ background: '#4A72A8' }}></span>
+          <span className="mockup-module" style={{ background: ACCENT_PRESETS[1].color }}></span>
+          <span className="mockup-module" style={{ background: ACCENT_PRESETS[2].color }}></span>
+          <span className="mockup-module" style={{ background: ACCENT_PRESETS[3].color }}></span>
           <span className="mockup-module" style={{ background: 'var(--color-primary)' }}></span>
         </div>
         <div className="mockup-actions">
@@ -326,11 +326,11 @@ function SidebarMockup() {
   return (
     <div className="mockup-sidebar">
       <div className="mockup-side-nav">
-        <span className="mockup-side-mod" style={{ background: '#D3A93F' }}></span>
+        <span className="mockup-side-mod" style={{ background: ACCENT_PRESETS[1].color }}></span>
         <span className="mockup-side-mod" style={{ background: 'var(--color-primary)' }}></span>
-        <span className="mockup-side-mod" style={{ background: '#3E8C6E' }}></span>
-        <span className="mockup-side-mod" style={{ background: '#4A72A8' }}></span>
-        <span className="mockup-side-mod" style={{ background: '#2F3640' }}></span>
+        <span className="mockup-side-mod" style={{ background: ACCENT_PRESETS[2].color }}></span>
+        <span className="mockup-side-mod" style={{ background: ACCENT_PRESETS[3].color }}></span>
+        <span className="mockup-side-mod" style={{ background: ACCENT_PRESETS[4].color }}></span>
       </div>
       <div className="mockup-side-area">
         <div className="mockup-mock-header">

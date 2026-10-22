@@ -2,6 +2,7 @@
   /* Colors — Parchment (light) — bid-maker DESIGN.md §5 */
   --color-primary: #C0392B;
   --color-primary-soft: #FBE9E7;
+  --color-on-primary: #FFFFFF;
   --color-bg-main: #FAF7F2;
   --color-bg-secondary: #F7F3EA;
   --color-bg-card: #FCFBF8;
@@ -38,6 +39,12 @@
 
   --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 18px;
   --radius-2xl: 24px; --radius-full: 9999px;
+  --radius: var(--radius-md);
+
+  /* macOS traffic-light window controls (used by code block decorations) */
+  --mac-dot-red: var(--mac-dot-red);
+  --mac-dot-yellow: var(--mac-dot-yellow);
+  --mac-dot-green: var(--mac-dot-green);
 
   --btn-height-xs: 32px; --btn-height-sm: 36px; --btn-height-md: 44px; --btn-height-lg: 52px; --btn-height-xl: 58px;
   --input-height-sm: 36px; --input-height-md: 42px; --input-height-lg: 48px;
@@ -49,7 +56,10 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
   --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
 
-  --transition-fast: 150ms ease; --transition-base: 200ms ease; --transition-slow: 300ms ease;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-fast: 150ms; --t-mid: 250ms; --t-base: 200ms; --t-slow: 300ms;
+  --transition-fast: var(--t-fast) var(--ease); --transition-mid: var(--t-mid) var(--ease);
+  --transition-base: var(--t-base) var(--ease); --transition-slow: var(--t-slow) var(--ease);
 
   --z-dropdown: 1000; --z-sticky: 1020; --z-fixed: 1030; --z-modal-backdrop: 1040;
   --z-modal: 1050; --z-popover: 1060; --z-tooltip: 1070;

@@ -146,9 +146,9 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
             {macStyle ? (
               <pre style={{ background: currentTheme.macBg, borderRadius: 10, overflow: 'hidden', margin: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'rgba(0,0,0,0.15)' }}>
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--mac-dot-red)', display: 'inline-block' }} />
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--mac-dot-yellow)', display: 'inline-block' }} />
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--mac-dot-green)', display: 'inline-block' }} />
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginLeft: 8 }}>{language}</span>
                 </div>
                 <div style={{ padding: '12px 16px', overflow: 'auto' }}>

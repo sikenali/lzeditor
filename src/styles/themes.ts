@@ -43,6 +43,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
   parchment: {
     '--color-primary': '#C0392B',
     '--color-primary-soft': '#FBE9E7',
+    '--color-on-primary': '#FFFFFF',
     '--color-bg-main': '#FAF7F2',
     '--color-bg-secondary': '#F7F3EA',
     '--color-bg-card': '#FCFBF8',
@@ -235,6 +236,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
   dark: {
     '--color-primary': '#E05050',
     '--color-primary-soft': '#3A2323',
+    '--color-on-primary': '#FFFFFF',
     '--color-bg-main': '#17171A',
     '--color-bg-secondary': '#1C1C1F',
     '--color-bg-card': '#232324',
@@ -249,13 +251,13 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--color-border-hover': '#3A3B3F',
     '--color-success': '#5CB98C',
     '--color-success-strong': '#7BC8A4',
-    '--color-success-soft': '#1D3329',
+    '--color-success-soft': '#1A3A2A',
     '--color-info': '#82AEDD',
-    '--color-info-soft': '#1B2A3A',
+    '--color-info-soft': '#1A2A3A',
     '--color-warning': '#F2B23E',
-    '--color-warning-soft': '#38300F',
+    '--color-warning-soft': '#3A2A1A',
     '--color-error': '#E86A5A',
-    '--color-error-soft': '#3A2326',
+    '--color-error-soft': '#3A1A1A',
 
     // ── Component-level variants — dark counterparts of the parchment set above. ──
     '--t-veil-2':  'rgba(255,255,255,0.02)',
@@ -417,7 +419,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [
-  { id: 'vermilion', name: '朱红', color: '#BE3B2E' },
+  { id: 'vermilion', name: '朱红', color: '#C0392B' },
   { id: 'gold', name: '鎏金', color: '#D3A93F' },
   { id: 'jade', name: '玉绿', color: '#3E8C6E' },
   { id: 'cloud', name: '云蓝', color: '#4A72A8' },

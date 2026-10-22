@@ -44,20 +44,20 @@
 
   /* Accent */
   --accent:               var(--color-primary);
-  --accent-foreground:    #ffffff;
+  --accent-foreground:    var(--color-on-primary);
   --accent-hover:         var(--accent-a20);
   --accent-primary:       var(--color-primary);
 
   /* Accent alpha variants (overwritten dynamically by useTheme for the active accent) */
-  --accent-a3:  rgba(190, 59, 46, 0.03);
-  --accent-a5:  rgba(190, 59, 46, 0.05);
-  --accent-a8:  rgba(190, 59, 46, 0.08);
-  --accent-a10: rgba(190, 59, 46, 0.10);
-  --accent-a15: rgba(190, 59, 46, 0.15);
-  --accent-a20: rgba(190, 59, 46, 0.20);
-  --accent-a30: rgba(190, 59, 46, 0.30);
-  --accent-a40: rgba(190, 59, 46, 0.40);
-  --accent-a60: rgba(190, 59, 46, 0.60);
+  --accent-a3:  rgba(192, 57, 43, 0.03);
+  --accent-a5:  rgba(192, 57, 43, 0.05);
+  --accent-a8:  rgba(192, 57, 43, 0.08);
+  --accent-a10: rgba(192, 57, 43, 0.10);
+  --accent-a15: rgba(192, 57, 43, 0.15);
+  --accent-a20: rgba(192, 57, 43, 0.20);
+  --accent-a30: rgba(192, 57, 43, 0.30);
+  --accent-a40: rgba(192, 57, 43, 0.40);
+  --accent-a60: rgba(192, 57, 43, 0.60);
 
   /* Borders */
   --border:         var(--color-border);
