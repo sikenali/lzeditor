@@ -30,6 +30,23 @@ function saveLayoutState(partial: Partial<ReturnType<typeof loadLayoutState>>): 
 
 const initialLayout = loadLayoutState()
 
+// 欢迎页标记放在 sessionStorage：只在「首次打开」时出现，同一会话内刷新不会重复弹窗。
+const WELCOME_SEEN_KEY = 'lzeditor-welcome-seen'
+let welcomeSeen = false
+try { welcomeSeen = sessionStorage.getItem(WELCOME_SEEN_KEY) === '1' } catch {}
+
+// 任何「用户主动新建/切换文档」都意味着欢迎页该让位
+let silentSwitchDoc = false
+export function switchDocSilently(fn: () => void): void {
+  silentSwitchDoc = true
+  try { fn() } finally { silentSwitchDoc = false }
+}
+
+function markWelcomeSeen(set: (partial: any) => void): void {
+  set({ showWelcome: false })
+  try { sessionStorage.setItem(WELCOME_SEEN_KEY, '1') } catch {}
+}
+
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
   docTitle: DEFAULT_DOC_TITLE,
   docPath: '',
@@ -69,6 +86,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   editor: null,
   versions: [],
   lastEditTime: Date.now(),
+  showWelcome: !welcomeSeen,
 
   // ── Multi-tab ──
   docs: [
@@ -174,6 +192,10 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setEditorContentRef: (ref: HTMLDivElement | null) => set({ editorContentRef: ref }),
   setEditor: (editor: any) => set({ editor }),
   setLastEditTime: (time: number) => set({ lastEditTime: time }),
+  setShowWelcome: (showWelcome: boolean) => {
+    if (showWelcome) set({ showWelcome: true })
+    else markWelcomeSeen(set)
+  },
   addVersion: (version: DocVersion) => {
     const versions = get().versions
     if (versions.length > 0 && versions[versions.length - 1].html === version.html) return
@@ -200,9 +222,11 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       lastEditTime: Date.now(),
       nextUntitledIdx: idx + 1,
     })
+    markWelcomeSeen(set)
     return id
   },
    switchDoc: (id: string) => {
+    if (!silentSwitchDoc) markWelcomeSeen(set)
     const s = get()
     const doc = s.docs.find((d: any) => d.id === id)
     if (!doc) return

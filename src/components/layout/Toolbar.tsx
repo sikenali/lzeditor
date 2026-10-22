@@ -24,7 +24,7 @@ export const Toolbar: React.FC = () => {
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
   const flyout = useFlyout()
-  const { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog } = useEditorActions()
+  const { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog } = useEditorActions()
   const tableActive = useTableActive()
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
@@ -42,7 +42,11 @@ export const Toolbar: React.FC = () => {
   const onMenuAction = (action: string) => {
     const key = flyout.key
     flyout.close()
-    if (key === 'new') { action === 'new' ? newDocument() : openFileDialog() }
+    if (key === 'new') {
+      if (action === 'new') newDocument()
+      else if (action === 'openFolder') void openFolderDialog()
+      else openFileDialog()
+    }
     else if (key === 'format') formatAction(action)
     else if (key === 'table') tableAction(action)
     else if (key === 'insert') insertAction(action)

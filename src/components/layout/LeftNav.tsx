@@ -8,7 +8,9 @@ import {
   useEditorActions, useFlyout, useTableActive, ActionMenu,
 } from './editorActions'
 
-const VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0'
+import { APP_VERSION } from '../../shared/version'
+
+const VERSION = APP_VERSION
 
 /* 左侧 rail（bid-typesetting SideNav.vue 版式）：76px 全高，顶 logo、中 3 组、底版本号。
    3 个分组与顶栏一致：文档 / 编辑 / 应用。 */
@@ -25,7 +27,7 @@ export const LeftNav: React.FC = () => {
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
   const flyout = useFlyout()
-  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog } = useEditorActions()
+  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog } = useEditorActions()
   const tableActive = useTableActive()
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
@@ -68,7 +70,11 @@ export const LeftNav: React.FC = () => {
   const onMenuAction = (action: string) => {
     const key = flyout.key
     flyout.close()
-    if (key === 'new') { action === 'new' ? newDocument() : openFileDialog() }
+    if (key === 'new') {
+      if (action === 'new') newDocument()
+      else if (action === 'openFolder') void openFolderDialog()
+      else openFileDialog()
+    }
     else if (key === 'format') formatAction(action)
     else if (key === 'table') tableAction(action)
     else if (key === 'insert') insertAction(action)

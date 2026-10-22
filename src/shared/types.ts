@@ -142,6 +142,9 @@ export interface EditorStoreState {
   addVersion: (version: DocVersion) => void
   lastEditTime: number
   setLastEditTime: (time: number) => void
+  // 首次启动的欢迎页（每次浏览器会话只显示一次）
+  showWelcome: boolean
+  setShowWelcome: (showWelcome: boolean) => void
   // multi-tab
   docs: Array<{ id: string; title: string; path: string; libraryId?: string }>
   activeDocId: string | null

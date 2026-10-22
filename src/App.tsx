@@ -24,10 +24,12 @@ import { TableDropdown } from './components/panels/TableDropdown'
 import { AIPanel } from './components/editor/AIPanel'
 import { EmojiDialog } from './components/panels/EmojiDialog'
 import { ChartDialog } from './components/panels/ChartDialog'
-import { useEditorStore } from './store/editorStore'
+import { useEditorStore, switchDocSilently } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
 import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
+import { WelcomeScreen } from './components/layout/WelcomeScreen'
+import { pickFile, importSingleFile, pickFolderFiles, importFolderFiles } from './utils/docImport'
 
 const escapeTableText = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -50,6 +52,15 @@ const buildTableHtml = (rows: number, cols: number, data?: string[][], withHeade
   return `<table><tbody>${trs.join('')}</tbody></table>`
 }
 
+/** 隐藏首次启动欢迎页（sessionStorage 记住，本会话不再弹出）。 */
+const dismissWelcome = () => useEditorStore.getState().setShowWelcome(false)
+
+/** 打开文件夹并批量导入其中的 Markdown 文件。 */
+async function openFolderAndImport(): Promise<void> {
+  const files = await pickFolderFiles()
+  if (files) await importFolderFiles(files)
+}
+
 function App() {
   useTheme()
   const openPanel = useEditorStore(s => s.openPanel)
@@ -64,6 +75,7 @@ function App() {
   const showLibrary = useEditorStore(s => s.showLibrary)
   const showRightPanel = useEditorStore(s => s.showRightPanel)
   const editor = useEditorStore(s => s.editor)
+  const showWelcome = useEditorStore(s => s.showWelcome)
   const navMode = useSettingsStore(s => s.navMode || 'top')
   const showSearch = useEditorStore(s => s.showSearch)
 
@@ -91,7 +103,8 @@ function App() {
       const last = localStorage.getItem('lzeditor-last-doc')
       if (!last) return
       const es = useEditorStore.getState()
-      if (es.docs.some((d: any) => d.id === last)) es.switchDoc(last)
+      // 静默切换：还原上次文档不该连带关掉欢迎页
+      if (es.docs.some((d: any) => d.id === last)) switchDocSilently(() => es.switchDoc(last))
     } catch {}
   }, [])
 
@@ -157,15 +170,17 @@ function App() {
       // 这里再调一次会变成「开→关」双重触发，等于什么都没发生，所以不再重复绑定。
 
       if (key === 'n') {
-        e.preventDefault(); es.createDoc('untitled.md')
+        e.preventDefault(); dismissWelcome(); es.createDoc('untitled.md')
+      } else if (key === 'o' && e.shiftKey) {
+        e.preventDefault(); dismissWelcome(); void openFolderAndImport()
       } else if (key === 'o') {
-        e.preventDefault(); es.setOpenPanel('file')
+        e.preventDefault(); dismissWelcome(); es.setOpenPanel('file')
       } else if (key === 's') {
         e.preventDefault(); es.setLastEditTime(Date.now())
       } else if (key === 'e' && !e.altKey) {
-        e.preventDefault(); es.setOpenPanel('export')
+        e.preventDefault(); dismissWelcome(); es.setOpenPanel('export')
       } else if (e.key === ',') {
-        e.preventDefault(); es.setOpenPanel('settings')
+        e.preventDefault(); dismissWelcome(); es.setOpenPanel('settings')
       } else if (key === 'f' && !e.shiftKey) {
         e.preventDefault(); es.setShowSearch(true)
       } else if (key === 'h' && e.shiftKey) {
@@ -197,9 +212,9 @@ function App() {
 
     document.addEventListener('keydown', onKey)
     const api = (window as any).electronAPI
-    api?.onMenuNew?.(() => useEditorStore.getState().createDoc('untitled.md'))
-    api?.onMenuOpen?.(() => useEditorStore.getState().setOpenPanel('file'))
-    api?.onMenuExport?.(() => useEditorStore.getState().setOpenPanel('export'))
+    api?.onMenuNew?.(() => { dismissWelcome(); useEditorStore.getState().createDoc('untitled.md') })
+    api?.onMenuOpen?.(() => { dismissWelcome(); useEditorStore.getState().setOpenPanel('file') })
+    api?.onMenuExport?.(() => { dismissWelcome(); useEditorStore.getState().setOpenPanel('export') })
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
@@ -213,6 +228,7 @@ function App() {
 
     const onLocalFile = async (filePath: string) => {
       try {
+        dismissWelcome()
         const res = await api.readLocalFile(filePath)
         if (!res?.ok || !res.text) return
         const name = String(res.name || filePath.split(/[\\/]/).pop() || 'untitled.md')
@@ -360,6 +376,8 @@ function App() {
 
   // ── 中心内容 ──
   const centerContent = (() => {
+    // 首次启动：欢迎页替代编辑区，不再默认展开 welcome/README 文档
+    if (showWelcome) return <WelcomeScreen />
     if (appMode === 'edit' || appMode === 'code') {
       return <LZEditor />
     }

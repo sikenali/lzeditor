@@ -2,7 +2,9 @@ import React from 'react'
 import { useEditorStore } from '../../../store/editorStore'
 
 const MANUAL_DOC_ID = 'a01-特色功能'
-const VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0'
+import { APP_VERSION } from '../../../shared/version'
+
+const VERSION = APP_VERSION
 
 export const AboutSettingsTab: React.FC = () => {
   const year = new Date().getFullYear()

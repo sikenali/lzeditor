@@ -1,0 +1,304 @@
+/* ── 首次启动欢迎页 ────────────────────────────────────────────────
+   Calicat 2099776847283273728 / 页面容器 1:1 还原：
+   100/0/64/0 内边距、672 内容列、86 图标、34 标题、672 卡片、34 提示条。 */
+
+.welcome-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100px 24px 64px;
+  overflow-y: auto;
+}
+
+.welcome-column {
+  width: 672px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 应用图标：深色底 + 白色内嵌方块 + logo */
+.welcome-icon {
+  width: 86px;
+  height: 86px;
+  border-radius: 24px;
+  background: var(--t-wl-tile);
+  box-shadow: var(--t-wl-tile-sh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-icon-inner {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  background: var(--t-wl-tile-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-icon-logo {
+  width: 38px;
+  height: 38px;
+  display: block;
+}
+
+.welcome-title {
+  margin: 0;
+  padding-top: 26px;
+  font-family: var(--font-family);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.welcome-subtitle {
+  margin: 0;
+  padding-top: 14px;
+  width: 560px;
+  max-width: 100%;
+  font-size: 16px;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* 主操作按钮组 */
+.welcome-actions {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.welcome-btn {
+  height: 44px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background 0.16s ease, box-shadow 0.18s ease, transform 0.1s ease;
+}
+
+.welcome-btn:active {
+  transform: translateY(1px);
+}
+
+.welcome-btn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.welcome-btn--primary {
+  padding: 0 14px 0 18px;
+  background: var(--accent-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+  box-shadow: 0 3px 10px var(--accent-a20);
+}
+
+.welcome-btn--primary:hover {
+  box-shadow: 0 5px 16px var(--accent-a40);
+}
+
+.welcome-btn--primary .remix {
+  font-size: 18px;
+}
+
+.welcome-btn--ghost {
+  padding: 0 12px 0 16px;
+  background: var(--t-wl-btn-bg);
+  border: 0.7px solid var(--t-wl-btn-bd);
+  color: var(--t-wl-btn-fg);
+  font-weight: 500;
+}
+
+.welcome-btn--ghost:hover {
+  background: var(--t-wl-btn-hov);
+}
+
+.welcome-btn--ghost .remix {
+  font-size: 17px;
+  color: var(--t-wl-btn-ic);
+}
+
+.welcome-kbd {
+  height: 20px;
+  border-radius: 5px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.welcome-btn--primary .welcome-kbd {
+  background: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 1);
+}
+
+.welcome-btn--ghost .welcome-kbd {
+  height: 19px;
+  padding: 0 4px;
+  background: var(--t-wl-kbd-bg);
+  border: 0.7px solid var(--t-wl-kbd-bd);
+  color: var(--t-wl-kbd-fg);
+}
+
+/* 最近文档卡片 */
+.welcome-recent {
+  width: 100%;
+  margin-top: 34px;
+  background: var(--color-bg-white);
+  border: 0.7px solid var(--color-border-soft);
+  border-radius: 14px;
+  box-shadow: var(--t-wl-card-sh);
+  overflow: hidden;
+}
+
+.welcome-recent-head {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcome-recent-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-body);
+}
+
+.welcome-recent-title .remix {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}
+
+.welcome-recent-count {
+  font-size: 12px;
+  color: var(--color-text-faint);
+}
+
+.welcome-recent-empty {
+  padding: 42px 16px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--color-text-secondary);
+}
+
+.welcome-recent-list {
+  padding: 4px 6px 6px;
+  border-top: 0.7px solid var(--color-border-soft);
+  max-height: 232px;
+  overflow-y: auto;
+}
+
+.welcome-recent-item {
+  width: 100%;
+  height: 40px;
+  margin: 1px 0;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: var(--font-family);
+  text-align: left;
+}
+
+.welcome-recent-item:hover {
+  background: var(--t-veil-4);
+}
+
+.welcome-recent-item:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+.welcome-recent-item .remix {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.welcome-recent-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--color-text-body);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.welcome-recent-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-faint);
+}
+
+/* 快捷键提示条 */
+.welcome-hint {
+  margin-top: 30px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--t-wl-pill-bg);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.welcome-hint-kbd {
+  font-weight: 600;
+  color: var(--color-text-body);
+}
+
+.welcome-hint-label {
+  color: var(--color-text-secondary);
+}
+
+.welcome-hint-dot {
+  color: var(--color-text-faint);
+}
+
+/* 页脚说明 */
+.welcome-footer {
+  margin-top: 56px;
+  padding: 0 24px;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--color-text-faint);
+}

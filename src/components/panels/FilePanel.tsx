@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { UiModal, UiInput, UDSection } from '../ui'
 
-import { mdToHtml } from '../../utils/mdToHtml'
+import { openMarkdownDoc, pickFile, pickFolderFiles, importFolderFiles } from '../../utils/docImport'
 
 const FILE_TEMPLATES = [
   { id: 'blank', name: '空白文档', desc: '从头开始', icon: 'ri-file-line' },
@@ -55,16 +55,6 @@ const TEMPLATE_MD: Record<string, string> = {
 `,
 }
 
-/** Create a doc tab, load markdown into it and persist it. */
-function loadNewDoc(title: string, md: string): void {
-  const store = useEditorStore.getState()
-  const id = store.createDoc(title)
-  const html = mdToHtml(md)
-  store.updateDoc({ md, html, docsMd: { [id]: md } })
-  try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md, html, savedAt: Date.now() })) } catch {}
-  store.editor?.commands?.setContent(html)
-}
-
 export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const [searchText, setSearchText] = useState('')
@@ -76,24 +66,25 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       report: 'technical-report.md',
       notes: 'meeting-notes.md',
     }
-    loadNewDoc(names[templateId] || 'untitled.md', TEMPLATE_MD[templateId] ?? '')
+    openMarkdownDoc(names[templateId] || 'untitled.md', TEMPLATE_MD[templateId] ?? '')
     setOpenPanel('none')
     onClose()
   }
 
-  const handleOpen = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.md,.txt,.markdown'
-    input.onchange = async (e: any) => {
-      const file = e.target.files?.[0]
-      if (!file) return
-      const md = await file.text().catch(() => '')
-      loadNewDoc(file.name, md)
-      setOpenPanel('none')
-      onClose()
-    }
-    input.click()
+  const handleOpen = async () => {
+    const file = await pickFile()
+    if (!file) return
+    openMarkdownDoc(file.name, await file.text().catch(() => ''))
+    setOpenPanel('none')
+    onClose()
+  }
+
+  const handleOpenFolder = async () => {
+    const files = await pickFolderFiles()
+    if (!files) return
+    await importFolderFiles(files)
+    setOpenPanel('none')
+    onClose()
   }
 
   const filtered = FILE_TEMPLATES.filter(t =>
@@ -123,6 +114,9 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <UDSection label="快速打开">
         <button className="ud-btn" onClick={handleOpen} style={{ width: '100%', justifyContent: 'center' }}>
           <span className="remix ri-folder-open-line"></span> 打开本地文件
+        </button>
+        <button className="ud-btn" onClick={() => void handleOpenFolder()} style={{ width: '100%', justifyContent: 'center' }}>
+          <span className="remix ri-folder-line"></span> 打开文件夹并批量导入
         </button>
       </UDSection>
     </div>

@@ -232,6 +232,21 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--t-sh-15':  'none',
     '--t-bg-38':  'var(--background-elevated)',
     '--t-blur-6':  'none',
+
+    // 首次启动欢迎页
+    '--t-wl-tile':    'rgba(43,47,60,1)',
+    '--t-wl-tile-2':  'rgba(255,255,255,1)',
+    '--t-wl-tile-sh': '0 10px 26px rgba(20,24,40,0.20)',
+    '--t-wl-btn-bg':  'rgba(242,242,244,1)',
+    '--t-wl-btn-hov': 'rgba(233,233,236,1)',
+    '--t-wl-btn-bd':  'rgba(230,231,234,1)',
+    '--t-wl-btn-fg':  'rgba(38,41,47,1)',
+    '--t-wl-btn-ic':  'rgba(61,66,75,1)',
+    '--t-wl-kbd-bg':  'rgba(255,255,255,1)',
+    '--t-wl-kbd-bd':  'rgba(227,228,232,1)',
+    '--t-wl-kbd-fg':  'rgba(90,96,107,1)',
+    '--t-wl-pill-bg': 'rgba(241,241,244,1)',
+    '--t-wl-card-sh': '0 1px 2px rgba(16,24,40,0.04)',
   },
   dark: {
     '--color-primary': '#E05050',
@@ -415,6 +430,21 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--t-sh-15':  '0 2px 10px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.18)',
     '--t-bg-38':  'var(--glass-bg)',
     '--t-blur-6':  'blur(10px)',
+
+    // 首次启动欢迎页
+    '--t-wl-tile':    'rgba(44,48,56,1)',
+    '--t-wl-tile-2':  'rgba(255,255,255,0.08)',
+    '--t-wl-tile-sh': '0 10px 26px rgba(0,0,0,0.45)',
+    '--t-wl-btn-bg':  'rgba(255,255,255,0.06)',
+    '--t-wl-btn-hov': 'rgba(255,255,255,0.10)',
+    '--t-wl-btn-bd':  'rgba(255,255,255,0.10)',
+    '--t-wl-btn-fg':  'var(--color-text-body)',
+    '--t-wl-btn-ic':  'var(--color-text-muted)',
+    '--t-wl-kbd-bg':  'rgba(255,255,255,0.06)',
+    '--t-wl-kbd-bd':  'rgba(255,255,255,0.12)',
+    '--t-wl-kbd-fg':  'var(--color-text-muted)',
+    '--t-wl-pill-bg': 'rgba(255,255,255,0.05)',
+    '--t-wl-card-sh': '0 1px 2px rgba(0,0,0,0.35)',
   },
 }
 

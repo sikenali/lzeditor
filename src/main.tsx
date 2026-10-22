@@ -12,6 +12,7 @@ import './styles/settings-dialog.css'
 import './styles/panels.css'
 import './styles/read-mode.css'
 import './styles/app.css'
+import './styles/welcome-screen.css'
 
 // Restore persisted settings and apply theme synchronously before first
 // paint to avoid a flash of wrong theme.
