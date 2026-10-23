@@ -430,6 +430,34 @@ li.ProseMirror-selectednode:after { border: none !important; }
   font-size: 0.78em;
 }
 
+/* 脚注定义段落：文末的「[^N] 内容」，编号回指引用标记 */
+.lz-editor-content .footnote-def,
+.preview-doc .footnote-def,
+.read-article-body .footnote-def,
+.export-preview-body .footnote-def {
+  margin: 8px 0;
+  padding: 6px 0 6px 14px;
+  border-left: 2px solid var(--accent-a20);
+  color: var(--foreground-secondary);
+  font-size: 0.9em;
+}
+
+/* 目录条目：锚点跳转，靠 padding-left 体现标题层级 */
+.lz-editor-content .lz-insert-toc a,
+.preview-doc .lz-insert-toc a,
+.read-article-body .lz-insert-toc a,
+.export-preview-body .lz-insert-toc a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.lz-editor-content .lz-insert-toc a:hover,
+.preview-doc .lz-insert-toc a:hover,
+.read-article-body .lz-insert-toc a:hover,
+.export-preview-body .lz-insert-toc a:hover {
+  text-decoration: underline;
+}
+
 .lz-editor-content .lz-insert-rule,
 .preview-doc .lz-insert-rule,
 .read-article-body .lz-insert-rule,

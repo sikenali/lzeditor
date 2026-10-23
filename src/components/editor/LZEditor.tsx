@@ -13,13 +13,14 @@ import { Emoji } from '@tiptap/extension-emoji'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { SlashCommand } from './SlashCommand'
-import { DEFAULT_CONTENT, README_CONTENT } from './constants'
+import { README_CONTENT } from './constants'
 import { CodeHighlight } from './extensions/CodeHighlight'
 import { Superscript, Subscript } from './extensions/SupSub'
 import { Mathematics } from './extensions/Mathematics'
 import { ImageExt } from './extensions/ImageExt'
 import { StyledInsertAttributes } from './extensions/StyledInsertAttributes'
 import { HeadingAnchors } from './extensions/HeadingAnchors'
+import { CJKAutoSpace } from './extensions/CJKAutoSpace'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { htmlToMarkdown } from '../../utils/htmlToMd'
 import { cleanContentHtml } from '../../utils/cleanContent'
@@ -60,7 +61,6 @@ export const LZEditor = () => {
   const setAppMode = useEditorStore((s: any) => s.setAppMode)
   const docHTML = useEditorStore((s: any) => s.docHTML || '')
   const wordCount = useEditorStore((s: any) => s.wordCount)
-  const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const mdContent = useEditorStore((s: any) => s.docsMd?.[activeDocId] || s.mdContent || '')
   const readFontSize = useEditorStore((s) => s.readFontSize)
   const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
@@ -69,8 +69,6 @@ export const LZEditor = () => {
   const readTocOpen = useEditorStore((s) => s.readTocOpen)
   const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
   const docTitle = useEditorStore((s) => s.docTitle)
-  const setTocItems = useEditorStore((s) => s.setTocItems)
-  const tocItems = useEditorStore((s) => s.tocItems)
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
@@ -187,6 +185,7 @@ export const LZEditor = () => {
       Subscript,
       StyledInsertAttributes,
       HeadingAnchors,
+      CJKAutoSpace,
       Mathematics,
       ImageExt,
       TaskList,
@@ -511,18 +510,6 @@ export const LZEditor = () => {
     slashTimerRef.current = setTimeout(() => setSlashVisible(false), 120)
   }, [])
 
-  const showSlashPalette = useCallback(() => {
-    if (!editor) return
-    const sel = editor.state.selection
-    const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 4), sel.from, '')
-    if (textBefore.slice(-1) !== '/') return
-    const view = editor.view
-    const coords = view.coordsAtPos(sel.from)
-    setSlashPosition({ x: coords.right + 4, y: coords.top - 4 })
-    setSlashFilter('')
-    setSlashVisible(true)
-  }, [editor])
-
   useEffect(() => {
     try {
       if (editor?.view?.dom) pmDomRef.current = editor.view.dom as HTMLElement
@@ -535,15 +522,10 @@ export const LZEditor = () => {
   useEffect(() => {
     const pm = pmDomRef.current
     if (!pm) return
-    let slashPending = false
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/') slashPending = true
-    }
     const onInput = (e: Event) => {
       const raw = (e as InputEvent)
       if (raw.inputType === 'insertText' && raw.data === '/') {
         e.preventDefault()
-        slashPending = false
         const sel = editor?.state?.selection
         if (!sel) return
         const coords = editor.view.coordsAtPos(sel.from)
@@ -553,10 +535,7 @@ export const LZEditor = () => {
         setSlashVisible(true)
         return
       }
-      if (!slashVisible) {
-        slashPending = false
-        return
-      }
+      if (!slashVisible) return
       const sel = editor?.state?.selection
       if (!sel) return
       const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 20), sel.from, '')
@@ -565,12 +544,8 @@ export const LZEditor = () => {
       if (match) setSlashFilter(match[1])
       else hideSlash()
     }
-    pm.addEventListener('keydown', onKeyDown)
     pm.addEventListener('input', onInput)
-    return () => {
-      pm.removeEventListener('keydown', onKeyDown)
-      pm.removeEventListener('input', onInput)
-    }
+    return () => { pm.removeEventListener('input', onInput) }
   }, [editor])
 
   const panelOpen = useEditorStore((s) => s.panelOpen)

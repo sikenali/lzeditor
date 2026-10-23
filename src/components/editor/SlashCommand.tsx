@@ -135,7 +135,25 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
         chain.insertContent(`<blockquote class="lz-insert lz-insert-quote" data-insert="quote"><p>${escapeHtml(text)}</p></blockquote>`).run()
         break
       }
-      case 'footnote':   chain.insertContent('<sup class="lz-insert-footnote-ref" data-insert="footnote">[^1]</sup>').run(); break
+      case 'footnote': {
+        // 真正的脚注：正文插入可点回跳的引用标记，文末追加对应定义段落。
+        // 编号取「现有最大引用 + 1」，避免重复。
+        let max = 0
+        editor.state.doc.descendants((n: any) => {
+          if (n.type.name !== 'text' || !n.text) return true
+          for (const m of String(n.text).matchAll(/\[\^(\d+)\]/g)) {
+            max = Math.max(max, Number(m[1]))
+          }
+          return true
+        })
+        const no = max + 1
+        chain.insertContent(
+          `<sup class="lz-insert-footnote-ref" data-insert="footnote"><a href="#fn-${no}">[^${no}]</a></sup>`
+        ).run()
+        chain.insertContentAt(editor.state.doc.content.size,
+          `<p class="footnote-def" id="fn-${no}"><sup>[^${no}]</sup> 脚注内容</p>`).run()
+        break
+      }
       case 'link':       setInsertPanel('link'); break
       case 'image':      setInsertPanel('image'); break
       case 'emoji':      setInsertPanel('emoji'); break
@@ -144,15 +162,18 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
       case 'table':      setInsertPanel('table'); break
       case 'chart':      setInsertPanel('chart'); break
       case 'toc': {
-        const headings: string[] = []
+        // 真正的目录：锚点链接指向 HeadingAnchors 校正过的标题 id，可点击跳转。
+        const items: { id: string; text: string; level: number }[] = []
         editor.state.doc.descendants((n: any) => {
-          if (n.type.name === 'heading') headings.push(' '.repeat(n.attrs.level - 1) + '- ' + n.textContent)
+          if (n.type.name === 'heading') {
+            items.push({ id: n.attrs.id || '', text: n.textContent, level: n.attrs.level || 1 })
+          }
           return true
         })
-        const tocBody = headings.length
-          ? headings.map(h => `<p>${escapeHtml(h)}</p>`).join('')
+        const body = items.length
+          ? items.map(h => `<p style="margin-left:${(h.level - 1) * 14}px"><a href="#${h.id}">${escapeHtml(h.text)}</a></p>`).join('')
           : '<p>暂无标题</p>'
-        chain.insertContent(`<blockquote class="lz-insert lz-insert-toc" data-insert="toc"><p><strong>目录</strong></p>${tocBody}</blockquote><p></p>`).run()
+        chain.insertContent(`<blockquote class="lz-insert lz-insert-toc" data-insert="toc"><p><strong>目录</strong></p>${body}</blockquote><p></p>`).run()
         break
       }
     }

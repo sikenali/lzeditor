@@ -143,11 +143,8 @@ function renderEditModeSection(s: any, u: any) {
         <UiSwitch size="sm" checked={ s.showMarkdownMarkers !== false } onChange={ v => u('showMarkdownMarkers', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
-         <UDSettingRow icon="ri-diff" label="快照差异高亮" desc="红底为删除、绿底为新增">
-        <UiSwitch size="sm" checked={ s.showDiffHighlight !== false } onChange={ v => u('showDiffHighlight', v) } />
-      </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-cursor-fill" label="打字机模式" desc="光标始终居中垂直位置">
+                 <UDSettingRow icon="ri-cursor-fill"
+ label="打字机模式" desc="光标始终居中垂直位置">
         <UiSwitch size="sm" checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>
         <div className="setting-divider" />

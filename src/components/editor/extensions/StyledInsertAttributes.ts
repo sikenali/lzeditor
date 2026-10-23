@@ -27,6 +27,18 @@ export const StyledInsertAttributes = Extension.create({
             parseHTML: element => element.getAttribute('align') || null,
             renderHTML: attributes => attributes.align ? { align: attributes.align } : {},
           },
+          // 脚注定义段落 / 手工锚点需要 id 才能被页内链接指向；
+          // class 用于 .footnote-def 等语义样式（与 heading 的锚点声明保持同一套模式）。
+          id: {
+            default: null,
+            parseHTML: element => element.id || element.getAttribute('id'),
+            renderHTML: attributes => attributes.id ? { id: attributes.id } : {},
+          },
+          class: {
+            default: null,
+            parseHTML: element => element.getAttribute('class'),
+            renderHTML: attributes => attributes.class ? { class: attributes.class } : {},
+          },
         },
       },
       {
