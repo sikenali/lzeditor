@@ -26,10 +26,10 @@
 |------|------|
 | **Markdown 编辑** | TipTap 富文本编辑器，支持 Markdown 语法、实时预览、分屏模式 |
 | **AI 辅助写作** | 支持 Anthropic Claude / OpenAI / 自定义基座，摘要、续写、润色、翻译一键完成 |
-| **多 Provider 支持** | Anthropic、OpenAI、Azure OpenAI、自定义兼容接口，模型自由切换 |
+| **多 Provider 支持** | 国内（阿里/百度/智谱/DeepSeek/Moonshot/零一）+ 国外（OpenAI/Anthropic/Google/Mistral/Groq），走 openai 或 anthropic 两种协议，模型自由切换 |
 | **多文档管理** | 文档列表、新建/重命名/删除、快捷搜索、最近打开记录 |
 | **历史版本** | 自动保存编辑历史，随时回退到任意版本，支持版本对比 |
-| **导出格式** | 支持导出为 Markdown、HTML、PDF（通过 Electron）、纯文本 |
+| **导出格式** | Markdown、HTML、PDF、DOCX（真实 OOXML）、EPUB（自动切章）、XLSX、PNG/SVG、DrawIO |
 | **API Key 安全存储** | 仅保存在本地，明文不离开设备、不上传任何第三方；服务端以 SHA-256 加盐哈希入库 |
 | **主题外观** | 浅色/深色主题，编辑区宽度调节，字体大小自定义 |
 | **桌面客户端** | Electron 打包，支持 macOS / Windows / Linux，离线可用 |
@@ -60,63 +60,93 @@ lzeditor/
 │   │   ├── editor/               # 编辑器核心组件
 │   │   │   ├── LZEditor.tsx      # 主编辑器 (TipTap + 扩展)
 │   │   │   ├── AIPanel.tsx       # AI 辅助面板
-│   │   │   ├── FloatingToolbar.tsx  # 浮动工具栏
-│   │   │   ├── Math.tsx          # KaTeX 公式渲染
-│   │   │   ├── Graphviz.tsx      # Graphviz 可视化
-│   │   │   ├── PlantUML.tsx      # PlantUML 图表
-│   │   │   ├── ECharts.tsx       # ECharts 图表
-│   │   │   └── DrawIOEditor.tsx  # Draw.io 集成
+│   │   │   ├── SlashCommand.tsx  # "/" 斜杠命令菜单
+│   │   │   ├── constants.ts      # 内置文档内容
+│   │   │   └── extensions/       # 自定义 TipTap 扩展
+│   │   │       ├── CJKAutoSpace.ts          # 中日韩与拉丁文自动空格
+│   │   │       ├── CodeHighlight.ts         # 代码高亮
+│   │   │       ├── HeadingAnchors.ts        # 标题锚点
+│   │   │       ├── ImageExt.ts              # 图片节点
+│   │   │       ├── Mathematics.ts           # KaTeX 公式
+│   │   │       ├── SupSub.ts                # 上标 / 下标
+│   │   │       └── StyledInsertAttributes.ts# 插入内容的样式属性
 │   │   │
 │   │   ├── layout/               # 布局组件
 │   │   │   ├── Toolbar.tsx       # 顶部工具栏
 │   │   │   ├── DocumentMetaBar.tsx  # 文档元信息栏
-│   │   │   └── StatusBar.tsx     # 底部状态栏
+│   │   │   ├── LeftNav.tsx       # 左侧图标导航
+│   │   │   ├── StatusBar.tsx     # 底部状态栏
+│   │   │   ├── Footer.tsx        # 页脚
+│   │   │   ├── WelcomeScreen.tsx # 首次启动欢迎页
+│   │   │   └── editorActions.tsx # 顶栏与侧栏共用的编辑动作
 │   │   │
 │   │   ├── panels/               # 面板组件
 │   │   │   ├── SettingsDialog.tsx   # 设置面板
 │   │   │   ├── ExportDialog.tsx     # 导出面板
 │   │   │   ├── HistoryPanel.tsx     # 历史版本面板
 │   │   │   ├── LibraryPanel.tsx     # 文档库面板
+│   │   │   ├── LibraryTree.tsx      # 文档库树
 │   │   │   ├── FilePanel.tsx        # 文件面板
 │   │   │   ├── PreviewPanel.tsx     # 预览面板
-│   │   │   └── ReadMode.tsx         # 阅读模式
+│   │   │   ├── SearchPanel.tsx      # 搜索面板
+│   │   │   ├── StyleMainPanel.tsx   # 样式面板
+│   │   │   ├── ImageDialog.tsx      # 图片
+│   │   │   ├── LinkDialog.tsx       # 链接
+│   │   │   ├── CodeDialog.tsx       # 代码块
+│   │   │   ├── FormulaDialog.tsx    # 公式
+│   │   │   ├── TableDropdown.tsx    # 表格
+│   │   │   ├── EmojiDialog.tsx      # 表情
+│   │   │   ├── ChartDialog.tsx      # 图表
+│   │   │   ├── ImportButtons.tsx    # 导入入口
+│   │   │   └── settings/            # 各设置子页
 │   │   │
-│   │   └── sidebar/              # 侧边栏
-│   │       ├── SidebarOutline.tsx  # 大纲导航
-│   │       └── SidebarPreview.tsx  # 缩略图预览
+│   │   ├── sidebar/              # 侧边栏
+│   │   │   ├── SidebarOutline.tsx  # 大纲导航
+│   │   │   └── SidebarPreview.tsx  # 即时预览
+│   │   │
+│   │   └── ui/                   # 基础 UI 原子组件
+│   │       ├── UiModal.tsx / UiInput.tsx / UiButton.tsx
+│   │       ├── UiSelect.tsx / UiSelectCard.tsx
+│   │       ├── UiSwitch.tsx / UiCheck.tsx / UiTip.tsx
+│   │       └── index.ts          # 统一导出入口
 │   │
 │   ├── hooks/
-│   │   ├── useTheme.ts           # 主题切换 (浅/深)
+│   │   ├── useTheme.ts           # 主题切换
 │   │   ├── useAI.ts              # AI 调用封装
-│   │   ├── useFloatingToolbar.ts # 浮动工具栏位置
-│   │   └── useDocumentSelection.ts  # 文档选中逻辑
+│   │   ├── useScrollSpy.ts       # 滚动定位
+│   │   └── useScrollSync.ts      # 编辑器 / 预览滚动同步
 │   │
 │   ├── services/
-│   │   ├── aiProvider.ts         # AI Provider 统一接口
-│   │   ├── exportService.ts      # 导出服务 (MD/HTML/PDF)
+│   │   ├── exportService.ts      # 导出服务 (MD/HTML/PDF/DOCX/EPUB/DrawIO)
+│   │   ├── docxGenerator.ts      # DOCX 生成 (OOXML)
 │   │   ├── epubGenerator.ts      # EPUB 生成
-│   │   ├── htmlToMd.ts           # HTML → Markdown 转换
 │   │   └── promptTemplate.ts     # Prompt 模板管理
 │   │
 │   ├── store/
 │   │   ├── editorStore.ts        # 编辑器 Zustand Store
 │   │   ├── settingsStore.ts      # 设置 Zustand Store
-│   │   └── aiStore.ts           # AI 状态 Store
+│   │   └── aiStore.ts            # AI 状态 Store
+│   │
+│   ├── utils/
+│   │   ├── mdToHtml.ts / htmlToMd.ts   # Markdown 互转
+│   │   ├── docSource.ts / docImport.ts # 内置文档源 / 导入
+│   │   ├── sanitizeHtml.ts / cleanContent.ts
+│   │   ├── icon.ts / toast.ts / silentError.ts / recentDocs.ts
 │   │
 │   ├── shared/
 │   │   ├── types.ts              # 公共类型定义
-│   │   └── languages.ts          # 多语言配置
+│   │   └── version.ts            # 版本号单一来源
 │   │
-│   ├── styles/                   # CSS 样式
-│   │   ├── globals.css
-│   │   ├── layout.css
-│   │   ├── app.css
-│   │   ├── panels.css
-│   │   ├── settings-dialog.css
-│   │   └── read-mode.css
+│   ├── content/                  # 内置文档（使用手册等，中文文件名）
+│   │   ├── welcome.md / readme.md
+│   │   └── a01~a10、b01~b10.md
 │   │
-│   └── content/
-│       └── welcome.md            # 欢迎页模板
+│   └── styles/                   # CSS 样式与主题
+│       ├── tokens.css / color-tokens.css / themes.ts
+│       ├── typography-themes.ts / code-themes.ts
+│       ├── globals.css / layout.css / app.css
+│       ├── ui.css / panels.css / settings-dialog.css
+│       ├── read-mode.css / welcome-screen.css
 │
 ├── public/
 │   └── icon.png                  # 应用图标
@@ -133,7 +163,6 @@ lzeditor/
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │  窗口管理 (1440×900, 最小 1024×640, frameless)              │  │
 │  │  IPC: window-minimize, window-maximize, window-close        │  │
-│  │  IPC: secrets:set/get/delete (AI API Key 内存存储)          │  │
 │  │  预加载: preload.ts (contextBridge → window.electronAPI)    │  │
 │  └────────────────────────────────────────────────────────────┘  │
 ├──────────────────────────────────────────────────────────────────┤
@@ -148,19 +177,17 @@ lzeditor/
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │                   编辑器核心 (components/editor/)           │  │
-│  │  LZEditor · AIPanel · FloatingToolbar · Math · Graphviz    │  │
-│  │  PlantUML · ECharts · DrawIOEditor                         │  │
+│  │  LZEditor · AIPanel · SlashCommand · extensions/            │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │              Hooks (组合式逻辑层)                            │  │
-│  │  useTheme · useAI · useFloatingToolbar · useDocumentSelect  │  │
+│  │  useTheme · useAI · useScrollSpy · useScrollSync             │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │              Services (服务层)                               │  │
-│  │  aiProvider · exportService · epubGenerator · htmlToMd      │  │
-│  │  promptTemplate                                              │  │
+│  │  exportService · docxGenerator · epubGenerator · promptTemplate │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
@@ -170,10 +197,11 @@ lzeditor/
 └──────────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────────┐
 │                    后端服务 (server/src/)                        │
-│  Express + JSON 文件存储                                          │
-│  - API 路由 (路由层)                                             │
-│  - AI Provider 适配 (providers/)                                 │
-│  - LPK 云部署兼容                                                │
+│  Express + JSON 文件存储（keys.json 存 key 摘要，明文只在浏览器）  │
+│  - routes/chat.ts   AI 代理（Anthropic / OpenAI 兼容）          │
+│  - routes/settings.ts  key 摘要存取                            │
+│  - /api/health  健康检查（lzcinit）                             │
+│  - LPK 云部署兼容（自打包 musl node 运行时）                    │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -185,26 +213,30 @@ lzeditor/
 
 ```
 LZEditor (TipTap Core)
-  ├── StarterKit (基础 Markdown 语法)
-  ├── Table / Table-Cell / Table-Header    → 表格支持
-  ├── Highlight                              → 高亮文本
-  ├── TaskItem / TaskList                    → 待办事项
-  ├── CodeBlockLowlight + highlight.js       → 代码块语法高亮
-  └── 自定义扩展:
-      ├── Math (KaTeX 公式渲染)
-      ├── Graphviz (Mermaid/Graphviz 可视化)
-      ├── PlantUML (UML 图)
-      ├── ECharts (图表)
-      └── DrawIO (流程图)
+  ├── StarterKit (基础 Markdown 语法，关闭内置 codeBlock)
+  ├── Table / TableRow / TableHeader / TableCell  → 表格支持
+  ├── TaskList / TaskItem                      → 待办事项
+  ├── Emoji (@tiptap/extension-emoji)           → 表情节点
+  ├── SearchAndReplace (@memfoldai)             → 搜索高亮
+  └── 自定义扩展 (extensions/):
+      ├── CodeHighlight         代码块语法高亮
+      │                        (内含 CodeBlockLowlight + lowlight
+      │                         + Highlight，内置 codeBlock 已关闭)
+      ├── Superscript/Subscript 上标 / 下标
+      ├── StyledInsertAttributes 插入块统一样式属性
+      ├── HeadingAnchors        标题自动生成锚点 id
+      ├── CJKAutoSpace          中日韩与拉丁文之间自动加空格
+      ├── Mathematics           KaTeX 公式渲染
+      └── ImageExt              图片节点（对齐 / 圆角 / 阴影）
 ```
 
 ### AI 辅助写作流程
 
 ```
 用户选中文本 / 输入 Prompt
-  → useAI hook
-  → aiProvider 统一接口
-  → Anthropic Claude / OpenAI / Azure OpenAI / 自定义基座
+  → useAI hook（settingsStore 里选中的模型配置）
+  → 按 key 的 format 分支直连 Anthropic 或 OpenAI 兼容端点
+  → 浏览器端直接发起请求，不经过本地后端
   → 流式响应 (SSE)
   → AIPanel 实时展示结果
   → 一键插入 / 替换 / 续写
@@ -212,29 +244,59 @@ LZEditor (TipTap Core)
 
 ### 多 Provider 适配
 
-| Provider | 客户端 SDK | 兼容模式 |
-|----------|-----------|---------|
-| Anthropic Claude | `@anthropic-ai/sdk` | 原生 |
-| OpenAI | `openai` | 原生 |
-| Azure OpenAI | `openai` | endpoint + api-key |
-| 自定义基座 | `openai` 兼容 | baseURL + apiKey |
+每个 key 带一个 `format` 字段，只有两种取值：
+
+| format | 请求方式 |
+|--------|---------|
+| `openai` | `POST {endpoint}/chat/completions`，`Authorization: Bearer` |
+| `anthropic` | `POST {endpoint}/messages`，`x-api-key` + `anthropic-version` |
+
+内置厂商预设（可自由覆盖 endpoint）：
+
+| 国内 | 国外 |
+|------|------|
+| 阿里云通义千问、百度文心一言、智谱 GLM、DeepSeek、Moonshot、零一万物 | OpenAI、Anthropic、Google、Mistral、Groq |
+
+除 Anthropic 外全部走 OpenAI 兼容模式，所以新增厂商只需加一行 endpoint。
 
 ### 文档持久化
 
 - **浏览器 / 桌面端**: 文档与 API Key 只写在本地 `localStorage`，不上传服务器
-- **服务端**: 文档与密钥存入 JSON 数据文件（`docs.json` / `api-keys.json`），无外部原生依赖
+- **服务端**: 不存文档，只落 `keys.json`（key 的加盐 SHA-256 摘要），无外部原生依赖
 - **API Key**: 服务端以 SHA-256 加盐哈希存储，仅用于存在性校验，不可反向解出明文
 
 ### 导出链路
 
 | 格式 | 实现 |
 |------|------|
-| **Markdown** | 原生 TipTap JSON → text |
-| **HTML** | TipTap JSON → DOM → htmlToMd 反向 |
-| **PDF** | Electron shell.openExternal → 系统打印 |
-| **EPUB** | epubGenerator.ts (ZIP + XHTML) |
+| **Markdown** | TipTap JSON → text |
+| **HTML** | 独立样式的单文件 HTML，可带目录 / 页码 / 行号 |
+| **PDF** | 打印友好的新窗口 → 系统打印对话框 |
+| **DOCX** | docxGenerator.ts 生成真实 OOXML 包 (JSZip: document.xml + styles.xml + 图片内嵌) |
+| **EPUB** | epubGenerator.ts，按 h1/h2 自动切章 |
+| **XLSX** | SheetJS，表格导出 |
+| **PNG / SVG** | 单张图片导出 |
+| **DrawIO** | 合法 mxfile XML，块级节点纵向布局 + 相邻连线 |
 
 ---
+
+## 本地开发
+
+```bash
+npm install
+
+npm run dev          # 前端 (vite, :5173) + 后端 (:3001)
+npm run dev:web      # 仅前端
+npm run dev:server   # 仅后端
+
+npm run typecheck    # tsc --noEmit
+npm run test         # node --test tests/*.test.mjs
+npm run check        # typecheck + test
+npm run build        # tsc && vite build
+```
+
+`tests/` 下是对源码做静态文本匹配的回归断言（`node --test`），校验 UI 原子、
+设置结构、主题边界、插入块样式边界等约定，不需要浏览器或 DOM 环境。
 
 ## 部署说明
 
@@ -262,13 +324,6 @@ npm run electron:build
 npm run electron:build:mac      # macOS
 npm run electron:build:win      # Windows
 npm run electron:build:linux    # Linux
-```
-
-### Docker 部署（自托管）
-
-```bash
-docker build -t lzeditor .
-docker run -d -p 3001:3001 -v $(pwd)/data:/app/data lzeditor
 ```
 
 ---
