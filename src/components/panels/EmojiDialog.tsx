@@ -3,12 +3,6 @@ import { UiModal } from '../ui'
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react'
 import type { EmojiClickData } from 'emoji-picker-react'
 
-// Return local paths for Apple-style emoji instead of CDN URLs
-const getLocalEmojiUrl = (unified: string, emojiStyle?: 'apple' | 'facebook' | 'twitter' | 'google' | 'native') => {
-  if (!emojiStyle || emojiStyle === 'apple') return `/emoji/apple-15.1/64/${unified}.png`
-  return `/emoji/apple-15.1/64/${unified}.png`
-}
-
 export const EmojiDialog: React.FC<{ onClose: () => void; onInsert: (text: string) => void }> = ({ onClose, onInsert }) => {
   const [theme, setTheme] = useState<Theme>(Theme.LIGHT)
 
@@ -47,13 +41,15 @@ export const EmojiDialog: React.FC<{ onClose: () => void; onInsert: (text: strin
           </button>
         </div>
 
-        {/* Emoji 选择器 - Apple 风格，图片来自本地 */}
+        {/* Emoji 选择器 - 原生字体渲染：走系统 emoji 字体，零图片资源。
+            之前用 Apple 风格 PNG，需要 public/emoji 下 1906 张图（13MB）打进包里，
+            而 LPK 容器本身无公网，只能把资源全塞进包体。原生渲染不需要任何外部
+            资源，包体省 13MB，也顺带修掉了「换系统就显示不出图」的隐患。 */}
         <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, overflow: 'hidden', maxHeight: 380, minHeight: 320 }}>
           <EmojiPicker
             width="100%"
             height={380}
-            emojiStyle={EmojiStyle.APPLE}
-            getEmojiUrl={getLocalEmojiUrl}
+            emojiStyle={EmojiStyle.NATIVE}
             lazyLoadEmojis
             onEmojiClick={handleEmojiClick}
             previewConfig={{ showPreview: false }}

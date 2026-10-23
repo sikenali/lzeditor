@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { mdToHtml } from './utils/mdToHtml'
 import { Toolbar } from './components/layout/Toolbar'
 import { LeftNav } from './components/layout/LeftNav'
@@ -22,14 +22,17 @@ import { CodeDialog } from './components/panels/CodeDialog'
 import { FormulaDialog } from './components/panels/FormulaDialog'
 import { TableDropdown } from './components/panels/TableDropdown'
 import { AIPanel } from './components/editor/AIPanel'
-import { EmojiDialog } from './components/panels/EmojiDialog'
-import { ChartDialog } from './components/panels/ChartDialog'
+// 两个重量级对话框按需加载：emoji-picker-react 约 40MB、echarts 约 61MB，
+// 静态 import 会让首屏主 chunk 白涨 1MB+，而它们只在弹窗打开时才需要
+const EmojiDialog = lazy(() => import('./components/panels/EmojiDialog').then(m => ({ default: m.EmojiDialog })))
+const ChartDialog = lazy(() => import('./components/panels/ChartDialog').then(m => ({ default: m.ChartDialog })))
 import { useEditorStore, switchDocSilently } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
 import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
-import { pickFile, importSingleFile, pickFolderFiles, importFolderFiles } from './utils/docImport'
+import { pickFolderFiles, importFolderFiles } from './utils/docImport'
+import { silentError } from './utils/silentError'
 
 const escapeTableText = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -105,7 +108,7 @@ function App() {
       const es = useEditorStore.getState()
       // 静默切换：还原上次文档不该连带关掉欢迎页
       if (es.docs.some((d: any) => d.id === last)) switchDocSilently(() => es.switchDoc(last))
-    } catch {}
+    } catch (e) { silentError('恢复上次打开的文档失败', e) }
   }, [])
 
   // 内部链接：点击跳转到对应文档与章节
@@ -238,7 +241,7 @@ function App() {
         es.updateDoc({ md: res.text, html, docsMd: { [id]: res.text } })
         try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md: res.text, html, savedAt: Date.now() })) } catch {}
         es.editor?.commands?.setContent(html)
-      } catch {}
+      } catch (e) { silentError('导入文件写入编辑器失败', e) }
     }
     api.onMenuOpenFile?.(onLocalFile)
     return () => unsub()
@@ -315,7 +318,7 @@ function App() {
         const html = mdToHtml(newContent)
         useEditorStore.getState().updateDoc({ md: newContent, html, docsMd: { [docId]: newContent } })
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: newContent, html, savedAt: Date.now() }))
-      } catch {}
+      } catch (e) { silentError('AI 内容回写文档失败', e) }
     }
     closeInsert()
   }
@@ -364,15 +367,6 @@ function App() {
     editor.chain().focus().insertContent(buildTableHtml(rows, cols, data, withHeaderRow)).run()
     closeInsert()
   }
-
-  // ── 右侧面板内容 ──
-  const rightPanelContent = (() => {
-    if (appMode === 'history') return <HistoryPanel onClose={() => setAppMode('edit')} />
-    if (appMode === 'style') return <StyleMainPanel />
-    if (showOutline) return <SidebarOutline />
-    if (showPreview) return <SidebarPreview />
-    return null
-  })()
 
   // ── 中心内容 ──
   const centerContent = (() => {
@@ -473,8 +467,10 @@ function App() {
       {insertPanel === 'table' && (
         <TableDropdown open={true} onToggle={() => closeInsert()} onInsert={insertTable} />
       )}
-      {insertPanel === 'emoji' && <EmojiDialog onClose={closeInsert} onInsert={insertEmoji} />}
-      {insertPanel === 'chart' && <ChartDialog onClose={closeInsert} onInsert={insertChart} />}
+      <Suspense fallback={null}>
+        {insertPanel === 'emoji' && <EmojiDialog onClose={closeInsert} onInsert={insertEmoji} />}
+        {insertPanel === 'chart' && <ChartDialog onClose={closeInsert} onInsert={insertChart} />}
+      </Suspense>
     </div>
   )
 }

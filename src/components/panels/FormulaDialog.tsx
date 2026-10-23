@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { silentError } from '../../utils/silentError'
 import katex from 'katex'
-import 'katex/dist/katex.min.css'
 import { UiModal, UiInput, UiButton } from '../ui'
 
 const EXAMPLES = [
@@ -29,7 +29,7 @@ export const FormulaDialog: React.FC<{ onClose: () => void; onInsert: (formula: 
     try {
       el.innerHTML = ''
       katex.render(formula, el, { throwOnError: false, displayMode: true })
-    } catch {}
+    } catch (e) { silentError('公式预览渲染失败', e) }
   }, [formula])
 
   const handleInsert = () => {
