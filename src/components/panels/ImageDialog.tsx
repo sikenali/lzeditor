@@ -33,6 +33,9 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
   const [useUrl, setUseUrl] = useState(false) // 默认本地上传
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [generating, setGenerating] = useState(false)
+  // 上传到第三方图床会把图片 base64 明文 POST 给 imgant.com。
+  // 之前点按钮就直接发出去了，用户完全不知情；现在必须先显式勾选。
+  const [remoteConsent, setRemoteConsent] = useState(false)
 
   const handleInsert = () => {
     if (useUrl && url.trim()) {
@@ -132,15 +135,43 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>支持 JPG、PNG、GIF、SVG、WebP</div>
               </label>
               {uploadFile && (
-                <button
-                  className="ud-btn"
-                  onClick={handleGenerateUrl}
-                  disabled={generating}
-                  style={{ marginTop: 8, width: '100%', justifyContent: 'center' }}
-                >
-                  <span className={`remix ${generating ? 'ri-loader-4-line spin' : 'ri-flashlight-line'}`}></span>
-                  {generating ? '上传中...' : '生成图床 URL'}
-                </button>
+                <>
+                  <label
+                    style={{
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'flex-start',
+                      fontSize: 12,
+                      color: 'var(--text-secondary)',
+                      lineHeight: 1.5,
+                      padding: '8px 10px',
+                      background: 'var(--bg-code)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={remoteConsent}
+                      onChange={e => setRemoteConsent(e.target.checked)}
+                      style={{ marginTop: 3, flexShrink: 0 }}
+                    />
+                    <span>
+                      <b>上传到第三方图床 imgant.com</b>：图片会以明文 base64 发送到该网站。
+                      如需保存在本地，请直接点「插入图片」，图片会以 base64 内嵌进文档，不经过任何网络请求。
+                    </span>
+                  </label>
+                  <button
+                    className="ud-btn"
+                    onClick={handleGenerateUrl}
+                    disabled={generating || !remoteConsent}
+                    style={{ marginTop: 8, width: '100%', justifyContent: 'center', opacity: remoteConsent ? 1 : 0.5 }}
+                    title={remoteConsent ? '上传图片到 imgant.com' : '请先勾选上方确认项'}
+                  >
+                    <span className={`remix ${generating ? 'ri-loader-4-line spin' : 'ri-flashlight-line'}`}></span>
+                    {generating ? '上传中...' : '上传到图床并生成 URL'}
+                  </button>
+                </>
               )}
             </UDSection>
           ) : (
