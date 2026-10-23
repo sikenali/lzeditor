@@ -109,7 +109,6 @@ router.post('/', async (req: any, res: any) => {
     maxTokens = 1024,
     stream = true,
     baseUrl,
-    settings,
     settingId,
   } = req.body
 

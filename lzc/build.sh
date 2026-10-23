@@ -65,7 +65,7 @@ DEPS_LIST="$SCRIPT_DIR/_backend_deps.txt"
 node -e '
 const fs=require("fs"),path=require("path");
 const root=process.argv[1];
-const roots=["express","cors","@anthropic-ai/sdk","openai","tsx","esbuild","@esbuild/linux-x64"];
+const roots=["express","@anthropic-ai/sdk","openai","tsx","esbuild","@esbuild/linux-x64"];
 const seen=new Set(),queue=[...roots];
 while(queue.length){
   const n=queue.pop();
