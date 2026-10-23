@@ -1,3 +1,4 @@
+import { silentError } from '../utils/silentError'
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
@@ -73,10 +74,8 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   previewMode: 'render' as 'render' | 'code',
   previewWidth: 400,
   mdContent: '',
-  readProgress: 0,
   fontSize: 17,
   readLayout: 'normal' as const,
-  readZoom: 100,
   readTocOpen: true as const,
   readFontSize: 18,
   tocItems: [] as { id: string; text: string; level: number }[],
@@ -180,10 +179,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   togglePreviewMode: () => set((s: any) => ({ previewMode: s.previewMode === 'code' ? 'render' : 'code' })),
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
   setMdContent: (mdContent: string) => set({ mdContent }),
-  setReadProgress: (readProgress: number) => set({ readProgress }),
-  setFontSize: (fontSize: number) => set({ fontSize }),
   setReadLayout: (readLayout: 'narrow' | 'normal' | 'wide') => set({ readLayout }),
-  setReadZoom: (readZoom: number) => set({ readZoom }),
   setReadTocOpen: (readTocOpen: boolean) => set({ readTocOpen }),
   setTocItems: (tocItems: { id: string; text: string; level: number }[]) => set({ tocItems }),
   setActiveTocId: (activeTocId: string) => set({ activeTocId }),
@@ -201,9 +197,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     if (versions.length > 0 && versions[versions.length - 1].html === version.html) return
     set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
   },
-  setDocGitMeta: (meta: { gitPath?: string; isFromGit?: boolean }) => set((s: any) => ({
-    docs: s.docs.map((d: any) => d.id === s.activeDocId ? { ...d, gitPath: meta.gitPath, isFromGit: meta.isFromGit } : d),
-  })),
 
   // ── Tab actions ──
   createDoc: (title?: string, path = '', libraryId?: string) => {
@@ -278,13 +271,14 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     const md = getDocMd(id)
     set({ docsMd: next, ...(s.activeDocId === id ? { mdContent: md } : {}) })
     if (s.activeDocId === id) {
-      try { s.editor?.commands?.setContent(mdToHtml(md), { emitUpdate: false }) } catch {}
+      try { s.editor?.commands?.setContent(mdToHtml(md), { emitUpdate: false }) }
+      catch (e) { silentError('还原出厂内容写入失败', e) }
     }
   },
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
     docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,
   })),
-  updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => set((s: any) => {
+  updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => set(() => {
     const next: Record<string, any> = {}
     if (params.md !== undefined) next.mdContent = params.md
     if (params.html !== undefined) next.docHTML = params.html

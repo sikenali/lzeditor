@@ -16,8 +16,6 @@ interface ImportButtonsProps {
 }
 
 export const ImportButtons: React.FC<ImportButtonsProps> = ({ category, onImportGit, onImportBlog, onImportGitbook }) => {
-  const categoryMeta = CATEGORIES.find(c => c.id === category) || CATEGORIES[0]
-
   if (category === 'git') {
     return (
       <UDSection label="导入 Git 仓库">

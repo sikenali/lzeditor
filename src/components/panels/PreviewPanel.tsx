@@ -17,7 +17,6 @@ export const PreviewPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const activeDocId = useEditorStore((s: any) => s.activeDocId)
   const docTitle = useEditorStore((s: any) => s.docTitle)
   const previewMode = useEditorStore((s: any) => s.previewMode)
-  const setPreviewMode = useEditorStore((s: any) => s.setPreviewMode)
   const togglePreviewMode = useEditorStore((s: any) => s.togglePreviewMode)
   const [isCodeMode, setIsCodeMode] = useState(previewMode === 'code')
 

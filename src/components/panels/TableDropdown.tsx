@@ -93,7 +93,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     if (tr) { tr.classList.add('dragging'); dragRowEl.current = tr }
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent, r: number) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     const tr = (e.currentTarget as HTMLElement).closest('tr')
@@ -205,7 +205,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                       onMouseEnter={() => setHoveredRow(r)}
                       onMouseLeave={() => setHoveredRow(null)}
                       onDragStart={e => handleDragStart(e, r)}
-                      onDragOver={e => handleDragOver(e, r)}
+                      onDragOver={e => handleDragOver(e)}
                       onDrop={e => handleDrop(e, r)}
                       onDragEnd={clearDragStyles}
                     >

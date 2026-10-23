@@ -61,7 +61,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   lineHeight: '1.5',
   contentWidth: '1024',
   showMarkdownMarkers: true,
-  showDiffHighlight: true,
   typewriterMode: false,
   focusMode: false,
   previewModeEnabled: true,
@@ -109,7 +108,7 @@ type SettingsStore = SettingsState & {
   setSelectedModelId: (id: string) => void
 }
 
-export const useSettingsStore = create<SettingsStore>((set, get) => ({
+export const useSettingsStore = create<SettingsStore>((set) => ({
   ...DEFAULT_SETTINGS,
 
   setActiveGroup: (activeGroup) => set({ activeGroup }),

@@ -11,7 +11,6 @@ import { ExportDialog } from './ExportDialog'
 import { renderMdWithMath } from '../../utils/mdWithMath'
 
 export const StyleMainPanel: React.FC = () => {
-  const docTitle = useEditorStore((s) => s.docTitle)
   const docHTML = useEditorStore((s) => s.docHTML)
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
@@ -20,10 +19,6 @@ export const StyleMainPanel: React.FC = () => {
   const fontSize = useEditorStore((s) => s.fontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore(s => s.updateSetting)
-  const readFontSize = useEditorStore((s) => s.readFontSize)
-  const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
-  const readLayout = useEditorStore((s) => s.readLayout)
-  const setReadLayout = useEditorStore((s) => s.setReadLayout)
   const readTocOpen = useEditorStore((s) => s.readTocOpen)
   const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
   const storeTocItems = useEditorStore((s) => s.tocItems)

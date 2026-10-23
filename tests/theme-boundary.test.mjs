@@ -32,13 +32,14 @@ assert.doesNotMatch(settingsStore, /ACCEPT_PRESETS|id: 'red'/, 'legacy accent id
 assert.match(settingsStore, /vermilion/, 'new accent presets must be used')
 
 const layout1 = read('src/styles/layout.css')
-assert.match(layout1, /\.navtop\s*\{[\s\S]*height:\s*72px/, 'navtop must be 72px tall')
+assert.match(layout1, /\.toolbar\s*\{[\s\S]*height:\s*72px/, 'toolbar must be 72px tall')
 assert.match(read('src/components/layout/Toolbar.tsx'), /navtop/, 'Toolbar must render navtop class')
 
+// LeftNav 重构为 rail 图标条：hover 文案改用原生 aria-label，不再用独立 hover-label DOM
 const leftNav = read('src/components/layout/LeftNav.tsx')
-assert.match(leftNav, /left-nav-hover-label/, 'LeftNav must render hover label element')
-assert.match(layout1, /\.left-nav-hover-label\s*\{[\s\S]*box-shadow:\s*var\(--shadow-md\)/, 'hover label must use shadow-md')
-assert.match(layout1, /\.left-nav-sep\s*\{[\s\S]*margin/, 'nav groups must have visual spacing')
+assert.match(leftNav, /aria-label={label}/, 'LeftNav rail buttons must expose an accessible label')
+assert.match(layout1, /\.rail-btn\s*\{[\s\S]*transition:\s*background\s+var\(--transition-fast\)/, 'rail buttons must use the fast transition token')
+assert.match(layout1, /\.rail-btn\s*\{[\s\S]*border-radius:\s*var\(--rail-btn-radius\)/, 'rail buttons must use the rail radius token')
 
 const statusBar = read('src/components/layout/StatusBar.tsx')
 assert.match(statusBar, /statusbar-collapse/, 'StatusBar must render a collapse control')

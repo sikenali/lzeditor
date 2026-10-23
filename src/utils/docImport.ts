@@ -1,4 +1,5 @@
 import { mdToHtml } from './mdToHtml'
+import { silentError } from './silentError'
 import { useEditorStore } from '../store/editorStore'
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024
@@ -35,7 +36,7 @@ export function openMarkdownDoc(title: string, md: string, path = ''): string {
   store.updateDoc({ md, html, docsMd: { [id]: md } })
   try {
     localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md, html, savedAt: Date.now() }))
-  } catch {}
+  } catch (e) { silentError('导入文档持久化失败', e) }
   store.editor?.commands?.setContent(html)
   return id
 }

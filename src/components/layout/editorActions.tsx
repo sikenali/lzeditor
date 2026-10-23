@@ -129,7 +129,6 @@ export function useFlyout() {
 export function useEditorActions() {
   const editor = useEditorStore((s: any) => s.editor)
   const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
-  const setAppMode = useEditorStore((s: any) => s.setAppMode)
   const createDoc = useEditorStore((s: any) => s.createDoc)
 
   const applyCmd = useCallback((cmd: string) => {

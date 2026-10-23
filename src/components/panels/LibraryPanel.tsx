@@ -14,7 +14,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const createLibrary = useEditorStore((s: any) => s.createLibrary)
   const setActiveLibrary = useEditorStore((s: any) => s.setActiveLibrary)
   const renameLibrary = useEditorStore((s: any) => s.renameLibrary)
-  const setDocGitMeta = useEditorStore((s: any) => s.setDocGitMeta)
   const [renameTargetId, setRenameTargetId] = useState<string | null>(null)
   const [category, setCategory] = useState('docs')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>(() => {
@@ -32,14 +31,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     if (sidebar) setShowLibrary(false)
     else if (onClose) onClose()
     else setOpenPanel('none')
-  }
-
-  const handleNewFile = () => {
-    const activeLib = docLibraries.find((lib: any) => lib.id === activeLibraryId)
-    const id = createDoc('', activeLib?.name || 'Default', activeLibraryId)
-    const editor = useEditorStore.getState().editor
-    if (editor) { editor.chain().focus().clearContent().run() }
-    if (!sidebar) handleClose()
   }
 
   const handleNewLibrary = () => {
@@ -88,7 +79,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          const id = createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
+          createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
           const editor = useEditorStore.getState().editor
           if (editor) editor.chain().focus().setContent(text).run()
         }
@@ -110,7 +101,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          const id = createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
+          createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
           const editor = useEditorStore.getState().editor
           if (editor) editor.chain().focus().setContent(text).run()
         }
@@ -132,7 +123,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          const id = createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
+          createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
           const editor = useEditorStore.getState().editor
           if (editor) editor.chain().focus().setContent(text).run()
         }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, Tray, nativeImage } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as url from 'url'
@@ -6,6 +6,9 @@ import * as url from 'url'
 let mainWindow: BrowserWindow | null = null
 
 const isDev = !app.isPackaged
+
+// 版本号单一来源：package.json（前端另在 src/shared/version.ts 同步一份）
+const APP_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8')).version
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -80,23 +83,6 @@ ipcMain.handle('window-is-maximized', () => mainWindow?.isMaximized() ?? false)
 
 ipcMain.on('window-close', () => {
   mainWindow?.close()
-})
-
-// AI API key storage (encrypted on macOS/Windows, keytar on Linux)
-const secretsStore = new Map<string, string>()
-
-ipcMain.handle('secrets:set', (_event, key: string, value: string) => {
-  secretsStore.set(key, value)
-  return true
-})
-
-ipcMain.handle('secrets:get', (_event, key: string) => {
-  return secretsStore.get(key) || null
-})
-
-ipcMain.handle('secrets:delete', (_event, key: string) => {
-  secretsStore.delete(key)
-  return true
 })
 
 // 渲染进程的行为设置（enableTabs / showTrayIcon / openInNewWindow / quitWhenAllWindowsClosed）
@@ -194,11 +180,10 @@ const createMenu = () => {
         {
           label: '关于 lzeditor',
           click: () => {
-            const { dialog } = require('electron')
             dialog.showMessageBox(mainWindow!, {
               type: 'info',
               title: '关于 lzeditor',
-              message: 'lzeditor v0.1.0',
+              message: `lzeditor v${APP_VERSION}`,
               detail: 'AI 集成 Markdown 编辑器\n暗夜霓虹主题',
             })
           },

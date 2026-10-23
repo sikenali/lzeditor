@@ -6,7 +6,6 @@ import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getDocMd } from '../../utils/docSource'
-import { DEFAULT_CONTENT, README_CONTENT } from '../../components/editor/constants'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
@@ -30,7 +29,6 @@ function mdToPreviewHtml(mdContent: string): string {
 }
 
 export const SidebarPreview: React.FC = () => {
-  const editorRef = useEditorStore((s) => s.editorRef)
   const editorContentRef = useEditorStore((s) => s.editorContentRef)
   const docHTML = useEditorStore((s) => s.docHTML || '')
   const mdContent = useEditorStore((s) => s.mdContent || '')
@@ -40,8 +38,6 @@ export const SidebarPreview: React.FC = () => {
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
-  const setMdContent = useEditorStore((s) => s.setMdContent)
-  const setDocHTML = useEditorStore((s) => s.setDocHTML)
   const [previewEl, setPreviewEl] = useState<HTMLDivElement | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)

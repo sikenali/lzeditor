@@ -48,13 +48,6 @@ export interface ApplyRecord {
   position: { from: number; to: number }
 }
 
-export interface GitDocMeta {
-  gitPath?: string
-  lastCommitHash?: string
-  lastCommitTime?: string
-  isFromGit?: boolean
-  gitRepo?: string
-}
 
 export interface DocVersion {
   id: string
@@ -94,10 +87,8 @@ export interface EditorStoreState {
   previewWidth: number
   previewMode: 'render' | 'code'
   mdContent: string
-  readProgress: number
   fontSize: number
   readLayout: 'narrow' | 'normal' | 'wide'
-  readZoom: number
   readTocOpen: boolean
   readFontSize: number
   tocItems: { id: string; text: string; level: number }[]
@@ -127,10 +118,7 @@ export interface EditorStoreState {
   setPreviewMode: (previewMode: "render" | "code") => void
   togglePreviewMode: () => void
   setMdContent: (md: string) => void
-  setReadProgress: (progress: number) => void
-  setFontSize: (fontSize: number) => void
   setReadLayout: (layout: 'narrow' | 'normal' | 'wide') => void
-  setReadZoom: (zoom: number) => void
   setReadTocOpen: (open: boolean) => void
   setReadFontSize: (fontSize: number) => void
   setTocItems: (items: { id: string; text: string; level: number }[]) => void
@@ -177,7 +165,6 @@ export interface SettingsState {
   lineHeight?: '1.0' | '1.5' | '2.0'
   contentWidth?: '960' | '1024' | '1200' | '1280'
   showMarkdownMarkers?: boolean
-  showDiffHighlight?: boolean
   typewriterMode?: boolean
   focusMode?: boolean
   previewModeEnabled?: boolean
@@ -227,10 +214,6 @@ export interface SettingsState {
   orientation?: string
 }
 
-export interface ThemeState {
-  mode: 'parchment' | 'dark'
-  accentColor: string
-}
 
 export interface AIStoreState {
   panelVisible: boolean

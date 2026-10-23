@@ -20,10 +20,6 @@ export const LeftNav: React.FC = () => {
   const showLibrary = useEditorStore((s: any) => s.showLibrary)
   const showOutline = useEditorStore((s: any) => s.showOutline)
   const showSearch = useEditorStore((s: any) => s.showSearch)
-  const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
-  const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
-  const setShowSearch = useEditorStore((s: any) => s.setShowSearch)
-  const setShowRightPanel = useEditorStore((s: any) => s.setShowRightPanel)
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
   const flyout = useFlyout()

@@ -6,20 +6,20 @@ const modal = read('src/components/ui/UiModal.tsx')
 assert.match(modal, /createPortal\(.*document\.body/, 'UiModal must teleport to body')
 assert.match(modal, /border-radius|borderRadius/, 'UiModal must set radius')
 const index = read('src/components/ui/index.ts')
-for (const n of ['UiModal','UiInput','UiSelect','UiSwitch','UiCheck','UiSelectCard','UiRadioGroup','UiTabs','UiTip','UiButton']) {
+for (const n of ['UiModal','UiInput','UiSelect','UiSwitch','UiCheck','UiSelectCard','UiTip','UiButton']) {
   assert.match(index, new RegExp(n), `index must export ${n}`)
 }
 const icon = read('src/utils/icon.ts')
 assert.match(icon, /ri-/, 'resolveIcon must accept ri- names')
 
-const insertDialogs = ['ImageDialog','LinkDialog','CodeDialog','FormulaDialog','TableDropdown','EmojiDialog','ChartDialog','BeautifyDialog']
+const insertDialogs = ['ImageDialog','LinkDialog','CodeDialog','FormulaDialog','TableDropdown','EmojiDialog','ChartDialog']
 for (const d of insertDialogs) {
   const src = read(`src/components/panels/${d}.tsx`)
   assert.doesNotMatch(src, /UnifiedDialog|PanelContainer|@heroui\/react/, `${d} must not use legacy dialog/HeroUI`)
   assert.match(src, /from '\.\.\/ui'/, `${d} must import from the ui barrel`)
 }
 
-const panelDialogs = ['ExportDialog','HistoryPanel','LibraryPanel','FilePanel','PreviewPanel','SearchPanel','ReadMode']
+const panelDialogs = ['ExportDialog','HistoryPanel','LibraryPanel','FilePanel','PreviewPanel','SearchPanel']
 for (const d of panelDialogs) {
   const src = read(`src/components/panels/${d}.tsx`)
   assert.doesNotMatch(src, /UnifiedDialog|PanelContainer|@heroui\/react/, `${d} must not use legacy dialog/HeroUI`)

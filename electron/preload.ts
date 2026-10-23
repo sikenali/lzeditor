@@ -7,11 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   close: () => ipcRenderer.send('window-close'),
   isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
 
-  // Secrets (AI API keys)
-  setSecret: (key: string, value: string) => ipcRenderer.invoke('secrets:set', key, value),
-  getSecret: (key: string) => ipcRenderer.invoke('secrets:get', key),
-  deleteSecret: (key: string) => ipcRenderer.invoke('secrets:delete', key),
-
   // Menu events
   onMenuNew: (callback: () => void) => ipcRenderer.on('menu-new', callback),
   onMenuOpen: (callback: () => void) => ipcRenderer.on('menu-open', callback),

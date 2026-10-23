@@ -1,4 +1,5 @@
 import { DEFAULT_CONTENT, README_CONTENT } from '../components/editor/constants'
+import { silentError } from './silentError'
 import { htmlToMarkdown } from './htmlToMd'
 import a01 from '../content/a01-特色功能.md?raw'
 import a02 from '../content/a02-文档库和文档.md?raw'
@@ -85,7 +86,7 @@ export function getDocHtml(id: string): string {
       const d = JSON.parse(old)
       if (d.html) return d.html
     }
-  } catch {}
+  } catch (e) { silentError('读取文档覆盖内容失败', e) }
   return ''
 }
 

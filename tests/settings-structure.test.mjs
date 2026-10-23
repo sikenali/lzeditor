@@ -7,7 +7,7 @@ const settings = read('src/components/panels/SettingsDialog.tsx')
 const model = read('src/components/panels/settings/ModelSettingsTab.tsx')
 const about = read('src/components/panels/settings/AboutSettingsTab.tsx')
 
-for (const label of ['主题设置', '模型管理', '个性设置', '关于']) {
+for (const label of ['主题设置', '模型设置', '个性设置', '关于']) {
   assert.match(settings, new RegExp(label), `missing top nav ${label}`)
 }
 for (const label of ['内容样式', '编辑设置', '行为设置', '快捷键设置']) {
@@ -29,6 +29,7 @@ for (const [f, marker] of [
 }
 
 assert.match(model, /模型制造商/, 'provider sub-tab label')
+assert.match(model, /模型管理/, 'model tab page header')
 assert.match(model, /apiKeys/, 'must use the apiKeys store')
 assert.match(about, /LightOS/, 'about must credit LightOS')
 

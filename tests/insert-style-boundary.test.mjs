@@ -8,7 +8,6 @@ const slash = read('src/components/editor/SlashCommand.tsx')
 const globals = read('src/styles/globals.css')
 
 for (const [name, source] of [
-  ['Toolbar', toolbar],
   ['SlashCommand', slash],
 ]) {
   assert.match(source, /lz-insert lz-insert-toc/, `${name} TOC insert should use styled content classes`)
@@ -16,7 +15,10 @@ for (const [name, source] of [
   assert.match(source, /lz-insert-footnote-ref/, `${name} footnote insert should use a styled content class`)
 }
 
-for (const f of ['ImageDialog.tsx', 'LinkDialog.tsx', 'CodeDialog.tsx', 'FormulaDialog.tsx', 'TableDropdown.tsx', 'EmojiDialog.tsx', 'ChartDialog.tsx', 'BeautifyDialog.tsx']) {
+// Toolbar 不直接拼插入 HTML，走 useEditorActions 的统一入口
+assert.match(toolbar, /useEditorActions/, 'Toolbar must delegate insertions to useEditorActions')
+
+for (const f of ['ImageDialog.tsx', 'LinkDialog.tsx', 'CodeDialog.tsx', 'FormulaDialog.tsx', 'TableDropdown.tsx', 'EmojiDialog.tsx', 'ChartDialog.tsx']) {
   assert.doesNotMatch(read(`src/components/panels/${f}`), /style\.cssText/, `${f} should not inject inline styles into document content`)
 }
 
