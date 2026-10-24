@@ -434,12 +434,10 @@
 
 /* ── Global focus-visible ring for all Ui* controls ── */
 .ui-btn:focus-visible,
-.ui-select-trigger:focus-visible,
 .ui-switch:focus-visible,
 .ui-radio-item:focus-visible,
 .ui-tab:focus-visible,
 .ui-modal-close:focus-visible,
-.ui-input-control:focus-visible,
 .ui-input-clear:focus-visible,
 .ui-check:focus-visible,
 .ui-select-card:focus-visible {
