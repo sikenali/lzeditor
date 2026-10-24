@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { UiModal, UiInput, UiSelect, UiSwitch, UiButton } from '../ui'
 import { useEditorStore } from '../../store/editorStore'
-import { headingId } from '../../utils/mdToHtml'
+import { parseMdOutline } from '../../utils/mdOutline'
 
 const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
   <div className="ud-section">
@@ -32,28 +32,13 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const docsMd = useEditorStore((s) => s.docsMd || {})
 
-  // 提取文档中的章节标题（id 为真实锚点，与 mdToHtml 生成的 h1..h6 id 一致）
-  const extractChapters = (md: string): { id: string; text: string; level: number }[] => {
-    const headingRegex = /^#{1,6}\s+.+$/gm
-    const headings: { id: string; text: string; level: number }[] = []
-    let match
-    while ((match = headingRegex.exec(md)) !== null) {
-      const line = match[0]
-      const hashMatch = line.match(/^(#+)/)
-      const level = hashMatch ? hashMatch[1].length : 1
-      const text = line.replace(/^#+\s+/, '').trim()
-      if (text) headings.push({ id: headingId(text), text, level })
-    }
-    return headings
-  }
-
-  // 获取目标文档的章节列表（按文档 id 检索）
+  // 章节标题从 markdown 源解析：id 就是预览里生成的真实锚点，
+  // 围栏内的 # 不会被当成标题
   const chapters = useMemo(() => {
     if (!docSource) return []
     const doc = docs.find((d: any) => d.id === docSource || d.title === docSource)
     if (!doc) return []
-    const md = docsMd[doc.id] || ''
-    return md ? extractChapters(md) : []
+    return parseMdOutline(docsMd[doc.id] || '').filter(h => h.text !== '(无标题)')
   }, [docSource, docs, docsMd])
 
   // 默认选择当前文档

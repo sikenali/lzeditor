@@ -19,6 +19,7 @@ export default defineConfig({
             if (id.includes('@codemirror') || id.includes('@lezer')) return 'vendor-codemirror'
             if (id.includes('/xlsx') || id.includes('/jszip') || id.includes('/epub')) return 'vendor-export'
             if (id.includes('katex')) return 'vendor-katex'
+            if (id.includes('markdown-it')) return 'vendor-markdown'
           }
         },
       },

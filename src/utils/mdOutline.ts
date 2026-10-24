@@ -1,3 +1,5 @@
+import { headingId } from './markdown/id'
+
 export interface MdOutlineItem {
   /** 唯一 id，跨渲染稳定（同一行号不会重复） */
   id: string
@@ -21,6 +23,7 @@ export function parseMdOutline(md: string): MdOutlineItem[] {
 
   const lines = md.split('\n')
   const counters = [0, 0, 0, 0, 0, 0]
+  const seen = new Map<string, number>()
   let inFence = false
   let offset = 0
 
@@ -36,9 +39,14 @@ export function parseMdOutline(md: string): MdOutlineItem[] {
       const level = match[1].length
       counters[level - 1] += 1
       for (let j = level; j < counters.length; j++) counters[j] = 0
-      const text = match[2].replace(/\s+#+\s*$/, '').trim() || '(无标题)'
+      const rawText = match[2].replace(/\s+#+\s*$/, '').trim()
+      const text = rawText || '(无标题)'
+      // id 必须和渲染器给标题生成的锚点一致，预览里的 # 链接才能跳对
+      const base = headingId(rawText) || 'heading'
+      const n = seen.get(base) || 0
+      seen.set(base, n + 1)
       items.push({
-        id: `h-${i}`,
+        id: n === 0 ? base : `${base}-${n + 1}`,
         level,
         text,
         pos: offset,
@@ -55,15 +63,6 @@ export function parseMdOutline(md: string): MdOutlineItem[] {
 export function outlineToMarkdownTree(items: MdOutlineItem[]): string {
   if (items.length === 0) return '暂无标题'
   return items
-    .map(it => `${'  '.repeat(it.level - 1)}- [${it.text}](#${slug(it.text)})`)
+    .map(it => `${'  '.repeat(it.level - 1)}- [${it.text}](#${it.id})`)
     .join('\n')
-}
-
-export function slug(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .replace(/[`*_~[\]()#]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\u4e00-\u9fff-]/g, '')
 }

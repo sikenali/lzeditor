@@ -18,6 +18,12 @@ declare module 'echarts-for-react' {
   export default EChartsReact
 }
 
+declare module 'markdown-it-footnote' {
+  import type { Plugin } from 'markdown-it'
+  const footnote: Plugin
+  export default footnote
+}
+
 declare module 'jszip' {
   class JSZip {
     constructor()

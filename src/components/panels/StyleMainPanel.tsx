@@ -8,7 +8,6 @@ import { DEFAULT_CONTENT } from '../../components/editor/constants'
 import { getDocMd, getDocHtml } from '../../utils/docSource'
 import { copyRichText } from '../../clipboard'
 import { ExportDialog } from './ExportDialog'
-import { renderMdWithMath } from '../../utils/mdWithMath'
 
 export const StyleMainPanel: React.FC = () => {
   const docHTML = useEditorStore((s) => s.docHTML)
@@ -85,7 +84,7 @@ export const StyleMainPanel: React.FC = () => {
 
   const renderedHtml = useMemo(() => {
     if (!effectiveMd) return ''
-    try { return renderMdWithMath(effectiveMd) } catch { return effectiveMd }
+    try { return mdToHtml(effectiveMd) } catch { return effectiveMd }
   }, [effectiveMd])
 
   const initialHtml = useMemo(() => {
