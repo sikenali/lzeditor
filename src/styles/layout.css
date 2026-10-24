@@ -498,9 +498,6 @@
   color: var(--text-secondary);
   letter-spacing: -0.01em;
 }
-/* Inline math */
-.ProseMirror .math-inline { padding: 0 2px; }
-
 /* ── History snapshot description ── */
 .history-snapshot-desc {
   display: flex;

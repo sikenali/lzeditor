@@ -94,7 +94,6 @@ export interface EditorStoreState {
   tocItems: { id: string; text: string; level: number }[]
   activeTocId: string
   versions: DocVersion[]
-  editor: any
   setTitle: (title: string) => void
   setWordCount: (count: number) => void
   setCharCount: (count: number) => void
@@ -126,7 +125,6 @@ export interface EditorStoreState {
   setEditorRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
   editorContentRef: HTMLDivElement | null
-  setEditor: (editor: any) => void
   addVersion: (version: DocVersion) => void
   lastEditTime: number
   setLastEditTime: (time: number) => void
@@ -191,7 +189,6 @@ export interface SettingsState {
   fullwidthSymbols?: boolean
   showLineNumbers?: boolean
   // ── CodeMirror 6 settings ──
-  useCM6Editor?: boolean
   autoPair?: boolean
   continueLists?: boolean
   currentLine?: boolean

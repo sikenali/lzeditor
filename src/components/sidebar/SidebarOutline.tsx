@@ -1,44 +1,11 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { TextSelection } from '@tiptap/pm/state'
-import { useScrollSpy } from '../../hooks/useScrollSpy'
-
-interface OutlineItem {
-  id: string
-  level: number
-  text: string
-  pos: number
-  number: string
-}
-
-/** Walk the ProseMirror doc, collect headings with 1 / 1.1 / 1.1.1 numbering. */
-function collectOutline(doc: any): OutlineItem[] {
-  const items: OutlineItem[] = []
-  const counters: number[] = [0, 0, 0, 0, 0, 0]
-
-  doc.descendants((node: any, pos: number) => {
-    if (node.type.name !== 'heading') return true
-    const level = node.attrs.level || 1
-    counters[level - 1] += 1
-    for (let i = level; i < counters.length; i++) counters[i] = 0
-
-    const number = counters.slice(0, level).join('.')
-    items.push({
-      id: `h-${pos}`,
-      level,
-      text: node.textContent.trim() || '(无标题)',
-      pos,
-      number,
-    })
-    return true
-  })
-
-  return items
-}
+import { getCM6Editor } from '../editor/codemirror/registry'
+import { parseMdOutline, type MdOutlineItem } from '../../utils/mdOutline'
 
 /** Group flat items into a tree keyed by parent number (1 → 1.1 → 1.1.1). */
-function buildTree(items: OutlineItem[]): Map<string, OutlineItem[]> {
-  const tree = new Map<string, OutlineItem[]>()
+function buildTree(items: MdOutlineItem[]): Map<string, MdOutlineItem[]> {
+  const tree = new Map<string, MdOutlineItem[]>()
   for (const item of items) {
     const parentNumber = item.number.includes('.')
       ? item.number.slice(0, item.number.lastIndexOf('.'))
@@ -51,95 +18,32 @@ function buildTree(items: OutlineItem[]): Map<string, OutlineItem[]> {
 }
 
 export const SidebarOutline: React.FC = () => {
-  const editor = useEditorStore((s) => s.editor)
-  const setShowOutline = useEditorStore((s) => s.setShowOutline)
-  const [items, setItems] = useState<OutlineItem[]>([])
-  const [activeId, setActiveId] = useState<string>('')
+  const activeDocId = useEditorStore((s: any) => s.activeDocId)
+  const docsMd = useEditorStore((s: any) => s.docsMd || {})
+  const mdContent = useEditorStore((s: any) => s.mdContent || '')
+  const cursorPosition = useEditorStore((s: any) => s.cursorPosition)
+  const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  const itemsRef = useRef<OutlineItem[]>([])
+  // 大纲从 markdown 源文本解析：CM6 没有文档树，标题层级只能从 `#` 号推
+  const md = docsMd[activeDocId || 'readme'] || mdContent || ''
+  const items = useMemo(() => parseMdOutline(md), [md])
 
-  // 光标移动时只算「当前在哪个标题里」，不要重新遍历整篇文档 ——
-  // 之前把 refresh() 同时挂在 update 和 selectionUpdate 上，
-  // 每挪一次光标就整篇重算一遍大纲
-  const syncActive = useCallback(() => {
-    if (!editor) return
-    const from = editor.state.selection.from
-    let active: OutlineItem | undefined
-    for (const item of itemsRef.current) {
-      if (item.pos <= from) active = item
+  // 当前高亮跟随光标行号，不重扫文档
+  const activeId = useMemo(() => {
+    const line = cursorPosition?.line
+    if (!line) return ''
+    let active: MdOutlineItem | undefined
+    for (const item of items) {
+      if (item.line <= line) active = item
       else break
     }
-    setActiveId(active ? active.id : '')
-  }, [editor])
+    return active?.id ?? ''
+  }, [cursorPosition, items])
 
-  const refresh = useCallback(() => {
-    if (!editor) return
-    const next = collectOutline(editor.state.doc)
-    itemsRef.current = next
-    setItems(next)
-    syncActive()
-  }, [editor, syncActive])
-
-  // 内容变更才重新收集大纲；光标移动只刷新当前高亮标题
-  useEffect(() => {
-    refresh()
-    if (!editor) return
-    editor.on('update', refresh)
-    editor.on('selectionUpdate', syncActive)
-    return () => {
-      editor.off('update', refresh)
-      editor.off('selectionUpdate', syncActive)
-    }
-  }, [editor, refresh, syncActive])
-
-  // Build scroll-spy items from DOM headings (same approach as ReadMode)
-  const editorContentRef = useEditorStore((s: any) => s.editorContentRef)
-  const outlineItemsForSpy = useMemo(() => {
-    if (!editorContentRef) return []
-    const container = editorContentRef as HTMLElement
-    const domHeadings = container.querySelectorAll('h1,h2,h3,h4,h5,h6')
-    // 按「级别|文本」建索引再查，别对每个 DOM 标题线性扫一遍 items
-    const byKey = new Map(items.map(it => [`${it.level}|${it.text}`, it]))
-    return Array.from(domHeadings).map((el, i) => {
-      const level = parseInt((el as HTMLElement).tagName[1])
-      const text = el.textContent?.trim() || ''
-      const matchingItem = byKey.get(`${level}|${text}`)
-      return {
-        id: matchingItem?.id || `dom-h-${i}`,
-        text,
-        el: el as HTMLElement,
-      }
-    })
-  }, [items, editorContentRef])
-
-  const { scrollTo: scrollSpyTo } = useScrollSpy({
-    items: outlineItemsForSpy,
-    activeId,
-    setActiveId,
-    container: editorContentRef as HTMLElement | null,
-  })
-
-  // Scroll spy to current active heading when items change
-  useEffect(() => {
-    if (editorContentRef && activeId) scrollSpyTo(activeId)
-  }, [outlineItemsForSpy])
-
-  const handleJump = useCallback((item: OutlineItem) => {
-    if (!editor) return
-    const pos = editor.state.doc.resolve(item.pos + 1)
-    const tr = editor.state.tr.setSelection(TextSelection.near(pos))
-    tr.scrollIntoView()
-    editor.view.dispatch(tr)
-    setActiveId(item.id)
-    // Also scroll the DOM heading into view
-    const container = editorContentRef as HTMLElement | null
-    if (container) {
-      const domHeadings = container.querySelectorAll('h1,h2,h3,h4,h5,h6')
-      const matchingEl = Array.from(domHeadings).find(el => el.textContent?.trim() === item.text)
-      matchingEl?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [editor, editorContentRef, scrollSpyTo])
+  const handleJump = useCallback((item: MdOutlineItem) => {
+    getCM6Editor()?.goto(item.pos, item.pos + item.text.length)
+  }, [])
 
   const toggleCollapse = (number: string) => {
     setCollapsed((prev) => ({ ...prev, [number]: !prev[number] }))
@@ -172,7 +76,7 @@ export const SidebarOutline: React.FC = () => {
             <button
               className="outline-content-btn"
               onClick={() => handleJump(item)}
-              title={item.text}
+              title={`${item.number} ${item.text}`}
             >
               <span className="outline-number">{item.number}</span>
               <span className="sidebar-item-text">{item.text}</span>

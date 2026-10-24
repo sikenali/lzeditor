@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { useSettingsStore } from '../../store/settingsStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
 import { getCM6Editor } from '../editor/codemirror/registry'
 import type { FormatCommand } from '../editor/codemirror/commands'
@@ -74,32 +73,40 @@ export const MODE_ITEMS: MenuItem[] = [
 export const applyTableItems = (tableActive: boolean): MenuItem[] =>
   TABLE_ITEMS.map(item => (item.disabled ? { ...item, disabled: !tableActive } : item))
 
-export const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-
 /** 光标是否在表格内 —— 表格子菜单的置灰依赖它。 */
 export function useTableActive(): boolean {
-  const editor = useEditorStore((s: any) => s.editor)
   const [active, setActive] = useState(false)
+
   useEffect(() => {
-    if (!editor) return
-    const update = () => setActive(editor.isActive('table'))
-    editor.on('selectionUpdate', update)
-    update()
-    return () => { editor.off('selectionUpdate', update) }
-  }, [editor])
+    let alive = true
+    let unbind: (() => void) | null = null
+    let tries = 0
+    const tick = () => {
+      try {
+        const cm = getCM6Editor()
+        if (!cm) { setActive(false); return }
+        const { from } = cm.view.state.selection.main
+        setActive(/^\s*\|.*\|\s*$/.test(cm.view.state.doc.lineAt(from).text))
+      } catch { setActive(false) }
+    }
+    // CM6 是懒挂载的，第一次进工具栏时可能还没实例，轮询几次再挂监听
+    const attach = () => {
+      if (!alive) return
+      const cm = getCM6Editor()
+      if (!cm) {
+        if (tries++ > 25) return
+        setTimeout(attach, 200)
+        return
+      }
+      tick()
+      unbind = cm.onSelection(tick)
+    }
+    attach()
+    return () => { alive = false; unbind?.() }
+  }, [])
   return active
 }
 
-/**
- * 同一时刻只开一个飞出菜单：点其它触发器切换，点在菜单外关闭。
- * 返回的 menuRef 挂在 ActionMenu 上，rect 是触发器按钮的位置。
- */
 export function useFlyout() {
   const [key, setKey] = useState<string | null>(null)
   const [rect, setRect] = useState<DOMRect | null>(null)
@@ -153,133 +160,40 @@ const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'math', 'chart', 'emoji'
 
 /** 编辑动作，供顶栏和左侧 rail 共用，避免两套逻辑漂移。 */
 export function useEditorActions() {
-  const editor = useEditorStore((s: any) => s.editor)
   const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
   const createDoc = useEditorStore((s: any) => s.createDoc)
-  const useCM6 = useSettingsStore((s) => s.useCM6Editor)
 
-  // CM6 下没有映射到命令的动作不静默失败：插入类改为打开对应面板
-  const runCM6 = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
-    const cm6 = getCM6Editor()
-    if (!cm6) return false
+  // 无映射的动作不静默失败：插入类改为打开对应面板
+  const runMapped = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
+    const cm = getCM6Editor()
+    if (!cm) return false
     const fc = map[action]
     if (!fc) {
       if (PANEL_ACTIONS.has(action)) setInsertPanel(action)
       return true
     }
-    return cm6.run(fc)
+    return cm.run(fc)
   }, [setInsertPanel])
 
   const applyCmd = useCallback((cmd: string) => {
-    if (useCM6 && runCM6(cmd, CMD_MAP)) return
-    if (!editor) return
-    editor.chain().focus()
-    const ok = (editor.commands as any)[cmd]?.()
-    if (!ok) {
-      const markMap: Record<string, string> = {
-        bold: 'toggleBold', italic: 'toggleItalic', underline: 'toggleUnderline',
-        strikeThrough: 'toggleStrike', highlight: 'toggleHighlight',
-      }
-      const fn = markMap[cmd]
-      if (fn) (editor.commands as any)[fn]()
-    }
-  }, [editor, useCM6, runCM6])
+    runMapped(cmd, CMD_MAP)
+  }, [runMapped])
 
   const formatAction = useCallback((action: string) => {
-    if (useCM6 && runCM6(action, FORMAT_MAP)) return
-    if (!editor) return
-    const chain = editor.chain().focus()
-    if (action === 'link') { setInsertPanel('link'); return }
-    if (action === 'image') { setInsertPanel('image'); return }
-    switch (action) {
-      case 'h1': case 'h2': case 'h3': case 'h4': case 'h5': {
-        const level = parseInt(action[1])
-        const selected = editor.state.selection
-        const hasText = selected && selected.from !== selected.to
-        if (!hasText) chain.insertContent(`<h${level}>标题 ${level}</h${level}>`)
-        else chain.toggleHeading({ level })
-        break
-      }
-      case 'clear': chain.unsetAllMarks().clearNodes(); break
-      case 'hr': chain.setHorizontalRule(); break
-      case 'ol': chain.toggleOrderedList(); break
-      case 'ul': chain.toggleBulletList(); break
-      case 'task': chain.toggleTaskList(); break
-      case 'sup': chain.toggleSuperscript(); break
-      case 'sub': chain.toggleSubscript(); break
-    }
-    chain.run()
-  }, [editor, setInsertPanel, useCM6, runCM6])
+    if (PANEL_ACTIONS.has(action)) { setInsertPanel(action); return }
+    runMapped(action, FORMAT_MAP)
+  }, [setInsertPanel, runMapped])
 
   const insertAction = useCallback((action: string) => {
-    if (useCM6 && runCM6(action, INSERT_MAP)) return
-    if (!editor) return
-    const chain = editor.chain().focus()
-    switch (action) {
-      case 'toc': {
-        const headings: string[] = []
-        editor.state.doc.descendants((node: any) => {
-          if (node.type.name === 'heading') {
-            headings.push(' '.repeat(node.attrs.level - 1) + '- ' + node.textContent)
-          }
-          return true
-        })
-        const tocBody = headings.length > 0
-          ? headings.map(h => `<p>${escapeHtml(h)}</p>`).join('')
-          : '<p>暂无标题</p>'
-        chain.insertContent(
-          `<blockquote class="lz-insert lz-insert-toc" data-insert="toc"><p><strong>目录</strong></p>${tocBody}</blockquote><p></p>`
-        )
-        break
-      }
-      case 'quote': {
-        const sel = editor.state.selection
-        const text = sel && sel.from !== sel.to ? editor.state.doc.textBetween(sel.from, sel.to) : '引用内容'
-        chain.insertContent(`<blockquote class="lz-insert lz-insert-quote" data-insert="quote"><p>${escapeHtml(text)}</p></blockquote>`)
-        break
-      }
-      case 'footnote':
-        chain.insertContent('<sup class="lz-insert-footnote-ref" data-insert="footnote">[^1]</sup>')
-        break
-      case 'hr':
-        chain.setHorizontalRule()
-        break
-      case 'blockquote':
-        chain.toggleBlockquote()
-        break
-      case 'code':
-        setInsertPanel('code'); return
-      case 'math':
-        setInsertPanel('formula'); return
-      case 'chart':
-        setInsertPanel('chart'); return
-      case 'emoji':
-        setInsertPanel('emoji'); return
-    }
-    chain.run()
-  }, [editor, setInsertPanel, useCM6, runCM6])
+    if (PANEL_ACTIONS.has(action)) { setInsertPanel(action); return }
+    runMapped(action, INSERT_MAP)
+  }, [setInsertPanel, runMapped])
 
   const tableAction = useCallback((action: string) => {
+    // 单元格级操作（增删行列/合并）在 CM6 下不支持，只保留「插入表格」
     if (action === 'insert') { setInsertPanel('table'); return }
-    // CM6 的表格是 markdown 源文本，单元格级操作（增删行列/合并）暂不支持
-    if (useCM6) return
-    if (!editor) return
-    if (action === 'insert') { setInsertPanel('table'); return }
-    const chain = editor.chain().focus()
-    switch (action) {
-      case 'colBefore': chain.addColumnBefore(); break
-      case 'col': chain.addColumnAfter(); break
-      case 'row': chain.addRowAfter(); break
-      case 'delCol': chain.deleteColumn(); break
-      case 'delRow': chain.deleteRow(); break
-      case 'merge': chain.mergeCells(); break
-      case 'split': chain.splitCell(); break
-      case 'headerCol': chain.toggleHeaderColumn(); break
-      case 'delete': chain.deleteTable(); break
-      case 'autoW': chain.fixTables(); break
-    }
-    chain.run()
-  }, [editor, setInsertPanel, useCM6])
+    if (!getCM6Editor()) return
+  }, [setInsertPanel])
 
   const modeAction = useCallback((action: string) => {
     const st = useEditorStore.getState()
@@ -303,7 +217,7 @@ export function useEditorActions() {
     if (files) await importFolderFiles(files)
   }, [])
 
-  return { editor, applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog }
+  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog }
 }
 
 /** 飞出菜单。align='right' 贴触发器右侧（左侧 rail 用），'below' 贴下方（顶栏用）。 */

@@ -85,7 +85,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   fullwidthSymbols: false,
   showLineNumbers: false,
   // ── CodeMirror 6 settings ──
-  useCM6Editor: true,
   autoPair: true,
   continueLists: true,
   currentLine: true,

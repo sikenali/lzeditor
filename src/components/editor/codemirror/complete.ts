@@ -1,6 +1,7 @@
 import {
   acceptCompletion,
   autocompletion,
+  completionKeymap,
   type Completion,
   type CompletionSource,
   completionStatus,
@@ -8,12 +9,9 @@ import {
 } from '@codemirror/autocomplete'
 import { type EditorState, type Extension, Prec, StateEffect, StateField } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
+import type { MarkdownSnippet } from './snippets'
 
-export interface MarkdownSnippet {
-  trigger: string
-  label: string
-  body: string
-}
+export type { MarkdownSnippet }
 
 export interface SnippetData {
   snippets?: MarkdownSnippet[]
@@ -86,12 +84,19 @@ export function snippetCompletionSource(): CompletionSource {
   }
 }
 
+/**
+ * 片段补全默认不跟随输入弹出：`/` 是斜杠命令面板的入口（见 slash.ts），
+ * 两个弹层会同时出现。片段补全靠 Ctrl+Space（completionKeymap）手动触发。
+ */
 export function completionSetup(sources: CompletionSource[]): Extension {
   if (sources.length === 0) return []
-  return autocompletion({
-    override: sources,
-    activateOnTyping: true,
-    icons: false,
-    maxRenderedOptions: 50,
-  })
+  return [
+    keymap.of(completionKeymap),
+    autocompletion({
+      override: sources,
+      activateOnTyping: false,
+      icons: false,
+      maxRenderedOptions: 50,
+    }),
+  ]
 }

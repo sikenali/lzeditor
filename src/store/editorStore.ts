@@ -1,8 +1,8 @@
-import { silentError } from '../utils/silentError'
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
 import { getDocMd } from '../utils/docSource'
+import { getCM6Editor } from '../components/editor/codemirror/registry'
 
 const MAX_VERSIONS = 10
 
@@ -80,7 +80,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   activeTocId: '' as string,
   editorRef: null,
   editorContentRef: null,
-  editor: null,
   versions: [],
   lastEditTime: Date.now(),
   showWelcome: !welcomeSeen,
@@ -184,7 +183,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   setReadFontSize: (readFontSize: number) => set({ readFontSize }),
   setEditorRef: (ref: HTMLDivElement | null) => set({ editorRef: ref }),
   setEditorContentRef: (ref: HTMLDivElement | null) => set({ editorContentRef: ref }),
-  setEditor: (editor: any) => set({ editor }),
   setLastEditTime: (time: number) => set({ lastEditTime: time }),
   setShowWelcome: (showWelcome: boolean) => {
     if (showWelcome) set({ showWelcome: true })
@@ -266,12 +264,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     delete next[id]
     const md = getDocMd(id)
     set({ docsMd: next, ...(s.activeDocId === id ? { mdContent: md } : {}) })
-    if (s.activeDocId === id) {
-      // 动态 import：store 保持同步、CM6 相关代码不进首屏关键路径
-      import('../components/editor/codemirror/registry')
-        .then(m => m.getCM6Editor()?.setText(md))
-        .catch((e) => silentError('还原出厂内容写入失败', e))
-    }
+    if (s.activeDocId === id) getCM6Editor()?.setText(md)
   },
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
     docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,

@@ -1,6 +1,7 @@
 import { mdToHtml } from './mdToHtml'
 import { silentError } from './silentError'
 import { useEditorStore } from '../store/editorStore'
+import { getCM6Editor } from '../components/editor/codemirror/registry'
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024
 const MAX_FOLDER_FILES = 100
@@ -37,7 +38,7 @@ export function openMarkdownDoc(title: string, md: string, path = ''): string {
   try {
     localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md, html, savedAt: Date.now() }))
   } catch (e) { silentError('导入文档持久化失败', e) }
-  store.editor?.commands?.setContent(html)
+  getCM6Editor()?.setText(md)
   return id
 }
 

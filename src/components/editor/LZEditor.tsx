@@ -1,34 +1,16 @@
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react'
-import { EditorContent, useEditor } from '@tiptap/react'
-import { BubbleMenu } from '@tiptap/react/menus'
-import StarterKit from '@tiptap/starter-kit'
-import TaskList from '@tiptap/extension-task-list'
-import TaskItem from '@tiptap/extension-task-item'
-import { Table } from '@tiptap/extension-table'
-import { TableCell } from '@tiptap/extension-table-cell'
-import { TableHeader } from '@tiptap/extension-table-header'
-import { TableRow } from '@tiptap/extension-table-row'
-import { SearchAndReplace } from '@memfoldai/tiptap-search-and-replace'
-import { Emoji } from '@tiptap/extension-emoji'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { SlashCommand } from './SlashCommand'
 import { README_CONTENT } from './constants'
-import { CodeHighlight } from './extensions/CodeHighlight'
-import { Superscript, Subscript } from './extensions/SupSub'
-import { Mathematics } from './extensions/Mathematics'
-import { ImageExt } from './extensions/ImageExt'
-import { StyledInsertAttributes } from './extensions/StyledInsertAttributes'
-import { HeadingAnchors } from './extensions/HeadingAnchors'
-import { CJKAutoSpace } from './extensions/CJKAutoSpace'
 import { mdToHtml } from '../../utils/mdToHtml'
-import { htmlToMarkdown } from '../../utils/htmlToMd'
-import { cleanContentHtml } from '../../utils/cleanContent'
-import { getDocMd, getDocHtml } from '../../utils/docSource'
-
+import { getDocMd } from '../../utils/docSource'
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
 import { CM6Editor } from './CM6Editor'
+import { getCM6Editor } from './codemirror/registry'
+import { setSlashHost, type SlashRange } from './codemirror/slash'
+import { setInputFormatSettings } from './codemirror/input-format'
+import { SlashCommand } from './SlashCommand'
 
 const CONTENT_WIDTH_MAP: Record<string, string> = {
   '960': '960px',
@@ -40,20 +22,15 @@ const CONTENT_WIDTH_MAP: Record<string, string> = {
 
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
-  const editorInitialized = useRef(false)
   const readTocRef = useRef<HTMLDivElement>(null)
   const codeAreaRef = useRef<HTMLTextAreaElement>(null)
-  const setWordCount = useEditorStore((s: any) => s.setWordCount)
-  const setCharCount = useEditorStore((s: any) => s.setCharCount)
-  const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
+  const remarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const slashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
   const setEditorContentRef = useEditorStore((s: any) => s.setEditorContentRef)
-  const setDocHTML = useEditorStore((s: any) => s.setDocHTML)
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
   const updateDoc = useEditorStore((s: any) => s.updateDoc)
   const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
-  const setEditor = useEditorStore((s: any) => s.setEditor)
-  const addVersion = useEditorStore((s: any) => s.addVersion)
   const activeDocId = useEditorStore((s: any) => s.activeDocId)
   const docs = useEditorStore((s: any) => s.docs)
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
@@ -62,6 +39,7 @@ export const LZEditor = () => {
   const setAppMode = useEditorStore((s: any) => s.setAppMode)
   const docHTML = useEditorStore((s: any) => s.docHTML || '')
   const wordCount = useEditorStore((s: any) => s.wordCount)
+  const panelOpen = useEditorStore((s: any) => s.panelOpen)
   const mdContent = useEditorStore((s: any) => s.docsMd?.[activeDocId] || s.mdContent || '')
   const readFontSize = useEditorStore((s) => s.readFontSize)
   const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
@@ -93,7 +71,7 @@ export const LZEditor = () => {
     const docId = activeDocId || 'readme'
     const mdFromDocsMd = docsMd?.[docId] || ''
     const mdFromSource = getDocMd(docId)
-    // docsMd 有内容时优先用 docsMd（避免对 readme 做 htmlToMarkdown 往返）
+    // docsMd 有内容时优先用 docsMd（避免对 readme 做 HTML 往返）
     const targetMd = mdFromDocsMd || mdFromSource || ''
     if (targetMd && mdContent !== targetMd) {
       setMdContent(targetMd)
@@ -148,8 +126,11 @@ export const LZEditor = () => {
     if (!codeEditMd) return []
     const lines = codeEditMd.split('\n')
     const items: { id: string; text: string; level: number; line: number }[] = []
+    let inFence = false
     lines.forEach((line: string, i: number) => {
-      const match = line.match(/^(#{1,6})\s+(.+)$/m)
+      if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; return }
+      if (inFence) return
+      const match = line.match(/^(#{1,6})\s+(.+)$/)
       if (match) {
         items.push({
           id: `code-h-${i}`,
@@ -176,105 +157,6 @@ export const LZEditor = () => {
   }, [codeEditMd])
 
   useTheme()
-
-  // Editor instance - must be declared before effects that use it
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        link: { openOnClick: false, autolink: true, HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } },
-        codeBlock: false,
-      }),
-      CodeHighlight,
-      Superscript,
-      Subscript,
-      StyledInsertAttributes,
-      HeadingAnchors,
-      CJKAutoSpace,
-      Mathematics,
-      ImageExt,
-      TaskList,
-      TaskItem,
-      Table.configure({ resizable: false }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      Emoji,
-      SearchAndReplace.configure({
-        searchResultClass: 'search-result',
-        disableRegex: false,
-      }),
-    ],
-    content: (() => {
-      const docId = activeDocId || 'readme'
-      // readme 优先用本地存好的 HTML：它能 1:1 还原用户敲进去的内容，
-      // 而 markdown 往返会丢掉居中段落和原始 HTML。
-      const localHtml = docId === 'readme' ? getDocHtml(docId) : ''
-      if (localHtml) return localHtml
-      const md = docsMd?.[docId] || getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
-      if (!md) return ''
-      return mdToHtml(md)
-    })(),
-    onCreate: ({ editor }: any) => {
-      editorInitialized.current = true
-      setEditor(editor)
-      const docId = useEditorStore.getState().activeDocId
-      if (docId) {
-        useEditorStore.getState().setLastEditTime(Date.now())
-        let html = editor.getHTML()
-        html = cleanContentHtml(html)
-        const md = htmlToMarkdown(html)
-        const text = editor.getText()
-        setDocHTML(html)
-        setMdContent(md)
-        setWordCount(text.split(/\s+/).filter(Boolean).length)
-        setCharCount(text.length)
-        takeSnapshot(editor)
-        // readme 不在 onCreate 里回写：刚加载出来的内容照原样写回去，只会把
-        // 规整的 README_CONTENT 换成一次 htmlToMarkdown 往返的结果。
-        // 用户真正编辑内容由 onUpdate 负责持久化。
-        if (docId !== 'readme') {
-          localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
-        }
-      }
-    },
-    onUpdate: ({ editor }: any) => {
-      useEditorStore.getState().setLastEditTime(Date.now())
-      const text = editor.getText()
-      const html = cleanContentHtml(editor.getHTML())
-      const docId = useEditorStore.getState().activeDocId
-      // readme 的 markdown 只是派生视图（供代码模式/导出/侧边预览用），
-      // 富文本内容以 HTML 为准，所以往返不会污染编辑器。
-      const md = htmlToMarkdown(html)
-      setWordCount(text.split(/\s+/).filter(Boolean).length)
-      setCharCount(text.length)
-      // readme 不写进 docsMd：docsMd 里的 markdown 会被当作内容来源，
-      // 一写进去，切文档再切回来就会用旧的 markdown 覆盖掉刚编辑的内容。
-      updateDoc({ html, md, docsMd: docId && docId !== 'readme' ? { [docId]: md } : undefined })
-      if (docId) {
-        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
-      }
-      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
-      snapshotTimerRef.current = setTimeout(() => takeSnapshot(editor), 1500)
-      // 保存指示器：写入完成后标记为已保存
-      useEditorStore.getState().setSyncStatus('saving')
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-      saveTimerRef.current = setTimeout(() => useEditorStore.getState().setSyncStatus('synced'), 600)
-    },
-    onSelectionUpdate: ({ editor }: any) => {
-      const pos = editor.state.selection
-      const line = editor.state.doc.nodeSize > 0
-        ? editor.view.coordsAtPos(pos.from).top
-        : 0
-      setCursorPosition({ line: Math.max(1, Math.floor(line / 22) + 1), column: pos.from })
-    },
-    editable: true,
-  })
-
-  const snapshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastDocIdRef = useRef<string | null>(null)
-  const pmDomRef = useRef<HTMLElement | null>(null)
-  const remarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
@@ -330,73 +212,23 @@ export const LZEditor = () => {
     })
   }, [defaultFontSize, lineHeight, editorFont, contentWidth, textIndent, textJustify, headingStyles])
 
-  // ── Typewriter mode: keep cursor vertically centered ──
-  const typewriterMode = useSettingsStore((s) => s.typewriterMode)
-  useEffect(() => {
-    if (!typewriterMode || !editor) return
-    const onCursor = () => {
-      try {
-        const view = editor.view
-        if (!view || !view.dom) return
-        const { from } = view.state.selection
-        const coords = view.coordsAtPos(from)
-        const dom = view.dom as HTMLElement
-        const rect = dom.getBoundingClientRect()
-        if (coords.top !== undefined) {
-          const offset = coords.top - rect.top - rect.height / 2
-          dom.scrollTop += offset
-        }
-      } catch {}
-    }
-    editor.on('selectionUpdate', onCursor)
-    return () => { editor.off('selectionUpdate', onCursor) }
-  }, [editor, typewriterMode])
-
-  // ── Focus mode: dim non-active paragraphs ──
-  const focusMode = useSettingsStore((s) => s.focusMode)
-  const focusModeRef = useRef(focusMode)
-  focusModeRef.current = focusMode
-
+  // ── Strip read-frog extension injected nodes from the editor DOM ──
   useEffect(() => {
     const el = editorRef.current
     if (!el) return
-    const pm = el.querySelector('.ProseMirror') as HTMLElement | null
-    if (!pm) return
-    const applyFocus = () => {
-      if (!pm || !focusModeRef.current) return
-      const children = pm.children
-      for (let i = 0; i < children.length; i++) {
-        const node = children[i]
-        if (!(node instanceof HTMLElement)) continue
-        const rect = node.getBoundingClientRect()
-        const pmRect = pm.getBoundingClientRect()
-        const isVisible = rect.bottom > pmRect.top + 20 && rect.top < pmRect.bottom - 20
-        node.style.opacity = isVisible ? '' : '0.25'
-      }
-    }
-    editor!.on('update', applyFocus)
-    applyFocus()
-    return () => { editor!.off('update', applyFocus) }
-  }, [editor])
-
-  // ── Strip read-frog extension injected nodes from ProseMirror DOM ──
-  useEffect(() => {
-    const el = editorRef.current
-    if (!el) return
-    const pm = el.querySelector('.ProseMirror') as HTMLElement | null
-    if (!pm) return
     const observer = new MutationObserver(mutations => {
       for (const m of mutations) {
         for (const node of m.addedNodes) {
           if (!(node instanceof HTMLElement)) continue
-          if (node.dataset.readFrogWalked || node.className?.includes('read-frog') || node.className?.includes('notranslate')) {
+          if (node.dataset.readFrogWalked || /read-frog/.test(node.className) || /notranslate/.test(node.className)) {
             node.remove()
+            continue
           }
           node.querySelectorAll('[data-read-frog-], .read-frog-translated-content-wrapper, .read-frog-translated-inline-content, span.notranslate[data-translate-ignore]').forEach((n: any) => n.remove())
         }
       }
     })
-    observer.observe(pm, { childList: true, subtree: true })
+    observer.observe(el, { childList: true, subtree: true })
     return () => observer.disconnect()
   }, [])
 
@@ -410,39 +242,37 @@ export const LZEditor = () => {
     inner.setAttribute('data-md-markers', showMarkdownMarkers ? 'inline' : 'none')
   }, [showMarkdownMarkers])
 
-  // ── Spell check ──
-  const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck)
-  const spellCheckLang = useSettingsStore((s) => s.spellCheckLang)
-  useEffect(() => {
-    const pm = editorRef.current?.querySelector('.ProseMirror') as HTMLElement | null
-    if (!pm) return
-    pm.setAttribute('spellcheck', enableSpellCheck ? 'true' : 'false')
-    if (spellCheckLang) pm.setAttribute('lang', spellCheckLang)
-  }, [enableSpellCheck, spellCheckLang])
-
-  // ── CodeMirror 6 settings ──
-  const useCM6 = useSettingsStore((s) => s.useCM6Editor)
-  const allowMarkdownSymbols = useSettingsStore((s) => s.allowMarkdownSymbols)
+  // 弹出面板打开时别让编辑器抢走焦点
   useEffect(() => {
     const el = editorRef.current
-    if (!el) return
-    const SYMBOL_MAP: Record<string, () => any> = {
-      '*': () => editor.chain().focus().toggleBold().run(),
-      '_': () => editor.chain().focus().toggleItalic().run(),
-      '~': () => editor.chain().focus().toggleStrike().run(),
-      '=': () => editor.chain().focus().toggleMark('highlight').run(),
-    }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (!allowMarkdownSymbols || !editor || !editor.state) return
-      const sel = editor.state.selection
-      if (!sel || sel.empty) return
-      if (!SYMBOL_MAP[e.key]) return
+    if (!el || !panelOpen) return
+    const onMouseDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('.cm-content')) return
+      if (target.closest('.unified-dialog') || target.closest('.ai-panel')) return
       e.preventDefault()
-      SYMBOL_MAP[e.key]()
     }
-    el.addEventListener('keydown', onKeyDown)
-    return () => el.removeEventListener('keydown', onKeyDown)
-  }, [editor, allowMarkdownSymbols])
+    el.addEventListener('mousedown', onMouseDown)
+    return () => el.removeEventListener('mousedown', onMouseDown)
+  }, [panelOpen])
+
+  // ── 输入变换：把设置面板的开关真正落到 CM6 的 keydown / update 逻辑上 ──
+  const allowMarkdownSymbols = useSettingsStore((s) => s.allowMarkdownSymbols)
+  const smartQuotes = useSettingsStore((s) => s.smartQuotes)
+  const autoSpaceCJK = useSettingsStore((s) => s.autoSpaceCJK)
+  const cornerQuotes = useSettingsStore((s) => s.cornerQuotes)
+  const fullwidthSymbols = useSettingsStore((s) => s.fullwidthSymbols)
+  const autoPair = useSettingsStore((s) => s.autoPair)
+  useEffect(() => {
+    setInputFormatSettings({
+      allowMarkdownSymbols,
+      smartQuotes,
+      autoSpaceCJK,
+      cornerQuotes,
+      fullwidthSymbols,
+      autoSpaceQuotes: autoPair,
+    })
+  }, [allowMarkdownSymbols, smartQuotes, autoSpaceCJK, cornerQuotes, fullwidthSymbols, autoPair])
 
   // Initialize docsMd: merge missing docs from localStorage (never overwrite existing)
   React.useEffect(() => {
@@ -452,38 +282,6 @@ export const LZEditor = () => {
     })
     if (Object.keys(init).length > 0) setDocsMd(init)
   }, [docs])
-
-  const takeSnapshot = React.useCallback((editor: any) => {
-    const html = editor.getHTML()
-    const text = editor.getText()
-    const now = new Date()
-    const pad = (n: number) => String(n).padStart(2, '0')
-    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`
-    const date = `${pad(now.getFullYear())}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-    addVersion({
-      id: String(Date.now()),
-      time,
-      date,
-      desc: text.trim().slice(0, 24) || '空文档',
-      changes: text.length,
-      html,
-      md: htmlToMarkdown(html),
-    })
-  }, [addVersion])
-
-  // Switch editor content when active doc changes
-  useEffect(() => {
-    if (!editor || !activeDocId) return
-    if (activeDocId === lastDocIdRef.current) return
-    lastDocIdRef.current = activeDocId
-    // readme 同样优先用本地 HTML，和上面的初始加载保持一致
-    const localHtml = activeDocId === 'readme' ? getDocHtml(activeDocId) : ''
-    const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'readme' ? README_CONTENT : '')
-    const html = localHtml || (md ? mdToHtml(md) : '')
-    // docsMd 每次编辑都会变，内容相同就不要重设，否则光标被重置
-    if (editor.getHTML() === html) return
-    editor.commands.setContent(html)
-  }, [activeDocId, editor, docsMd])
 
   // Sync mdContent when entering code mode
   useEffect(() => {
@@ -495,22 +293,10 @@ export const LZEditor = () => {
     if (targetMd && mdContent !== targetMd) setMdContent(targetMd)
   }, [codeMode, activeDocId, docsMd])
 
-  useEffect(() => {
-    return () => {
-      if (!editorInitialized.current) return
-      editorInitialized.current = false
-      if (snapshotTimerRef.current) clearTimeout(snapshotTimerRef.current)
-      if (remarkTimerRef.current) clearTimeout(remarkTimerRef.current)
-      setEditor(null)
-      editor?.destroy()
-    }
-  }, [editor])
-
   // ── Slash command palette ──
   const [slashVisible, setSlashVisible] = useState(false)
-  const [slashPosition, setSlashPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const [slashPosition, setSlashPosition] = useState({ x: 0, y: 0 })
   const [slashFilter, setSlashFilter] = useState('')
-  const slashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const hideSlash = useCallback(() => {
     if (slashTimerRef.current) clearTimeout(slashTimerRef.current)
@@ -518,44 +304,21 @@ export const LZEditor = () => {
   }, [])
 
   useEffect(() => {
-    try {
-      if (editor?.view?.dom) pmDomRef.current = editor.view.dom as HTMLElement
-    } catch {}
-  }, [editor])
-
-  const slashFilterRef = useRef('')
-  useEffect(() => { slashFilterRef.current = '' }, [slashVisible])
-
-  useEffect(() => {
-    const pm = pmDomRef.current
-    if (!pm) return
-    const onInput = (e: Event) => {
-      const raw = (e as InputEvent)
-      if (raw.inputType === 'insertText' && raw.data === '/') {
-        e.preventDefault()
-        const sel = editor?.state?.selection
-        if (!sel) return
-        const coords = editor.view.coordsAtPos(sel.from)
-        setSlashPosition({ x: coords.right + 4, y: coords.top - 4 })
-        slashFilterRef.current = ''
-        setSlashFilter('')
+    setSlashHost({
+      open: (view, range: SlashRange) => {
+        try {
+          const coords = view.coordsAtPos(view.state.selection.main.from)
+          if (coords && coords.right !== undefined) {
+            setSlashPosition({ x: coords.right + 2, y: coords.top - 2 })
+          }
+        } catch {}
+        setSlashFilter(range.filter)
         setSlashVisible(true)
-        return
-      }
-      if (!slashVisible) return
-      const sel = editor?.state?.selection
-      if (!sel) return
-      const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 20), sel.from, '')
-      const match = textBefore.match(/\/([^\s]*)$/)
-      slashFilterRef.current = match ? match[1] : ''
-      if (match) setSlashFilter(match[1])
-      else hideSlash()
-    }
-    pm.addEventListener('input', onInput)
-    return () => { pm.removeEventListener('input', onInput) }
-  }, [editor])
-
-  const panelOpen = useEditorStore((s) => s.panelOpen)
+      },
+      close: hideSlash,
+    })
+    return () => setSlashHost(null)
+  }, [hideSlash])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -567,197 +330,28 @@ export const LZEditor = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [hideSlash])
 
-  // Block ProseMirror from re-acquiring focus while a panel is open
-  useEffect(() => {
-    const pm = editorRef.current?.querySelector('.ProseMirror') as HTMLElement | null
-    if (!pm) return
-    const onFocus = (e: FocusEvent) => {
-      if (panelOpen) e.preventDefault()
-    }
-    const onMouseDown = (e: MouseEvent) => {
-      if (panelOpen) {
-        const target = e.target as HTMLElement
-        if (target.closest('.unified-dialog') || target.closest('.ai-panel')) return
-        e.preventDefault()
-      }
-    }
-    pm.addEventListener('focus', onFocus, true)
-    pm.addEventListener('mousedown', onMouseDown)
-    return () => {
-      pm.removeEventListener('focus', onFocus, true)
-      pm.removeEventListener('mousedown', onMouseDown)
-    }
-  }, [panelOpen])
-
-  const autoCompleteEnabled = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
-  const smartQuotesEnabled = useSettingsStore((s) => s.smartQuotes)
-  const autoSpaceCJKEnabled = useSettingsStore((s) => s.autoSpaceCJK)
-  const cornerQuotesEnabled = useSettingsStore((s) => s.cornerQuotes)
-  const fullwidthSymbolsEnabled = useSettingsStore((s) => s.fullwidthSymbols)
-
-  useEffect(() => {
-    const el = editorRef.current
-    if (!el || !editor) return
-    const handleInput = (e: Event) => {
-      if (!autoCompleteEnabled && !smartQuotesEnabled && !autoSpaceCJKEnabled && !cornerQuotesEnabled && !fullwidthSymbolsEnabled) return
-      const sel = editor.state.selection
-      if (!sel) return
-      const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 4), sel.from, '')
-      const ch = textBefore.slice(-1)
-      if (autoCompleteEnabled) {
-        const pairMap: Record<string, string> = {
-          '(': ')', '[': ']', '{': '}', '〈': '〉', '《': '》', '「': '」',
-          '<': '>', '\u201c': '\u201d', '\u2018': '\u2019',
-        }
-        if (pairMap[ch]) {
-          e.preventDefault()
-          editor.commands.insertContent(pairMap[ch])
-          const newPos = sel.from + 1
-          editor.commands.setTextSelection({ from: newPos, to: newPos })
-          return
-        }
-      }
-      if (smartQuotesEnabled) {
-        const lastTwo = textBefore.slice(-2)
-        if (lastTwo === '""' || lastTwo === "''") {
-          e.preventDefault()
-          editor.commands.insertContent('\u201d')
-          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
-          return
-        }
-      }
-      if (cornerQuotesEnabled) {
-        const afterSel = editor.state.doc.textBetween(sel.to, sel.to + 4, '')
-        if (ch === '"' && afterSel.startsWith('"')) {
-          e.preventDefault()
-          editor.commands.insertContent('「」')
-          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
-          return
-        }
-        if (ch === "'" && afterSel.startsWith("'")) {
-          e.preventDefault()
-          editor.commands.insertContent('『』')
-          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
-          return
-        }
-      }
-      if (fullwidthSymbolsEnabled) {
-        const fullwidthMap: Record<string, string> = { ',': '，', ';': '；' }
-        if (fullwidthMap[ch]) {
-          e.preventDefault()
-          editor.commands.insertContent(fullwidthMap[ch])
-          editor.commands.setTextSelection({ from: sel.from + 1, to: sel.from + 1 })
-          return
-        }
-      }
-    }
-    el.addEventListener('input', handleInput as EventListener)
-    return () => el.removeEventListener('input', handleInput as EventListener)
-  }, [editor, autoCompleteEnabled, smartQuotesEnabled, autoSpaceCJKEnabled, cornerQuotesEnabled, fullwidthSymbolsEnabled, useCM6])
-
-  // Line numbers
-  const showLineNumbers = useSettingsStore((s) => s.showLineNumbers)
-  const [lineCount, setLineCount] = React.useState(1)
-
-  React.useEffect(() => {
-    if (!editor) return
-    let alive = true
-    const updateLines = () => {
-      try {
-        if (!alive || !editor || !editor.state || !editor.state.doc) return
-        const text = editor.getText()
-        setLineCount(text.split('\n').length)
-      } catch {}
-    }
-    updateLines()
-    editor.on('update', updateLines)
-    return () => { alive = false; editor.off('update', updateLines) }
-  }, [editor])
-
   const handleCodeModeChange = useCallback((value: string) => {
     if (remarkTimerRef.current) clearTimeout(remarkTimerRef.current)
     remarkTimerRef.current = setTimeout(() => {
-      setMdContent(value)
       const docId = useEditorStore.getState().activeDocId
-      try {
-        const html = mdToHtml(value || '')
-        // readme 的 markdown 只作为派生视图，不进 docsMd（见 onUpdate 的说明）
-        updateDoc({ md: value, html, docsMd: docId && docId !== 'readme' ? { [docId]: value } : undefined })
-        if (docId) {
-          localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
-        }
-        editor?.commands.setContent(html, { emitUpdate: false })
-      } catch {
-        if (docId) setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
+      let html = ''
+      try { html = mdToHtml(value || '') } catch { html = '' }
+      setMdContent(value)
+      // readme 的 markdown 只作为派生视图，不进 docsMd（避免被当成内容来源）
+      updateDoc({ md: value, html, docsMd: docId && docId !== 'readme' ? { [docId]: value } : undefined })
+      if (docId) {
+        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
+      }
+      // 代码模式写的是同一个文档，同步进 CM6 让编辑模式的下次打开是最新内容
+      getCM6Editor()?.setText(value)
+      if (!html && docId) {
+        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
       }
     }, 150)
-  }, [editor, updateDoc, setMdContent, setDocsMd])
-
-  // Attach paste/drop listeners to the container div (editorRef) instead of editor.view.dom
-  useEffect(() => {
-    const el = editorRef.current
-    if (!el) return
-    const onPaste = (e: ClipboardEvent) => {
-      const items = e.clipboardData?.items
-      if (!items) return
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.startsWith('image/')) {
-          e.preventDefault()
-          const file = items[i].getAsFile()
-          if (file && editor) {
-            const reader = new FileReader()
-            reader.onload = (ev) => {
-              editor.commands.insertContent({
-                type: 'image',
-                attrs: { src: ev.target?.result as string, alt: file.name },
-              })
-            }
-            reader.readAsDataURL(file)
-          }
-        }
-      }
-    }
-    const onDrop = (e: DragEvent) => {
-      const files = e.dataTransfer?.files
-      if (!files) return
-      Array.from(files).forEach(file => {
-        if (file.type.startsWith('image/') && editor) {
-          const reader = new FileReader()
-          reader.onload = (ev) => {
-            editor.commands.insertContent({
-              type: 'image',
-              attrs: { src: ev.target?.result as string, alt: file.name },
-            })
-          }
-          reader.readAsDataURL(file)
-        }
-      })
-    }
-    el.addEventListener('paste', onPaste)
-    el.addEventListener('drop', onDrop)
-    return () => {
-      el.removeEventListener('paste', onPaste)
-      el.removeEventListener('drop', onDrop)
-    }
-  }, [editor, editorRef])
-
-  // 行号块只在行数变化时重建；LZEditor 每次击键都会重渲染，
-  // 但 200 行 span 的 JSX 构建不该跟着每次都跑一遍
-  const lineNumbersEl = useMemo(
-    () =>
-      showLineNumbers ? (
-        <div className="lz-line-numbers">
-          {Array.from({ length: lineCount }, (_, i) => (
-            <span key={i + 1} className="lz-line-number">{i + 1}</span>
-          ))}
-        </div>
-      ) : null,
-    [showLineNumbers, lineCount]
-  )
+  }, [updateDoc, setMdContent, setDocsMd])
 
   return (
-    <div className={`lz-editor${showLineNumbers ? ' has-line-numbers' : ''}`} ref={editorRef}>
-      {!useCM6 && lineNumbersEl}
+    <div className="lz-editor" ref={editorRef}>
       <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}${appMode === 'read' ? ' lz-editor-content--read' : ''}`}>
         {appMode === 'read' && (
           <div className="read-mode-inline">
@@ -932,38 +526,20 @@ export const LZEditor = () => {
           {/* CM6 保持挂载：切到阅读/代码/历史模式时只用 display:none 隐藏。
               卸载后 getCM6Editor() 返回 null，工具栏与搜索命令会全部失效。 */}
           <div style={{ display: cm6Visible ? 'block' : 'none', height: '100%' }}>
-            {useCM6 && (
-              <CM6Editor
-                docId={activeDocId || 'readme'}
-                initialContent={mdContent}
-              />
-            )}
+            <CM6Editor
+              docId={activeDocId || 'readme'}
+              initialContent={mdContent}
+            />
           </div>
-          {cm6Visible && !useCM6 && (
-            <>
-              <EditorContent editor={editor} />
-              {editor && (
-                <BubbleMenu editor={editor}>
-                  <button className="format-chip" onClick={() => editor.chain().focus().toggleBold().run()} title="粗体"><span className="remix ri-bold"></span></button>
-                  <button className="format-chip" onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体"><span className="remix ri-italic"></span></button>
-                  <button className="format-chip" onClick={() => editor.chain().focus().toggleStrike().run()} title="删除线"><span className="remix ri-strikethrough"></span></button>
-                  <button className="format-chip" onClick={() => editor.chain().focus().toggleUnderline().run()} title="下划线"><span className="remix ri-underline"></span></button>
-                  <button className="format-chip" onClick={() => editor.chain().focus().toggleHighlight().run()} title="高亮"><span className="remix ri-highlight"></span></button>
-                </BubbleMenu>
-              )}
-            </>
-          )}
         </div>
       </div>
-      {!useCM6 && (
-        <SlashCommand
-          position={slashPosition}
-          visible={slashVisible}
-          filter={slashFilter}
-          onClose={hideSlash}
-          editor={editor}
-        />
-      )}
+      <SlashCommand
+        position={slashPosition}
+        visible={slashVisible}
+        filter={slashFilter}
+        onClose={hideSlash}
+        cm={slashVisible ? getCM6Editor() : null}
+      />
     </div>
   )
 }

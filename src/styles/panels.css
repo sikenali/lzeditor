@@ -3331,20 +3331,6 @@
   outline: 1px solid var(--accent-primary);
 }
 
-/* ── Emoji in editor ── */
-.ProseMirror [data-type="emoji"] {
-  display: inline-block;
-  font-size: 18px;
-  line-height: 1;
-  vertical-align: -0.15em;
-}
-.ProseMirror [data-type="emoji"] img {
-  width: 18px;
-  height: 18px;
-  vertical-align: -0.15em;
-  display: block;
-}
-
 /* ── History Main Panel (full-height, like StyleMainPanel) ── */
 .history-main-panel {
   flex: 1; min-height: 0;

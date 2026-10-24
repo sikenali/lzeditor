@@ -64,7 +64,7 @@ export const AIPanel: React.FC = () => {
     const stored = state.panelPosition
     if (stored) return stored
 
-    const editorEl = editorRef?.querySelector?.('.ProseMirror') as HTMLElement | null
+    const editorEl = editorRef?.querySelector?.('.cm-editor') as HTMLElement | null
     if (!editorEl) return { x: 8, y: 120 }
 
     const editorRect = editorEl.getBoundingClientRect()

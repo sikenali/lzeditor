@@ -35,27 +35,6 @@ import { WelcomeScreen } from './components/layout/WelcomeScreen'
 import { pickFolderFiles, importFolderFiles } from './utils/docImport'
 import { silentError } from './utils/silentError'
 
-const escapeTableText = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-const buildTableHtml = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
-  const trs: string[] = []
-  for (let r = 0; r < rows; r++) {
-    const isHeader = withHeaderRow && r === 0
-    const tds: string[] = []
-    for (let c = 0; c < cols; c++) {
-      const text = (data?.[r]?.[c] || '').trim()
-      const inner = text
-        ? `<p>${escapeTableText(text).replace(/\n/g, '<br>')}</p>`
-        : '<p></p>'
-      const tag = isHeader ? 'th' : 'td'
-      tds.push(`<${tag}>${inner}</${tag}>`)
-    }
-    trs.push(`<tr>${tds.join('')}</tr>`)
-  }
-  return `<table><tbody>${trs.join('')}</tbody></table>`
-}
-
 /** CM6 走 markdown 源码：把行列规格拼成 markdown 表格 */
 const buildTableMd = (rows: number, cols: number, data?: string[][]) => {
   const r = Math.max(1, Math.min(rows, 50))
@@ -89,7 +68,6 @@ function App() {
   const showPreview = useEditorStore(s => s.showPreview)
   const showLibrary = useEditorStore(s => s.showLibrary)
   const showRightPanel = useEditorStore(s => s.showRightPanel)
-  const editor = useEditorStore(s => s.editor)
   const showWelcome = useEditorStore(s => s.showWelcome)
   const navMode = useSettingsStore(s => s.navMode || 'top')
   const showSearch = useEditorStore(s => s.showSearch)
@@ -97,10 +75,12 @@ function App() {
   // 面板打开时让编辑器失去焦点
   useEffect(() => {
     const hasPanel = openPanel !== 'none' || insertPanel !== 'none' || showSearch
-    if (hasPanel && editor) {
-      try { editor.commands.blur() } catch {}
-    }
-  }, [openPanel, insertPanel, showSearch, editor])
+    if (!hasPanel) return
+    try {
+      const content = getCM6Editor()?.view.contentDOM as HTMLElement | null
+      content?.blur()
+    } catch {}
+  }, [openPanel, insertPanel, showSearch])
 
   const closePanel = () => useEditorStore.getState().setOpenPanel('none')
   const closeInsert = () => useEditorStore.getState().setInsertPanel('none')
@@ -168,7 +148,7 @@ function App() {
   // 全局快捷键（与「快捷键设置」页列出的组合一致）
   useEffect(() => {
     const mod = (e: KeyboardEvent) => e.ctrlKey || e.metaKey
-    const ed = () => useEditorStore.getState().editor
+    const ed = () => getCM6Editor()
 
     const toggleAI = () => {
       const s = useAIStore.getState()
@@ -181,8 +161,8 @@ function App() {
       const es = useEditorStore.getState()
       const key = e.key.toLowerCase()
 
-      // 标题 Ctrl+Alt+1..6 由 TipTap 的 Heading 扩展自带 Mod-Alt-N 绑定处理；
-      // 这里再调一次会变成「开→关」双重触发，等于什么都没发生，所以不再重复绑定。
+      // 标题 Ctrl+Alt+1..6 由 CM6 的 markdown keymap 绑定；这里重复调用会变成
+      // 「开→关」双重触发，等于什么都没发生，所以不再重复绑定。
 
       if (key === 'n') {
         e.preventDefault(); dismissWelcome(); es.createDoc('untitled.md')
@@ -209,19 +189,15 @@ function App() {
       } else if (e.key === '/') {
         e.preventDefault(); toggleAI()
       } else if (e.altKey && key === 'c') {
-        e.preventDefault(); ed()?.chain?.().focus().toggleCodeBlock().run()
+        e.preventDefault(); ed()?.run('code-block')
       } else if (key === '8' && e.shiftKey) {
-        e.preventDefault(); ed()?.chain?.().focus().toggleBulletList().run()
+        e.preventDefault(); ed()?.run('bullet-list')
       } else if (key === '7' && e.shiftKey) {
-        e.preventDefault(); ed()?.chain?.().focus().toggleOrderedList().run()
+        e.preventDefault(); ed()?.run('numbered-list')
       } else if (key === '9' && e.shiftKey) {
-        e.preventDefault(); ed()?.chain?.().focus().toggleTaskList().run()
+        e.preventDefault(); ed()?.run('task-list')
       } else if (key === 'b' && e.shiftKey) {
-        e.preventDefault(); ed()?.chain?.().focus().toggleBlockquote().run()
-      } else if (e.key === 'Enter') {
-        // TipTap v3 把 hardBreak 命令改名为 setHardBreak；旧名调用会直接抛错
-        e.preventDefault()
-        ed()?.chain?.().focus().setHardBreak?.().run()
+        e.preventDefault(); ed()?.run('quote')
       }
     }
 
@@ -252,7 +228,7 @@ function App() {
         const html = mdToHtml(res.text)
         es.updateDoc({ md: res.text, html, docsMd: { [id]: res.text } })
         try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md: res.text, html, savedAt: Date.now() })) } catch {}
-        es.editor?.commands?.setContent(html)
+        getCM6Editor()?.setText(res.text)
       } catch (e) { silentError('导入文件写入编辑器失败', e) }
     }
     api.onMenuOpenFile?.(onLocalFile)
@@ -306,18 +282,14 @@ function App() {
     setSearchPanelAnimating(null)
     prevShowSearch.current = showSearch
   }, [showSearch])
-  const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
-    const cm = getCM6Editor()
-    // CM6 是 markdown 源码，图片对齐暂不支持（阶段 1 的 live-preview 阶段补齐）
-    if (cm) { cm.insertText(`\n\n![${alt}](${url})\n\n`); closeInsert(); return }
-    if (!editor) return
-    editor.chain().focus().insertImage({ src: url, alt, align }).run()
-    closeInsert()
+  // CM6 是 markdown 源码，图片对齐暂不支持
+  const insertImage = (url: string, alt: string, _align?: 'top' | 'left' | 'right') => {
+    insertMarkdown(`\n\n![${alt}](${url})\n\n`)
   }
-  const uploadImage = (file: File, align?: 'top' | 'left' | 'right') => {
-    if (!editor && !getCM6Editor()) return
+  const uploadImage = (file: File, _align?: 'top' | 'left' | 'right') => {
+    if (!getCM6Editor()) return
     const reader = new FileReader()
-    reader.onload = (ev) => insertImage(ev.target?.result as string, file.name, align)
+    reader.onload = (ev) => insertImage(ev.target?.result as string, file.name)
     reader.readAsDataURL(file)
     closeInsert()
   }
@@ -340,15 +312,7 @@ function App() {
     closeInsert()
   }
   const insertCode = (code: string, lang: string) => {
-    const cm = getCM6Editor()
-    if (cm) { cm.insertText(`\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`); closeInsert(); return }
-    if (!editor) return
-    // 以 JSON 节点插入代码块，字符串会被当成 HTML 解析
-    editor.commands.insertContent({
-      type: 'codeBlock',
-      attrs: { language: lang },
-      content: [{ type: 'text', text: code }],
-    })
+    getCM6Editor()?.insertText(`\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`)
     closeInsert()
   }
   const insertLink = (text: string, url: string, _newTab?: boolean) => {
@@ -357,49 +321,23 @@ function App() {
       const label = (text.trim() || url).replace(/\s+/g, ' ')
       cm.insertText(`[${label}](${url})`)
       closeInsert()
-      return
     }
-    if (!editor) return
-    const linkContent = {
-      type: 'link',
-      attrs: { href: url }
-    }
-    if (text.trim() && text !== url) {
-      editor.chain().focus().setTextSelection({ from: editor.state.selection.from, to: editor.state.selection.to }).insertContent(text).run()
-      editor.chain().focus().setLink(linkContent).run()
-    } else {
-      editor.chain().focus().extendMarkRange('link').insertContent(linkContent).run()
-    }
-    closeInsert()
   }
   const insertFormula = (formula: string) => {
-    const cm = getCM6Editor()
-    if (cm) { cm.insertText(`$$${formula}$$`); closeInsert(); return }
-    if (!editor) return
-    editor.chain().focus().insertMath(formula).run()
+    getCM6Editor()?.insertText(`$$${formula}$$`)
     closeInsert()
   }
   const insertChart = (src: string, alt: string, _type: string) => {
-    const cm = getCM6Editor()
-    if (cm) { cm.insertText(`\n\n![${alt}](${src})\n\n`); closeInsert(); return }
-    if (!editor) return
-    // 必须以 JSON 节点插入，字符串会被当成 HTML 解析而无法渲染成图片
-    editor.commands.insertContent({ type: 'image', attrs: { src, alt } })
+    getCM6Editor()?.insertText(`\n\n![${alt}](${src})\n\n`)
     closeInsert()
   }
   const insertEmoji = (text: string) => {
-    const cm = getCM6Editor()
-    if (cm) { cm.insertText(text); closeInsert(); return }
-    if (!editor) return
-    editor.chain().focus().insertContent(text).run()
+    getCM6Editor()?.insertText(text)
     closeInsert()
   }
   const insertTable = (rows: number, cols: number, data?: string[][], _withHeaderRow = true) => {
     if (rows <= 0 || cols <= 0) return
-    const cm = getCM6Editor()
-    if (cm) { cm.insertText(`\n\n${buildTableMd(rows, cols, data)}\n\n`); closeInsert(); return }
-    if (!editor) return
-    editor.chain().focus().insertContent(buildTableHtml(rows, cols, data, _withHeaderRow)).run()
+    getCM6Editor()?.insertText(`\n\n${buildTableMd(rows, cols, data)}\n\n`)
     closeInsert()
   }
 

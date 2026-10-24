@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { openMarkdownDoc } from '../../utils/docImport'
 import { UiModal, UDSection } from '../ui'
 import { LibraryTree, buildTree } from './LibraryTree'
 import { ImportButtons, CATEGORIES } from './ImportButtons'
@@ -8,7 +9,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
   const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
   const docs = useEditorStore((s) => s.docs)
-  const createDoc = useEditorStore((s) => s.createDoc)
   const docLibraries = useEditorStore((s: any) => s.docLibraries)
   const activeLibraryId = useEditorStore((s: any) => s.activeLibraryId)
   const createLibrary = useEditorStore((s: any) => s.createLibrary)
@@ -79,9 +79,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
-          const editor = useEditorStore.getState().editor
-          if (editor) editor.chain().focus().setContent(text).run()
+          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''))
         }
         reader.readAsText(file)
       })
@@ -101,9 +99,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
-          const editor = useEditorStore.getState().editor
-          if (editor) editor.chain().focus().setContent(text).run()
+          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''))
         }
         reader.readAsText(file)
       })
@@ -123,9 +119,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          createDoc(file.name, file.name.replace(/\.\w+$/, ''), activeLibraryId)
-          const editor = useEditorStore.getState().editor
-          if (editor) editor.chain().focus().setContent(text).run()
+          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''))
         }
         reader.readAsText(file)
       })

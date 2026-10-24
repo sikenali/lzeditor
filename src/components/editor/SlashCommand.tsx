@@ -1,12 +1,16 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import type { EditorView } from '@codemirror/view'
 import { useEditorStore } from '../../store/editorStore'
+import { runFormatCommand, type FormatCommand } from './codemirror/commands'
+import { slashRange } from './codemirror/slash'
 
 export interface SlashCommandItem {
   id: string
   icon: string
   label: string
   keywords?: string
-  action?: string
+  /** 直接插入的 markdown 文本；有它就当片段处理，不走格式命令 */
+  body?: string
   dialog?: boolean
 }
 
@@ -26,6 +30,10 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   { id: 'ul',         icon: 'ri-list-unordered',label: '无序列表', keywords: '无序列表 bullet' },
   { id: 'task',       icon: 'ri-task-line',    label: '任务列表',  keywords: '任务列表 todo' },
   { id: 'quote',      icon: 'ri-double-quotes-l', label: '引用',    keywords: '引用 quote' },
+  // 片段
+  { id: 'code-inline', icon: 'ri-code-line',   label: '行内代码',  keywords: '代码 code inline', body: '`code`' },
+  { id: 'math-inline', icon: 'ri-square-root-2-line', label: '行内公式', keywords: '公式 math inline', body: '$E = mc^2$' },
+  { id: 'mermaid',     icon: 'ri-git-branch-line', label: 'Mermaid 图表', keywords: '图表 mermaid diagram', body: '```mermaid\nflowchart LR\n  A --> B\n```\n' },
   // 插入
   { id: 'link',       icon: 'ri-link',        label: '链接',       keywords: '链接 link url', dialog: true },
   { id: 'image',      icon: 'ri-image-line',  label: '图片',       keywords: '图片 image photo', dialog: true },
@@ -39,47 +47,75 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   { id: 'footnote',   icon: 'ri-footprint-line', label: '脚注',    keywords: '脚注 footnote' },
 ]
 
-const escapeHtml = (v: string) =>
-  v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-
 interface SlashCommandProps {
   position: { x: number; y: number }
   visible: boolean
   filter: string
   onClose: () => void
-  editor?: any
+  /** CodeMirror 6 实例，命令直接 dispatch 到它的 view */
+  cm?: { view: EditorView } | null
 }
 
 const COLS = 3
 const PANEL_W = 272
 
-export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, filter, onClose, editor }) => {
+const COMMAND_MAP: Record<string, FormatCommand> = {
+  bold: 'bold',
+  italic: 'italic',
+  underline: 'underline',
+  strike: 'strikethrough',
+  highlight: 'highlight',
+  h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
+  ol: 'numbered-list',
+  ul: 'bullet-list',
+  task: 'task-list',
+  quote: 'quote',
+  hr: 'rule',
+  toc: 'toc',
+  footnote: 'footnote',
+}
+
+const PANEL_MAP: Record<string, string> = {
+  link: 'link',
+  image: 'image',
+  emoji: 'emoji',
+  code: 'code',
+  math: 'formula',
+  table: 'table',
+  chart: 'chart',
+}
+
+/** 把过滤词在标签里高亮出来。正则从字面量构造，字面量里的特殊字符要先转义。 */
+function highlight(label: string, filter: string): React.ReactNode[] {
+  if (!filter) return [label]
+  const escaped = filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return label.split(new RegExp(`(${escaped})`, 'gi')).map((part, j) =>
+    part.toLowerCase() === filter.toLowerCase()
+      ? <mark key={j} className="slash-highlight">{part}</mark>
+      : part
+  )
+}
+
+export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, filter, onClose, cm }) => {
   const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  const cmRef = useRef(cm)
+  cmRef.current = cm
 
-  // 定位：找到 "/" 字符位置，面板紧贴其右侧
+  // 定位：面板贴在光标（"/" + 过滤词）右侧
   const effectivePosition = useMemo(() => {
-    if (!editor) return position
+    const view = cm?.view
+    if (!view) return position
     try {
-      const sel = editor.state.selection
-      if (!sel) return position
-      const textBefore = editor.state.doc.textBetween(Math.max(0, sel.from - 60), sel.from, '')
-      const match = textBefore.match(/\/([^\s]*)$/)
-      if (!match) return position
-      const slashDocPos = sel.from - match[0].length  // "/" 在文档中的位置
-      const afterSlashDocPos = slashDocPos + 1        // "/" 后面一个位置
-      const coords = editor.view.coordsAtPos(afterSlashDocPos)
-      if (!coords?.right) return position
-      // 面板左边 = "/" 右边，如果有滤镜文本则继续右移
-      const charW = 7.5  // 平均字符宽度
-      const extraX = match[1].length * charW
-      return { x: coords.right + 2 + extraX, y: coords.top - 2 }
+      const { from } = view.state.selection.main
+      const coords = view.coordsAtPos(from)
+      if (!coords || coords.right === undefined) return position
+      return { x: coords.right + 2, y: coords.top - 2 }
     } catch { return position }
-  }, [editor, filter, position])
+  }, [cm, filter, position])
 
-  // 过滤
   const filtered = useMemo(() => {
     if (!filter) return SLASH_COMMANDS
     const q = filter.toLowerCase()
@@ -100,86 +136,47 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
     node?.scrollIntoView({ block: 'nearest' })
   }, [selectedIndex])
 
-  // 删除 "/" 和滤镜文本
+  // 删除 "/" 和过滤词
   const removeSlashQuery = useCallback(() => {
-    if (!editor) return
-    const from = editor.state.selection.from
-    const textBefore = editor.state.doc.textBetween(Math.max(0, from - 40), from, '')
-    const match = textBefore.match(/\/([^\s]*)$/)
-    if (!match) return
-    editor.chain().focus().deleteRange({ from: from - match[0].length, to: from }).run()
-  }, [editor])
+    const view = cmRef.current?.view
+    if (!view) return
+    const range = slashRange(view.state)
+    const to = view.state.selection.main.from
+    if (!range || range.from >= to) return
+    view.dispatch({
+      changes: { from: range.from, to },
+      selection: { anchor: range.from },
+      userEvent: 'input.delete',
+    })
+  }, [])
 
-  // 执行
   const executeCommand = useCallback((cmd: SlashCommandItem) => {
     onClose()
-    if (!editor) return
+    const view = cmRef.current?.view
     removeSlashQuery()
-    const chain = editor.chain().focus()
-    switch (cmd.id) {
-      case 'bold':       chain.toggleBold().run(); break
-      case 'italic':     chain.toggleItalic().run(); break
-      case 'underline':  chain.toggleUnderline().run(); break
-      case 'strike':     chain.toggleStrike().run(); break
-      case 'highlight':  chain.toggleHighlight().run(); break
-      case 'h1': case 'h2': case 'h3': case 'h4': case 'h5': case 'h6':
-        chain.toggleHeading({ level: parseInt(cmd.id[1]) }).run(); break
-      case 'hr':         chain.setHorizontalRule().run(); break
-      case 'ol':         chain.toggleOrderedList().run(); break
-      case 'ul':         chain.toggleBulletList().run(); break
-      case 'task':       chain.toggleTaskList().run(); break
-      case 'quote': {
-        const sel = editor.state.selection
-        const text = sel && sel.from !== sel.to
-          ? editor.state.doc.textBetween(sel.from, sel.to) : '引用内容'
-        chain.insertContent(`<blockquote class="lz-insert lz-insert-quote" data-insert="quote"><p>${escapeHtml(text)}</p></blockquote>`).run()
-        break
-      }
-      case 'footnote': {
-        // 真正的脚注：正文插入可点回跳的引用标记，文末追加对应定义段落。
-        // 编号取「现有最大引用 + 1」，避免重复。
-        let max = 0
-        editor.state.doc.descendants((n: any) => {
-          if (n.type.name !== 'text' || !n.text) return true
-          for (const m of String(n.text).matchAll(/\[\^(\d+)\]/g)) {
-            max = Math.max(max, Number(m[1]))
-          }
-          return true
-        })
-        const no = max + 1
-        chain.insertContent(
-          `<sup class="lz-insert-footnote-ref" data-insert="footnote"><a href="#fn-${no}">[^${no}]</a></sup>`
-        ).run()
-        chain.insertContentAt(editor.state.doc.content.size,
-          `<p class="footnote-def" id="fn-${no}"><sup>[^${no}]</sup> 脚注内容</p>`).run()
-        break
-      }
-      case 'link':       setInsertPanel('link'); break
-      case 'image':      setInsertPanel('image'); break
-      case 'emoji':      setInsertPanel('emoji'); break
-      case 'code':       setInsertPanel('code'); break
-      case 'math':       setInsertPanel('formula'); break
-      case 'table':      setInsertPanel('table'); break
-      case 'chart':      setInsertPanel('chart'); break
-      case 'toc': {
-        // 真正的目录：锚点链接指向 HeadingAnchors 校正过的标题 id，可点击跳转。
-        const items: { id: string; text: string; level: number }[] = []
-        editor.state.doc.descendants((n: any) => {
-          if (n.type.name === 'heading') {
-            items.push({ id: n.attrs.id || '', text: n.textContent, level: n.attrs.level || 1 })
-          }
-          return true
-        })
-        const body = items.length
-          ? items.map(h => `<p style="margin-left:${(h.level - 1) * 14}px"><a href="#${h.id}">${escapeHtml(h.text)}</a></p>`).join('')
-          : '<p>暂无标题</p>'
-        chain.insertContent(`<blockquote class="lz-insert lz-insert-toc" data-insert="toc"><p><strong>目录</strong></p>${body}</blockquote><p></p>`).run()
-        break
-      }
+    if (!view) return
+    if (cmd.dialog) {
+      const panel = PANEL_MAP[cmd.id]
+      if (panel) setInsertPanel(panel)
+      return
     }
-  }, [editor, onClose, removeSlashQuery, setInsertPanel])
+    if (cmd.body !== undefined) {
+      const { from, to } = view.state.selection.main
+      const text = cmd.body
+      view.dispatch({
+        changes: { from, to, insert: text },
+        selection: { anchor: from + text.length },
+        scrollIntoView: true,
+        userEvent: 'input.complete',
+      })
+      view.focus()
+      return
+    }
+    const fc = COMMAND_MAP[cmd.id]
+    if (!fc) return
+    runFormatCommand(view, fc)
+  }, [onClose, removeSlashQuery, setInsertPanel])
 
-  // 键盘
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!visible) return
     if (e.key === 'ArrowRight')  { e.preventDefault(); setSelectedIndex(i => Math.min(i + 1, filtered.length - 1)) }
@@ -204,7 +201,6 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
   const rawX = effectivePosition.x
   const rawY = effectivePosition.y
 
-  // 边界检测：避免超出右边缘和底边缘
   const availW = window.innerWidth
   const availH = window.innerHeight
   const padding = 8
@@ -223,7 +219,6 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
       className="slash-command"
       style={{ left: x, top: y, width: PANEL_W }}
     >
-      {/* 搜索栏 */}
       {filter && (
         <div className="slash-search-bar">
           <span className="remix ri-search-line slash-search-icon"></span>
@@ -231,7 +226,6 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
           <span className="slash-search-count">{filtered.length} 项</span>
         </div>
       )}
-      {/* 命令列表 */}
       <div ref={listRef} className="slash-command-list">
         {filtered.length === 0 ? (
           <div className="slash-command-empty">
@@ -252,11 +246,7 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
                 <span className="slash-cell-label">
                   {filter ? (
                     <>
-                      {cmd.label.split(new RegExp(`(${filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, j) =>
-                        part.toLowerCase() === filter.toLowerCase()
-                          ? <mark key={j} className="slash-highlight">{part}</mark>
-                          : part
-                      )}
+                      {highlight(cmd.label, filter)}
                     </>
                   ) : cmd.label}
                 </span>
@@ -265,7 +255,6 @@ export const SlashCommand: React.FC<SlashCommandProps> = ({ position, visible, f
           </div>
         )}
       </div>
-      {/* 底部快捷键提示 */}
       <div className="slash-footer">
         <span><kbd>↑↓</kbd> 导航</span>
         <span><kbd>↵</kbd> 执行</span>

@@ -17,7 +17,7 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
   return getDocMd(activeDocId || 'readme')
 }
 
-/** Convert ProseMirror HTML → Markdown → rendered HTML for the preview. */
+/** Convert markdown source → rendered HTML for the preview. */
 function mdToPreviewHtml(mdContent: string): string {
   if (!mdContent) return ''
   try {

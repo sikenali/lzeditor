@@ -36,14 +36,7 @@ export const Toolbar: React.FC = () => {
     const s = useAIStore.getState()
     if (s.panelVisible) { s.hidePanel(); return }
     // 带上当前选区作为上下文，AI 面板据此判断润色/改写范围
-    const cm = getCM6Editor()
-    const editor = useEditorStore.getState().editor
-    let sel = ''
-    if (cm) sel = cm.getSelectionText()
-    else if (editor) {
-      const { from, to } = editor.state.selection
-      sel = from !== to ? editor.state.doc.textBetween(from, to) : ''
-    }
+    const sel = getCM6Editor()?.getSelectionText() ?? ''
     s.showPanel('question', sel, { x: Math.max(8, window.innerWidth - 380), y: 120 })
   }, [])
 

@@ -17,10 +17,12 @@ import { languages } from '@codemirror/language-data'
 import { drawSelection, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view'
 import { type FormatCommand, runFormatCommand, tableGrid as cmTableGrid } from './commands'
 import { setupAutoPair, teardownAutoPair } from './autopair'
+import { setupInputFormat, teardownInputFormat, setInputFormatSettings, inputFormatListener, type InputFormatSettings } from './input-format'
 import { setupSmartPaste, teardownSmartPaste } from './smart-paste'
 import { setupImageDropPaste, teardownImageDropPaste, setImageHandler } from './image-input'
 import { typewriterExtension, enableTypewriter, disableTypewriter } from './typewriter'
 import { setSnippetImpl, snippetCompletionSource, snippetSource, snippetDataField, completionSetup, snippetTabKeymap, setSnippetDataEffect } from './complete'
+import { slashPaletteExtension } from './slash'
 import type { MarkdownSnippet } from './snippets'
 import { livePreviewExtension } from './live-preview'
 
@@ -45,6 +47,9 @@ export interface CM6EditorCommands {
   getSelectionRange: () => { from: number; to: number }
   replaceSelection: (text: string) => void
   replaceRange: (from: number, to: number, text: string) => void
+  /** 光标跳到字符偏移处并滚到可见区（大纲跳转用） */
+  goto: (from: number, to?: number) => void
+  deleteRange: (from: number, to: number) => void
   search: (opts: { query: string; replace?: string; caseSensitive?: boolean; action?: 'search' | 'next' | 'prev' | 'replace' | 'replaceAll' }) => void
   openSearch: (replace: boolean) => void
   findNext: () => void
@@ -62,6 +67,7 @@ export interface CM6EditorCommands {
   setTypewriter: (on: boolean) => void
   setLivePreview: (on: boolean) => void
   setSnippets: (snippets: MarkdownSnippet[]) => void
+  setInputFormat: (next: Partial<InputFormatSettings>) => void
   onScroll: (handler: () => void) => () => void
   onSelection: (handler: (line: number, col: number, selText: string | null) => void) => () => void
   view: EditorView
@@ -100,6 +106,19 @@ const continuationKeymap = keymap.of([
   }},
 ])
 
+// 软换行（Mod+Enter）：GFM 用行尾两个空格表示强制换行
+const hardBreakKeymap = keymap.of([
+  { key: 'Mod-Enter', run: (view) => {
+    const { from, to } = view.state.selection.main
+    view.dispatch({
+      changes: { from, to, insert: '  \n' },
+      selection: { anchor: from + 3 },
+      userEvent: 'input.type',
+    })
+    return true
+  }, preventDefault: true },
+])
+
 export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
   const { parent, doc, onChange: _onChange, onCursor } = options
 
@@ -125,9 +144,12 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     typewriterC.of([]),
     livePreviewC.of([]),
     continuationC.of(continuationKeymap),
+    hardBreakKeymap,
     completionSetup([snippetSource]),
     snippetTabKeymap,
     snippetDataField,
+    inputFormatListener,
+    slashPaletteExtension,
     EditorView.updateListener.of((update) => {
       if (update.docChanged) options.onChange()
       if (update.docChanged || update.selectionSet) {
@@ -160,6 +182,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
 
   setSnippetImpl(snippetCompletionSource())
   setupAutoPair(view, true)
+  setupInputFormat(view)
   setupSmartPaste(view)
   setupImageDropPaste(view)
   // 截图粘贴/拖拽图片 → markdown 图片插入光标处；handler 为空时截图会被静默吞掉
@@ -343,6 +366,34 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
       view.dispatch({ effects: setSnippetDataEffect({ snippets: snippetList }) })
     },
 
+    setInputFormat(next: Partial<InputFormatSettings>): void {
+      setInputFormatSettings(next)
+    },
+
+    goto(from: number, to?: number): void {
+      const len = view.state.doc.length
+      const f = Math.max(0, Math.min(from, len))
+      const t = to === undefined ? f : Math.max(f, Math.min(to, len))
+      view.dispatch({
+        selection: { anchor: f, head: t },
+        scrollIntoView: true,
+      })
+      view.focus()
+    },
+
+    deleteRange(from: number, to: number): void {
+      const len = view.state.doc.length
+      const f = Math.max(0, Math.min(from, len))
+      const t = Math.max(f, Math.min(to, len))
+      if (f === t) return
+      view.dispatch({
+        changes: { from: f, to: t },
+        selection: { anchor: f },
+        userEvent: 'delete.range',
+      })
+      view.focus()
+    },
+
     onScroll(handler: () => void): () => void {
       const el = view.scrollDOM
       el.addEventListener('scroll', handler, { passive: true })
@@ -367,6 +418,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
 
 export function destroyCM6Editor(view: EditorView): void {
   teardownAutoPair(view)
+  teardownInputFormat(view)
   teardownSmartPaste(view)
   teardownImageDropPaste(view)
   disableTypewriter(view)

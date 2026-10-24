@@ -26,10 +26,6 @@ function renderKernelSection(s: any, u: any) {
   return (
     <div className="settings-section">
       <div className="settings-section-title"><span>编辑器内核</span></div>
-      <UDSettingRow icon="ri-code-s-slash-fill" label="使用新内核 (CodeMirror 6)" desc="开启后编辑区由 CodeMirror 6 渲染，支持实时预览与行号；关闭则回退到旧的富文本编辑器">
-        <UiSwitch size="sm" checked={ s.useCM6Editor !== false } onChange={ v => u('useCM6Editor', v) } />
-      </UDSettingRow>
-      <div className="setting-divider" />
       <UDSettingRow icon="ri-focus-2" label="高亮当前行" desc="在光标所在的行显示底色">
         <UiSwitch size="sm" checked={ s.currentLine !== false } onChange={ v => u('currentLine', v) } />
       </UDSettingRow>

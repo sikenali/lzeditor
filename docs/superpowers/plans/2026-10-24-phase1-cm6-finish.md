@@ -134,12 +134,25 @@
 - 缩进大小只作用于 Tab 键与空白宽度（`EditorState.tabSize` facet），未做额外智能缩进——markdown 不需要。
 - CM6 下表格仍无单元格级操作（见 S0-4 偏差），本阶段未补。
 
-## Stage 2 — 移除 TipTap（待用户验收 Stage 0/1 后再动）
+## Stage 2 — 移除 TipTap（用户已授权「继续」）
 
-- [ ] S2-1 删除 `LZEditor.tsx` 的 TipTap 实例、`EditorContent` / `BubbleMenu` 与 `useCM6` 渲染分支，编辑器容器只挂 `CM6Editor`。
-- [ ] S2-2 删除 `src/components/editor/extensions/`（8 文件），`package.json` 移除 `@tiptap/*`（13 包）与 `@memfoldai/tiptap-search-and-replace`，重装依赖。
-- [ ] S2-3 `editorStore` 去掉 TipTap `Editor` 类型依赖，类型改为 markdown 事实源；`SidebarOutline.tsx` 改从 `docsMd` 解析 heading。
-- [ ] S2-4 `useAI.ts` 去掉 `@tiptap/ai-toolkit`，提示词与工具调用走纯文本接口。
-- [ ] S2-5 删除 `editorActions.tsx` / `SearchPanel.tsx` 中的 CM6 分支判断与 TipTap 降级路径，统一 CM6。
-- [ ] S2-6 清理重复定义：`codemirror/types.ts` 与 `codemirror/registry.ts` 内容重复，二选一。
-- [ ] S2-7 `vite.config.ts` 的 `vendor-tiptap` manualChunks 改为 `vendor-codemirror`，验证主 chunk 体积下降。
+- [x] S2-1 删除 `LZEditor.tsx` 的 TipTap 实例、`EditorContent` / `BubbleMenu` 与 `useCM6` 渲染分支，编辑器容器只挂 `CM6Editor`（1059 → 554 行）。
+- [x] S2-2 删除 `src/components/editor/extensions/`（7 文件），`package.json` 移除 `@tiptap/*`（15 包）与 `@memfoldai/tiptap-search-and-replace`。
+- [x] S2-3 `editorStore` 去掉 TipTap `Editor` 类型依赖（`editor`/`setEditor` 删除），类型改为 markdown 事实源；`SidebarOutline.tsx` 改从 markdown 解析 heading（新增 `src/utils/mdOutline.ts`）。
+- [x] S2-4 `useAI.ts` 去掉 `@tiptap/ai-toolkit`，提示词上下文改从 `parseMdOutline` 产出。
+- [x] S2-5 删除 `editorActions.tsx` / `SearchPanel.tsx` / `HistoryPanel.tsx` / `App.tsx` / `Toolbar.tsx` / `LibraryPanel.tsx` / `docImport.ts` 中的 CM6 分支判断与 TipTap 降级路径，统一 CM6。
+- [x] S2-6 清理重复定义：删除 `codemirror/types.ts`（与 `registry.ts` 的 `declare global` 完全重复），保留 `registry.ts`。
+- [x] S2-7 `vite.config.ts` 的 `vendor-tiptap` manualChunks 改为 `vendor-codemirror`（1620 kB / 554 kB gzip）。
+
+**实现偏差记录（实际做法与计划不同之处）：**
+
+- 输入期 markdown 变换没有走旧的 7 个 TipTap 扩展，而是新增 `codemirror/input-format.ts`（Markdown 符号键、智能引号、角括号、全角标点、CJK 自动空格），引号相关从 `autopair.ts` 移出避免双改；`/` 键归斜杠面板，snippet 补全改用 Ctrl+Space（`activateOnTyping: false`）。
+- 斜杠面板不再拼富文本 HTML，改为「格式命令走 `runFormatCommand`、对话框走 `PANEL_MAP`、片段走 `body`」，因此 `globals.css` 的 `.lz-insert-*` 整套样式（106 行）成为死代码已删。
+- `types.ts`/`registry.ts` 之外还清掉了：`editorStore.editor`/`setEditor`、`settingsStore.useCM6Editor`、`shared/types.ts` 的对应声明、`editorActions.escapeHtml`（与 `mdToHtml` 内部实现重复），以及 `globals.css`/`layout.css`/`panels.css` 里 12 处 `ProseMirror` 选择器。
+- 快捷键里依赖 TipTap chain 的 5 个命令（代码块/三个列表/引用）改调 CM6 的 `run('code-block' | 'bullet-list' | 'numbered-list' | 'task-list' | 'quote')`；「软换行 Mod+Enter」在 CM6 里没有对应格式命令，改成 `editor.ts` 里的 `hardBreakKeymap`（插入 `  \n`，GFM 强制换行），App 里的 Enter 分支删除以避免双触发。
+- 文档导入入口收敛：`LibraryPanel` 三处 `editor.chain().setContent()` 与 `docImport.ts` 的 `setContent(html)` 统一走 `getCM6Editor()?.setText(md)`。
+- `editorStore.resetDocContent` 原先对 `registry` 用动态 import 以保首屏体积，现在 CM6 已是常驻内核，动态 import 已无意义（且触发 vite 的 chunk 告警），改为静态导入。
+- 未跑 `npm install`：依赖树里删掉的包没有任何 import，构建验证通过；`node_modules` 里的旧包还在磁盘上，下次 clean install 才真正缩小体积。
+- 主 chunk 仍是 1670 kB / 537 kB gzip（TipTap 下线后未再拆），后续可做 lucide/react-icons 与 export 库的二次分包，未在本阶段处理。
+
+**验证结果：** `npm run check` 9/9 通过（含新增的 store 槽位、`useCM6Editor`、样式表遗留类、CM6 跳转路径断言）；`npm run build` 通过，无动态导入告警。

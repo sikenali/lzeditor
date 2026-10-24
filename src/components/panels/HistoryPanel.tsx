@@ -7,7 +7,6 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
   const versions = useEditorStore((s) => s.versions)
   const setDocHTML = useEditorStore((s) => s.setDocHTML)
   const setMdContent = useEditorStore((s) => s.setMdContent)
-  const editor = useEditorStore((s) => s.editor)
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null)
 
   const sortedVersions = useMemo(() =>
@@ -38,10 +37,8 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     })
     setDocHTML(selected.html)
     setMdContent(selected.md)
-    // CM6 是 markdown 源码：直接 setText，onChange 会回填 store；TipTap 走 HTML
-    const cm = getCM6Editor()
-    if (cm) cm.setText(selected.md)
-    else editor?.commands?.setContent(selected.html)
+    // CM6 是 markdown 源码：直接 setText，onChange 会回填 store
+    getCM6Editor()?.setText(selected.md)
   }
 
   const handleRollback = () => {

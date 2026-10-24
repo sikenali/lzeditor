@@ -1,20 +1,19 @@
 import { EditorView } from '@codemirror/view'
 import { type Extension } from '@codemirror/state'
 
+// 引号（" ' “ ‘ 「 『）的配对与智能替换在 input-format.ts，这里只管括号类符号，
+// 避免两个 handler 对同一个按键各改一次。
 const PAIR_MAP: Record<string, string> = {
   '(': ')', ')': ')',
   '[': ']', ']': ']',
   '{': '}', '}': '}',
   '<': '>', '>': '>',
-  '"': '"', "'": "'",
   '`': '`',
   '【': '】', '〔': '〕',
   '〈': '〉', '《': '》',
-  '「': '」', '『': '』',
-  '“': '”', '‘': '’',
 }
 
-const CLOSING = new Set([')', ']', '}', '>', '】', '〕', '〉', '》', '」', '』', '”', '’', '`'])
+const CLOSING = new Set([')', ']', '}', '>', '】', '〕', '〉', '》', '`'])
 
 export const autoPairOff: Extension = []
 export const autoPairOn: Extension = []
@@ -28,27 +27,6 @@ export function setupAutoPair(view: EditorView, _enabled: boolean): void {
     const { state, dispatch } = view
     const { from, to } = state.selection.main
     const nextChar = state.doc.sliceString(to, to + 1)
-
-    if (ch === '"' || ch === "'" || ch === '“' || ch === '‘') {
-      if (nextChar === ch && from !== to) {
-        e.preventDefault()
-        dispatch({
-          changes: { from: to, to: to + 1 },
-          selection: { anchor: to },
-          userEvent: 'input.type',
-        })
-        return
-      }
-      if (nextChar && !/\s/.test(nextChar)) {
-        e.preventDefault()
-        dispatch({
-          changes: { from: to, insert: ch },
-          selection: { anchor: to + 1, head: to + 1 },
-          userEvent: 'input.type',
-        })
-        return
-      }
-    }
 
     if (ch === '`' && nextChar === '`') {
       e.preventDefault()
@@ -71,11 +49,8 @@ export function setupAutoPair(view: EditorView, _enabled: boolean): void {
     }
 
     e.preventDefault()
-    const insertion = (ch === '"' || ch === "'" || ch === '“' || ch === '‘')
-      ? ch + PAIR_MAP[ch]
-      : PAIR_MAP[ch]
     dispatch({
-      changes: { from: to, insert: insertion },
+      changes: { from: to, insert: PAIR_MAP[ch] },
       selection: { anchor: from + 1, head: from + 1 },
       userEvent: 'input.type',
     })

@@ -1,9 +1,8 @@
 import { useState, useCallback, useRef } from 'react'
-import { getEditorContext } from '@tiptap/ai-toolkit'
 import { useAIStore } from '../store/aiStore'
-import { useEditorStore } from '../store/editorStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { getCM6Editor } from '../components/editor/codemirror/registry'
+import { parseMdOutline, outlineToMarkdownTree } from '../utils/mdOutline'
 import { buildPrompt } from '../services/promptTemplate'
 import type { AIAction, ChatMessage } from '../shared/types'
 
@@ -62,14 +61,8 @@ export function useAI() {
     abortRef.current = controller
     const signal = controller.signal
 
-    const editor = useEditorStore.getState().editor
-    let schemaContext = ''
-    if (editor) {
-      try {
-        const ctx = getEditorContext(editor)
-        schemaContext = JSON.stringify(ctx, null, 2)
-      } catch {}
-    }
+    // 文档结构上下文从 markdown 源码解析（CM6 没有文档树）
+    const schemaContext = outlineToMarkdownTree(parseMdOutline(getCM6Editor()?.getText() || ''))
 
     const vars: any = { selected_text: selectedText, schema_context: schemaContext }
     if (action === 'rewrite' || action === 'polish') vars.style = input || '流畅自然'
@@ -185,23 +178,6 @@ export function useAI() {
       useAIStore.getState().setPanelStatus('applied')
       return
     }
-    const editor = useEditorStore.getState().editor
-    let range: { from: number; to: number } | null = null
-    if (editor) {
-      const { from, to } = editor.state.selection
-      range = { from, to }
-      if (from !== to) {
-        editor.chain().focus().deleteRange({ from, to }).insertContent(output).run()
-      } else {
-        editor.chain().focus().insertContent(output).run()
-      }
-    }
-    useAIStore.getState().recordApply({
-      action: state.panelAction,
-      originalText: state.panelSelectedText,
-      newText: output,
-      position: range && range.from !== range.to ? range : { from: 0, to: state.panelSelectedText.length },
-    })
     useAIStore.getState().setPanelStatus('applied')
   }, [])
 
@@ -217,17 +193,6 @@ export function useAI() {
       useAIStore.getState().undoLastApply()
       useAIStore.getState().setPanelStatus('result')
       return
-    }
-    const editor = useEditorStore.getState().editor
-    if (editor) {
-      const len = editor.state.doc.content.size
-      const from = Math.min(Math.max(0, record.position.from), len)
-      const to = Math.min(from + Math.max(0, record.position.to - record.position.from), len)
-      try {
-        editor.chain().focus().deleteRange({ from, to }).insertContent(record.originalText || '').run()
-      } catch {
-        // 记录位置已失效，仅清除历史
-      }
     }
     useAIStore.getState().undoLastApply()
     useAIStore.getState().setPanelStatus('result')
