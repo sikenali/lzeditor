@@ -64,9 +64,9 @@ export const TABLE_ITEMS: MenuItem[] = [
 ]
 
 export const MODE_ITEMS: MenuItem[] = [
-  { icon: 'ri-eye-2-line', label: '分屏预览', action: 'preview' },
+  { icon: 'ri-eye-2-line', label: '预览模式', action: 'preview' },
   { icon: 'ri-code-s-line', label: '代码模式', action: 'code' },
-  { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
+  { icon: 'ri-palette-line', label: '排版模式', action: 'style' },
 ]
 
 /** 表格工具项的置灰只和「光标是否在表格内」有关，两个入口共用同一份。 */
@@ -195,12 +195,17 @@ export function useEditorActions() {
     if (!getCM6Editor()) return
   }, [setInsertPanel])
 
+  // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（左源码 + 右样式预览）
   const modeAction = useCallback((action: string) => {
     const st = useEditorStore.getState()
-    switch (action) {
-      case 'preview': st.setOpenPanel(st.openPanel === 'preview' ? 'none' : 'preview'); break
-      case 'code': st.setAppMode('code'); break
-      case 'read': st.setAppMode('read'); break
+    if (action === 'preview') {
+      const next = !st.showPreview
+      st.setShowPreview(next)
+      if (next && st.appMode !== 'edit') st.setAppMode('edit')
+      return
+    }
+    if (action === 'code' || action === 'style') {
+      st.setAppMode(st.appMode === action ? 'edit' : action)
     }
   }, [])
 

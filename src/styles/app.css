@@ -70,7 +70,12 @@
   height: 100%;
 }
 
+/* 不锁死 CM6 高度：让 .cm-editor 随内容撑开，滚动只发生在 .lz-editor-content 上，
+   这样预览模式的滚动同步才有唯一滚动容器可挂。 */
+.cm6-editor-container .cm-editor,
 .cm6-editor-container .cm-scroller {
-  overflow: auto;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
 }
 

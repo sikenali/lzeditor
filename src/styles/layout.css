@@ -1804,6 +1804,11 @@
 }
 .app-right-panel > * { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
+/* 排版模式：右栏要同时装下「样式主题预览 + 样式面板」，比常规 360px 右栏更宽 */
+.app-right-panel--style { width: 46%; min-width: 420px; max-width: 760px; }
+.app-right-panel--style .style-mode-stack { flex: 1 1 auto; min-height: 0; }
+.app-right-panel--style .style-panel { flex: 0 0 auto; max-height: 42%; }
+
 /* ── Center-out expansion animation ── */
 @keyframes scaleInCenter {
   from { opacity: 0; transform: scale(0.92); }

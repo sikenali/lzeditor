@@ -345,20 +345,16 @@ function App() {
   const centerContent = (() => {
     // 首次启动：欢迎页替代编辑区，不再默认展开 welcome/README 文档
     if (showWelcome) return <WelcomeScreen />
-    if (appMode === 'edit' || appMode === 'code') {
-      return <LZEditor />
-    }
-    if (appMode === 'read') {
-      return <LZEditor />
-    }
     if (appMode === 'history') {
       return <HistoryPanel onClose={() => setAppMode('edit')} />
     }
-    if (appMode === 'style') {
-      return <StyleMainPanel />
-    }
+    // 编辑 / 代码 / 排版 三种模式都挂源码编辑器：
+    // 预览模式与排版模式的右侧内容走右栏，代码模式不给右栏留位。
     return <LZEditor />
   })()
+
+  // 右侧预览只在编辑模式下显示：代码/排版/历史模式都有自己独立的右栏或全宽源码
+  const showRightPreview = showPreview && appMode !== 'code' && appMode !== 'history' && appMode !== 'style'
 
   // ── 顶部布局 ──
   const topLayout = (
@@ -369,7 +365,7 @@ function App() {
         {showOutline && <SidebarOutline />}
         {showLibrary && <LibraryPanel sidebar className={libraryClosing ? 'closing' : ''} />}
         {centerContent}
-        {(showPreview) && appMode !== 'history' && appMode !== 'style' && <SidebarPreview />}
+        {showRightPreview && <SidebarPreview />}
       </div>
       <StatusBar />
       <Footer />
@@ -401,11 +397,11 @@ function App() {
       </div>
 
       {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库 */}
-      {(showRightPanel || showPreview || showLibrary || appMode === 'history' || appMode === 'style') && (
-        <div className={`app-right-panel${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
+      {(showRightPanel || showRightPreview || showLibrary || appMode === 'history' || appMode === 'style') && (
+        <div className={`app-right-panel${appMode === 'style' ? ' app-right-panel--style' : ''}${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
           {appMode === 'history' ? <HistoryPanel onClose={() => setAppMode('edit')} />
-          : appMode === 'style' ? <StyleMainPanel />
-          : showPreview ? <SidebarPreview />
+          : appMode === 'style' ? <div className="style-mode-stack"><StyleMainPanel /></div>
+          : showRightPreview ? <SidebarPreview />
           : showLibrary ? <LibraryPanel sidebar />
           : null}
         </div>
