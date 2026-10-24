@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { getCM6Editor } from '../editor/codemirror/registry'
 import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
@@ -27,20 +28,32 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     [sortedVersions]
   )
 
-  const handleRollback = () => {
+  const loadVersion = () => {
     if (!selected) return
-    if (editor) editor.commands.setContent(selected.html)
+    const docId = useEditorStore.getState().activeDocId
+    useEditorStore.getState().updateDoc({
+      md: selected.md,
+      html: selected.html,
+      docsMd: docId ? { [docId]: selected.md } : undefined,
+    })
     setDocHTML(selected.html)
     setMdContent(selected.md)
+    // CM6 是 markdown 源码：直接 setText，onChange 会回填 store；TipTap 走 HTML
+    const cm = getCM6Editor()
+    if (cm) cm.setText(selected.md)
+    else editor?.commands?.setContent(selected.html)
+  }
+
+  const handleRollback = () => {
+    if (!selected) return
+    loadVersion()
     onClose?.()
   }
 
   // 重播：把选中版本载入编辑器，但不关闭面板，便于对照查看
   const handleReplay = () => {
     if (!selected) return
-    if (editor) editor.commands.setContent(selected.html)
-    setDocHTML(selected.html)
-    setMdContent(selected.md)
+    loadVersion()
   }
 
   const handleBarClick = (id: string) => {

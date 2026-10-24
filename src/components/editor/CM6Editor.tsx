@@ -5,6 +5,7 @@ import { setSnippetImpl, snippetCompletionSource } from './codemirror/complete'
 import { DEFAULT_SNIPPETS } from './codemirror/snippets'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import { mdToHtml } from '../../utils/mdToHtml'
 
 interface CM6EditorProps {
   docId: string
@@ -18,9 +19,8 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const setCharCountStore = useEditorStore((s: any) => s.setCharCount)
+  const setWordCountStore = useEditorStore((s: any) => s.setWordCount)
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
-  const setMdContent = useEditorStore((s: any) => s.setMdContent)
-  const updateDoc = useEditorStore((s: any) => s.updateDoc)
   const addVersion = useEditorStore((s: any) => s.addVersion)
 
   const typewriterMode = useSettingsStore((s) => s.typewriterMode)
@@ -42,8 +42,11 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
       doc: initialContent,
       onChange: () => {
         const text = editor.getText()
-        setMdContent(text)
-        updateDoc({ md: text })
+        const store = useEditorStore.getState()
+        // markdown 是单一事实源：docsMd 优先被预览/导出/阅读模式消费，必须同步写入
+        const html = (() => { try { return mdToHtml(text) } catch { return '' } })()
+        store.updateDoc({ md: text, html, docsMd: { [docId]: text } })
+        store.setLastEditTime(Date.now())
 
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
         saveTimerRef.current = setTimeout(() => {
@@ -53,12 +56,12 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
             date: new Date().toLocaleDateString('zh-CN'),
             desc: text.trim().slice(0, 24) || '空文档',
             changes: text.length,
-            html: '',
+            html,
             md: text,
           })
           useEditorStore.getState().setSyncStatus('synced')
           try {
-            localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: text, savedAt: Date.now() }))
+            localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: text, html, savedAt: Date.now() }))
           } catch {}
         }, 800)
         useEditorStore.getState().setSyncStatus('saving')
@@ -66,7 +69,8 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
       onCursor: (line, col) => {
         setCursorPosition({ line, column: col })
       },
-      onCounts: (_words, chars) => {
+      onCounts: (words, chars) => {
+        setWordCountStore(words)
         setCharCountStore(chars)
       },
     })
@@ -105,11 +109,13 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) return
+    // 只在切换文档时重载；initialContent 变化不回灌，避免 store 里的旧 HTML 覆盖用户编辑
     const currentText = editor.getText()
     if (currentText !== initialContent) {
       editor.setText(initialContent)
     }
-  }, [docId, initialContent])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docId])
 
   useEffect(() => {
     const editor = editorRef.current

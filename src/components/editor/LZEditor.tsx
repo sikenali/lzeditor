@@ -78,6 +78,9 @@ export const LZEditor = () => {
     return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
   }, [activeDocId, docsMd])
 
+  // 编辑区可见性：阅读/代码模式隐藏，但 CM6 实例必须常驻
+  const cm6Visible = appMode !== 'read' && !codeMode
+
   const codeEditMdRef = useRef(mdContent)
   const [codeEditMd, setCodeEditMd] = useState(mdContent)
   useEffect(() => {
@@ -477,6 +480,8 @@ export const LZEditor = () => {
     const localHtml = activeDocId === 'readme' ? getDocHtml(activeDocId) : ''
     const md = docsMd[activeDocId] || getDocMd(activeDocId) || (activeDocId === 'readme' ? README_CONTENT : '')
     const html = localHtml || (md ? mdToHtml(md) : '')
+    // docsMd 每次编辑都会变，内容相同就不要重设，否则光标被重置
+    if (editor.getHTML() === html) return
     editor.commands.setContent(html)
   }, [activeDocId, editor, docsMd])
 
@@ -924,17 +929,20 @@ export const LZEditor = () => {
           </div>
         )}
         <div className="lz-editor-page">
-          {appMode !== 'read' && !codeMode && (
+          {/* CM6 保持挂载：切到阅读/代码/历史模式时只用 display:none 隐藏。
+              卸载后 getCM6Editor() 返回 null，工具栏与搜索命令会全部失效。 */}
+          <div style={{ display: cm6Visible ? 'block' : 'none', height: '100%' }}>
+            {useCM6 && (
+              <CM6Editor
+                docId={activeDocId || 'readme'}
+                initialContent={mdContent}
+              />
+            )}
+          </div>
+          {cm6Visible && !useCM6 && (
             <>
-              {useCM6 ? (
-                <CM6Editor
-                  docId={activeDocId || 'readme'}
-                  initialContent={mdContent}
-                />
-              ) : (
-                <EditorContent editor={editor} />
-              )}
-              {!useCM6 && editor && (
+              <EditorContent editor={editor} />
+              {editor && (
                 <BubbleMenu editor={editor}>
                   <button className="format-chip" onClick={() => editor.chain().focus().toggleBold().run()} title="粗体"><span className="remix ri-bold"></span></button>
                   <button className="format-chip" onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体"><span className="remix ri-italic"></span></button>

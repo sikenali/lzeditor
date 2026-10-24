@@ -128,6 +128,29 @@ export function useFlyout() {
   return { key, rect, menuRef, open, close, isOpen: (k: string) => key === k }
 }
 
+const CMD_MAP: Record<string, FormatCommand> = {
+  bold: 'bold', italic: 'italic', strikeThrough: 'strikethrough', strikethrough: 'strikethrough',
+  underline: 'underline', highlight: 'highlight', toggleHighlight: 'highlight',
+  code: 'code', link: 'link', image: 'image', quote: 'quote',
+  'bullet-list': 'bullet-list', 'numbered-list': 'numbered-list', 'task-list': 'task-list',
+  'code-block': 'code-block', table: 'table', rule: 'rule', hr: 'rule',
+  h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
+  paragraph: 'paragraph',
+}
+
+const FORMAT_MAP: Record<string, FormatCommand> = {
+  h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
+  clear: 'clear', hr: 'rule', ol: 'numbered-list', ul: 'bullet-list', task: 'task-list',
+  sup: 'sup', sub: 'sub', quote: 'quote', toc: 'toc', footnote: 'footnote',
+  link: 'link', image: 'image',
+}
+
+const INSERT_MAP: Record<string, FormatCommand> = {
+  toc: 'toc', quote: 'quote', blockquote: 'quote', footnote: 'footnote', hr: 'rule',
+}
+
+const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'math', 'chart', 'emoji', 'table'])
+
 /** 编辑动作，供顶栏和左侧 rail 共用，避免两套逻辑漂移。 */
 export function useEditorActions() {
   const editor = useEditorStore((s: any) => s.editor)
@@ -135,23 +158,20 @@ export function useEditorActions() {
   const createDoc = useEditorStore((s: any) => s.createDoc)
   const useCM6 = useSettingsStore((s) => s.useCM6Editor)
 
-  const applyCmd = useCallback((cmd: string) => {
-    if (useCM6) {
-      const cm6 = getCM6Editor()
-      if (cm6) {
-        const cmdMap: Record<string, FormatCommand> = {
-          bold: 'bold', italic: 'italic', strikethrough: 'strikethrough',
-          code: 'code', link: 'link', image: 'image',
-          quote: 'quote', 'bullet-list': 'bullet-list', 'numbered-list': 'numbered-list',
-          'task-list': 'task-list', 'code-block': 'code-block', table: 'table', rule: 'rule',
-          h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
-          paragraph: 'paragraph',
-        }
-        const fc = cmdMap[cmd]
-        if (fc) cm6.run(fc)
-        return
-      }
+  // CM6 下没有映射到命令的动作不静默失败：插入类改为打开对应面板
+  const runCM6 = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
+    const cm6 = getCM6Editor()
+    if (!cm6) return false
+    const fc = map[action]
+    if (!fc) {
+      if (PANEL_ACTIONS.has(action)) setInsertPanel(action)
+      return true
     }
+    return cm6.run(fc)
+  }, [setInsertPanel])
+
+  const applyCmd = useCallback((cmd: string) => {
+    if (useCM6 && runCM6(cmd, CMD_MAP)) return
     if (!editor) return
     editor.chain().focus()
     const ok = (editor.commands as any)[cmd]?.()
@@ -163,24 +183,10 @@ export function useEditorActions() {
       const fn = markMap[cmd]
       if (fn) (editor.commands as any)[fn]()
     }
-  }, [editor, useCM6])
+  }, [editor, useCM6, runCM6])
 
   const formatAction = useCallback((action: string) => {
-    if (useCM6) {
-      const cm6 = getCM6Editor()
-      if (cm6) {
-        const cmdMap: Record<string, FormatCommand> = {
-          h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
-          link: 'link', image: 'image',
-          'bullet-list': 'bullet-list', 'numbered-list': 'numbered-list', 'task-list': 'task-list',
-          'code-block': 'code-block', table: 'table', rule: 'rule',
-          quote: 'quote', paragraph: 'paragraph',
-        }
-        const fc = cmdMap[action]
-        if (fc) cm6.run(fc)
-        return
-      }
-    }
+    if (useCM6 && runCM6(action, FORMAT_MAP)) return
     if (!editor) return
     const chain = editor.chain().focus()
     if (action === 'link') { setInsertPanel('link'); return }
@@ -203,9 +209,10 @@ export function useEditorActions() {
       case 'sub': chain.toggleSubscript(); break
     }
     chain.run()
-  }, [editor, setInsertPanel, useCM6])
+  }, [editor, setInsertPanel, useCM6, runCM6])
 
   const insertAction = useCallback((action: string) => {
+    if (useCM6 && runCM6(action, INSERT_MAP)) return
     if (!editor) return
     const chain = editor.chain().focus()
     switch (action) {
@@ -250,9 +257,12 @@ export function useEditorActions() {
         setInsertPanel('emoji'); return
     }
     chain.run()
-  }, [editor, setInsertPanel])
+  }, [editor, setInsertPanel, useCM6, runCM6])
 
   const tableAction = useCallback((action: string) => {
+    if (action === 'insert') { setInsertPanel('table'); return }
+    // CM6 的表格是 markdown 源文本，单元格级操作（增删行列/合并）暂不支持
+    if (useCM6) return
     if (!editor) return
     if (action === 'insert') { setInsertPanel('table'); return }
     const chain = editor.chain().focus()
@@ -269,7 +279,7 @@ export function useEditorActions() {
       case 'autoW': chain.fixTables(); break
     }
     chain.run()
-  }, [editor, setInsertPanel])
+  }, [editor, setInsertPanel, useCM6])
 
   const modeAction = useCallback((action: string) => {
     const st = useEditorStore.getState()
@@ -282,8 +292,6 @@ export function useEditorActions() {
 
   const newDocument = useCallback(() => {
     createDoc()
-    const current = useEditorStore.getState().editor
-    if (current) current.chain().focus().clearContent().run()
     useEditorStore.getState().setLastEditTime(Date.now())
   }, [createDoc])
 

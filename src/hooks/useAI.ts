@@ -3,6 +3,7 @@ import { getEditorContext } from '@tiptap/ai-toolkit'
 import { useAIStore } from '../store/aiStore'
 import { useEditorStore } from '../store/editorStore'
 import { useSettingsStore } from '../store/settingsStore'
+import { getCM6Editor } from '../components/editor/codemirror/registry'
 import { buildPrompt } from '../services/promptTemplate'
 import type { AIAction, ChatMessage } from '../shared/types'
 
@@ -169,8 +170,22 @@ export function useAI() {
   const applyToDoc = useCallback(() => {
     const state = useAIStore.getState()
     if (state.panelStatus !== 'result') return
-    const editor = useEditorStore.getState().editor
     const output = state.panelOutput || ''
+    const cm = getCM6Editor()
+    if (cm) {
+      const range = cm.getSelectionRange()
+      const original = cm.getSelectionText()
+      cm.replaceRange(range.from, range.to, output)
+      useAIStore.getState().recordApply({
+        action: state.panelAction,
+        originalText: original,
+        newText: output,
+        position: { from: range.from, to: range.from + output.length },
+      })
+      useAIStore.getState().setPanelStatus('applied')
+      return
+    }
+    const editor = useEditorStore.getState().editor
     let range: { from: number; to: number } | null = null
     if (editor) {
       const { from, to } = editor.state.selection
@@ -193,6 +208,16 @@ export function useAI() {
   const undo = useCallback(() => {
     const record = useAIStore.getState().getUndoRecord()
     if (!record) return
+    const cm = getCM6Editor()
+    if (cm) {
+      const text = cm.getText()
+      const start = record.newText ? text.indexOf(record.newText) : record.position.from
+      const end = start >= 0 ? start + record.newText.length : record.position.to
+      if (start >= 0) cm.replaceRange(start, end, record.originalText || '')
+      useAIStore.getState().undoLastApply()
+      useAIStore.getState().setPanelStatus('result')
+      return
+    }
     const editor = useEditorStore.getState().editor
     if (editor) {
       const len = editor.state.doc.content.size

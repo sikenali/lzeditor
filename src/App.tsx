@@ -28,6 +28,7 @@ const EmojiDialog = lazy(() => import('./components/panels/EmojiDialog').then(m 
 const ChartDialog = lazy(() => import('./components/panels/ChartDialog').then(m => ({ default: m.ChartDialog })))
 import { useEditorStore, switchDocSilently } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
+import { getCM6Editor } from './components/editor/codemirror/registry'
 import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
@@ -55,6 +56,17 @@ const buildTableHtml = (rows: number, cols: number, data?: string[][], withHeade
   return `<table><tbody>${trs.join('')}</tbody></table>`
 }
 
+/** CM6 走 markdown 源码：把行列规格拼成 markdown 表格 */
+const buildTableMd = (rows: number, cols: number, data?: string[][]) => {
+  const r = Math.max(1, Math.min(rows, 50))
+  const c = Math.max(1, Math.min(cols, 30))
+  const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\n/g, ' ').trim()
+  return [
+    `| ${Array.from({ length: c }, (_, i) => cell(data?.[0]?.[i] ?? `表头${i + 1}`)).join(' | ')} |`,
+    `| ${Array.from({ length: c }, () => '---').join(' | ')} |`,
+    ...Array.from({ length: r - 1 }, (_, i) => `| ${Array.from({ length: c }, (_, j) => cell(data?.[i + 1]?.[j] ?? '')).join(' | ')} |`),
+  ].join('\n')
+}
 /** 隐藏首次启动欢迎页（sessionStorage 记住，本会话不再弹出）。 */
 const dismissWelcome = () => useEditorStore.getState().setShowWelcome(false)
 
@@ -295,18 +307,23 @@ function App() {
     prevShowSearch.current = showSearch
   }, [showSearch])
   const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
+    const cm = getCM6Editor()
+    // CM6 是 markdown 源码，图片对齐暂不支持（阶段 1 的 live-preview 阶段补齐）
+    if (cm) { cm.insertText(`\n\n![${alt}](${url})\n\n`); closeInsert(); return }
     if (!editor) return
     editor.chain().focus().insertImage({ src: url, alt, align }).run()
     closeInsert()
   }
   const uploadImage = (file: File, align?: 'top' | 'left' | 'right') => {
-    if (!editor) return
+    if (!editor && !getCM6Editor()) return
     const reader = new FileReader()
     reader.onload = (ev) => insertImage(ev.target?.result as string, file.name, align)
     reader.readAsDataURL(file)
     closeInsert()
   }
   const insertMarkdown = (md: string) => {
+    const cm = getCM6Editor()
+    if (cm) { cm.insertText(md); closeInsert(); return }
     const cur = useEditorStore.getState()
     const pos = cur.codeModeCursor ?? 0
     const content = cur.mdContent
@@ -323,6 +340,8 @@ function App() {
     closeInsert()
   }
   const insertCode = (code: string, lang: string) => {
+    const cm = getCM6Editor()
+    if (cm) { cm.insertText(`\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`); closeInsert(); return }
     if (!editor) return
     // 以 JSON 节点插入代码块，字符串会被当成 HTML 解析
     editor.commands.insertContent({
@@ -332,11 +351,18 @@ function App() {
     })
     closeInsert()
   }
-  const insertLink = (text: string, url: string, newTab?: boolean) => {
+  const insertLink = (text: string, url: string, _newTab?: boolean) => {
+    const cm = getCM6Editor()
+    if (cm) {
+      const label = (text.trim() || url).replace(/\s+/g, ' ')
+      cm.insertText(`[${label}](${url})`)
+      closeInsert()
+      return
+    }
     if (!editor) return
     const linkContent = {
       type: 'link',
-      attrs: { href: url, ...(newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+      attrs: { href: url }
     }
     if (text.trim() && text !== url) {
       editor.chain().focus().setTextSelection({ from: editor.state.selection.from, to: editor.state.selection.to }).insertContent(text).run()
@@ -347,24 +373,33 @@ function App() {
     closeInsert()
   }
   const insertFormula = (formula: string) => {
+    const cm = getCM6Editor()
+    if (cm) { cm.insertText(`$$${formula}$$`); closeInsert(); return }
     if (!editor) return
     editor.chain().focus().insertMath(formula).run()
     closeInsert()
   }
   const insertChart = (src: string, alt: string, _type: string) => {
+    const cm = getCM6Editor()
+    if (cm) { cm.insertText(`\n\n![${alt}](${src})\n\n`); closeInsert(); return }
     if (!editor) return
     // 必须以 JSON 节点插入，字符串会被当成 HTML 解析而无法渲染成图片
     editor.commands.insertContent({ type: 'image', attrs: { src, alt } })
     closeInsert()
   }
   const insertEmoji = (text: string) => {
+    const cm = getCM6Editor()
+    if (cm) { cm.insertText(text); closeInsert(); return }
     if (!editor) return
     editor.chain().focus().insertContent(text).run()
     closeInsert()
   }
-  const insertTable = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
-    if (!editor || rows <= 0 || cols <= 0) return
-    editor.chain().focus().insertContent(buildTableHtml(rows, cols, data, withHeaderRow)).run()
+  const insertTable = (rows: number, cols: number, data?: string[][], _withHeaderRow = true) => {
+    if (rows <= 0 || cols <= 0) return
+    const cm = getCM6Editor()
+    if (cm) { cm.insertText(`\n\n${buildTableMd(rows, cols, data)}\n\n`); closeInsert(); return }
+    if (!editor) return
+    editor.chain().focus().insertContent(buildTableHtml(rows, cols, data, _withHeaderRow)).run()
     closeInsert()
   }
 

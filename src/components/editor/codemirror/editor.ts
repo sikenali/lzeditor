@@ -2,11 +2,20 @@ import { EditorView } from '@codemirror/view'
 import { type Extension } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
 import { history, undo, redo } from '@codemirror/commands'
-import { search } from '@codemirror/search'
+import {
+  search,
+  SearchQuery,
+  setSearchQuery,
+  findNext as cmFindNext,
+  findPrevious as cmFindPrevious,
+  replaceNext as cmReplaceNext,
+  replaceAll as cmReplaceAll,
+  openSearchPanel,
+} from '@codemirror/search'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { drawSelection, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view'
-import { type FormatCommand, runFormatCommand } from './commands'
+import { type FormatCommand, runFormatCommand, tableGrid as cmTableGrid } from './commands'
 import { setupAutoPair, teardownAutoPair } from './autopair'
 import { setupSmartPaste, teardownSmartPaste } from './smart-paste'
 import { setupImageDropPaste, teardownImageDropPaste, setImageHandler } from './image-input'
@@ -26,9 +35,16 @@ export interface CM6EditorOptions {
 
 export interface CM6EditorCommands {
   run: (command: FormatCommand) => boolean
+  tableGrid: (rows: number, cols: number) => boolean
   toggleTask: (line: number) => boolean
   setText: (text: string) => void
   getText: () => string
+  insertText: (text: string) => void
+  getSelectionText: () => string
+  getSelectionRange: () => { from: number; to: number }
+  replaceSelection: (text: string) => void
+  replaceRange: (from: number, to: number, text: string) => void
+  search: (opts: { query: string; replace?: string; caseSensitive?: boolean; action?: 'search' | 'next' | 'prev' | 'replace' | 'replaceAll' }) => void
   openSearch: (replace: boolean) => void
   findNext: () => void
   findPrevious: () => void
@@ -125,11 +141,29 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
   setupAutoPair(view, true)
   setupSmartPaste(view)
   setupImageDropPaste(view)
-  setImageHandler(view, null)
+  // 截图粘贴/拖拽图片 → markdown 图片插入光标处；handler 为空时截图会被静默吞掉
+  setImageHandler(view, (images) => {
+    const sel = view.state.selection.main
+    const body = images.map(i => `![${i.alt}](${i.src})`).join('\n\n')
+    const insert = `\n\n${body}\n\n`
+    view.dispatch({
+      changes: { from: sel.from, to: sel.to, insert },
+      selection: { anchor: sel.from + insert.length },
+      userEvent: 'input',
+    })
+  })
 
   const cmd: CM6EditorCommands = {
     run(command: FormatCommand): boolean {
       return runFormatCommand(view, command)
+    },
+
+    tableGrid(rows: number, cols: number): boolean {
+      const spec = cmTableGrid(view.state, rows, cols)
+      if (!spec) return false
+      view.dispatch(spec)
+      view.focus()
+      return true
     },
 
     toggleTask(line: number): boolean {
@@ -158,20 +192,78 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
       return view.state.doc.toString()
     },
 
-    openSearch(_replace: boolean): void {
-      const panel = view.dom.querySelector('.cm-panel.cm-search') as HTMLElement | null
-      if (panel) {
-        panel.style.display = panel.style.display === 'none' ? '' : 'none'
+    insertText(text: string): void {
+      const main = view.state.selection.main
+      view.dispatch({
+        changes: { from: main.from, to: main.to, insert: text },
+        selection: { anchor: main.from + text.length },
+        scrollIntoView: true,
+        userEvent: 'input',
+      })
+      view.focus()
+    },
+
+    getSelectionText(): string {
+      const main = view.state.selection.main
+      return main.empty ? '' : view.state.sliceDoc(main.from, main.to)
+    },
+
+    getSelectionRange(): { from: number; to: number } {
+      const main = view.state.selection.main
+      return { from: main.from, to: main.to }
+    },
+
+    replaceRange(from: number, to: number, text: string): void {
+      const len = view.state.doc.length
+      const f = Math.max(0, Math.min(from, len))
+      const t = Math.max(f, Math.min(to, len))
+      view.dispatch({ changes: { from: f, to: t, insert: text }, scrollIntoView: true })
+      view.focus()
+    },
+
+    replaceSelection(text: string): void {
+      const main = view.state.selection.main
+      view.dispatch({
+        changes: { from: main.from, to: main.to, insert: text },
+        selection: { anchor: main.from, head: main.from + text.length },
+        scrollIntoView: true,
+      })
+      view.focus()
+    },
+
+    search(opts: { query: string; replace?: string; caseSensitive?: boolean; action?: 'search' | 'next' | 'prev' | 'replace' | 'replaceAll' }): void {
+      const action = opts.action ?? 'search'
+      if (opts.query !== undefined) {
+        view.dispatch({
+          effects: setSearchQuery.of(new SearchQuery({
+            search: opts.query,
+            replace: opts.replace || '',
+            caseSensitive: !!opts.caseSensitive,
+          })),
+        })
       }
+      if (action === 'next') { cmFindNext(view); return }
+      if (action === 'prev') { cmFindPrevious(view); return }
+      if (action === 'replace') { cmReplaceNext(view); return }
+      if (action === 'replaceAll') { cmReplaceAll(view); return }
+      const query = new SearchQuery({
+        search: opts.query,
+        replace: opts.replace || '',
+        caseSensitive: !!opts.caseSensitive,
+      })
+      view.dispatch({ effects: setSearchQuery.of(query) })
+      openSearchPanel(view)
+      view.focus()
     },
 
-    findNext(): void {
-      view.dispatch({ effects: [] })
+    openSearch(replace: boolean): void {
+      if (replace) openSearchPanel(view)
+      else view.dispatch({ effects: setSearchQuery.of(new SearchQuery({ search: '' })) })
     },
 
-    findPrevious(): void {
-      view.dispatch({ effects: [] })
-    },
+    findNext(): void { cmFindNext(view) },
+
+    findPrevious(): void { cmFindPrevious(view) },
 
     undo(): boolean { return undo(view) },
     redo(): boolean { return redo(view) },

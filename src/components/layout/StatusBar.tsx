@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { useSettingsStore } from '../../store/settingsStore'
 
 export const StatusBar: React.FC = () => {
   const wordCount      = useEditorStore(s => s.wordCount)
@@ -10,7 +9,6 @@ export const StatusBar: React.FC = () => {
   const showSearch     = useEditorStore(s => s.showSearch)
   const setShowSearch  = useEditorStore(s => s.setShowSearch)
   const activeDocId    = useEditorStore(s => s.activeDocId)
-  const useCM6         = useSettingsStore(s => s.useCM6Editor)
 
   const [visible, setVisible] = useState(true)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -118,16 +116,13 @@ export const StatusBar: React.FC = () => {
             <span className="statusbar-float-unit">分钟阅读</span>
           </div>
 
-          {!useCM6 && (
-            <>
-              <div className="statusbar-float-divider" />
-              <div className="statusbar-float-row">
-                <span className="statusbar-float-icon"><span className="remix ri-cursor-fill"></span></span>
-                <span className="statusbar-float-value">行 {cursorPosition.line}</span>
-                <span className="statusbar-float-unit">列 {cursorPosition.column}</span>
-              </div>
-            </>
-          )}
+          <div className="statusbar-float-divider" />
+
+          <div className="statusbar-float-row">
+            <span className="statusbar-float-icon"><span className="remix ri-cursor-fill"></span></span>
+            <span className="statusbar-float-value">行 {cursorPosition.line}</span>
+            <span className="statusbar-float-unit">列 {cursorPosition.column}</span>
+          </div>
         </div>
       )}
     </>

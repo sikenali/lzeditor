@@ -25,6 +25,14 @@ export type FormatCommand =
   | 'code-block'
   | 'table'
   | 'rule'
+  | 'underline'
+  | 'highlight'
+  | 'sup'
+  | 'sub'
+  | 'clear'
+  | 'math'
+  | 'footnote'
+  | 'toc'
   | 'heading-1'
   | 'heading-2'
   | 'heading-3'
@@ -557,6 +565,125 @@ export function toggleTask(state: EditorState, line: number): TransactionSpec | 
   }
 }
 
+// ---- inline formatting without syntax-tree support --------------------------
+// lezer 的 markdown 语法树不认识 HTML 标签和 == 高亮，只能用文本级检测。
+
+function wrapMarkers(state: EditorState, open: string, close: string, placeholder: string): FormatSpec {
+  const main = state.selection.main
+  const from = main.from
+  const to = main.to
+  const text = state.sliceDoc(from, to)
+
+  // 选区已经带这对标记 → 剥掉
+  if (text.length >= open.length + close.length && text.startsWith(open) && text.endsWith(close)) {
+    const base = from + open.length
+    return formatSpec({
+      changes: state.changes([
+        { from, to: base },
+        { from: to - close.length, to },
+      ]),
+      selection: EditorSelection.range(base, to - close.length),
+    })
+  }
+  // 光标处紧贴这对标记 → 剥掉
+  if (from === to && state.sliceDoc(Math.max(0, from - open.length), from) === open
+    && state.sliceDoc(to, to + close.length) === close) {
+    const base = from - open.length
+    return formatSpec({
+      changes: state.changes([
+        { from: base, to: from },
+        { from, to: from + close.length },
+      ]),
+      selection: EditorSelection.cursor(base),
+    })
+  }
+  if (to > from) {
+    return formatSpec({
+      changes: state.changes([
+        { from, insert: open },
+        { from: to, insert: close },
+      ]),
+      selection: EditorSelection.range(from + open.length, to + open.length),
+    })
+  }
+  return formatSpec({
+    changes: state.changes({ from, insert: `${open}${placeholder}${close}` }),
+    selection: EditorSelection.range(from + open.length, from + open.length + placeholder.length),
+  })
+}
+
+export const underline = (state: EditorState): FormatSpec => wrapMarkers(state, '<u>', '</u>', '下划线')
+export const highlight = (state: EditorState): FormatSpec => wrapMarkers(state, '==', '==', '高亮')
+export const sup = (state: EditorState): FormatSpec => wrapMarkers(state, '<sup>', '</sup>', '上标')
+export const sub = (state: EditorState): FormatSpec => wrapMarkers(state, '<sub>', '</sub>', '下标')
+
+export function clearFormat(state: EditorState): FormatSpec {
+  const main = state.selection.main
+  const sel = main.empty ? wordAt(state.doc, main.head) : { from: main.from, to: main.to }
+  if (!sel) return null
+  const text = state.sliceDoc(sel.from, sel.to)
+  const cleaned = text
+    .replace(/(\*\*|__)([\s\S]*?)\1/g, '$2')
+    .replace(/(\*)([^*]+?)\1/g, '$2')
+    .replace(/(\*)([^*]+?)\1/g, '$2')
+    .replace(/~~([\s\S]*?)~~/g, '$1')
+    .replace(/==([\s\S]*?)==/g, '$1')
+    .replace(/<u>([\s\S]*?)<\/u>/g, '$1')
+    .replace(/<sub>([\s\S]*?)<\/sub>/g, '$1')
+    .replace(/<sup>([\s\S]*?)<\/sup>/g, '$1')
+    .replace(/`([^`]*)`/g, '$1')
+  if (cleaned === text) return null
+  return formatSpec({
+    changes: state.changes({ from: sel.from, to: sel.to, insert: cleaned }),
+    selection: EditorSelection.range(sel.from, sel.from + cleaned.length),
+  })
+}
+
+// ---- 公式 / 脚注 / 目录 / 表格 ----------------------------------------------
+
+export function mathBlock(state: EditorState): FormatSpec {
+  const main = state.selection.main
+  const sel = state.sliceDoc(main.from, main.to)
+  const body = sel && !isBlank(sel) ? sel : '公式'
+  return insertBlock(state, `$$\n${body}\n$$`, { from: 3, to: 3 + body.length })
+}
+
+export function footnote(state: EditorState): FormatSpec {
+  const main = state.selection.main
+  const max = [...state.doc.toString().matchAll(/\[\^(\d+)\]/g)].reduce(
+    (acc, m) => Math.max(acc, Number(m[1])), 0,
+  )
+  const no = max + 1
+  const ref = `[^${no}]`
+  const body = `${ref}\n\n[^${no}]: 脚注内容`
+  const base = main.to
+  return formatSpec({
+    changes: state.changes({ from: base, insert: body }),
+    selection: EditorSelection.range(base, base + ref.length),
+  })
+}
+
+export function toc(state: EditorState): FormatSpec {
+  const items: string[] = []
+  for (const line of state.doc.toString().split('\n')) {
+    const m = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line)
+    if (m) items.push(`${'  '.repeat(m[1].length - 1)}- [${m[2]}](#${m[2]})`)
+  }
+  const body = items.length ? items.join('\n') : '- 暂无标题'
+  return insertBlock(state, `**目录**\n${body}`, { from: 4, to: 4 })
+}
+
+export function tableGrid(state: EditorState, rows: number, cols: number): FormatSpec {
+  const r = Math.max(1, Math.min(rows, 50))
+  const c = Math.max(1, Math.min(cols, 30))
+  const block = [
+    `| ${Array.from({ length: c }, (_, i) => `表头${i + 1}`).join(' | ')} |`,
+    `| ${Array.from({ length: c }, () => '---').join(' | ')} |`,
+    ...Array.from({ length: r }, () => `| ${Array.from({ length: c }, () => '').join(' | ')} |`),
+  ].join('\n')
+  return insertBlock(state, block, { from: 2, to: 2 + c })
+}
+
 // ---- command table ----------------------------------------------------------
 
 export const formatCommands: Readonly<Record<FormatCommand, (state: EditorState) => FormatSpec>> = {
@@ -573,6 +700,14 @@ export const formatCommands: Readonly<Record<FormatCommand, (state: EditorState)
   'code-block': codeBlock,
   table,
   rule,
+  underline,
+  highlight,
+  sup,
+  sub,
+  clear: clearFormat,
+  math: mathBlock,
+  footnote,
+  toc,
   'heading-1': (state) => heading(state, 1),
   'heading-2': (state) => heading(state, 2),
   'heading-3': (state) => heading(state, 3),

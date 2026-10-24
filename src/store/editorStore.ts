@@ -2,9 +2,7 @@ import { silentError } from '../utils/silentError'
 import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
-import { htmlToMarkdown } from '../utils/htmlToMd'
 import { getDocMd } from '../utils/docSource'
-import { mdToHtml } from '../utils/mdToHtml'
 
 const MAX_VERSIONS = 10
 
@@ -194,7 +192,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   },
   addVersion: (version: DocVersion) => {
     const versions = get().versions
-    if (versions.length > 0 && versions[versions.length - 1].html === version.html) return
+    const last = versions[versions.length - 1]
+    // 以 markdown 正文比较：CM6 曾长期传 html:''，按 html 去重会丢掉所有后续快照
+    if (last && last.md === version.md) return
     set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
   },
 
@@ -227,15 +227,11 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       set({ docTitle: doc.title, docPath: doc.path || '', activeLibraryId: doc.libraryId || s.activeLibraryId })
       return
     }
-    // 切换前把未落盘的编辑写回当前文档，避免切走丢失
-    if (s.activeDocId) {
-      try {
-        const html = s.editor?.getHTML?.()
-        const md = html ? htmlToMarkdown(html) : (s.mdContent || '')
-        if (md && md !== s.docsMd?.[s.activeDocId]) {
-          s.updateDoc({ md, docsMd: { [s.activeDocId]: md } })
-        }
-      } catch {}
+    // 切换前把未落盘的编辑写回当前文档。CM6 已在 onChange 里写 docsMd，
+    // 这里只兜底 mdContent（代码模式编辑走的是 mdContent）；
+    // 不能再读 s.editor?.getHTML() —— 那是 TipTap 的旧内容，会把 CM6 的编辑覆盖掉。
+    if (s.activeDocId && s.mdContent && s.mdContent !== s.docsMd?.[s.activeDocId]) {
+      s.updateDoc({ docsMd: { [s.activeDocId]: s.mdContent } })
     }
     set({
       activeDocId: id,
@@ -271,18 +267,21 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     const md = getDocMd(id)
     set({ docsMd: next, ...(s.activeDocId === id ? { mdContent: md } : {}) })
     if (s.activeDocId === id) {
-      try { s.editor?.commands?.setContent(mdToHtml(md), { emitUpdate: false }) }
-      catch (e) { silentError('还原出厂内容写入失败', e) }
+      // 动态 import：store 保持同步、CM6 相关代码不进首屏关键路径
+      import('../components/editor/codemirror/registry')
+        .then(m => m.getCM6Editor()?.setText(md))
+        .catch((e) => silentError('还原出厂内容写入失败', e))
     }
   },
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
     docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,
   })),
-  updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => set(() => {
+  updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => set((s: any) => {
     const next: Record<string, any> = {}
     if (params.md !== undefined) next.mdContent = params.md
     if (params.html !== undefined) next.docHTML = params.html
-    if (params.docsMd !== undefined) next.docsMd = params.docsMd
+    // docsMd 是逐文档合并：整体替换会丢掉其它文档已编辑的内容
+    if (params.docsMd !== undefined) next.docsMd = { ...(s.docsMd || {}), ...params.docsMd }
     return next
   }),
 }))
