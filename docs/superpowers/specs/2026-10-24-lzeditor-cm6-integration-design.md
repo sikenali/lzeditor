@@ -11,7 +11,7 @@ LZEditor 当前以 TipTap 3（ProseMirror）为核心，HTML 为内容事实、m
 
 | # | 需求 | 方案归属 |
 |---|------|---------|
-| 1 | toolbar 三组图标间距 | **已取消**（用户指示：toolbar 已实现部分不变） |
+| 1 | toolbar 三组图标间距收紧且协调（ toolbar 其余部分不变） | Phase 0 |
 | 2 | welcome-icon 去线框 | Phase 0 |
 | 3 | ui-input-control 与 DESIGN.md 对齐，全控件审计 | Phase 0 |
 | 4 | open-knowledge AI 对话框（点 AI 图标右侧滑出） | Phase 5 |
@@ -84,6 +84,7 @@ LZEditor 当前以 TipTap 3（ProseMirror）为核心，HTML 为内容事实、m
 
 ### D7 快修与边界（Phase 0）
 
+- toolbar：三组 `toolbar-group` 内部按钮间距收紧到协调的 4px 级（仅改间距，不改结构/图标/标签，按 `.navtop` 三档响应式分别微调）。
 - welcome-icon：移除线框容器背景，logo 直接显示。
 - 控件审计：`ui-input-control` 及 ui-select/ui-switch/ui-button/ui-modal 等逐个对照 `/home/jingle/opc/DESIGN.md` §8/§10：补齐 focus 主色边框 + 外发光、暗色模式对比度。
 - 文档未打开时内容区显示 `WelcomeScreen`；`meta-tabs`（DocumentMetaBar）仅在打开 md 文档时渲染。
