@@ -59,6 +59,13 @@
   overflow: hidden;
 }
 
+/* 实时预览（live-preview.ts）使用的主题变量，对齐现有设计 token */
+.cm6-editor-container {
+  --lz-primary: var(--color-primary);
+  --lz-outline-variant: var(--color-border-soft);
+  --lz-inline-code-bg: var(--color-bg-secondary);
+}
+
 .cm6-editor-container .cm-editor {
   height: 100%;
 }

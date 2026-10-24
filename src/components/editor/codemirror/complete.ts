@@ -73,7 +73,7 @@ export function snippetCompletionSource(): CompletionSource {
     const options: Completion[] = matches.map(s => ({
       label: s.label,
       detail: s.trigger,
-      type: 'text',
+      type: 'snippet',
       apply: (view) => {
         view.dispatch({
           changes: { from: match.from, to: match.from + match.text.length, insert: s.body },

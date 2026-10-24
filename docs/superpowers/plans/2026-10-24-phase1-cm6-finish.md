@@ -84,3 +84,62 @@
 - S0-4 表格单元格级操作（增删行列/合并/拆列）在 CM6 模式下不支持：CM6 表格是 markdown 源文本，`tableAction` 只保留「插入表格」，单元格操作走原 TipTap 分支（CM6 模式无表格插件，按钮不可用）。
 - S0-4 图片 `align` 参数在 CM6 模式下忽略（markdown 图片无对齐语义），待 S1 阶段补齐。
 - S0-5 使用了 @codemirror/search v6.7.2 实际导出的 `findNext`/`findPrevious`/`replaceNext`/`replaceAll`（v6.7.2 无 `selectNextSearchResult`/`replaceSelection` 导出）；命中数用 `getSearchQuery` + 全文匹配计算。
+
+## Stage 1 — 设置项真实生效（并行实现遗留的空壳 setter 补齐）
+
+**前置：** 并行会话提交的 CM6 内核中，`CM6Editor.tsx` 已把 settings 全部接到 `editor.set*()`，但 `editor.ts` 里多数 setter 只改一个模块级 `current*` 变量、或只切 CSS class，实际不生效。本阶段把它们全部接到 CodeMirror 的 `Compartment` / facet。
+
+### 任务 S1-1：Compartment 化六个可开关扩展
+**文件：** `src/components/editor/codemirror/editor.ts`
+
+- [x] 新增 7 个 `Compartment`：`lineNumbersC / tabSizeC / wrapC / typewriterC / currentLineC / livePreviewC / continuationC`。
+- [x] `setLineNumbers`：`lineNumbersC.reconfigure(on ? lineNumbers() : [])`（原实现只记变量）。
+- [x] `setSoftWrap`：`wrapC.reconfigure(on ? EditorView.lineWrapping : [])`，保留原 CSS class 切换作为兜底。
+- [x] `setCurrentLine`：`currentLineC.reconfigure(on ? [highlightActiveLine(), highlightActiveLineGutter()] : [])`。
+- [x] `setTypewriter`：`typewriterC.reconfigure(on ? typewriterExtension : [])` + 原 scroll listener 挂卸。
+- [x] `setLivePreview`：`livePreviewC.reconfigure(on ? livePreviewExtension : [])`——此前实时预览扩展完全没被使用。
+- [x] `setTabSize`：`tabSizeC.reconfigure(EditorState.tabSize.of(n))`，越界钳到 1–16，未变化时不 dispatch。
+- [x] keymap 拆分：`undoKeymap`（Mod-z / Mod-Shift-z）常驻；`continuationKeymap`（Enter 续写有序/无序/任务列表）受开关控制。
+- [x] 扩展数组初值对齐 settingsStore 默认值（行号关、软换行开、当前行高亮开、续写开、打字机关、实时预览关、缩进 2），并同步模块级 `current*` 初值，避免首次挂载空跑一次 dispatch。
+
+### 任务 S1-2：snippets 补全链路接通
+**文件：** `src/components/editor/codemirror/editor.ts`、`complete.ts`
+
+- [x] 装入 `completionSetup([snippetSource])` + `snippetTabKeymap` + `snippetDataField`。
+- [x] 创建编辑器时一次性 `setSnippetImpl(snippetCompletionSource())`：`snippetSource` 委派给模块级实现，不装配则补全永远返回 null。
+- [x] `setSnippets(list)` 改为 `dispatch({ effects: setSnippetDataEffect({ snippets: list }) })`（原实现丢弃参数）。
+- [x] `complete.ts` 中 snippet 的 `type: 'text'` → `'snippet'`：Tab keymap 判断 `selectedCompletion().type === 'snippet'`，原值导致 Tab 键永远无法接受补全。
+
+### 任务 S1-3：实时预览样式接入设计 token
+**文件：** `src/styles/app.css`
+
+- [x] `.cm6-editor-container` 定义 `--lz-primary: var(--color-primary)`、`--lz-outline-variant: var(--color-border-soft)`、`--lz-inline-code-bg: var(--color-bg-secondary)`，live-preview 的 baseTheme 才能随明暗主题走。
+
+### 任务 S1-4：设置面板新增「编辑器内核」区块
+**文件：** `src/components/panels/settings/EditorSettingsTab.tsx`
+
+- [x] 新增区块并置于首位：内核开关（`useCM6Editor`，关闭即回退 TipTap）、当前行高亮、自动换行、回车续写列表、括号自动配对、实时预览、缩进大小（2/4/8 segmented）。
+- [x] 与旧区块去重：行号、拼写检查、打字机模式沿用既有行，不重复添加。
+
+### 任务 S1-5：边界静态断言补齐
+**文件：** `tests/cm6-core-boundary.test.mjs`
+
+- [x] 追加断言：Compartment 必须存在；六个 setter 必须走 `reconfigure`；`setTabSize` 不能是空实现；`setSnippets` 不能丢参数；snippet `type` 必须为 `'snippet'`；设置面板必须暴露 7 个内核相关键。
+
+**实现偏差记录（实际做法与计划不同之处）：**
+
+- CM6 的 `Facet.of()` 返回 Extension 而不是 `StateEffect`，缩进大小无法用 `dispatch({ effects })` 改，只能走 Compartment reconfigure（与其余开关写法统一）。
+- 实时预览的图片 resolver（`setLivePreviewImages`）未接：截图与本地图片在 `image-input.ts` 里已全部转成 `data:` URL，live-preview 原生支持 `data:image/`，相对路径图片在 CM6 下没有文件服务器可解析，暂不实现。
+- `autoCompleteMarkdownPairs`（旧内核设置）与 `autoPair`（CM6）保持分离：新增的「输入括号时自动配对」只写 `autoPair`，未与旧设置合并，避免切换内核时互相覆盖。
+- 缩进大小只作用于 Tab 键与空白宽度（`EditorState.tabSize` facet），未做额外智能缩进——markdown 不需要。
+- CM6 下表格仍无单元格级操作（见 S0-4 偏差），本阶段未补。
+
+## Stage 2 — 移除 TipTap（待用户验收 Stage 0/1 后再动）
+
+- [ ] S2-1 删除 `LZEditor.tsx` 的 TipTap 实例、`EditorContent` / `BubbleMenu` 与 `useCM6` 渲染分支，编辑器容器只挂 `CM6Editor`。
+- [ ] S2-2 删除 `src/components/editor/extensions/`（8 文件），`package.json` 移除 `@tiptap/*`（13 包）与 `@memfoldai/tiptap-search-and-replace`，重装依赖。
+- [ ] S2-3 `editorStore` 去掉 TipTap `Editor` 类型依赖，类型改为 markdown 事实源；`SidebarOutline.tsx` 改从 `docsMd` 解析 heading。
+- [ ] S2-4 `useAI.ts` 去掉 `@tiptap/ai-toolkit`，提示词与工具调用走纯文本接口。
+- [ ] S2-5 删除 `editorActions.tsx` / `SearchPanel.tsx` 中的 CM6 分支判断与 TipTap 降级路径，统一 CM6。
+- [ ] S2-6 清理重复定义：`codemirror/types.ts` 与 `codemirror/registry.ts` 内容重复，二选一。
+- [ ] S2-7 `vite.config.ts` 的 `vendor-tiptap` manualChunks 改为 `vendor-codemirror`，验证主 chunk 体积下降。

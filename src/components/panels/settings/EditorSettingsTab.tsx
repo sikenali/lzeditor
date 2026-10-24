@@ -20,6 +20,50 @@ const SPELL_CHECK_LANGS = [
   { value: 'en-GB', label: '英语 (英国)' }, { value: 'ja-JP', label: '日语' }, { value: 'ko-KR', label: '韩语' },
 ]
 
+function renderKernelSection(s: any, u: any) {
+  const TAB_SIZES = [2, 4, 8]
+
+  return (
+    <div className="settings-section">
+      <div className="settings-section-title"><span>编辑器内核</span></div>
+      <UDSettingRow icon="ri-code-s-slash-fill" label="使用新内核 (CodeMirror 6)" desc="开启后编辑区由 CodeMirror 6 渲染，支持实时预览与行号；关闭则回退到旧的富文本编辑器">
+        <UiSwitch size="sm" checked={ s.useCM6Editor !== false } onChange={ v => u('useCM6Editor', v) } />
+      </UDSettingRow>
+      <div className="setting-divider" />
+      <UDSettingRow icon="ri-focus-2" label="高亮当前行" desc="在光标所在的行显示底色">
+        <UiSwitch size="sm" checked={ s.currentLine !== false } onChange={ v => u('currentLine', v) } />
+      </UDSettingRow>
+      <div className="setting-divider" />
+      <UDSettingRow icon="ri-text-wrap" label="自动换行" desc="长行自动折行，而不是横向滚动">
+        <UiSwitch size="sm" checked={ s.softWrap !== false } onChange={ v => u('softWrap', v) } />
+      </UDSettingRow>
+      <div className="setting-divider" />
+      <UDSettingRow icon="ri-list-check-2" label="回车自动续写列表" desc="在列表项后回车自动添加 - 或 1. 等序号">
+        <UiSwitch size="sm" checked={ s.continueLists !== false } onChange={ v => u('continueLists', v) } />
+      </UDSettingRow>
+      <div className="setting-divider" />
+      <UDSettingRow icon="ri-braces-fill" label="输入括号时自动配对" desc="输入 ( 「 ` 等符号时自动补全另一半">
+        <UiSwitch size="sm" checked={ s.autoPair !== false } onChange={ v => u('autoPair', v) } />
+      </UDSettingRow>
+      <div className="setting-divider" />
+      <UDSettingRow icon="ri-flashlight-line" label="实时预览" desc="边输入边渲染标题、列表、图片等样式">
+        <UiSwitch size="sm" checked={ s.livePreview || false } onChange={ v => u('livePreview', v) } />
+      </UDSettingRow>
+      <div className="setting-divider" />
+      <div className="setting-row">
+        <div className="setting-label"><span>缩进大小</span><span className="setting-hint">Tab 键与空格的宽度</span></div>
+        <div className="segmented-control">
+          {TAB_SIZES.map(n => (
+            <button key={n} className={`segmented-btn ${(s.tabSize || 2) === n ? 'active' : ''}`} onClick={() => u('tabSize', n)}>
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function renderGeneralSection(s: any, u: any) {
 
   return (
@@ -166,6 +210,7 @@ function renderEditModeSection(s: any, u: any) {
 
 export const EditorSettingsTab: React.FC<{ s: any; u: any }> = ({ s, u }) => (
   <>
+    {renderKernelSection(s, u)}
     {renderGeneralSection(s, u)}
     {renderLocalizationSection(s, u)}
     {renderEditModeSection(s, u)}

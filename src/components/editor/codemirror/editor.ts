@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view'
-import { type Extension } from '@codemirror/state'
+import { EditorState, type Extension, Compartment } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
 import { history, undo, redo } from '@codemirror/commands'
 import {
@@ -14,14 +14,15 @@ import {
 } from '@codemirror/search'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
-import { drawSelection, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view'
+import { drawSelection, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view'
 import { type FormatCommand, runFormatCommand, tableGrid as cmTableGrid } from './commands'
 import { setupAutoPair, teardownAutoPair } from './autopair'
 import { setupSmartPaste, teardownSmartPaste } from './smart-paste'
 import { setupImageDropPaste, teardownImageDropPaste, setImageHandler } from './image-input'
 import { typewriterExtension, enableTypewriter, disableTypewriter } from './typewriter'
-import { setSnippetImpl, snippetCompletionSource } from './complete'
+import { setSnippetImpl, snippetCompletionSource, snippetSource, snippetDataField, completionSetup, snippetTabKeymap, setSnippetDataEffect } from './complete'
 import type { MarkdownSnippet } from './snippets'
+import { livePreviewExtension } from './live-preview'
 
 export type { FormatCommand }
 
@@ -66,9 +67,13 @@ export interface CM6EditorCommands {
   view: EditorView
 }
 
-const basicKeymap = keymap.of([
+const undoKeymap = keymap.of([
   { key: 'Mod-z', run: undo, preventDefault: true },
   { key: 'Mod-Shift-z', run: redo, preventDefault: true },
+])
+
+// 列表/任务项回车续写：受「续写列表」开关控制，单独成 keymap 便于动态增删
+const continuationKeymap = keymap.of([
   { key: 'Enter', run: (view) => {
     const state = view.state
     const { from } = state.selection.main
@@ -98,16 +103,31 @@ const basicKeymap = keymap.of([
 export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
   const { parent, doc, onChange: _onChange, onCursor } = options
 
+  // 可开关的扩展统一走 Compartment，set* 通过 reconfigure 增删
+  const lineNumbersC = new Compartment()
+  const tabSizeC = new Compartment()
+  const wrapC = new Compartment()
+  const typewriterC = new Compartment()
+  const currentLineC = new Compartment()
+  const livePreviewC = new Compartment()
+  const continuationC = new Compartment()
+
   const extensions: Extension[] = [
     markdown({ base: markdownLanguage, codeLanguages: languages }),
+    tabSizeC.of(EditorState.tabSize.of(2)),
     drawSelection(),
     history(),
-    highlightActiveLine(),
-    highlightActiveLineGutter(),
     search({ top: true }),
-    basicKeymap,
-    typewriterExtension,
-    EditorView.lineWrapping,
+    undoKeymap,
+    lineNumbersC.of([]),
+    currentLineC.of([highlightActiveLine(), highlightActiveLineGutter()]),
+    wrapC.of(EditorView.lineWrapping),
+    typewriterC.of([]),
+    livePreviewC.of([]),
+    continuationC.of(continuationKeymap),
+    completionSetup([snippetSource]),
+    snippetTabKeymap,
+    snippetDataField,
     EditorView.updateListener.of((update) => {
       if (update.docChanged) options.onChange()
       if (update.docChanged || update.selectionSet) {
@@ -131,13 +151,14 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
 
   let currentTypewriter = false
   let currentLivePreview = false
-  let currentAutoPair = false
+  let currentAutoPair = true
   let currentContinueLists = true
-  let currentLineNumbers = true
+  let currentLineNumbers = false
   let currentSpellcheck = true
   let currentSoftWrap = true
   let currentCurrentLine = true
 
+  setSnippetImpl(snippetCompletionSource())
   setupAutoPair(view, true)
   setupSmartPaste(view)
   setupImageDropPaste(view)
@@ -268,10 +289,15 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     undo(): boolean { return undo(view) },
     redo(): boolean { return redo(view) },
     focus(): void { view.focus() },
-    setTabSize(_size: number): void {},
+    setTabSize(size: number): void {
+      const n = Math.max(1, Math.min(16, Math.round(size)))
+      if (view.state.facet(EditorState.tabSize) === n) return
+      view.dispatch({ effects: tabSizeC.reconfigure(EditorState.tabSize.of(n)) })
+    },
     setCurrentLine(on: boolean): void {
       if (on === currentCurrentLine) return
       currentCurrentLine = on
+      view.dispatch({ effects: currentLineC.reconfigure(on ? [highlightActiveLine(), highlightActiveLineGutter()] : []) })
     },
     setAutoPair(on: boolean): void {
       if (on === currentAutoPair) return
@@ -282,10 +308,12 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     setContinueLists(on: boolean): void {
       if (on === currentContinueLists) return
       currentContinueLists = on
+      view.dispatch({ effects: continuationC.reconfigure(on ? continuationKeymap : []) })
     },
     setLineNumbers(on: boolean): void {
       if (on === currentLineNumbers) return
       currentLineNumbers = on
+      view.dispatch({ effects: lineNumbersC.reconfigure(on ? lineNumbers() : []) })
     },
     setSpellcheck(on: boolean): void {
       if (on === currentSpellcheck) return
@@ -295,22 +323,26 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     setSoftWrap(on: boolean): void {
       if (on === currentSoftWrap) return
       currentSoftWrap = on
+      view.dispatch({ effects: wrapC.reconfigure(on ? EditorView.lineWrapping : []) })
       if (on) view.dom.classList.add('cm-lineWrapping')
       else view.dom.classList.remove('cm-lineWrapping')
     },
     setTypewriter(on: boolean): void {
       if (on === currentTypewriter) return
       currentTypewriter = on
+      view.dispatch({ effects: typewriterC.reconfigure(on ? typewriterExtension : []) })
       if (on) enableTypewriter(view)
       else disableTypewriter(view)
     },
     setLivePreview(on: boolean): void {
       if (on === currentLivePreview) return
       currentLivePreview = on
+      view.dispatch({ effects: livePreviewC.reconfigure(on ? livePreviewExtension : []) })
     },
-    setSnippets(_snippetList: MarkdownSnippet[]): void {
-      setSnippetImpl(snippetCompletionSource())
+    setSnippets(snippetList: MarkdownSnippet[]): void {
+      view.dispatch({ effects: setSnippetDataEffect({ snippets: snippetList }) })
     },
+
     onScroll(handler: () => void): () => void {
       const el = view.scrollDOM
       el.addEventListener('scroll', handler, { passive: true })

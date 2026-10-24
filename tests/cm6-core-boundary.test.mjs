@@ -56,4 +56,22 @@ assert.match(app, /buildTableMd/, '表格对话框必须能产出 markdown 表�
 
 // ── CM6 实例必须常驻 ──
 assert.match(lzeditor, /cm6Visible \? 'block' : 'none'/, '切换模式时必须用 display 隐藏而不是卸载 CM6')
+
+// ── 设置项必须真的落 CM6，不能只记变量 ──
+const complete = read('src/components/editor/codemirror/complete.ts')
+const settingsTab = read('src/components/panels/settings/EditorSettingsTab.tsx')
+assert.match(editorTs, /new Compartment\(\)/, '可开关扩展必须走 Compartment')
+assert.match(editorTs, /tabSizeC\.reconfigure\(EditorState\.tabSize\.of\(n\)\)/, 'setTabSize 必须真正改缩进大小')
+assert.match(editorTs, /lineNumbersC\.reconfigure\(on \? lineNumbers\(\)/, '行号必须能真正增删')
+assert.match(editorTs, /wrapC\.reconfigure\(on \? EditorView\.lineWrapping/, '软换行必须走 Compartment')
+assert.match(editorTs, /currentLineC\.reconfigure/, '当前行高亮必须走 Compartment')
+assert.match(editorTs, /continuationC\.reconfigure/, '续写列表必须走 Compartment')
+assert.match(editorTs, /typewriterC\.reconfigure/, '打字机模式必须走 Compartment')
+assert.match(editorTs, /livePreviewC\.reconfigure\(on \? livePreviewExtension/, '实时预览必须真正装入/移除扩展')
+assert.doesNotMatch(editorTs, /setTabSize\(_size: number\): void \{\}/, 'setTabSize 不能是空实现')
+assert.match(editorTs, /setSnippetDataEffect\(\{ snippets: snippetList \}\)/, 'setSnippets 不能丢弃参数')
+assert.match(complete, /type: 'snippet'/, 'snippet 补全 type 必须与 Tab keymap 判断一致')
+for (const key of ['useCM6Editor', 'softWrap', 'currentLine', 'continueLists', 'autoPair', 'livePreview', 'tabSize']) {
+  assert.match(settingsTab, new RegExp(`u\\('${key}',`), `设置面板必须暴露 ${key}`)
+}
 console.log('cm6 core boundary ok')
