@@ -190,6 +190,14 @@ export interface SettingsState {
   cornerQuotes?: boolean
   fullwidthSymbols?: boolean
   showLineNumbers?: boolean
+  // ── CodeMirror 6 settings ──
+  useCM6Editor?: boolean
+  autoPair?: boolean
+  continueLists?: boolean
+  currentLine?: boolean
+  softWrap?: boolean
+  tabSize?: number
+  livePreview?: boolean
   // ── AI Settings (bid-maker style) ──
   customApiFormat?: 'openai' | 'anthropic'
   customEndpoint?: string

@@ -44,3 +44,26 @@
   overflow: hidden;
   position: relative;
 }
+
+/* CodeMirror 6 editor */
+.cm6-editor-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cm6-editor-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cm6-editor-container .cm-editor {
+  height: 100%;
+}
+
+.cm6-editor-container .cm-scroller {
+  overflow: auto;
+}
+

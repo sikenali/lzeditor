@@ -84,6 +84,14 @@ export const DEFAULT_SETTINGS: SettingsState = {
   cornerQuotes: false,
   fullwidthSymbols: false,
   showLineNumbers: false,
+  // ── CodeMirror 6 settings ──
+  useCM6Editor: true,
+  autoPair: true,
+  continueLists: true,
+  currentLine: true,
+  softWrap: true,
+  tabSize: 2,
+  livePreview: false,
   // ── Typography & reading ──
   headingStyles: {},
   textIndent: false,

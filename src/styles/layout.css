@@ -1867,3 +1867,129 @@
 .sidebar-library .library-empty-icon {
   color: var(--t-fg-1); opacity: var(--t-op-1);
 }
+
+/* ── Floating Status Bar (vertical pill, bottom-right) ── */
+.statusbar-float-toggle {
+  position: fixed;
+  bottom: 76px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--chrome-surface-border, var(--border-subtle));
+  background: var(--chrome-surface, var(--color-bg-white));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.08);
+  cursor: pointer;
+  color: var(--chrome-statusbar-text, var(--color-text-secondary));
+  font-size: 12px;
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  user-select: none;
+}
+.statusbar-float-toggle:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.10);
+  transform: translateY(-1px);
+  color: var(--accent-primary);
+}
+.statusbar-float-toggle .remix { font-size: 15px; flex-shrink: 0; }
+.statusbar-float-toggle-summary {
+  font-size: 11px;
+  color: var(--chrome-statusbar-muted, var(--color-text-muted));
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Floating panel */
+.statusbar-float-panel {
+  position: fixed;
+  bottom: 112px;
+  right: 20px;
+  z-index: 200;
+  width: 180px;
+  background: var(--chrome-surface, var(--color-bg-white));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--chrome-surface-border, var(--border-subtle));
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  padding: 10px 0;
+  animation: statusbar-float-in 0.18s var(--ease);
+  font-size: 12px;
+}
+@keyframes statusbar-float-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.statusbar-float-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 8px;
+  border-bottom: 1px solid var(--chrome-surface-border, var(--border-subtle));
+  margin-bottom: 6px;
+}
+.statusbar-float-panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--chrome-statusbar-muted, var(--color-text-muted));
+}
+.statusbar-float-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border: none; background: transparent;
+  border-radius: 6px;
+  color: var(--chrome-statusbar-muted, var(--color-text-muted));
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.statusbar-float-close:hover {
+  background: var(--bg-hover);
+  color: var(--color-text-primary);
+}
+.statusbar-float-close .remix { font-size: 13px; }
+
+.statusbar-float-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  color: var(--chrome-statusbar-text, var(--color-text-body));
+  cursor: default;
+  transition: background var(--t-fast);
+  border-radius: 0;
+}
+.statusbar-float-row:hover { background: var(--bg-hover); }
+.statusbar-float-btn { cursor: pointer; }
+.statusbar-float-btn.active .remix { color: var(--accent-primary); }
+
+.statusbar-float-icon {
+  display: flex;
+  align-items: center;
+  width: 16px;
+  flex-shrink: 0;
+}
+.statusbar-float-icon .remix { font-size: 13px; color: var(--chrome-statusbar-muted, var(--color-text-muted)); }
+.statusbar-float-icon .remix.active { color: var(--accent-primary); }
+.statusbar-sync-dot.synced .remix { color: var(--accent-primary); }
+.statusbar-sync-dot.saving .remix  { color: var(--color-text-muted); }
+
+.statusbar-float-label { flex: 1; color: var(--chrome-statusbar-text, var(--color-text-body)); }
+.statusbar-float-value { flex: 1; font-weight: 500; color: var(--chrome-statusbar-text, var(--color-text-body)); }
+.statusbar-float-unit  { color: var(--chrome-statusbar-muted, var(--color-text-muted)); font-size: 11px; }
+
+.statusbar-float-divider {
+  height: 1px;
+  background: var(--chrome-surface-border, var(--border-subtle));
+  margin: 4px 12px;
+}

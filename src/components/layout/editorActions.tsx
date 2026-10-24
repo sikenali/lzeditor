@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
+import { getCM6Editor } from '../editor/codemirror/registry'
+import type { FormatCommand } from '../editor/codemirror/commands'
 
 export interface MenuItem {
   icon?: string
@@ -130,8 +133,25 @@ export function useEditorActions() {
   const editor = useEditorStore((s: any) => s.editor)
   const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
   const createDoc = useEditorStore((s: any) => s.createDoc)
+  const useCM6 = useSettingsStore((s) => s.useCM6Editor)
 
   const applyCmd = useCallback((cmd: string) => {
+    if (useCM6) {
+      const cm6 = getCM6Editor()
+      if (cm6) {
+        const cmdMap: Record<string, FormatCommand> = {
+          bold: 'bold', italic: 'italic', strikethrough: 'strikethrough',
+          code: 'code', link: 'link', image: 'image',
+          quote: 'quote', 'bullet-list': 'bullet-list', 'numbered-list': 'numbered-list',
+          'task-list': 'task-list', 'code-block': 'code-block', table: 'table', rule: 'rule',
+          h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
+          paragraph: 'paragraph',
+        }
+        const fc = cmdMap[cmd]
+        if (fc) cm6.run(fc)
+        return
+      }
+    }
     if (!editor) return
     editor.chain().focus()
     const ok = (editor.commands as any)[cmd]?.()
@@ -143,9 +163,24 @@ export function useEditorActions() {
       const fn = markMap[cmd]
       if (fn) (editor.commands as any)[fn]()
     }
-  }, [editor])
+  }, [editor, useCM6])
 
   const formatAction = useCallback((action: string) => {
+    if (useCM6) {
+      const cm6 = getCM6Editor()
+      if (cm6) {
+        const cmdMap: Record<string, FormatCommand> = {
+          h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
+          link: 'link', image: 'image',
+          'bullet-list': 'bullet-list', 'numbered-list': 'numbered-list', 'task-list': 'task-list',
+          'code-block': 'code-block', table: 'table', rule: 'rule',
+          quote: 'quote', paragraph: 'paragraph',
+        }
+        const fc = cmdMap[action]
+        if (fc) cm6.run(fc)
+        return
+      }
+    }
     if (!editor) return
     const chain = editor.chain().focus()
     if (action === 'link') { setInsertPanel('link'); return }
@@ -168,7 +203,7 @@ export function useEditorActions() {
       case 'sub': chain.toggleSubscript(); break
     }
     chain.run()
-  }, [editor, setInsertPanel])
+  }, [editor, setInsertPanel, useCM6])
 
   const insertAction = useCallback((action: string) => {
     if (!editor) return

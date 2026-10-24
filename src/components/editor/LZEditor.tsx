@@ -28,6 +28,7 @@ import { getDocMd, getDocHtml } from '../../utils/docSource'
 
 import { useTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
+import { CM6Editor } from './CM6Editor'
 
 const CONTENT_WIDTH_MAP: Record<string, string> = {
   '960': '960px',
@@ -416,7 +417,8 @@ export const LZEditor = () => {
     if (spellCheckLang) pm.setAttribute('lang', spellCheckLang)
   }, [enableSpellCheck, spellCheckLang])
 
-  // ── Markdown 符号键：选中文字后按 * _ ~ = 快速设置格式 ──
+  // ── CodeMirror 6 settings ──
+  const useCM6 = useSettingsStore((s) => s.useCM6Editor)
   const allowMarkdownSymbols = useSettingsStore((s) => s.allowMarkdownSymbols)
   useEffect(() => {
     const el = editorRef.current
@@ -646,7 +648,7 @@ export const LZEditor = () => {
     }
     el.addEventListener('input', handleInput as EventListener)
     return () => el.removeEventListener('input', handleInput as EventListener)
-  }, [editor, autoCompleteEnabled, smartQuotesEnabled, autoSpaceCJKEnabled, cornerQuotesEnabled, fullwidthSymbolsEnabled])
+  }, [editor, autoCompleteEnabled, smartQuotesEnabled, autoSpaceCJKEnabled, cornerQuotesEnabled, fullwidthSymbolsEnabled, useCM6])
 
   // Line numbers
   const showLineNumbers = useSettingsStore((s) => s.showLineNumbers)
@@ -750,7 +752,7 @@ export const LZEditor = () => {
 
   return (
     <div className={`lz-editor${showLineNumbers ? ' has-line-numbers' : ''}`} ref={editorRef}>
-      {lineNumbersEl}
+      {!useCM6 && lineNumbersEl}
       <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}${appMode === 'read' ? ' lz-editor-content--read' : ''}`}>
         {appMode === 'read' && (
           <div className="read-mode-inline">
@@ -924,8 +926,15 @@ export const LZEditor = () => {
         <div className="lz-editor-page">
           {appMode !== 'read' && !codeMode && (
             <>
-              <EditorContent editor={editor} />
-              {editor && (
+              {useCM6 ? (
+                <CM6Editor
+                  docId={activeDocId || 'readme'}
+                  initialContent={mdContent}
+                />
+              ) : (
+                <EditorContent editor={editor} />
+              )}
+              {!useCM6 && editor && (
                 <BubbleMenu editor={editor}>
                   <button className="format-chip" onClick={() => editor.chain().focus().toggleBold().run()} title="粗体"><span className="remix ri-bold"></span></button>
                   <button className="format-chip" onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体"><span className="remix ri-italic"></span></button>
@@ -938,13 +947,15 @@ export const LZEditor = () => {
           )}
         </div>
       </div>
-      <SlashCommand
-        position={slashPosition}
-        visible={slashVisible}
-        filter={slashFilter}
-        onClose={hideSlash}
-        editor={editor}
-      />
+      {!useCM6 && (
+        <SlashCommand
+          position={slashPosition}
+          visible={slashVisible}
+          filter={slashFilter}
+          onClose={hideSlash}
+          editor={editor}
+        />
+      )}
     </div>
   )
 }
