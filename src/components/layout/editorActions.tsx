@@ -12,7 +12,7 @@ export interface MenuItem {
 
 export const NEW_ITEMS: MenuItem[] = [
   { icon: 'ri-file-add-line', label: '新建文档', action: 'new' },
-  { icon: 'ri-folder-open-line', label: '打开本地文件 / 模板', action: 'open' },
+  { icon: 'ri-folder-open-line', label: '新建文件-模板', action: 'open' },
   { icon: 'ri-folder-line', label: '打开文件夹…', action: 'openFolder' },
 ]
 
