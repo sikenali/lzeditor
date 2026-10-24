@@ -446,3 +446,11 @@
   outline: none;
   box-shadow: 0 0 0 2px var(--color-bg-white), 0 0 0 4px var(--accent-a60);
 }
+
+/* DESIGN.md §10.2：focus 主色边框 + 外发光 */
+.ui-input:focus-within,
+.ui-select-trigger:focus,
+.ui-select-trigger:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
