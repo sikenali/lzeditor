@@ -5,18 +5,22 @@ import { useSettingsStore } from '../../store/settingsStore'
 export const DocumentMetaBar: React.FC = () => {
   const docs = useEditorStore((s: any) => s.docs)
   const activeDocId = useEditorStore((s: any) => s.activeDocId)
+  const showWelcome = useEditorStore((s: any) => s.showWelcome)
   const switchDoc = useEditorStore((s: any) => s.switchDoc)
   const closeDoc = useEditorStore((s: any) => s.closeDoc)
   const enableTabs = useSettingsStore((s) => s.enableTabs !== false)
   const [hoveredTab, setHoveredTab] = useState<string | null>(null)
 
-  if (!enableTabs) return null
+  const userDocs = docs.filter((doc: any) => !doc.system)
+  const hasDoc = !!activeDocId && userDocs.length > 0
+
+  if (!enableTabs || showWelcome || !hasDoc) return null
 
   return (
     <div className="document-meta-bar">
       {/* Tab bar */}
       <div className="meta-tabs">
-        {docs.filter((doc: any) => !doc.system).map((doc: { id: string; title: string }) => {
+        {userDocs.map((doc: { id: string; title: string }) => {
           const isActive = doc.id === activeDocId
           const isHovered = hoveredTab === doc.id
           return (
