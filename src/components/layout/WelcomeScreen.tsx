@@ -33,11 +33,7 @@ export const WelcomeScreen: React.FC = () => {
   return (
     <div className="welcome-screen">
       <div className="welcome-column">
-        <div className="welcome-icon">
-          <div className="welcome-icon-inner">
-            <img className="welcome-icon-logo" src="/logo.svg" alt="LZEditor" />
-          </div>
-        </div>
+        <img className="welcome-icon-logo" src="/logo.svg" alt="LZEditor" />
 
         <h1 className="welcome-title">欢迎使用 LZEditor</h1>
 
