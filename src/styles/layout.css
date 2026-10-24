@@ -30,21 +30,21 @@
   gap: 16px;
 }
 .navtop .toolbar-group {
-  gap: 6px;
+  gap: 4px;
 }
 /* 20 个工具栏按钮均为固定宽度，窄屏下会整排溢出、把「导出/设置」推出可视区。
    按断点收窄按钮宽度，保证任意常见屏宽下都能完整排下。 */
 @media (max-width: 1720px) {
   .navtop .toolbar-btn { width: 66px; }
-  .navtop .toolbar-group { gap: 5px; }
+  .navtop .toolbar-group { gap: 3px; }
 }
 @media (max-width: 1480px) {
   .navtop .toolbar-btn { width: 56px; }
-  .navtop .toolbar-group { gap: 4px; }
+  .navtop .toolbar-group { gap: 3px; }
 }
 @media (max-width: 1300px) {
   .navtop .toolbar-btn { width: 48px; }
-  .navtop .toolbar-group { gap: 3px; }
+  .navtop .toolbar-group { gap: 2px; }
   .navtop .toolbar-label { font-size: 11px; }
 }
 .navtop .toolbar-group--middle {
