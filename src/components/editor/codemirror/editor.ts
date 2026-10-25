@@ -25,6 +25,14 @@ import { setSnippetImpl, snippetCompletionSource, snippetSource, snippetDataFiel
 import { slashPaletteExtension } from './slash'
 import type { MarkdownSnippet } from './snippets'
 import { livePreviewExtension } from './live-preview'
+import { focusModeExtension, enableFocusMode } from './focus-mode'
+
+/** 中英混排词数：CJK 字符逐个计词，其余部分按空白切分。 */
+export function countWords(text: string): number {
+  const cjkChars = (text.match(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u3040-\u30ff]/g) || []).length
+  const rest = text.replace(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u3040-\u30ff]/g, ' ')
+  return cjkChars + rest.split(/\s+/).filter(Boolean).length
+}
 
 export type { FormatCommand }
 
@@ -62,7 +70,8 @@ export interface CM6EditorCommands {
   setAutoPair: (on: boolean) => void
   setContinueLists: (on: boolean) => void
   setLineNumbers: (on: boolean) => void
-  setSpellcheck: (on: boolean) => void
+  setSpellcheck: (on: boolean, lang?: string) => void
+  setFocusMode: (on: boolean) => void
   setSoftWrap: (on: boolean) => void
   setTypewriter: (on: boolean) => void
   setLivePreview: (on: boolean) => void
@@ -143,6 +152,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     wrapC.of(EditorView.lineWrapping),
     typewriterC.of([]),
     livePreviewC.of([]),
+    focusModeExtension,
     continuationC.of(continuationKeymap),
     hardBreakKeymap,
     completionSetup([snippetSource]),
@@ -158,8 +168,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
         onCursor(line.number, from - line.from + 1)
         if (options.onCounts) {
           const text = update.state.doc.toString()
-          const words = text.split(/\s+/).filter(Boolean).length
-          options.onCounts(words, text.length)
+          options.onCounts(countWords(text), text.length)
         }
       }
     }),
@@ -173,6 +182,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
 
   let currentTypewriter = false
   let currentLivePreview = false
+  let currentFocusMode = false
   let currentAutoPair = true
   let currentContinueLists = true
   let currentLineNumbers = false
@@ -338,10 +348,16 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
       currentLineNumbers = on
       view.dispatch({ effects: lineNumbersC.reconfigure(on ? lineNumbers() : []) })
     },
-    setSpellcheck(on: boolean): void {
+    setSpellcheck(on: boolean, lang?: string): void {
       if (on === currentSpellcheck) return
       currentSpellcheck = on
       view.dom.setAttribute('spellcheck', on ? 'true' : 'false')
+      if (lang) view.dom.setAttribute('lang', lang)
+    },
+    setFocusMode(on: boolean): void {
+      if (on === currentFocusMode) return
+      currentFocusMode = on
+      view.dispatch({ effects: enableFocusMode.of(on) })
     },
     setSoftWrap(on: boolean): void {
       if (on === currentSoftWrap) return

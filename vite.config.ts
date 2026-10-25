@@ -27,11 +27,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-    },
+    // AI 请求由前端直连 provider，/api 代理已随 server/src/routes 一起删除，不再需要
   },
 })

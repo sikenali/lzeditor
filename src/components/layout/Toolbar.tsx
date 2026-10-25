@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
@@ -7,6 +7,42 @@ import {
   NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
 } from './editorActions'
+
+/**
+ * Electron 自绘窗口按钮。
+ *
+ * main.ts 用 frame: false 创建无边框窗口，操作系统标题栏（含 macOS 红绿灯）一律不出现，
+ * 不自绘的话窗口就无法最小化 / 最大化 / 关闭。浏览器里没有 electronAPI，直接不渲染。
+ */
+const ElectronWindowControls: React.FC = () => {
+  const api = (window as any).electronAPI
+  const [maximized, setMaximized] = useState(false)
+
+  useEffect(() => {
+    if (!api?.isMaximized) return
+    let alive = true
+    const sync = () => { void api.isMaximized().then((v: boolean) => { if (alive) setMaximized(v) }) }
+    sync()
+    window.addEventListener('resize', sync)
+    return () => { alive = false; window.removeEventListener('resize', sync) }
+  }, [api])
+
+  if (!api) return null
+
+  return (
+    <div className="win-controls" aria-label="窗口控制">
+      <button className="win-ctrl" onClick={() => api.minimize?.()} title="最小化" aria-label="最小化">
+        <span className="remix ri-subtract-line"></span>
+      </button>
+      <button className="win-ctrl" onClick={() => api.maximize?.()} title={maximized ? '还原' : '最大化'} aria-label={maximized ? '还原' : '最大化'}>
+        <span className={`remix ${maximized ? 'ri-restore-line' : 'ri-maximize-line'}`}></span>
+      </button>
+      <button className="win-ctrl win-ctrl--close" onClick={() => api.close?.()} title="关闭" aria-label="关闭">
+        <span className="remix ri-close-line"></span>
+      </button>
+    </div>
+  )
+}
 
 export const Toolbar: React.FC = () => {
   const appMode = useEditorStore((s: any) => s.appMode)
@@ -155,6 +191,7 @@ export const Toolbar: React.FC = () => {
             <span className="remix toolbar-icon ri-settings-3-fill"></span>
             <span className="toolbar-label">设置</span>
           </button>
+          <ElectronWindowControls />
         </div>
       </div>
 

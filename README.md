@@ -7,8 +7,8 @@
 <p align="center">
   <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white">
-  <img alt="Express" src="https://img.shields.io/badge/Express-4.21-000000?logo=express&logoColor=white">
-  <img alt="JSON Store" src="https://img.shields.io/badge/Data%20Store-JSON%20File-003B57?logo=json&logoColor=white">
+  <img alt="CodeMirror" src="https://img.shields.io/badge/CodeMirror-6-4EAA25?logo=codemirror&logoColor=white">
+  <img alt="markdown-it" src="https://img.shields.io/badge/markdown-it-15-1A5FB4?logo=markdown&logoColor=white">
   <img alt="Electron" src="https://img.shields.io/badge/Electron-31-4790?logo=electron&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow">
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Win%20|%20Mac%20|%20Linux-lightgrey">
@@ -18,7 +18,7 @@
 
 ## 项目介绍
 
-**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + TipTap，后端采用 Express + 本地 JSON 文件存储（无外部原生依赖），同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
+**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + CodeMirror 6，渲染走自研 markdown-it 方言引擎，全部状态与数据落在浏览器本地存储，无任何服务端业务依赖（本机只留一个零依赖健康检查进程），同时支持 LPK 云部署与 Electron 桌面应用。
 
 ### 核心功能
 
@@ -30,7 +30,7 @@
 | **多文档管理** | 文档列表、新建/重命名/删除、快捷搜索、最近打开记录 |
 | **历史版本** | 自动保存编辑历史，随时回退到任意版本，支持版本对比 |
 | **导出格式** | Markdown、HTML、PDF、DOCX（真实 OOXML）、EPUB（自动切章）、XLSX、PNG/SVG、DrawIO |
-| **API Key 安全存储** | 仅保存在本地，明文不离开设备、不上传任何第三方；服务端以 SHA-256 加盐哈希入库 |
+| **API Key 安全存储** | 仅保存在本机浏览器 `localStorage`，明文不离开设备、不上传任何第三方，无任何服务端中转 |
 | **主题外观** | 浅色/深色主题，编辑区宽度调节，字体大小自定义 |
 | **桌面客户端** | Electron 打包，支持 macOS / Windows / Linux，离线可用 |
 | **LPK 云部署** | 懒猫云一键部署，公网访问，数据持久化到 `/lzcapp/var/data` |
@@ -48,9 +48,7 @@ lzeditor/
 │
 ├── server/
 │   └── src/
-│       ├── index.ts              # Express 服务器入口
-│       ├── routes/               # API 路由
-│       └── providers/            # AI Provider 适配层
+│       └── index.ts              # 零依赖健康检查进程（node:http），LPK health_check 用
 │
 ├── src/
 │   ├── main.tsx                  # React 应用入口
@@ -196,12 +194,11 @@ lzeditor/
 │  └────────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────────┐
-│                    后端服务 (server/src/)                        │
-│  Express + JSON 文件存储（keys.json 存 key 摘要，明文只在浏览器）  │
-│  - routes/chat.ts   AI 代理（Anthropic / OpenAI 兼容）          │
-│  - routes/settings.ts  key 摘要存取                            │
-│  - /api/health  健康检查（lzcinit）                             │
-│  - LPK 云部署兼容（自打包 musl node 运行时）                    │
+│                    本机服务 (server/src/)                        │
+│  零依赖 node:http 健康检查进程，无任何业务路由                    │
+│  - /api/health 与 /health  供 lzcinit health_check 探测          │
+│  - LPK 云部署兼容（自打包 musl node 运行时）                     │
+│  AI 请求与文档数据全部在前端本地完成，不经过本进程                 │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -253,17 +250,26 @@ LZEditor (TipTap Core)
 
 内置厂商预设（可自由覆盖 endpoint）：
 
-| 国内 | 国外 |
-|------|------|
-| 阿里云通义千问、百度文心一言、智谱 GLM、DeepSeek、Moonshot、零一万物 | OpenAI、Anthropic、Google、Mistral、Groq |
+| 厂商 | endpoint | format |
+|------|----------|--------|
+| 阿里云通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | openai |
+| 百度文心一言 | `https://qianfan.baidubce.com/v2` | openai |
+| 智谱 GLM | `https://open.bigmodel.cn/api/paas/v4` | openai |
+| DeepSeek | `https://api.deepseek.com` | openai |
+| Moonshot | `https://api.moonshot.cn/v1` | openai |
+| 零一万物 | `https://api.lingyiwanwu.com/v1` | openai |
+| OpenAI | `https://api.openai.com/v1` | openai |
+| Anthropic | `https://api.anthropic.com/v1` | anthropic |
+| Google Gemini | `https://generativelanguage.googleapis.com/v1beta/openai` | openai |
+| Mistral | `https://api.mistral.ai/v1` | openai |
+| Groq | `https://api.groq.com/openai/v1` | openai |
 
-除 Anthropic 外全部走 OpenAI 兼容模式，所以新增厂商只需加一行 endpoint。
+除 Anthropic 外全部走 OpenAI 兼容模式，所以新增厂商只需在 `ModelSettingsTab.tsx` 的 `PROVIDER_ENDPOINTS` 加一行。
 
 ### 文档持久化
 
-- **浏览器 / 桌面端**: 文档与 API Key 只写在本地 `localStorage`，不上传服务器
-- **服务端**: 不存文档，只落 `keys.json`（key 的加盐 SHA-256 摘要），无外部原生依赖
-- **API Key**: 服务端以 SHA-256 加盐哈希存储，仅用于存在性校验，不可反向解出明文
+- **文档**: 只写在浏览器 `localStorage`，不上传任何服务器，应用里没有文档同步接口
+- **API Key**: 明文只存在本机浏览器，请求由前端直连服务商；本机服务不接触密钥，也不落盘任何 key 派生值
 
 ### 导出链路
 
@@ -285,9 +291,9 @@ LZEditor (TipTap Core)
 ```bash
 npm install
 
-npm run dev          # 前端 (vite, :5173) + 后端 (:3001)
+npm run dev          # 前端 (vite, :5173) + 健康检查进程 (:3001)
 npm run dev:web      # 仅前端
-npm run dev:server   # 仅后端
+npm run dev:server   # 仅健康检查进程
 
 npm run typecheck    # tsc --noEmit
 npm run test         # node --test tests/*.test.mjs
@@ -334,7 +340,7 @@ npm run electron:build:linux    # Linux
 
 2. **AI 服务依赖**：AI 辅助功能依赖用户自行配置的 API Key 与服务端点。工具本身不提供 AI 模型，不对任何 AI 服务的可用性、准确性或内容安全性负责。
 
-3. **API Key 安全责任**：AI 服务密钥（API Key）仅保存在本机——浏览器端存于 `localStorage`，服务端以 SHA-256 加盐哈希落盘（非加密，不可解密，仅用于存在性校验）。服务器 / 部署环境的运维安全、访问权限管控、防泄露防护工作由使用者全权负责，开发者不承担因服务器漏洞、配置不当导致的数据泄露责任。
+3. **API Key 安全责任**：AI 服务密钥（API Key）仅保存在本机浏览器 `localStorage`，明文不离开设备，任何服务端与中转环节都不接触密钥。浏览器存储的读取权限、本机设备安全、防泄露防护工作由使用者全权负责，开发者不承担因设备失陷、浏览器配置不当导致的数据泄露责任。
 
 4. **平台接口限制说明**：各大 AI 服务商存在 API 调用频次限制、安全策略动态更新机制，使用工具过程中若出现接口限流、账号受限等问题，请根据服务商官方规范自行调整使用方式。
 

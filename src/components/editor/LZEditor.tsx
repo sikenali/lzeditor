@@ -190,7 +190,7 @@ export const LZEditor = () => {
     else page.style.lineHeight = ''
     if (editorFont) {
       if (editorFont === 'sans-serif') page.style.fontFamily = 'var(--font-sans)'
-      else if (editorFont === 'serif') page.style.fontFamily = 'var(--font-sans)'
+      else if (editorFont === 'serif') page.style.fontFamily = 'var(--font-serif)'
       else if (editorFont === 'monospace') page.style.fontFamily = 'var(--font-mono)'
       else page.style.fontFamily = editorFont
     }

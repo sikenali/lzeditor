@@ -18,13 +18,13 @@
 
 ## 项目介绍
 
-**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + TipTap，后端采用 Express + 本地 JSON 文件存储（无外部原生依赖），同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
+**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + CodeMirror 6，后端采用 Express + 本地 JSON 文件存储（无外部原生依赖），同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
 
 ### 核心功能
 
 | 功能 | 说明 |
 |------|------|
-| **Markdown 编辑** | TipTap 富文本编辑器，支持 Markdown 语法、实时预览、分屏模式 |
+| **Markdown 编辑** | CodeMirror 6 源码编辑器，支持 Markdown 语法、实时预览、分屏模式 |
 | **AI 辅助写作** | 支持 Anthropic Claude / OpenAI / 自定义基座，摘要、续写、润色、翻译一键完成 |
 | **多 Provider 支持** | Anthropic、OpenAI、Azure OpenAI、自定义兼容接口，模型自由切换 |
 | **多文档管理** | 文档列表、新建/重命名/删除、快捷搜索、最近打开记录 |
@@ -58,7 +58,7 @@ lzeditor/
 │   │
 │   ├── components/
 │   │   ├── editor/               # 编辑器核心组件
-│   │   │   ├── LZEditor.tsx      # 主编辑器 (TipTap + 扩展)
+│   │   │   ├── LZEditor.tsx      # 主编辑器 (CodeMirror 6 封装)
 │   │   │   ├── AIPanel.tsx       # AI 辅助面板
 │   │   │   ├── FloatingToolbar.tsx  # 浮动工具栏
 │   │   │   ├── Math.tsx          # KaTeX 公式渲染
@@ -137,7 +137,7 @@ lzeditor/
 │  │  预加载: preload.ts (contextBridge → window.electronAPI)    │  │
 │  └────────────────────────────────────────────────────────────┘  │
 ├──────────────────────────────────────────────────────────────────┤
-│                     渲染进程 — React + TipTap 应用                │
+│                     渲染进程 — React + CodeMirror 6 应用            │
 │                                                                  │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────┐ ┌─────────────┐ │
 │  │  App.tsx     │ │  Layout      │ │  Panels  │ │  Sidebar    │ │
@@ -181,21 +181,20 @@ lzeditor/
 
 ## 实现原理
 
-### TipTap 编辑器扩展体系
+### CodeMirror 6 编辑器扩展体系
 
 ```
-LZEditor (TipTap Core)
-  ├── StarterKit (基础 Markdown 语法)
-  ├── Table / Table-Cell / Table-Header    → 表格支持
-  ├── Highlight                              → 高亮文本
-  ├── TaskItem / TaskList                    → 待办事项
-  ├── CodeBlockLowlight + highlight.js       → 代码块语法高亮
-  └── 自定义扩展:
-      ├── Math (KaTeX 公式渲染)
-      ├── Graphviz (Mermaid/Graphviz 可视化)
-      ├── PlantUML (UML 图)
-      ├── ECharts (图表)
-      └── DrawIO (流程图)
+LZEditor (CodeMirror 6)
+  ├── @codemirror/lang-markdown / language-data  → Markdown + GFM 语法解析
+  ├── live-preview                               → Markdown 标记实时渲染
+  ├── table-edit                                 → 表格行列与表头操作
+  ├── commands                                   → 工具栏命令（粗体/标题/列表…）
+  ├── complete / slash / snippets / autopair     → 补全与快捷输入
+  ├── input-format / smart-paste                 → 输入与粘贴格式化
+  ├── focus-mode / typewriter                    → 专注模式与打字机模式
+  ├── image-input                                → 图片拖拽插入
+  ├── highlight.js + KaTeX                       → 代码高亮与公式渲染
+  └── flavors / render                           → 方言识别与 HTML 渲染
 ```
 
 ### AI 辅助写作流程
@@ -229,8 +228,8 @@ LZEditor (TipTap Core)
 
 | 格式 | 实现 |
 |------|------|
-| **Markdown** | 原生 TipTap JSON → text |
-| **HTML** | TipTap JSON → DOM → htmlToMd 反向 |
+| **Markdown** | 源码直接输出 |
+| **HTML** | markdown-it 方言管线 → DOMPurify → DOM |
 | **PDF** | Electron shell.openExternal → 系统打印 |
 | **EPUB** | epubGenerator.ts (ZIP + XHTML) |
 

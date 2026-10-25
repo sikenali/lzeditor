@@ -72,7 +72,7 @@ A：可以。除了 AI 功能需要联网外，编辑、预览、导出全部离
 
 ## 关于 LZEditor
 
-LZEditor 是一款开源的 Markdown 编辑器，采用 React + TipTap + Zustand 技术栈构建，支持 Windows / macOS / Linux 桌面客户端。
+LZEditor 是一款开源的 Markdown 编辑器，采用 React + CodeMirror 6 + Zustand 技术栈构建，支持 Windows / macOS / Linux 桌面客户端。
 
 - **GitHub**：https://github.com/sikenali/lzeditor
 - **反馈与建议**：欢迎提交 Issue 或通过邮件联系

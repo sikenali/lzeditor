@@ -74,7 +74,7 @@
   font-size: 14px;
   line-height: 1.2;
   white-space: nowrap;
-  transition: background 0.16s ease, box-shadow 0.18s ease, transform 0.1s ease;
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .welcome-btn:active {

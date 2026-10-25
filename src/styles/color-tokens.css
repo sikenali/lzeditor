@@ -172,13 +172,12 @@
   --shadow-color-1: rgba(0, 0, 0, 0.12);
   --shadow-color-2: rgba(0, 0, 0, 0.18);
   --shadow-strong:  rgba(0, 0, 0, 0.25);
-  --shadow-lg:      0 20px 60px var(--shadow-strong);
   --shadow-modal:   0 24px 80px rgba(0, 0, 0, 0.35), 0 0 1px rgba(0, 0, 0, 0.06);
-  --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.16);
   --shadow-glass:   0 8px 32px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
   /* Fonts */
   --font-sans: var(--font-family);
+  --font-serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", "SimSun", serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   /* Seal accent */

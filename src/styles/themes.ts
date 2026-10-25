@@ -43,6 +43,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
   parchment: {
     '--color-primary': '#C0392B',
     '--color-primary-soft': '#FBE9E7',
+    '--color-primary-deep': '#3A5C96',
     '--color-on-primary': '#FFFFFF',
     '--color-bg-main': '#FAF7F2',
     '--color-bg-secondary': '#F7F3EA',
@@ -251,6 +252,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
   dark: {
     '--color-primary': '#E05050',
     '--color-primary-soft': '#3A2323',
+    '--color-primary-deep': '#6389C4',
     '--color-on-primary': '#FFFFFF',
     '--color-bg-main': '#17171A',
     '--color-bg-secondary': '#1C1C1F',
@@ -449,7 +451,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
 }
 
 export const ACCENT_PRESETS: { id: string; name: string; color: string }[] = [
-  { id: 'vermilion', name: '朱红', color: '#C0392B' },
+  { id: 'vermilion', name: '朱红', color: '#BE3B2E' },
   { id: 'gold', name: '鎏金', color: '#D3A93F' },
   { id: 'jade', name: '玉绿', color: '#3E8C6E' },
   { id: 'cloud', name: '云蓝', color: '#4A72A8' },

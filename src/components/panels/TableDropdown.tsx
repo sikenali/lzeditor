@@ -130,6 +130,8 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     if (cols <= 1) return
     setCells(prev => prev.map(row => row.filter((_, i) => i !== c)))
     setCols(cols - 1)
+    // 删掉的正是当前所在列时索引就悬空了，左移或清空，否则连点会删到别的列
+    setActiveCell(prev => (prev && prev.c === c ? null : prev && prev.c > c ? { r: prev.r, c: prev.c - 1 } : prev))
   }, [cols])
 
   const handleAddRow = useCallback(() => {
@@ -143,6 +145,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
     if (rows <= 1) return
     setCells(prev => prev.filter((_, i) => i !== r))
     setRows(rows - 1)
+    setActiveCell(prev => (prev && prev.r === r ? null : prev && prev.r > r ? { r: prev.r - 1, c: prev.c } : prev))
   }, [rows])
 
   const handleInsert = useCallback(() => {

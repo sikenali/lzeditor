@@ -30,7 +30,7 @@ export const DEFAULT_API_KEYS: ApiKeyEntry[] = [
     modelName: 'Qwen Max',
     key: '',
     enabled: false,
-    endpoint: 'https://dashscope.aliyuncs.com/compatible-mode',
+    endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     format: 'openai',
   },
 ]
@@ -42,7 +42,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   selectedModelId: 'anthropic-claude',
   theme: 'parchment',
   accentColor: 'vermilion',
-  shortcut: 'Ctrl+/',
   activeGroup: 'theme',
   subTab: '',
   exportFormat: 'pdf',
@@ -57,7 +56,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   // ── Editor layout defaults ──
   editorFont: 'sans-serif',
   defaultFontSize: 17,
-  fontSize: 17,
   lineHeight: '1.5',
   contentWidth: '1024',
   showMarkdownMarkers: true,

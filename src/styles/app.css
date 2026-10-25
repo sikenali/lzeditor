@@ -19,7 +19,7 @@
   width: 52px;
   flex-shrink: 0;
   background: var(--toolbar-bg, var(--bg-code));
-  border-right: 1px solid var(--border-subtle);
+  border-right: 0.7px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;

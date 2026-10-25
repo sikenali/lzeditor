@@ -178,6 +178,13 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(bin)
 }
 
+/** 远端图片拉不下来时给一行文字占位，避免在 Word 里静默丢图。 */
+function imageFallbackText(src: string, alt: string): string {
+  if (!src) return ''
+  const shown = src.startsWith('data:') ? '（内嵌图片数据无法解析）' : src.slice(0, 160)
+  return alt ? `[图片] ${alt}` : `[图片无法加载] ${shown}`
+}
+
 async function imageParts(src: string, idx: number): Promise<{ rel: string; part: string; ext: string; drawing: string } | null> {
   if (!src) return null
   let bytes: Uint8Array | null = null
@@ -303,8 +310,9 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
           doc.rels.add(img.rel)
           doc.images.push({ rel: img.rel, part: img.part, ext: img.ext })
           doc.body.push(img.drawing)
-        } else if (alt) {
-          doc.body.push(paragraphXml([{ text: `[图片] ${alt}` }], { spaceAfter: 160 }))
+        } else {
+          const text = imageFallbackText(src, alt)
+          if (text) doc.body.push(paragraphXml([{ text }], { spaceAfter: 160 }))
         }
         break
       }
@@ -320,6 +328,8 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
             doc.body.push(part.drawing)
             break
           }
+          const text = imageFallbackText(src, img.getAttribute('alt') || '')
+          if (text) doc.body.push(paragraphXml([{ text }], { spaceAfter: 160 }))
         }
         await buildBlocks(el, doc)
         break

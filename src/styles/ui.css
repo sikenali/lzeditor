@@ -10,9 +10,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-   z-index: 2000;
+   z-index: var(--z-modal-backdrop);
    opacity: 0;
-   animation: ui-fade-in var(--t-slow) var(--ease) forwards;
+   animation: ui-fade-in 0.25s var(--ease) forwards;
    padding: 20px;
  }
  @keyframes ui-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -106,7 +106,7 @@
   padding: 0 12px;
   background: var(--color-bg-secondary);
   border: 0.7px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 .ui-input:focus-within {
@@ -155,7 +155,7 @@
   padding: 0 12px;
   background: var(--color-bg-secondary);
   border: 0.7px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: var(--color-text-primary);
   font-size: var(--text-md);
   font-family: inherit;
@@ -177,7 +177,7 @@
   overflow-y: auto;
   background: var(--color-bg-white);
   border: 0.7px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: 6px;
   z-index: 40;
@@ -193,7 +193,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--color-text-body);
   transition: background var(--transition-fast);
@@ -212,7 +212,7 @@
   height: 24px;
   border: none;
   border-radius: var(--radius-full);
-  background: var(--color-border);
+  background: var(--color-bg-secondary);
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
@@ -228,11 +228,11 @@
   width: 18px;
   height: 18px;
   border-radius: var(--radius-full);
-  background: #fff;
+  background: var(--color-text-faint);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform var(--transition-base);
+  transition: transform var(--transition-base), background var(--transition-base);
 }
-.ui-switch.on .ui-switch-thumb { transform: translateX(18px); }
+.ui-switch.on .ui-switch-thumb { background: var(--color-on-primary); transform: translateX(18px); }
 .ui-switch--sm .ui-switch-thumb { width: 14px; height: 14px; }
 .ui-switch--sm.on .ui-switch-thumb { transform: translateX(14px); }
 
@@ -253,7 +253,7 @@
 .ui-check.on {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 /* ── Select card ── */
@@ -262,7 +262,7 @@
   padding: 14px 16px;
   background: var(--color-bg-white);
   border: 0.7px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -305,7 +305,7 @@
   padding: 9px 14px;
   background: var(--color-bg-white);
   border: 0.7px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
@@ -316,7 +316,7 @@
   width: 16px;
   height: 16px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--color-border-hover);
+  border: 0.7px solid var(--color-border-hover);
   background: var(--color-bg-white);
   position: relative;
   flex-shrink: 0;
@@ -341,7 +341,7 @@
   gap: 4px;
   padding: 4px;
   background: var(--color-bg-secondary);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   flex-wrap: wrap;
 }
 .ui-tab {
@@ -350,7 +350,7 @@
   gap: 6px;
   padding: 7px 14px;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-secondary);
   font-size: var(--text-md);
@@ -375,13 +375,13 @@
   bottom: calc(100% + 8px);
   transform: translateX(-50%);
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 2100;
+  z-index: var(--z-tooltip);
   background: rgba(28, 28, 30, 0.92);
-  color: #fff;
+  color: var(--color-on-primary);
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
@@ -405,7 +405,7 @@
   height: 40px;
   padding: 0 18px;
   border: 0.7px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: var(--text-md);
   font-family: inherit;
   cursor: pointer;

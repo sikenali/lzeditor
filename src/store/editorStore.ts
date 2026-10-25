@@ -72,7 +72,6 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   previewMode: 'render' as 'render' | 'code',
   previewWidth: 400,
   mdContent: '',
-  fontSize: 17,
   readLayout: 'normal' as const,
   readTocOpen: true as const,
   readFontSize: 18,

@@ -61,7 +61,7 @@ interface CodeDialogProps {
 export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => {
   const [language, setLanguage] = useState('python')
   const [code, setCode] = useState(DEFAULTS.python)
-  const [themeId, setThemeId] = useState('atom-one-dark')
+  const [themeId, setThemeId] = useState(useSettingsStore.getState().codeTheme || 'atom-one-dark')
   const [macStyle, setMacStyle] = useState(useSettingsStore.getState().macCodeBlock || false)
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
                 <button
                   key={t.id}
                   className={`ud-btn${themeId === t.id ? ' ud-btn--primary' : ''}`}
-                  onClick={() => setThemeId(t.id)}
+                  onClick={() => { setThemeId(t.id); useSettingsStore.getState().updateSetting('codeTheme', t.id) }}
                   style={{ flexDirection: 'column', gap: 6, padding: '14px 10px', justifyContent: 'center' }}
                 >
                   <span className={`remix ${t.icon}`} style={{ fontSize: 18 }}></span>

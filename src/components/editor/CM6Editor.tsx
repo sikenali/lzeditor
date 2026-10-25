@@ -29,9 +29,15 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
   const continueLists = useSettingsStore((s) => s.continueLists)
   const showLineNumbers = useSettingsStore((s) => s.showLineNumbers)
   const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck)
+  const spellCheckLang = useSettingsStore((s) => s.spellCheckLang)
+  const autoCompleteMdPairs = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
+  const focusMode = useSettingsStore((s) => s.focusMode)
   const currentLine = useSettingsStore((s) => s.currentLine)
   const softWrap = useSettingsStore((s) => s.softWrap)
   const tabSize = useSettingsStore((s) => s.tabSize)
+
+  // 「自动配对」在内核区和「Markdown 快捷符号」区各有一个开关，两个都开才生效
+  const autoPairOn = (autoPairEnabled ?? true) && (autoCompleteMdPairs ?? true)
 
   useEffect(() => {
     const container = containerRef.current
@@ -82,14 +88,15 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
 
     setSnippetImpl(snippetCompletionSource())
 
-    editor.setAutoPair(autoPairEnabled ?? false)
+    editor.setAutoPair(autoPairOn)
     editor.setContinueLists(continueLists ?? true)
     editor.setLineNumbers(showLineNumbers ?? true)
-    editor.setSpellcheck(enableSpellCheck ?? true)
+    editor.setSpellcheck(enableSpellCheck ?? true, spellCheckLang)
     editor.setCurrentLine(currentLine ?? true)
     editor.setSoftWrap(softWrap ?? true)
     editor.setTypewriter(typewriterMode ?? false)
     editor.setLivePreview(livePreview ?? false)
+    editor.setFocusMode(focusMode ?? false)
     editor.setTabSize(tabSize ?? 2)
     editor.setSnippets(DEFAULT_SNIPPETS)
 
@@ -120,16 +127,17 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) return
-    editor.setAutoPair(autoPairEnabled ?? false)
+    editor.setAutoPair(autoPairOn)
     editor.setContinueLists(continueLists ?? true)
     editor.setLineNumbers(showLineNumbers ?? true)
-    editor.setSpellcheck(enableSpellCheck ?? true)
+    editor.setSpellcheck(enableSpellCheck ?? true, spellCheckLang)
     editor.setCurrentLine(currentLine ?? true)
     editor.setSoftWrap(softWrap ?? true)
     editor.setTypewriter(typewriterMode ?? false)
     editor.setLivePreview(livePreview ?? false)
+    editor.setFocusMode(focusMode ?? false)
     editor.setTabSize(tabSize ?? 2)
-  }, [autoPairEnabled, continueLists, showLineNumbers, enableSpellCheck, currentLine, softWrap, typewriterMode, livePreview, tabSize])
+  }, [autoPairOn, continueLists, showLineNumbers, enableSpellCheck, spellCheckLang, currentLine, softWrap, typewriterMode, livePreview, focusMode, tabSize])
 
   return (
     <div className="cm6-editor-wrapper" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

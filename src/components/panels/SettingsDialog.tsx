@@ -16,15 +16,15 @@ type SubTab = { id: string; label: string; icon: string }
 const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab[] }[] = [
   { id: 'theme', label: '主题设置', icon: 'ri-palette-line', subs: [] },
   {
-    id: 'ai', label: '模型设置', icon: 'ri-cpu-line',
+    id: 'ai', label: '模型管理', icon: 'ri-cpu-line',
     subs: [],
   },
   {
-    id: 'profile', label: '个性设置', icon: 'ri-edit-2-fill',
+    id: 'profile', label: '个性设置', icon: 'ri-user-settings-line',
     subs: [
       { id: 'content', label: '内容样式', icon: 'ri-font-size' },
       { id: 'editor', label: '编辑设置', icon: 'ri-edit-2-line' },
-      { id: 'app', label: '行为设置', icon: 'ri-apps-line' },
+      { id: 'app', label: '应用行为', icon: 'ri-apps-line' },
       { id: 'shortcut', label: '快捷键设置', icon: 'ri-keyboard-fill' },
     ],
   },
@@ -35,7 +35,6 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
 const PANEL_WIDTH = '92vw'
 const PANEL_HEIGHT = '92vh'
 const PANEL_MAX_WIDTH = 1400
-const PANEL_SHADOW = '0 8px 40px rgba(0,0,0,0.1)'
 
 export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const settings = useSettingsStore()
@@ -120,8 +119,6 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
       maxWidth={PANEL_MAX_WIDTH}
       height={PANEL_HEIGHT}
       bodyPadding={false}
-      radius={16}
-      shadow={PANEL_SHADOW}
       closeOnOverlay={false}
     >
       <div className="settings-panel-shell">
@@ -170,13 +167,12 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
     toast('已恢复默认')
   }
 
-  // 布局切换需要整页重排，按 DESIGN.md §4.4：toast + 800ms 后刷新
+  // navMode 由 App 响应式渲染 topLayout/leftLayout，切换即时生效，无需刷新
   const changeLayout = (id: 'top' | 'left') => {
     if (id === navMode) return
     u('navMode', id)
     const name = LAYOUT_OPTIONS.find(l => l.id === id)?.name || ''
-    toast(`已切换布局：${name}，页面将刷新以生效`)
-    setTimeout(() => window.location.reload(), 800)
+    toast(`已切换布局：${name}`)
   }
 
   return (

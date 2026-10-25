@@ -121,12 +121,44 @@ export function toast(message: string, options: ToastOptions | number = {}): voi
 
   const text = document.createElement('span')
   text.textContent = message
+  text.style.flex = '1 1 auto'
+  text.style.minWidth = '0'
   el.appendChild(text)
+
+  const close = document.createElement('button')
+  close.type = 'button'
+  close.setAttribute('aria-label', '关闭通知')
+  close.textContent = '\u2715'
+  close.style.flexShrink = '0'
+  close.style.width = '18px'
+  close.style.height = '18px'
+  close.style.display = 'flex'
+  close.style.alignItems = 'center'
+  close.style.justifyContent = 'center'
+  close.style.padding = '0'
+  close.style.border = 'none'
+  close.style.background = 'transparent'
+  close.style.borderRadius = 'var(--radius-sm)'
+  close.style.color = 'var(--color-text-muted)'
+  close.style.fontSize = '12px'
+  close.style.lineHeight = '1'
+  close.style.cursor = 'pointer'
+  close.style.transition = 'color var(--transition-fast)'
 
   getContainer().appendChild(el)
 
-  window.setTimeout(() => {
+  let timer: number | undefined
+  let dismissed = false
+  const dismiss = () => {
+    if (dismissed) return
+    dismissed = true
+    if (timer !== undefined) window.clearTimeout(timer)
     el.style.animation = 'lzToastOut 0.25s ease forwards'
     window.setTimeout(() => el.remove(), 250)
-  }, duration)
+  }
+  close.addEventListener('click', dismiss)
+  close.addEventListener('mouseenter', () => { close.style.color = 'var(--color-text-primary)' })
+  close.addEventListener('mouseleave', () => { close.style.color = 'var(--color-text-muted)' })
+
+  timer = window.setTimeout(dismiss, duration)
 }

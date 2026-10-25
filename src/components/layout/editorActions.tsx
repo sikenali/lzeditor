@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
 import { getCM6Editor } from '../editor/codemirror/registry'
+import { runTableOp, type TableOp } from '../editor/codemirror/table-edit'
 import type { FormatCommand } from '../editor/codemirror/commands'
 
 export interface MenuItem {
@@ -56,9 +57,8 @@ export const TABLE_ITEMS: MenuItem[] = [
   { icon: 'ri-delete-column', label: '删除列', action: 'delCol', disabled: true },
   { icon: 'ri-delete-row', label: '删除行', action: 'delRow', disabled: true },
   { sep: true },
-  { icon: 'ri-git-merge-line', label: '合并单元格', action: 'merge', disabled: true },
-  { icon: 'ri-git-pull-request-line', label: '拆分单元格', action: 'split', disabled: true },
-  { icon: 'ri-layout-column-line', label: '切换标题列', action: 'headerCol', disabled: true },
+  // markdown 无法表达单元格合并（需要 HTML colspan），不提供合并/拆分
+  { icon: 'ri-layout-column-line', label: '切换标题行', action: 'headerRow', disabled: true },
   { sep: true },
   { icon: 'ri-delete-bin-line', label: '删除表格', action: 'delete', disabled: true },
 ]
@@ -190,9 +190,10 @@ export function useEditorActions() {
   }, [setInsertPanel, runMapped])
 
   const tableAction = useCallback((action: string) => {
-    // 单元格级操作（增删行列/合并）在 CM6 下不支持，只保留「插入表格」
     if (action === 'insert') { setInsertPanel('table'); return }
-    if (!getCM6Editor()) return
+    const cm = getCM6Editor()
+    if (!cm) return
+    runTableOp(cm.view, action as TableOp)
   }, [setInsertPanel])
 
   // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（左源码 + 右样式预览）

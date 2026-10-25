@@ -42,9 +42,11 @@
   --radius: var(--radius-md);
 
   /* macOS traffic-light window controls (used by code block decorations) */
-  --mac-dot-red: var(--mac-dot-red);
-  --mac-dot-yellow: var(--mac-dot-yellow);
-  --mac-dot-green: var(--mac-dot-green);
+  --mac-dot-red: #FF5F56;
+  --mac-dot-yellow: #FFBD2E;
+  --mac-dot-green: #27C93F;
+
+  --color-primary-deep: #3A5C96;
 
   --btn-height-xs: 32px; --btn-height-sm: 36px; --btn-height-md: 44px; --btn-height-lg: 52px; --btn-height-xl: 58px;
   --input-height-sm: 36px; --input-height-md: 42px; --input-height-lg: 48px;
@@ -57,8 +59,8 @@
   --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --t-fast: 150ms; --t-mid: 250ms; --t-base: 200ms; --t-slow: 300ms;
-  --transition-fast: var(--t-fast) var(--ease); --transition-mid: var(--t-mid) var(--ease);
+  --t-fast: 150ms; --t-base: 200ms; --t-slow: 300ms;
+  --transition-fast: var(--t-fast) var(--ease); --transition-mid: var(--t-base) var(--ease);
   --transition-base: var(--t-base) var(--ease); --transition-slow: var(--t-slow) var(--ease);
 
   --z-dropdown: 1000; --z-sticky: 1020; --z-fixed: 1030; --z-modal-backdrop: 1040;

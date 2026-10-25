@@ -36,14 +36,30 @@ import { pickFolderFiles, importFolderFiles } from './utils/docImport'
 import { silentError } from './utils/silentError'
 
 /** CM6 走 markdown 源码：把行列规格拼成 markdown 表格 */
-const buildTableMd = (rows: number, cols: number, data?: string[][]) => {
+/** HTML 属性值转义（对齐图片、新标签页链接走 HTML 输出时用）。 */
+const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+const buildImageMd = (url: string, alt: string, align: 'top' | 'left' | 'right' | undefined) => {
+  if (align === 'left' || align === 'right') {
+    return `\n\n<img src="${escAttr(url)}" alt="${escAttr(alt)}" style="float:${align}">\n\n`
+  }
+  return `\n\n![${alt.replace(/\]/g, '\\]')}](${url})\n\n`
+}
+
+const CHART_TYPE_LABEL: Record<string, string> = { line: '折线图', bar: '柱状图', pie: '饼图', scatter: '散点图' }
+
+const buildTableMd = (rows: number, cols: number, data?: string[][], withHeader = true) => {
   const r = Math.max(1, Math.min(rows, 50))
   const c = Math.max(1, Math.min(cols, 30))
   const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\n/g, ' ').trim()
+  const pad = (i: number, j: number, fallback = '') => cell(data?.[i]?.[j] ?? fallback)
+  const body = (i: number) => `| ${Array.from({ length: c }, (_, j) => pad(i, j)).join(' | ')} |`
+  // 无标题行就不写分隔线：GFM 表格靠第二行的 `|---|` 识别表头，去掉后整块退化成纯竖线文本
+  if (!withHeader) return Array.from({ length: r }, (_, i) => body(i)).join('\n')
   return [
-    `| ${Array.from({ length: c }, (_, i) => cell(data?.[0]?.[i] ?? `表头${i + 1}`)).join(' | ')} |`,
+    `| ${Array.from({ length: c }, (_, i) => pad(0, i, `表头${i + 1}`)).join(' | ')} |`,
     `| ${Array.from({ length: c }, () => '---').join(' | ')} |`,
-    ...Array.from({ length: r - 1 }, (_, i) => `| ${Array.from({ length: c }, (_, j) => cell(data?.[i + 1]?.[j] ?? '')).join(' | ')} |`),
+    ...Array.from({ length: r - 1 }, (_, i) => body(i + 1)),
   ].join('\n')
 }
 /** 隐藏首次启动欢迎页（sessionStorage 记住，本会话不再弹出）。 */
@@ -203,10 +219,19 @@ function App() {
 
     document.addEventListener('keydown', onKey)
     const api = (window as any).electronAPI
-    api?.onMenuNew?.(() => { dismissWelcome(); useEditorStore.getState().createDoc('untitled.md') })
-    api?.onMenuOpen?.(() => { dismissWelcome(); useEditorStore.getState().setOpenPanel('file') })
-    api?.onMenuExport?.(() => { dismissWelcome(); useEditorStore.getState().setOpenPanel('export') })
-    return () => document.removeEventListener('keydown', onKey)
+    // onMenu* 是 ipcRenderer.on 的包装，必须成对解绑，否则 StrictMode 重挂会叠出重复监听
+    const onNew = () => { dismissWelcome(); useEditorStore.getState().createDoc('untitled.md') }
+    const onOpen = () => { dismissWelcome(); useEditorStore.getState().setOpenPanel('file') }
+    const onExport = () => { dismissWelcome(); useEditorStore.getState().setOpenPanel('export') }
+    api?.onMenuNew?.(onNew)
+    api?.onMenuOpen?.(onOpen)
+    api?.onMenuExport?.(onExport)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      api?.offMenuNew?.(onNew)
+      api?.offMenuOpen?.(onOpen)
+      api?.offMenuExport?.(onExport)
+    }
   }, [])
 
   // Electron：同步行为设置给主进程，并处理「从资源管理器打开文档」
@@ -231,8 +256,11 @@ function App() {
         getCM6Editor()?.setText(res.text)
       } catch (e) { silentError('导入文件写入编辑器失败', e) }
     }
-    api.onMenuOpenFile?.(onLocalFile)
-    return () => unsub()
+    const offLocalFile = api.onMenuOpenFile?.(onLocalFile)
+    return () => {
+      unsub()
+      offLocalFile?.()
+    }
   }, [])
 
   const [libraryClosing, setLibraryClosing] = useState(false)
@@ -282,14 +310,14 @@ function App() {
     setSearchPanelAnimating(null)
     prevShowSearch.current = showSearch
   }, [showSearch])
-  // CM6 是 markdown 源码，图片对齐暂不支持
-  const insertImage = (url: string, alt: string, _align?: 'top' | 'left' | 'right') => {
-    insertMarkdown(`\n\n![${alt}](${url})\n\n`)
+  // CM6 编辑的是 markdown 源码：左右对齐没有 markdown 语法，落 HTML 的 float；渲染管线放行 img/style
+  const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
+    insertMarkdown(buildImageMd(url, alt, align))
   }
-  const uploadImage = (file: File, _align?: 'top' | 'left' | 'right') => {
+  const uploadImage = (file: File, align?: 'top' | 'left' | 'right') => {
     if (!getCM6Editor()) return
     const reader = new FileReader()
-    reader.onload = (ev) => insertImage(ev.target?.result as string, file.name)
+    reader.onload = (ev) => insertImage(ev.target?.result as string, file.name, align)
     reader.readAsDataURL(file)
     closeInsert()
   }
@@ -315,29 +343,35 @@ function App() {
     getCM6Editor()?.insertText(`\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`)
     closeInsert()
   }
-  const insertLink = (text: string, url: string, _newTab?: boolean) => {
+  const insertLink = (text: string, url: string, newTab?: boolean) => {
     const cm = getCM6Editor()
-    if (cm) {
-      const label = (text.trim() || url).replace(/\s+/g, ' ')
+    if (!cm) return
+    const label = (text.trim() || url).replace(/\s+/g, ' ')
+    if (newTab) {
+      // markdown 链接无法表达 target，落 HTML（消毒白名单放行 target 属性）
+      cm.insertText(`<a href="${escAttr(url)}" target="_blank" rel="noopener">${label}</a>`)
+    } else {
       cm.insertText(`[${label}](${url})`)
-      closeInsert()
     }
+    closeInsert()
   }
   const insertFormula = (formula: string) => {
     getCM6Editor()?.insertText(`$$${formula}$$`)
     closeInsert()
   }
-  const insertChart = (src: string, alt: string, _type: string) => {
-    getCM6Editor()?.insertText(`\n\n![${alt}](${src})\n\n`)
+  const insertChart = (src: string, alt: string, type: string) => {
+    // 图表是位图，类型信息只能进 alt 文本（读屏/导出 Word 都能看到）
+    const label = `${CHART_TYPE_LABEL[type] ?? '图表'}：${alt}`.replace(/\]/g, '\\]')
+    getCM6Editor()?.insertText(`\n\n![${label}](${src})\n\n`)
     closeInsert()
   }
   const insertEmoji = (text: string) => {
     getCM6Editor()?.insertText(text)
     closeInsert()
   }
-  const insertTable = (rows: number, cols: number, data?: string[][], _withHeaderRow = true) => {
+  const insertTable = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
     if (rows <= 0 || cols <= 0) return
-    getCM6Editor()?.insertText(`\n\n${buildTableMd(rows, cols, data)}\n\n`)
+    getCM6Editor()?.insertText(`\n\n${buildTableMd(rows, cols, data, withHeaderRow)}\n\n`)
     closeInsert()
   }
 

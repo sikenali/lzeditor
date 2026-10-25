@@ -51,11 +51,15 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   const textIndent = useSettingsStore(s => s.textIndent)
   const textJustify = useSettingsStore(s => s.textJustify)
   const headingStyles = useSettingsStore(s => s.headingStyles)
+  const exportFormat = useSettingsStore(s => s.exportFormat)
+  const exportPaperSize = useSettingsStore(s => s.paperSize)
+  const exportOrientation = useSettingsStore(s => s.orientation)
   const updateSetting = useSettingsStore(s => s.updateSetting)
 
-  const [format, setFormat] = useState<any>('pdf')
-  const [paperSize, setPaperSize] = useState('a4')
-  const [orientation, setOrientation] = useState('portrait')
+  // 记住上次导出的格式/纸张/方向，别每次都回到 pdf + a4 + 纵向
+  const [format, setFormat] = useState<any>(exportFormat || 'pdf')
+  const [paperSize, setPaperSize] = useState(exportPaperSize || 'a4')
+  const [orientation, setOrientation] = useState(exportOrientation || 'portrait')
   const [exporting, setExporting] = useState(false)
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
@@ -109,7 +113,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {EXPORT_FORMATS.map((fmt, i) => (
         <React.Fragment key={fmt.id}>
-          {i > 0 && i === 5 && <div className="ud-chip-sep" />}
+          {i === 5 && <div className="ud-chip-sep" />}
           <button className={`ud-chip${format === fmt.id ? ' active' : ''}`}
             onClick={() => setFormat(fmt.id)} style={format === fmt.id ? { borderColor: fmt.color } : undefined}>
             <span className={`remix ud-chip-icon ${fmt.icon}`} style={{ color: fmt.color }}></span>

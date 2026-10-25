@@ -87,7 +87,6 @@ export interface EditorStoreState {
   previewWidth: number
   previewMode: 'render' | 'code'
   mdContent: string
-  fontSize: number
   readLayout: 'narrow' | 'normal' | 'wide'
   readTocOpen: boolean
   readFontSize: number
@@ -153,13 +152,11 @@ export interface SettingsState {
   selectedModelId: string
   theme: 'parchment' | 'dark'
   accentColor: string
-  shortcut: string
   activeGroup: SettingsGroup
   subTab?: string
   // ── Editor layout ──
   editorFont?: string
   defaultFontSize?: number
-  fontSize?: number
   lineHeight?: '1.0' | '1.5' | '2.0'
   contentWidth?: '960' | '1024' | '1200' | '1280'
   showMarkdownMarkers?: boolean

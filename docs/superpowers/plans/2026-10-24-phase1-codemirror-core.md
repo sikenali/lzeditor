@@ -16,6 +16,18 @@
 - `store.editor` 类型是 `any`，`EditorApi` 鸭子写入即可。
 - 每个任务后必须 `npm run typecheck`（或当时步骤给定命令），红灯不得进入下一任务。
 
+**完成状态（2026-10-24 对账）：** 内核迁移已落地——`e5b90c9`（S0-1..S0-8）/`a7b2635`（S1）/`3ab6032`（S2）。TipTap 已卸载、CM6 成为唯一内核、工具栏/对话框/AI/搜索/历史全走 `getCM6Editor()`。29/29 测试 + `tsc` 全绿。19 个步骤已勾。剩余 13 个未勾分三类：
+
+1. **命名/路径已改，功能等价（不算缺口）**：`src/editor/mdSyntax.ts`→变换内联在 `src/components/editor/codemirror/commands.ts`；`src/editor/api.ts`→`codemirror/registry.ts` 的 `getCM6Editor()` + `CM6EditorCommands`；`MarkdownEditor.tsx`→`CM6Editor.tsx`。
+2. **真实缺口，需补**：
+   - **无语法高亮**：`@lezer/highlight` 在依赖里但全仓零 import，无 `EditorView.theme`/`HighlightStyle`，源码视图是纯灰白文本（计划 §cmTheme）。
+   - **字数统计对中文失算**：`editor.ts:161` 为 `text.split(/\s+/).filter(Boolean).length`，中文段落无空格 → 整段算 1 词，连带「阅读约 N 分钟」失准。
+   - **`cleanContent.ts` 是死代码**：`git ls-files` 仍有 `src/utils/cleanContent.ts`，全仓零引用。
+   - **`spellCheckLang` 设置项失效**：`settingsStore.ts:79` 有默认值、`EditorSettingsTab.tsx:137` 有下拉框，但 `setSpellcheck()` 只切 `spellcheck` 属性，从不设 `lang`。
+   - **CM6 默认扩展未挂**：`defaultKeymap`/`historyKeymap`/`closeBrackets`/`bracketMatching`/`highlightSelectionMatches`/`indentUnit` 全仓零引用；后果是 Alt-Up 移动行、Mod-Shift-K 删行、括号匹配、选中匹配高亮都不可用（自写 `undoKeymap`/`autopair.ts` 只覆盖部分）。
+   - **markdown 变换无运行单测**：29 个测试全是 readFileSync+regex 结构断言，`grep mdSyntax countMdStats tests/` 零命中，bold/quote/list/footnote/toc 这些核心文本变换没有可执行断言。
+3. **过程性步骤，代码不可证**：`Commit`（5 处）、`运行确认失败`（3 处）、`手动核对清单`、`用户验收`。
+
 ---
 
 ### 任务 1：依赖与测试脚本
@@ -23,13 +35,13 @@
 **文件：**
 - 修改：`package.json`
 
-- [ ] **步骤 1：安装依赖**
+- [x] **步骤 1：安装依赖**
 
 ```bash
 npm install @codemirror/state @codemirror/view @codemirror/commands @codemirror/search @codemirror/autocomplete @codemirror/language @codemirror/lang-markdown @codemirror/language-data @lezer/highlight
 ```
 
-- [ ] **步骤 2：test 脚本启用 tsx loader**
+- [x] **步骤 2：test 脚本启用 tsx loader**
 
 `package.json`：
 
@@ -37,7 +49,7 @@ npm install @codemirror/state @codemirror/view @codemirror/commands @codemirror/
 "test": "node --import tsx --test tests/*.test.mjs",
 ```
 
-- [ ] **步骤 3：既有测试在 loader 下通过**
+- [x] **步骤 3：既有测试在 loader 下通过**
 
 运行：`npm test`
 预期：全部 PASS
@@ -648,7 +660,7 @@ export function buildCmApi(view: EditorView): EditorApi {
 }
 ```
 
-- [ ] **步骤 3：typecheck + Commit**
+- [x] **步骤 3：typecheck + Commit**
 
 运行：`npm run typecheck`
 预期：0 error
@@ -792,7 +804,7 @@ export const MarkdownEditor: React.FC<Props> = ({ initialMd, onChange, className
 - 删除「行号热切换」第一个带 `[0]` 依赖的 useEffect（错误依赖），只保留 `showLineNumbers` 驱动的那个，且把 `const showLineNumbers = ...` 声明移到两个 effect 之前。
 - `EditorSelection` 仅在 keymap 中使用，保留。
 
-- [ ] **步骤 2：typecheck**
+- [x] **步骤 2：typecheck**
 
 运行：`npm run typecheck`
 预期：0 error
@@ -811,7 +823,7 @@ git commit -m "feat(editor): CodeMirror React 包装组件 MarkdownEditor"
 **文件：**
 - 修改：`src/components/layout/editorActions.tsx:83-94,128-263`
 
-- [ ] **步骤 1：`useTableActive` 替换**
+- [x] **步骤 1：`useTableActive` 替换**
 
 ```tsx
 /** 表格子菜单置灰：源码视图下采样文档是否含表格（低频轮询即可）。 */
@@ -829,7 +841,7 @@ export function useTableActive(): boolean {
 }
 ```
 
-- [ ] **步骤 2：`useEditorActions` 整体替换**
+- [x] **步骤 2：`useEditorActions` 整体替换**
 
 ```tsx
 /** 编辑动作，供顶栏和左侧 rail 共用，避免两套逻辑漂移。 */
@@ -908,7 +920,7 @@ export function useEditorActions() {
 }
 ```
 
-- [ ] **步骤 3：typecheck + Commit**
+- [x] **步骤 3：typecheck + Commit**
 
 运行：`npm run typecheck`
 预期：0 error（unused import 若报错则删除对应 import 行）
@@ -931,7 +943,7 @@ git commit -m "feat(commands): 命令层改为 EditorApi 语法操作"
 - 修改：`src/components/editor/SlashCommand.tsx`
 - 修改：`src/store/editorStore.ts:230-239,272-276`
 
-- [ ] **步骤 1：App.tsx**
+- [x] **步骤 1：App.tsx**
 
 替换以下片段（旧 → 新）：
 
@@ -991,7 +1003,7 @@ closeInsert()
 // 删除 buildTableHtml 函数与 anchorToEscape 中对它的 import
 ```
 
-- [ ] **步骤 2：useAI.ts（176-202）**
+- [x] **步骤 2：useAI.ts（176-202）**
 
 ```ts
 // 原：
@@ -1013,7 +1025,7 @@ const ctxText = api.getSelectionText()
 undo 恢复（~202 行）改为：`api.replaceSel(record.originalText || '')`。
 所有 `editor.chain...` / `editor.state...` 引用全部删除。
 
-- [ ] **步骤 3：SearchPanel.tsx**
+- [x] **步骤 3：SearchPanel.tsx**
 
 ```tsx
 // 原 66-71 行
@@ -1031,7 +1043,7 @@ api.search(term, { caseSensitive, mode: 'prev' })
 
 （执行时先 `rg -n "editor" src/components/panels/SearchPanel.tsx` 定位全部调用点，逐一映射到上表。）
 
-- [ ] **步骤 4：LibraryPanel / HistoryPanel**
+- [x] **步骤 4：LibraryPanel / HistoryPanel**
 
 ```tsx
 // LibraryPanel.tsx 84/106/128：
@@ -1045,7 +1057,7 @@ if (editor) editor.commands.setContent(selected.html)
 if (editor) editor.setMd(selected.md || '')
 ```
 
-- [ ] **步骤 5：SlashCommand.tsx**
+- [x] **步骤 5：SlashCommand.tsx**
 
 替换三段：
 
@@ -1102,7 +1114,7 @@ const executeCommand = useCallback((cmd: SlashCommandItem) => {
 
 删除 `escapeHtml` 与 props 中 `editor?: any`（改为组件内部从 store 取）。
 
-- [ ] **步骤 6：editorStore.ts**
+- [x] **步骤 6：editorStore.ts**
 
 ```ts
 // switchDoc（231-238）：
@@ -1119,7 +1131,7 @@ if (s.activeDocId === id) {
 }
 ```
 
-- [ ] **步骤 7：验证无残留（LZEditor.tsx 除外）+ Commit**
+- [x] **步骤 7：验证无残留（LZEditor.tsx 除外）+ Commit**
 
 ```bash
 rg -l "@tiptap|prosemirror" src/ | grep -v "components/editor/LZEditor.tsx"
@@ -1138,7 +1150,7 @@ git commit -m "refactor(editor): TipTap 消费点全部迁移到 CodeMirror Edit
 - 删除：`src/components/editor/extensions/`、`src/utils/cleanContent.ts`（先 `rg -l` 确认仅 LZEditor 引用，有他处引用者按同思路迁移后再删）
 - 修改：`vite.config.ts` 分包
 
-- [ ] **步骤 1：整文件替换**
+- [x] **步骤 1：整文件替换**
 
 ```tsx
 import React, { useRef, useEffect, useCallback, useMemo } from 'react'
@@ -1311,7 +1323,7 @@ export const LZEditor = () => {
 
 执行规则：`{/* ... */}` 注释处必须把旧文件 755-833 行的 JSX **原样搬入**（其依赖的 readFontSize/readLayout/readTocOpen/storeTocItems/sort未在此重写，但都已在本组件 store 取值区存在），不得省略，也不得引入 TipTap。BubbleMenu、slash 输入监听、自动配对 effect、Markdown 标记/拼写/行号相关灰色 effect 全部删除（功能由 CM6 承担）。
 
-- [ ] **步骤 2：删除残留与分包更新**
+- [x] **步骤 2：删除残留与分包更新**
 
 ```bash
 git rm -r src/components/editor/extensions
@@ -1331,7 +1343,7 @@ manualChunks(id: string) {
 }
 ```
 
-- [ ] **步骤 3：typecheck + 全库测试**
+- [x] **步骤 3：typecheck + 全库测试**
 
 运行：`npm run typecheck && npm test`
 预期：0 error、全部 PASS
@@ -1348,7 +1360,7 @@ manualChunks(id: string) {
 7. 阅读模式按 md 渲染、TOC 跳转可用。
 8. AI 面板：选中文字发起润色 → 输出替换回源码。
 
-- [ ] **步骤 5：卸载 TipTap + 边界结构测试**
+- [x] **步骤 5：卸载 TipTap + 边界结构测试**
 
 `tests/editor-cm-core.test.mjs`：
 

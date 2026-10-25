@@ -15,7 +15,8 @@ export const StyleMainPanel: React.FC = () => {
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
-  const fontSize = useEditorStore((s) => s.fontSize)
+  // 阅读字号跟随阅读模式的 readFontSize（12~24 可调），而不是写死的 17
+  const fontSize = useEditorStore((s) => s.readFontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore(s => s.updateSetting)
   const readTocOpen = useEditorStore((s) => s.readTocOpen)

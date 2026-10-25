@@ -56,16 +56,17 @@ cp "$PROJECT_ROOT/server/package.json" "$SCRIPT_DIR/_lpk_content/backend/"
 # 运行时依赖必须按传递闭包完整复制。两个历史坑：
 #   1) 之前没建 node_modules 目录，第一条 cp 因目标不存在而把 express 整体拷成了
 #      node_modules 本身，包内从此没有 express。
-#   2) 之前手工列白名单，漏掉 @anthropic-ai/sdk / openai / express 的传递依赖
-#      （node-fetch、body-parser…），后端启动即 ERR_MODULE_NOT_FOUND。
+#   2) 之前手工列白名单，漏掉传递依赖（node-fetch、body-parser…），后端启动即
+#      ERR_MODULE_NOT_FOUND。
 # 这里从项目根 node_modules 递归解析闭包：离线、确定、去重。@types/* 只是类型，运行时
 # 永不加载，剔除以省体积。tsx 是 devDependency 不会被 npm 装进后端，手动列入闭包。
+# 后端现在只剩 node:http 健康检查，没有 express / AI SDK，闭包只有 tsx 运行链。
 BACKEND_NM="$SCRIPT_DIR/_lpk_content/backend/node_modules"
 DEPS_LIST="$SCRIPT_DIR/_backend_deps.txt"
 node -e '
 const fs=require("fs"),path=require("path");
 const root=process.argv[1];
-const roots=["express","@anthropic-ai/sdk","openai","tsx","esbuild","@esbuild/linux-x64"];
+const roots=["tsx","esbuild","@esbuild/linux-x64"];
 const seen=new Set(),queue=[...roots];
 while(queue.length){
   const n=queue.pop();
