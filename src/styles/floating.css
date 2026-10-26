@@ -416,15 +416,6 @@
   font-weight: 400;
 }
 
-/* ── 代码模式：内联阅读视图的容器 ── */
-.read-mode-code  {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
 /* ── 代码块对话框：语言下拉只占一行 ── */
 .code-dialog-lang-select  { width: 220px; }
 

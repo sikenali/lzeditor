@@ -17,14 +17,6 @@
 }
 
 /* ── Article header ── */
-.read-article-header  {
-  text-align: left;
-  margin-bottom: 8px;
-}
-.read-tags-row  {
-  display: flex; gap: 8px;
-  margin-bottom: 20px;
-}
 .read-tag  {
   padding: 4px 12px;
   border-radius: 6px;
@@ -36,56 +28,6 @@
   background: var(--success-bg);
   color: var(--accent-primary);
   border: 0.7px solid var(--success-border);
-}
-.read-tag-system  {
-  background: var(--note-bg);
-  color: var(--accent-primary);
-  border: 0.7px solid var(--note-border);
-}
-.read-article-title  {
-  font-size: 34px;
-  font-weight: 700;
-  color: var(--text-heading);
-  margin: 0 0 20px 0;
-  line-height: 1.2;
-  font-family: var(--font-sans);
-  letter-spacing: -0.02em;
-}
-
-.read-meta  {
-  display: flex; align-items: center; gap: 16px;
-  margin-top: 20px;
-}
-.read-avatar  {
-  width: 35px; height: 34px;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  background-color: var(--accent-primary);
-  flex-shrink: 0;
-}
-.read-author-info  { display: flex; flex-direction: column; gap: 2px; }
-.read-author-name  {
-  font-size: 13px; color: var(--text-primary);
-  font-family: var(--font-sans);
-}
-.read-author-date  {
-  font-size: 12px; color: var(--text-muted);
-  font-family: var(--font-sans);
-}
-.read-divider-v  {
-  width: 2px; height: 24px;
-  background: var(--border-default);
-  flex-shrink: 0;
-}
-.read-views  { display: flex; align-items: center; gap: 8px; }
-.read-views-icon  {
-  font-size: 14px; color: var(--green-accent-soft);
-  line-height: 1;
-}
-.read-views-text  {
-  font-size: 12px; color: var(--text-muted);
-  font-family: var(--font-sans);
 }
 
 /* ── Article body content ── */
@@ -442,24 +384,6 @@
 }
 
 /* ── Read Mode Code textarea (used in code-mode layout) ── */
-.read-article-code  {
-  width: 100%;
-  min-height: 400px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.8;
-  color: var(--text-primary);
-  outline: none;
-  resize: none;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-.read-article-code::placeholder  { color: var(--text-muted); opacity: 0.5; }
-.read-article-code:focus  { box-shadow: none; }
 
 /* ===== 由 [data-theme] 覆写迁移而来（见 AGENT.md §7） ===== */
 .inline-preview-wrapper  {

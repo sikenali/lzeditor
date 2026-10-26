@@ -891,6 +891,7 @@ read-article-wrapper      仅 globals.css
 read-article-container    仅 globals.css
 read-mode-meta            仅 globals.css
 read-mode-code            仅 floating.css
+read-article-title        globals.css + read-mode.css
 read-article-code         仅 read-mode.css
 read-article-header       globals.css + read-mode.css
 read-tags-row             globals.css + read-mode.css
@@ -923,7 +924,7 @@ read-meta                 globals.css + read-mode.css
 
 - [ ] **步骤 2：删 `read-mode.css`**
 
-删掉 `.read-article-code` 整块（第 444-462 行，含注释与 `::placeholder` / `:focus` 两条附属规则），以及下面这 12 条规则（用 `grep -n` 先定位，规则块大小不一）：
+删掉 `.read-article-code` 整块（含 `::placeholder` / `:focus` 两条附属规则），以及下面这 13 条规则（用 `grep -n` 先定位，规则块大小不一）：
 
 ```
 .read-article-header
@@ -938,6 +939,7 @@ read-meta                 globals.css + read-mode.css
 .read-views-icon
 .read-views-text
 .read-meta
+.read-article-title
 ```
 
 - [ ] **步骤 3：删 `globals.css`**
@@ -949,7 +951,7 @@ read-meta                 globals.css + read-mode.css
 运行：
 
 ```bash
-grep -rn "read-article-wrapper\|read-article-container\|read-article-header\|read-tags-row\|read-tag-system\|read-author\|read-avatar\|read-divider-v\|read-views\|read-meta\|read-mode-meta\|read-mode-code\|read-article-code" src/ --include='*.tsx' --include='*.ts' --include='*.css'
+grep -rn "read-article-wrapper\|read-article-container\|read-article-header\|read-tags-row\|read-tag-system\|read-author\|read-avatar\|read-divider-v\|read-views\|read-meta\|read-mode-meta\|read-mode-code\|read-article-code\|read-article-title" src/ --include='*.tsx' --include='*.ts' --include='*.css'
 ```
 
 预期：无输出
