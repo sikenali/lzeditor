@@ -3,6 +3,7 @@ import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
 import { getDocMd } from '../utils/docSource'
 import { getCM6Editor } from '../components/editor/codemirror/registry'
+import { persistCatalog, restoreSession, type CatalogEntry } from '../utils/docCatalog'
 
 const MAX_VERSIONS = 10
 
@@ -53,6 +54,64 @@ function markWelcomeSeen(set: (partial: any) => void): void {
   try { sessionStorage.setItem(WELCOME_SEEN_KEY, '1') } catch {}
 }
 
+/**
+ * 出厂文档列表。全部打 builtin 标记，让 persistCatalog 能整批丢掉。
+ *
+ * readme 故意不带 system——LibraryTree 靠 `node.system || node.id === 'readme'`
+ * 给 readme 显示「还原出厂内容」，DocumentMetaBar / LibraryPanel 也把
+ * `!system` 当用户文档计数。别在这里替它补上 system。
+ */
+const DEFAULT_DOCS: Array<CatalogEntry> = ([
+  { id: 'readme',                   title: 'README.md',            path: 'Default',         libraryId: 'default' },
+  { id: 'a01-特色功能',           title: 'A01 特色功能',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a02-文档库和文档',       title: 'A02 文档库和文档',     path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a03-基本格式',           title: 'A03 基本格式',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a04-自动完成',           title: 'A04 自动完成',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a05-快捷键',             title: 'A05 快捷键',           path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a06-大纲视图',           title: 'A06 大纲视图',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a07-即时预览和阅读模式', title: 'A07 即时预览与阅读模式', path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a08-预览视图',           title: 'A08 预览视图',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a09-历史记录',           title: 'A09 历史记录',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'a10-拼写检查',           title: 'A10 拼写检查',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
+  { id: 'b01-链接',               title: 'B01 链接',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b02-图像',               title: 'B02 图像',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b03-脚注',               title: 'B03 脚注',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b04-任务列表',           title: 'B04 任务列表',         path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b05-表格',               title: 'B05 表格',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b06-图表',               title: 'B06 图表',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b07-代码块',             title: 'B07 代码块',           path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b08-html代码',           title: 'B08 HTML 代码',        path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b09-LaTeX数学公式',      title: 'B09 LaTeX 数学公式',   path: '使用手册·高级篇', libraryId: 'manual', system: true },
+  { id: 'b10-高级格式',           title: 'B10 高级格式',         path: '使用手册·高级篇', libraryId: 'manual', system: true },
+] as Array<CatalogEntry>).map(d => ({ ...d, builtin: true }))
+
+/** 启动时从 localStorage 恢复文档库；没有存档就回落到出厂列表。 */
+const restored = restoreSession(DEFAULT_DOCS, 'readme')
+
+/**
+ * 把当前目录写回 localStorage。
+ *
+ * 只在会改目录的动作里调用：createDoc / closeDoc / createLibrary / renameLibrary。
+ * switchDoc 不加——它会覆盖 activeDocId 的持久化，而「记住上次打开的文档」
+ * 由 switchDoc 里已有的 lzeditor-last-doc 负责，两层记录会互相打架。
+ */
+function saveCatalog(): void {
+  const s = useEditorStore.getState() as any
+  persistCatalog({
+    docs: (s.docs || []).map((d: any) => ({
+      id: d.id,
+      title: d.title,
+      path: d.path || '',
+      libraryId: d.libraryId,
+      system: d.system,
+      builtin: d.builtin,
+    })),
+    docLibraries: s.docLibraries as Array<{ id: string; name: string }>,
+    nextUntitledIdx: s.nextUntitledIdx,
+    activeDocId: s.activeDocId || 'readme',
+  })
+}
+
 export const useEditorStore = create<EditorStoreState>((set: any, get: any) => ({
   docTitle: DEFAULT_DOC_TITLE,
   docPath: '',
@@ -74,7 +133,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   codeMode: false,
   codeModeCursor: 0,
   appMode: 'edit' as const,
-  docLibraries: [{ id: 'default', name: 'Default' }],
+  docLibraries: restored.docLibraries,
   activeLibraryId: 'default',
   previewMode: 'render' as 'render' | 'code',
   previewWidth: 400,
@@ -91,32 +150,10 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   showWelcome: !welcomeSeen,
 
   // ── Multi-tab ──
-  docs: [
-    { id: 'readme',                   title: 'README.md',        path: 'Default',        libraryId: 'default' },
-    { id: 'a01-特色功能',           title: 'A01 特色功能',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a02-文档库和文档',       title: 'A02 文档库和文档', path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a03-基本格式',           title: 'A03 基本格式',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a04-自动完成',           title: 'A04 自动完成',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a05-快捷键',             title: 'A05 快捷键',     path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a06-大纲视图',           title: 'A06 大纲视图',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a07-即时预览和阅读模式', title: 'A07 即时预览与阅读模式', path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a08-预览视图',           title: 'A08 预览视图',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a09-历史记录',           title: 'A09 历史记录',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'a10-拼写检查',           title: 'A10 拼写检查',   path: '使用手册·基础篇', libraryId: 'manual', system: true },
-    { id: 'b01-链接',               title: 'B01 链接',       path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b02-图像',               title: 'B02 图像',       path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b03-脚注',               title: 'B03 脚注',       path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b04-任务列表',           title: 'B04 任务列表',   path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b05-表格',               title: 'B05 表格',       path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b06-图表',               title: 'B06 图表',       path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b07-代码块',             title: 'B07 代码块',     path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b08-html代码',           title: 'B08 HTML 代码',  path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b09-LaTeX数学公式',      title: 'B09 LaTeX 数学公式', path: '使用手册·高级篇', libraryId: 'manual', system: true },
-    { id: 'b10-高级格式',           title: 'B10 高级格式',   path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  ] as Array<{ id: string; title: string; path: string; libraryId?: string; system?: boolean }>,
-  activeDocId: 'readme' as string | null,
+  docs: restored.docs as Array<{ id: string; title: string; path: string; libraryId?: string; system?: boolean; builtin?: boolean }>,
+  activeDocId: restored.activeDocId as string | null,
   docsMd: {} as Record<string, string>,
-  nextUntitledIdx: 1,
+  nextUntitledIdx: restored.nextUntitledIdx,
 
   setTitle: (title: string) => set({ docTitle: title }),
   setWordCount: (count: number) => set({ wordCount: count }),
@@ -172,12 +209,16 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       activeLibraryId: id,
       showLibrary: true,
     }))
+    saveCatalog()
     return id
   },
   setActiveLibrary: (id: string) => set({ activeLibraryId: id }),
-  renameLibrary: (id: string, name: string) => set((s: any) => ({
-    docLibraries: s.docLibraries.map((lib: any) => lib.id === id ? { ...lib, name } : lib),
-  })),
+  renameLibrary: (id: string, name: string) => {
+    set((s: any) => ({
+      docLibraries: s.docLibraries.map((lib: any) => lib.id === id ? { ...lib, name } : lib),
+    }))
+    saveCatalog()
+  },
   setPreviewMode: (previewMode: 'render' | 'code') => set({ previewMode }),
   togglePreviewMode: () => set((s: any) => ({ previewMode: s.previewMode === 'code' ? 'render' : 'code' })),
   setPreviewWidth: (previewWidth: number) => set({ previewWidth }),
@@ -220,6 +261,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       nextUntitledIdx: idx + 1,
     })
     markWelcomeSeen(set)
+    saveCatalog()
     return id
   },
    switchDoc: (id: string) => {
@@ -261,6 +303,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       activeDocId: nextActiveId,
       ...(nextDoc ? { docTitle: nextDoc.title, docPath: nextDoc.path || '', activeLibraryId: nextDoc.libraryId || get().activeLibraryId } : {}),
     })
+    saveCatalog()
   },
   resetDocContent: (id: string) => {
     // 清掉本地覆盖，内置文档就自动回到出厂内容
