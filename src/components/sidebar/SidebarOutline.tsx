@@ -4,12 +4,17 @@ import { getCM6Editor } from '../editor/codemirror/registry'
 import { parseMdOutline, type MdOutlineItem } from '../../utils/mdOutline'
 import {
   OUTLINE_DEPTHS, currentSectionIndex, depthLabel, filterByDepth,
-  nextStop, sectionCountLabel, shownCurrent, type OutlineDepth,
+  rovingIndex, sectionCountLabel, shownCurrent, type OutlineDepth,
 } from '../../utils/outline'
 
 /** 标题级别到徽标样式类：只有两级视觉差异，4/5/6 共用第三级。 */
 function badgeClass(level: number): string {
   return `outline-badge${level === 1 ? ' l1' : level === 2 ? ' l2' : ' l3'}`
+}
+
+/** 缩进按层级查表，H1 也从同一基线起排（徽标左缘对齐列表内边距）。 */
+function indentClass(level: number): string {
+  return `outline-indent-${Math.min(6, Math.max(1, level))}`
 }
 
 export const SidebarOutline: React.FC = () => {
@@ -23,6 +28,7 @@ export const SidebarOutline: React.FC = () => {
   /** 上次拿过焦点的那一项，Tab 回来还是它。 */
   const [focused, setFocused] = useState<number | null>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const depthGroupRef = useRef<HTMLDivElement>(null)
 
   // 大纲从 markdown 源文本解析：CM6 没有文档树，标题只能从 `#` 号推
   const md = docsMd[activeDocId || 'readme'] || mdContent || ''
@@ -46,15 +52,25 @@ export const SidebarOutline: React.FC = () => {
     getCM6Editor()?.goto(item.pos, item.pos + item.text.length)
   }, [])
 
-  /** 上下移动、Home/End 跳首尾、Return/Space 打开（原生 button 自带）。 */
+  /** 方向键在列表里走焦点，Home/End 跳首尾，Return/Space 打开（原生 button 自带）。 */
   const onListKeyDown = useCallback((e: React.KeyboardEvent<HTMLUListElement>) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') return
     const btns = Array.from(listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn') ?? [])
     const index = btns.indexOf(document.activeElement as HTMLButtonElement)
-    const next = nextStop(e.key, index < 0 ? 0 : index, btns.length)
+    const next = rovingIndex(e.key, index < 0 ? 0 : index, btns.length)
     if (next === null) return
     e.preventDefault()
     btns[next]?.focus()
+  }, [])
+
+  /** 层级单选组：方向键移焦并直接选中，选中项始终是唯一的 tab 停点。 */
+  const onDepthKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    const btns = Array.from(depthGroupRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+    const index = btns.indexOf(document.activeElement as HTMLButtonElement)
+    const next = rovingIndex(e.key, index < 0 ? 0 : index, btns.length)
+    if (next === null) return
+    e.preventDefault()
+    btns[next]?.focus()
+    btns[next]?.click()
   }, [])
 
   return (
@@ -80,11 +96,12 @@ export const SidebarOutline: React.FC = () => {
             {entries.map((entry, position) => {
               const isCurrent = position === shownIndex
               return (
-                <li key={entry.heading.id}>
+                <li key={entry.heading.id} className={indentClass(entry.heading.level)}>
                   <button
                     type="button"
                     className={`outline-jump-btn${isCurrent ? ' current' : ''}`}
-                    style={{ paddingLeft: `${(entry.heading.level - 1) * 12 + 4}px` }}
+                    data-level={entry.heading.level}
+                    data-line={entry.heading.line}
                     aria-current={isCurrent ? 'location' : undefined}
                     tabIndex={position === stop ? 0 : -1}
                     onFocus={() => setFocused(position)}
@@ -102,14 +119,15 @@ export const SidebarOutline: React.FC = () => {
       </div>
       {items.length > 0 && (
         <div className="outline-footer">
-          <span className="outline-footer-label"><span className="remix ri-filter-line"></span>层级</span>
-          <div role="radiogroup" aria-label="层级" className="outline-depth-group">
+          <span className="outline-footer-label" aria-hidden="true"><span className="remix ri-filter-line"></span>层级</span>
+          <div ref={depthGroupRef} role="radiogroup" aria-label="层级" className="outline-depth-group" tabIndex={-1} onKeyDown={onDepthKeyDown}>
             {OUTLINE_DEPTHS.map(d => (
               <button
                 key={d}
                 type="button"
                 role="radio"
                 aria-checked={depth === d}
+                tabIndex={depth === d ? 0 : -1}
                 className={`outline-depth-btn${depth === d ? ' active' : ''}`}
                 onClick={() => setDepth(d)}
               >

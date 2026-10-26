@@ -339,14 +339,21 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
+/* 缩进按层级查表，步长与 backtickle 一致；H1 也从同一基线起排，徽标左缘和列表内边距对齐。 */
+.sidebar-outline .outline-list > li.outline-indent-1 { padding-left: 8px; }
+.sidebar-outline .outline-list > li.outline-indent-2 { padding-left: 16px; }
+.sidebar-outline .outline-list > li.outline-indent-3 { padding-left: 24px; }
+.sidebar-outline .outline-list > li.outline-indent-4 { padding-left: 32px; }
+.sidebar-outline .outline-list > li.outline-indent-5 { padding-left: 40px; }
+.sidebar-outline .outline-list > li.outline-indent-6 { padding-left: 48px; }
 .sidebar-outline .outline-jump-btn  {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 7px;
   width: 100%;
-  padding: 5px 8px;
+  padding: 6px 8px 6px 0;
   border: 0.7px solid transparent;
   border-left: 2px solid transparent;
   border-radius: 7px;
@@ -375,7 +382,8 @@
 }
 .sidebar-outline .outline-badge  {
   flex: 0 0 auto;
-  padding: 1px 4px;
+  margin-top: 2px;
+  padding: 2px 4px;
   border-radius: 4px;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 9.5px;
@@ -391,14 +399,15 @@
   color: var(--glass-text);
   font-weight: 700;
 }
+/* 长标题折行而不是截断：截断之后两条近名的长标题没法区分。 */
 .sidebar-outline .outline-text  {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 12.5px;
+  line-height: 1.35;
   letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .sidebar-outline .outline-footer  {
   flex-shrink: 0;
@@ -406,7 +415,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 8px 8px;
   border-top: 0.7px solid var(--glass-border);
   background: var(--chrome-surface);
 }
@@ -430,6 +439,7 @@
 }
 .sidebar-outline .outline-depth-btn  {
   min-width: 24px;
+  min-height: 24px;
   padding: 2px 6px;
   border: 0.7px solid transparent;
   border-radius: 5px;

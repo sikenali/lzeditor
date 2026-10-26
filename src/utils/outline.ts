@@ -76,12 +76,15 @@ export function depthLabel(depth: OutlineDepth): string {
   return depth === 0 ? '全部' : `${depth}`
 }
 
-/** 键盘方向键对应的下一停点；不支持的方向返回 null。 */
-export function nextStop(key: string, index: number, count: number): number | null {
+/**
+ * Roving 焦点的下一停点，大纲列表和层级单选组共用 —— 与 backtickle 的 rovingIndex 一致。
+ * 回绕，上下左右四个方向都移动，Home/End 跳首尾；不是这些键返回 null。
+ */
+export function rovingIndex(key: string, index: number, count: number): number | null {
   if (count === 0) return null
+  if (key === 'ArrowRight' || key === 'ArrowDown') return (index + 1) % count
+  if (key === 'ArrowLeft' || key === 'ArrowUp') return (index - 1 + count) % count
   if (key === 'Home') return 0
   if (key === 'End') return count - 1
-  if (key === 'ArrowDown') return Math.min(count - 1, index + 1)
-  if (key === 'ArrowUp') return Math.max(0, index - 1)
   return null
 }
