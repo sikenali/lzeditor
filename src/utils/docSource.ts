@@ -45,8 +45,6 @@ export const BUILTIN_DOCS: Record<string, string> = {
   'b10-高级格式': b10,
 }
 
-const BUILTIN_IDS = Object.keys(BUILTIN_DOCS)
-
 function readLocalDoc(id: string): { md?: string; html?: string } | null {
   try {
     const s = localStorage.getItem(`lzeditor-doc-${id}`)
@@ -88,9 +86,4 @@ export function getDocHtml(id: string): string {
     }
   } catch (e) { silentError('读取文档覆盖内容失败', e) }
   return ''
-}
-
-/** 是否为一篇内置文档（使用手册，或内置的 README）。这类文档可以还原出厂内容。 */
-export function isBuiltinDoc(id: string): boolean {
-  return BUILTIN_IDS.includes(id) || id === 'readme'
 }

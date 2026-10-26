@@ -90,11 +90,8 @@ export const DEFAULT_SETTINGS: SettingsState = {
   tabSize: 2,
   livePreview: false,
   // ── Typography & reading ──
-  headingStyles: {},
   textIndent: false,
   textJustify: false,
-  linkColor: '',
-  blockquoteBackground: '',
   // ── AI Settings (bid-maker style) ──
   customApiFormat: 'openai',
   customEndpoint: '',

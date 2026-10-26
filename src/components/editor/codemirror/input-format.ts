@@ -23,10 +23,6 @@ export function setInputFormatSettings(next: Partial<InputFormatSettings> = {}):
   settings = { ...settings, ...next }
 }
 
-export function getInputFormatSettings(): InputFormatSettings {
-  return { ...settings }
-}
-
 const CJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uff00-\uffef]/
 
 const SYMBOL_CMDS: Record<string, FormatCommand> = {

@@ -154,9 +154,3 @@ export function runTableOp(view: EditorView, op: TableOp): boolean {
   })
   return true
 }
-
-/** 光标是否在表格内（表格子菜单的置灰依赖它）。 */
-export function isCursorInTable(view: EditorView): boolean {
-  const { state } = view
-  return TABLE_LINE.test(state.doc.lineAt(state.selection.main.from).text)
-}

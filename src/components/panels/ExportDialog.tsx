@@ -15,15 +15,15 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
 
 
 const EXPORT_FORMATS = [
-  { id: 'pdf',   name: 'PDF',   icon: 'ri-file-pdf-fill',    desc: '可打印',   color: '#e74c3c' },
-  { id: 'docx',  name: 'DOCX',  icon: 'ri-file-word-fill',   desc: 'Word（HTML 编码，Word 可打开）', color: '#2980b9' },
-  { id: 'html',  name: 'HTML',  icon: 'ri-html5-fill',       desc: '网页',     color: '#e67e22' },
-  { id: 'epub',  name: 'EPUB',  icon: 'ri-book-open-fill',   desc: '电子书',   color: '#8e44ad' },
-  { id: 'md',    name: 'MD',    icon: 'ri-markdown-fill',    desc: '源码',     color: '#27ae60' },
-  { id: 'png',   name: 'PNG',   icon: 'ri-image-2-fill',     desc: '图片',     color: '#16a085' },
-  { id: 'svg',   name: 'SVG',   icon: 'ri-shape-fill',       desc: '矢量',     color: '#2c3e50' },
-  { id: 'xlsx',  name: 'XLSX',  icon: 'ri-file-excel-fill',  desc: '表格',     color: '#27ae60' },
-]
+   { id: 'pdf',   name: 'PDF',   icon: 'ri-file-pdf-fill',    desc: '可打印',   color: 'var(--color-error)' },
+   { id: 'docx',  name: 'DOCX',  icon: 'ri-file-word-fill',   desc: 'Word（HTML 编码，Word 可打开）', color: 'var(--color-info)' },
+   { id: 'html',  name: 'HTML',  icon: 'ri-html5-fill',       desc: '网页',     color: 'var(--color-warning)' },
+   { id: 'epub',  name: 'EPUB',  icon: 'ri-book-open-fill',   desc: '电子书',   color: 'var(--color-primary-deep)' },
+   { id: 'md',    name: 'MD',    icon: 'ri-markdown-fill',    desc: '源码',     color: 'var(--color-success)' },
+   { id: 'png',   name: 'PNG',   icon: 'ri-image-2-fill',     desc: '图片',     color: 'var(--color-primary)' },
+   { id: 'svg',   name: 'SVG',   icon: 'ri-shape-fill',       desc: '矢量',     color: 'var(--color-text-primary)' },
+   { id: 'xlsx',  name: 'XLSX',  icon: 'ri-file-excel-fill',  desc: '表格',     color: 'var(--color-success-strong)' },
+ ]
 
 const PAPER_SIZES = [
   { value: 'a4', label: 'A4' }, { value: 'a3', label: 'A3' },
@@ -50,7 +50,6 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   const editorFont = useSettingsStore(s => s.editorFont)
   const textIndent = useSettingsStore(s => s.textIndent)
   const textJustify = useSettingsStore(s => s.textJustify)
-  const headingStyles = useSettingsStore(s => s.headingStyles)
   const exportFormat = useSettingsStore(s => s.exportFormat)
   const exportPaperSize = useSettingsStore(s => s.paperSize)
   const exportOrientation = useSettingsStore(s => s.orientation)
@@ -101,7 +100,6 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
             includeLineNumbers: includeLineNumbers || false, includePageNumbers: includePageNumbers || false,
             paperSize, orientation, fontSize: defaultFontSize, lineHeight: lineHeight,
             fontFamily: editorFont, textIndent: textIndent, textJustify: textJustify,
-            headingStyles: headingStyles,
           } : {},
       })
     } catch (err) { console.error('export failed', err) }
@@ -147,13 +145,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
           <UDSection label="页面设置">
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
-                <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>纸张</div>
+                <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>纸张</div>
                 <div style={{ minWidth: 0 }}>
                   <UiSelect value={paperSize} onChange={setPaperSize} options={PAPER_SIZES.map(p => ({ value: p.value, label: p.label }))} />
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>方向</div>
+                <div className="ud-section-label" style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>方向</div>
                 <div style={{ minWidth: 0 }}>
                   <UiSelect value={orientation} onChange={setOrientation} options={ORIENTATIONS.map(o => ({ value: o.value, label: o.label }))} />
                 </div>
@@ -170,7 +168,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
       <div
         className="export-preview-body"
         data-typography-theme={styleId || typographyTheme}
-        dangerouslySetInnerHTML={{ __html: previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:32px 16px;">暂无内容，请先编辑文档</p>' }}
+        dangerouslySetInnerHTML={{ __html: previewHtml || '<p style="color:var(--color-text-muted);text-align:center;padding:32px 16px;">暂无内容，请先编辑文档</p>' }}
         style={{ fontSize: 13, lineHeight: 1.7 }}
       />
     </UDPreviewCard>

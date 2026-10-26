@@ -1,18 +1,3 @@
-export interface AIModel {
-  id: string
-  name: string
-  maxTokens: number
-  supportsStreaming: boolean
-}
-
-export interface AIProviderDef {
-  id: string
-  name: string
-  defaultModel: string
-  models: AIModel[]
-  baseUrl: string
-}
-
 export interface ApiKeyEntry {
   id: string
   provider: string
@@ -27,14 +12,6 @@ export interface ApiKeyEntry {
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
-}
-
-export interface AIRequestOptions {
-  provider: string
-  model: string
-  temperature: number
-  maxTokens: number
-  customBaseUrl?: string
 }
 
 export type AIAction = 'rewrite' | 'polish' | 'continue' | 'summarize' | 'translate' | 'question' | null
@@ -70,7 +47,7 @@ export interface EditorStoreState {
   cursorPosition: { line: number; column: number }
   isPreview: boolean
   syncStatus: 'synced' | 'saving' | 'error'
-  openPanel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export' | 'ai'
+  openPanel: 'none' | 'library' | 'file' | 'history' | 'settings' | 'export'
   insertPanel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart'
   panelOpen: boolean
    showOutline: boolean
@@ -100,7 +77,7 @@ export interface EditorStoreState {
   setDocHTML: (html: string) => void
   setPreview: (isPreview: boolean) => void
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
-  setOpenPanel: (panel: 'none' | 'library' | 'file' | 'outline' | 'preview' | 'image' | 'link' | 'code' | 'table' | 'history' | 'settings' | 'export') => void
+  setOpenPanel: (panel: 'none' | 'library' | 'file' | 'history' | 'settings' | 'export') => void
   setInsertPanel: (panel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart') => void
    setShowOutline: (showOutline: boolean) => void
    setShowPreview: (showPreview: boolean) => void
@@ -165,7 +142,6 @@ export interface SettingsState {
   previewModeEnabled?: boolean
   // ── Navigation layout ──
   navMode?: 'top' | 'left'
-  statusbarCollapsed?: boolean
   // ── Toolbar ──
   quickFormatButtons?: boolean
   showToolbarLabels?: boolean
@@ -199,11 +175,8 @@ export interface SettingsState {
   selectedProvider?: string
   selectedModelName?: string
   // ── Typography & reading ──
-  headingStyles?: Record<string, string>
   textIndent?: boolean
   textJustify?: boolean
-  linkColor?: string
-  blockquoteBackground?: string
   // ── Export ──
   exportFormat?: string
   typographyTheme?: string

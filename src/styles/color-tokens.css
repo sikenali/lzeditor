@@ -23,8 +23,7 @@
        like the `--color-*` tokens above.
     ============================================================ */
 
-
-:root {
+:root  {
   /* Backgrounds */
   --background:           var(--color-bg-main);
   --background-card:      var(--color-bg-card);

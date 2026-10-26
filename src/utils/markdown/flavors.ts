@@ -9,28 +9,6 @@ export type FlavorId = 'commonmark' | 'gfm' | 'obsidian' | 'pandoc' | 'quarto' |
 /** 设置项的值：`auto` 走自动检测，其余是固定方言。 */
 export type FlavorSetting = 'auto' | FlavorId
 
-export interface FlavorMeta {
-  id: FlavorId
-  label: string
-  hint: string
-}
-
-export const FLAVOR_META: Record<FlavorId, FlavorMeta> = {
-  commonmark: { id: 'commonmark', label: 'CommonMark', hint: '规范本体：无表格、无删除线、无脚注' },
-  gfm: { id: 'gfm', label: 'GFM', hint: '表格 / 删除线 / 任务列表 / 裸链接' },
-  obsidian: { id: 'obsidian', label: 'Obsidian', hint: '[[wiki 链接]] / 嵌入 / 提示框 / %% 注释' },
-  pandoc: { id: 'pandoc', label: 'Pandoc', hint: '围栏 div / {#id} 属性 / @cite / 块引用' },
-  quarto: { id: 'quarto', label: 'Quarto', hint: '::: 提示框 / {#id} 锚点 / {python} 代码执行' },
-  mdx: { id: 'mdx', label: 'MDX', hint: 'import / export / <Component> 组件' },
-}
-
-export const FLAVOR_IDS: FlavorId[] = ['commonmark', 'gfm', 'obsidian', 'pandoc', 'quarto', 'mdx']
-
-export const FLAVOR_LIST: { id: FlavorSetting; label: string; hint: string }[] = [
-  { id: 'auto', label: '自动检测', hint: '按文档特征推断方言，无特征时回退 CommonMark' },
-  ...FLAVOR_IDS.map(id => ({ id: id as FlavorSetting, label: FLAVOR_META[id].label, hint: FLAVOR_META[id].hint })),
-]
-
 /**
  * 剥掉围栏代码块。代码示例里写 `+ item`、`[[link]]`、`import x` 是常态，
  * 拿这些做方言特征会把每个文档都判成 pandoc/obsidian/mdx。

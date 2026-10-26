@@ -1,4 +1,4 @@
-:root {
+:root  {
   /* Colors — Parchment (light) — bid-maker DESIGN.md §5 */
   --color-primary: #C0392B;
   --color-primary-soft: #FBE9E7;
@@ -60,7 +60,7 @@
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --t-fast: 150ms; --t-base: 200ms; --t-slow: 300ms;
-  --transition-fast: var(--t-fast) var(--ease); --transition-mid: var(--t-base) var(--ease);
+  --transition-fast: var(--t-fast) var(--ease);
   --transition-base: var(--t-base) var(--ease); --transition-slow: var(--t-slow) var(--ease);
 
   --z-dropdown: 1000; --z-sticky: 1020; --z-fixed: 1030; --z-modal-backdrop: 1040;

@@ -55,7 +55,6 @@
     "electron": "^31.7.7",
     "electron-builder": "^25.1.8",
     "happy-dom": "^15.11.7",
-    "tailwindcss": "^4.3.3",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
     "vite": "^5.4.0",

@@ -10,14 +10,6 @@ import {
 } from '@codemirror/view'
 import type { SyntaxNodeRef } from '@lezer/common'
 
-type ImageResolver = (source: string) => Promise<string>
-
-const resolvers = new WeakMap<EditorView, ImageResolver | null>()
-
-export function setLivePreviewImages(view: EditorView, resolve: ImageResolver | null): void {
-  resolvers.set(view, resolve)
-}
-
 function activeLines(state: EditorState): Set<number> {
   const lines = new Set<number>()
   for (const range of state.selection.ranges) {
@@ -84,8 +76,6 @@ class RuleWidget extends WidgetType {
   }
 }
 
-const resolved = new Map<string, string>()
-
 class ImageWidget extends WidgetType {
   readonly src: string
   readonly alt: string
@@ -110,19 +100,8 @@ class ImageWidget extends WidgetType {
     const source = this.src
     if (/^data:image\//i.test(source)) {
       image.src = source
-    } else if (/^[a-z][a-z0-9+.-]*:/i.test(source)) {
-      this.missing(wrap)
     } else {
-      const known = resolved.get(source)
-      const resolve = resolvers.get(view)
-      if (known) image.src = known
-      else if (!resolve) this.missing(wrap)
-      else {
-        resolve(source).then(
-          (address) => { resolved.set(source, address); image.src = address },
-          () => this.missing(wrap),
-        )
-      }
+      this.missing(wrap)
     }
     return wrap
   }

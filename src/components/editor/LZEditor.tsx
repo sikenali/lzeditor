@@ -199,7 +199,6 @@ export const LZEditor = () => {
   // Apply typography overrides to :root for read-mode / preview areas
   const textIndent = useSettingsStore((s) => s.textIndent)
   const textJustify = useSettingsStore((s) => s.textJustify)
-  const headingStyles = useSettingsStore((s) => s.headingStyles)
   useEffect(() => {
     applyTypographyOverrides({
       fontSize: defaultFontSize,
@@ -208,9 +207,8 @@ export const LZEditor = () => {
       contentWidth: contentWidth,
       textIndent,
       textJustify,
-      headingStyles,
     })
-  }, [defaultFontSize, lineHeight, editorFont, contentWidth, textIndent, textJustify, headingStyles])
+  }, [defaultFontSize, lineHeight, editorFont, contentWidth, textIndent, textJustify])
 
   // ── Strip read-frog extension injected nodes from the editor DOM ──
   useEffect(() => {

@@ -1,5 +1,4 @@
 import { EditorView } from '@codemirror/view'
-import { type Extension } from '@codemirror/state'
 
 // 引号（" ' “ ‘ 「 『）的配对与智能替换在 input-format.ts，这里只管括号类符号，
 // 避免两个 handler 对同一个按键各改一次。
@@ -14,9 +13,6 @@ const PAIR_MAP: Record<string, string> = {
 }
 
 const CLOSING = new Set([')', ']', '}', '>', '】', '〕', '〉', '》', '`'])
-
-export const autoPairOff: Extension = []
-export const autoPairOn: Extension = []
 
 export function setupAutoPair(view: EditorView, _enabled: boolean): void {
   const handler = (e: KeyboardEvent) => {

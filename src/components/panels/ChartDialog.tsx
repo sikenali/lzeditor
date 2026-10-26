@@ -76,7 +76,7 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string
   const handleInsert = () => {
     const chart = chartInstanceRef.current
     if (!chart) { onClose(); return }
-    // ECharts 无法在 TipTap 文档内交互，只能导出为静态图片插入
+    // ECharts 无法在编辑器文档内交互，只能导出为静态图片插入
     const dataUrl = chart.getDataURL?.({ type: 'png', pixelRatio: 2, backgroundColor: 'transparent' })
     if (!dataUrl) { onClose(); return }
     onInsert(dataUrl, title || '图表', chartType)

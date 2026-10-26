@@ -44,7 +44,7 @@ export const INSERT_ITEMS: MenuItem[] = [
   { icon: 'ri-emotion-line', label: '表情', action: 'emoji' },
   { icon: 'ri-double-quotes-r', label: '块引用', action: 'blockquote' },
   { icon: 'ri-code-box-line', label: '代码块', action: 'code' },
-  { icon: 'ri-function-fill', label: '数学公式', action: 'math' },
+  { icon: 'ri-function-fill', label: '数学公式', action: 'formula' },
   { icon: 'ri-bar-chart-2-line', label: '图表', action: 'chart' },
 ]
 
@@ -156,7 +156,7 @@ const INSERT_MAP: Record<string, FormatCommand> = {
   toc: 'toc', quote: 'quote', blockquote: 'quote', footnote: 'footnote', hr: 'rule',
 }
 
-const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'math', 'chart', 'emoji', 'table'])
+const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'formula', 'chart', 'emoji', 'table'])
 
 /** 编辑动作，供顶栏和左侧 rail 共用，避免两套逻辑漂移。 */
 export function useEditorActions() {

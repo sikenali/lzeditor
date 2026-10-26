@@ -4,8 +4,6 @@ import { applyTypographyTheme } from '../styles/typography-themes'
 import { getCodeTheme } from '../styles/code-themes'
 import { themeTokens, ACCENT_PRESETS, type ThemeType } from '../styles/themes'
 
-export type ThemeMode = ThemeType
-
 /** Parse hex color to RGB */
 function hexToRgb(hex: string): [number, number, number] {
   const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())

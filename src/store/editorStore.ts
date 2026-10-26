@@ -20,7 +20,14 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
       }
     }
   } catch {}
-  return { showOutline: false, showPreview: false, showLibrary: false, statusbarCollapsed: false }
+  // 首次运行没有布局记录：预览开关回落到设置页的「记住预览状态」，
+  // 否则 previewModeEnabled 永远只写不读。
+  let preview = false
+  try {
+    const s = JSON.parse(localStorage.getItem('lzeditor-settings') || '')
+    preview = s?.previewModeEnabled !== false
+  } catch {}
+  return { showOutline: false, showPreview: preview, showLibrary: false, statusbarCollapsed: false }
 }
 
 function saveLayoutState(partial: Partial<ReturnType<typeof loadLayoutState>>): void {
@@ -58,9 +65,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   openPanel: 'none',
   insertPanel: 'none' as const,
   panelOpen: false,
-  showOutline: false,
-  showPreview: false,
-  showLibrary: false,
+  showOutline: initialLayout.showOutline,
+  showPreview: initialLayout.showPreview,
+  showLibrary: initialLayout.showLibrary,
   showRightPanel: false,
   statusbarCollapsed: initialLayout.statusbarCollapsed,
   showSearch: false,
@@ -226,7 +233,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     }
     // 切换前把未落盘的编辑写回当前文档。CM6 已在 onChange 里写 docsMd，
     // 这里只兜底 mdContent（代码模式编辑走的是 mdContent）；
-    // 不能再读 s.editor?.getHTML() —— 那是 TipTap 的旧内容，会把 CM6 的编辑覆盖掉。
+    // 不能再读 s.editor?.getHTML() —— 那是旧编辑器的历史内容，会把 CM6 的编辑覆盖掉。
     if (s.activeDocId && s.mdContent && s.mdContent !== s.docsMd?.[s.activeDocId]) {
       s.updateDoc({ docsMd: { [s.activeDocId]: s.mdContent } })
     }

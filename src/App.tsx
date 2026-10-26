@@ -13,7 +13,6 @@ import { LZEditor } from './components/editor/LZEditor'
 import { SearchPanel } from './components/panels/SearchPanel'
 import { LibraryPanel } from './components/panels/LibraryPanel'
 import { FilePanel } from './components/panels/FilePanel'
-import { PreviewPanel } from './components/panels/PreviewPanel'
 import { SidebarOutline } from './components/sidebar/SidebarOutline'
 import { SidebarPreview } from './components/sidebar/SidebarPreview'
 import { ImageDialog } from './components/panels/ImageDialog'
@@ -35,9 +34,12 @@ import { WelcomeScreen } from './components/layout/WelcomeScreen'
 import { pickFolderFiles, importFolderFiles } from './utils/docImport'
 import { silentError } from './utils/silentError'
 
-/** CM6 走 markdown 源码：把行列规格拼成 markdown 表格 */
 /** HTML 属性值转义（对齐图片、新标签页链接走 HTML 输出时用）。 */
 const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+// 主进程只读这四个开关（托盘、关窗即退、新窗口、标签页），
+// 全量 settings 里带明文 API Key，没必要发进主进程。
+const APP_SETTING_KEYS = ['enableTabs', 'showTrayIcon', 'openInNewWindow', 'quitWhenAllWindowsClosed'] as const
 
 const buildImageMd = (url: string, alt: string, align: 'top' | 'left' | 'right' | undefined) => {
   if (align === 'left' || align === 'right') {
@@ -177,7 +179,7 @@ function App() {
       const es = useEditorStore.getState()
       const key = e.key.toLowerCase()
 
-      // 标题 Ctrl+Alt+1..6 由 CM6 的 markdown keymap 绑定；这里重复调用会变成
+      // 标题 Ctrl+Alt+1..6 由 CM6 的 headingKeymap 绑定；这里重复调用会变成
       // 「开→关」双重触发，等于什么都没发生，所以不再重复绑定。
 
       if (key === 'n') {
@@ -238,7 +240,10 @@ function App() {
   useEffect(() => {
     const api = (window as any).electronAPI
     if (!api) return
-    const pushSettings = () => api.sendSettings?.(useSettingsStore.getState())
+    const pushSettings = () => {
+      const s = useSettingsStore.getState()
+      api.sendSettings?.(Object.fromEntries(APP_SETTING_KEYS.map(k => [k, s[k]])))
+    }
     pushSettings()
     const unsub = useSettingsStore.subscribe(pushSettings)
 
@@ -460,7 +465,6 @@ function App() {
       {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       {openPanel === 'file' && <FilePanel onClose={closePanel} />}
-      {openPanel === 'preview' && <PreviewPanel onClose={closePanel} />}
       <AIPanel />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}

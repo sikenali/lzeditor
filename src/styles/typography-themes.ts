@@ -1286,11 +1286,6 @@ export function getTypographyTheme(id: string): TypographyTheme | undefined {
   return TYPOGRAPHY_THEMES.find(t => t.id === id)
 }
 
-export function getActiveTypographyTheme(): TypographyTheme | undefined {
-  const id = document.documentElement.getAttribute('data-typography-theme')
-  return getTypographyTheme(id ?? '')
-}
-
 /**
  * Apply a typography theme by injecting / updating a <style> tag in document.head.
  * Also sets data-typography-theme attribute on root for CSS cascade.

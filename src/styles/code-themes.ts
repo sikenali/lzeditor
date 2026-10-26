@@ -67,18 +67,3 @@ export const CODE_THEMES: CodeTheme[] = [
 export function getCodeTheme(id: string): CodeTheme {
   return CODE_THEMES.find(t => t.id === id) ?? CODE_THEMES[0]
 }
-
-/** Get a sample code string for the given language and theme */
-export function getSampleCode(lang: string): string {
-  const samples: Record<string, string> = {
-    python: 'def hello():\n    print("Hello, World!")\n\n# 注释\nx: int = 42',
-    javascript: 'const greet = (name) => {\n  console.log(`Hello, ${name}!`);\n};\n\ngreet("World");',
-    typescript: 'interface User {\n  name: string;\n  age: number;\n}\n\nconst user: User = { name: "Alice", age: 30 };',
-    go: 'package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Hello, World!")\n}',
-    rust: 'fn main() {\n    println!("Hello, World!");\n    let x = vec![1, 2, 3];\n}',
-    java: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
-    css: 'body {\n  font-family: system-ui, sans-serif;\n  color: #333;\n  background: #fff;\n}',
-    html: '<!DOCTYPE html>\n<html lang="zh">\n<head>\n  <title>Hello</title>\n</head>\n<body>\n  <p>Hello, World!</p>\n</body>\n</html>',
-  }
-  return samples[lang] ?? samples.javascript
-}

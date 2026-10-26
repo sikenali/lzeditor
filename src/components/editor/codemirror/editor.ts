@@ -128,6 +128,16 @@ const hardBreakKeymap = keymap.of([
   }, preventDefault: true },
 ])
 
+// 标题 Ctrl+Alt+1..6：快捷键设置页列出的绑定，此前只有文案没有实现
+const headingKeymap = keymap.of([
+  { key: 'Mod-Alt-1', run: (v) => runFormatCommand(v, 'heading-1'), preventDefault: true },
+  { key: 'Mod-Alt-2', run: (v) => runFormatCommand(v, 'heading-2'), preventDefault: true },
+  { key: 'Mod-Alt-3', run: (v) => runFormatCommand(v, 'heading-3'), preventDefault: true },
+  { key: 'Mod-Alt-4', run: (v) => runFormatCommand(v, 'heading-4'), preventDefault: true },
+  { key: 'Mod-Alt-5', run: (v) => runFormatCommand(v, 'heading-5'), preventDefault: true },
+  { key: 'Mod-Alt-6', run: (v) => runFormatCommand(v, 'heading-6'), preventDefault: true },
+])
+
 export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
   const { parent, doc, onChange: _onChange, onCursor } = options
 
@@ -155,6 +165,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     focusModeExtension,
     continuationC.of(continuationKeymap),
     hardBreakKeymap,
+    headingKeymap,
     completionSetup([snippetSource]),
     snippetTabKeymap,
     snippetDataField,

@@ -75,8 +75,6 @@ function renderShortcutContent(tab: string) {
       <div className="shortcut-list">
         {row('代码块', `${mod}+${alt}+C`)}
         {row('软换行', `${mod}+Enter`)}
-        {row('缩进（列表项）', `${alt}+Tab`)}
-        {row('取消缩进（列表项）', `${alt}+${shift}+Tab`)}
       </div>
     </div>
   )

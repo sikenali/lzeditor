@@ -1,5 +1,5 @@
 
-.app {
+.app  {
   display: flex;
   height: 100vh;
   width: 100vw;
@@ -8,36 +8,7 @@
   font-family: var(--font-sans);
 }
 
-.app-layout-left {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.app-left-toolbar {
-  width: 52px;
-  flex-shrink: 0;
-  background: var(--toolbar-bg, var(--bg-code));
-  border-right: 0.7px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
-  gap: 4px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.app-left-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.app-main {
+.app-main  {
   flex: 1;
   display: flex;
   min-height: 0;
@@ -46,34 +17,34 @@
 }
 
 /* CodeMirror 6 editor */
-.cm6-editor-wrapper {
+.cm6-editor-wrapper  {
   height: 100%;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-.cm6-editor-container {
+.cm6-editor-container  {
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
 /* 实时预览（live-preview.ts）使用的主题变量，对齐现有设计 token */
-.cm6-editor-container {
+.cm6-editor-container  {
   --lz-primary: var(--color-primary);
   --lz-outline-variant: var(--color-border-soft);
   --lz-inline-code-bg: var(--color-bg-secondary);
 }
 
-.cm6-editor-container .cm-editor {
+.cm6-editor-container .cm-editor  {
   height: 100%;
 }
 
 /* 不锁死 CM6 高度：让 .cm-editor 随内容撑开，滚动只发生在 .lz-editor-content 上，
    这样预览模式的滚动同步才有唯一滚动容器可挂。 */
 .cm6-editor-container .cm-editor,
-.cm6-editor-container .cm-scroller {
+.cm6-editor-container .cm-scroller  {
   height: auto;
   min-height: 100%;
   overflow: visible;
