@@ -67,6 +67,7 @@ export const MODE_ITEMS: MenuItem[] = [
   { icon: 'ri-eye-2-line', label: '预览模式', action: 'preview' },
   { icon: 'ri-code-s-line', label: '代码模式', action: 'code' },
   { icon: 'ri-palette-line', label: '排版模式', action: 'style' },
+  { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
 ]
 
 /** 表格工具项的置灰只和「光标是否在表格内」有关，两个入口共用同一份。 */
@@ -205,7 +206,7 @@ export function useEditorActions() {
       if (next && st.appMode !== 'edit') st.setAppMode('edit')
       return
     }
-    if (action === 'code' || action === 'style') {
+    if (action === 'code' || action === 'style' || action === 'read') {
       st.setAppMode(st.appMode === action ? 'edit' : action)
     }
   }, [])

@@ -86,7 +86,7 @@ function renderShortcutContent(tab: string) {
         {row('预览模式', '仅工具栏按钮')}
         {row('代码预览', '仅工具栏按钮')}
         {row('大纲导航', '仅工具栏按钮')}
-        {row('阅读模式', '仅工具栏按钮')}
+        {row('阅读模式', `${mod}+R`)}
       </div>
       <div style={{ marginTop: 12, padding: '8px 14px', borderRadius: 10, background: 'var(--bg-code)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-muted)' }}>
         <span className="remix ri-information-fill" style={{ color: 'var(--accent-primary)', marginRight: 6 }}></span>

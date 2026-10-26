@@ -10,6 +10,7 @@ import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { StyleMainPanel } from './components/panels/StyleMainPanel'
 import { LZEditor } from './components/editor/LZEditor'
+import { ReadMode } from './components/editor/ReadMode'
 import { SearchPanel } from './components/panels/SearchPanel'
 import { LibraryPanel } from './components/panels/LibraryPanel'
 import { FilePanel } from './components/panels/FilePanel'
@@ -204,6 +205,9 @@ function App() {
         else document.body.requestFullscreen?.()
       } else if (key === 'p') {
         e.preventDefault(); window.print()
+      } else if (key === 'r' && !e.shiftKey && !e.altKey) {
+        // Ctrl/Cmd+R 在 Electron 里默认是刷新窗口，必须 preventDefault
+        e.preventDefault(); es.setAppMode(es.appMode === 'read' ? 'edit' : 'read')
       } else if (e.key === '/') {
         e.preventDefault(); toggleAI()
       } else if (e.altKey && key === 'c') {
@@ -387,13 +391,18 @@ function App() {
     if (appMode === 'history') {
       return <HistoryPanel onClose={() => setAppMode('edit')} />
     }
+    // 阅读模式整块替换编辑区，双联页书本翻页
+    if (appMode === 'read') {
+      return <ReadMode />
+    }
     // 编辑 / 代码 / 排版 三种模式都挂源码编辑器：
     // 预览模式与排版模式的右侧内容走右栏，代码模式不给右栏留位。
     return <LZEditor />
   })()
 
-  // 右侧预览只在编辑模式下显示：代码/排版/历史模式都有自己独立的右栏或全宽源码
-  const showRightPreview = showPreview && appMode !== 'code' && appMode !== 'history' && appMode !== 'style'
+  // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容
+  const showRightPreview = showPreview && appMode !== 'code' && appMode !== 'history'
+    && appMode !== 'style' && appMode !== 'read'
 
   // ── 顶部布局 ──
   const topLayout = (
@@ -441,8 +450,8 @@ function App() {
         </div>
       </div>
 
-      {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库 */}
-      {(showRightPanel || showRightPreview || showLibrary || appMode === 'history' || appMode === 'style') && (
+      {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库。阅读模式占满中编辑区，不留右栏 */}
+      {(appMode !== 'read') && (showRightPanel || showRightPreview || showLibrary || appMode === 'history' || appMode === 'style') && (
         <div className={`app-right-panel${appMode === 'style' ? ' app-right-panel--style' : ''}${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
           {appMode === 'history' ? <HistoryPanel onClose={() => setAppMode('edit')} />
           : appMode === 'style' ? <div className="style-mode-stack"><StyleMainPanel /></div>

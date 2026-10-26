@@ -183,6 +183,11 @@ export const Toolbar: React.FC = () => {
             <span className="remix toolbar-icon ri-palette-fill"></span>
             <span className="toolbar-label">样式</span>
           </button>
+          <button className={`toolbar-btn${appMode === 'read' ? ' active' : ''}`}
+            onClick={() => useEditorStore.getState().setAppMode(appMode === 'read' ? 'edit' : 'read')}>
+            <span className="remix toolbar-icon ri-book-open-fill"></span>
+            <span className="toolbar-label">阅读</span>
+          </button>
           <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
             <span className="remix toolbar-icon ri-download-2-line"></span>
             <span className="toolbar-label">导出</span>

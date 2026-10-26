@@ -8,11 +8,11 @@ const app = read('src/App.tsx')
 const sidebarPreview = read('src/components/sidebar/SidebarPreview.tsx')
 const appCss = read('src/styles/app.css')
 
-// ── 模式菜单只有 预览/代码/排版 三项 ──
+// ── 模式菜单四项：预览/代码/排版/阅读 ──
 assert.match(actions, /label: '预览模式', action: 'preview'/, '模式菜单必须有预览模式')
 assert.match(actions, /label: '代码模式', action: 'code'/, '模式菜单必须有代码模式')
 assert.match(actions, /label: '排版模式', action: 'style'/, '模式菜单必须有排版模式')
-assert.doesNotMatch(actions, /action: 'read'/, '阅读模式必须退出模式菜单')
+assert.match(actions, /label: '阅读模式', action: 'read'/, '阅读模式必须在模式菜单里')
 
 // ── 预览模式驱动分屏预览，不再弹模态面板 ──
 const modeBlock = actions.match(/const modeAction[\s\S]*?\n  \}, \[\]\)/)?.[0] ?? ''
@@ -36,5 +36,15 @@ assert.match(leftLayout, /style-mode-stack/, '左侧布局点「样式」必须�
 
 // ── 滚动同步需要唯一滚动容器：CM6 不能锁死高度 ──
 assert.match(appCss, /overflow: visible/, 'CM6 内部不能自己滚动')
+
+// ── 阅读模式：整块替换编辑区，走分页引擎 ──
+const readMode = read('src/components/editor/ReadMode.tsx')
+assert.match(modeBlock, /action === 'read'/, '模式动作必须能切进阅读模式')
+assert.match(app, /<ReadMode \/>/, '阅读模式必须整块替换编辑区')
+assert.match(app, /appMode !== 'read'/, '阅读模式不给右栏留位')
+assert.match(readMode, /paginate\(/, '阅读模式必须接分页引擎')
+assert.match(readMode, /pageOfLine\(/, '目录跳转必须靠行号定位页码')
+assert.match(readMode, /OWN_ACTION/, '点击翻页必须放过链接和按钮')
+assert.match(readMode, /SpreadHtml|spreadHtml/, '阅读模式必须按页对渲染')
 
 console.log('mode boundary checks passed')

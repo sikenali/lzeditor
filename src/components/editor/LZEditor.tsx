@@ -22,7 +22,6 @@ const CONTENT_WIDTH_MAP: Record<string, string> = {
 
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
-  const readTocRef = useRef<HTMLDivElement>(null)
   const codeAreaRef = useRef<HTMLTextAreaElement>(null)
   const remarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const slashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -35,9 +34,7 @@ export const LZEditor = () => {
   const docs = useEditorStore((s: any) => s.docs)
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const codeMode = useEditorStore((s: any) => s.codeMode)
-  const appMode = useEditorStore((s: any) => s.appMode)
   const setAppMode = useEditorStore((s: any) => s.setAppMode)
-  const docHTML = useEditorStore((s: any) => s.docHTML || '')
   const wordCount = useEditorStore((s: any) => s.wordCount)
   const panelOpen = useEditorStore((s: any) => s.panelOpen)
   const mdContent = useEditorStore((s: any) => s.docsMd?.[activeDocId] || s.mdContent || '')
@@ -56,8 +53,8 @@ export const LZEditor = () => {
     return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
   }, [activeDocId, docsMd])
 
-  // 编辑区可见性：阅读/代码模式隐藏，但 CM6 实例必须常驻
-  const cm6Visible = appMode !== 'read' && !codeMode
+  // 代码模式隐藏源码编辑区，但 CM6 实例必须常驻
+  const cm6Visible = !codeMode
 
   const codeEditMdRef = useRef(mdContent)
   const [codeEditMd, setCodeEditMd] = useState(mdContent)
@@ -78,48 +75,12 @@ export const LZEditor = () => {
     }
   }, [defaultMd, docsMd, activeDocId])
 
-  // 确保阅读模式有内容：如果 docHTML 为空，从 docsMd 生成
-  const readContent = useMemo(() => {
-    if (docHTML) return docHTML
-    const docId = activeDocId || 'readme'
-    const md = docsMd?.[docId] || getDocMd(docId)
-    if (md && md.trim()) {
-      try {
-        const html = mdToHtml(md)
-        return html || md
-      } catch {
-        return md
-      }
-    }
-    return docId === 'readme' ? README_CONTENT : ''
-  }, [docHTML, docsMd, activeDocId])
 
   const LAYOUTS = ['narrow', 'normal', 'wide'] as const
   const LAYOUT_LABELS: Record<string, string> = { narrow: '窄栏', normal: '标准', wide: '宽屏' }
   const LAYOUT_MAX_W: Record<string, number> = { narrow: 530, normal: 760, wide: 1000 }
-  const storeTocItems = useEditorStore((s) => s.tocItems)
-  const setStoreTocItems = useEditorStore((s) => s.setTocItems)
   const activeTocId = useEditorStore((s) => s.activeTocId)
   const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
-  useEffect(() => {
-    const el = readTocRef.current
-    if (!el || !readContent) return
-    const headings = el.querySelectorAll('h1,h2,h3,h4,h5,h6')
-    const items: { id: string; text: string; level: number }[] = []
-    headings.forEach((h, i) => {
-      const id = `read-h-${i}`
-      h.setAttribute('id', id)
-      items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
-    })
-    setStoreTocItems(items)
-  }, [readContent])
-  const scrollToHeading = useCallback((id: string) => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      setActiveTocId(id)
-    }
-  }, [])
 
   // Code mode: build TOC from markdown headings with line numbers
   const codeTocItems = useMemo(() => {
@@ -350,88 +311,8 @@ export const LZEditor = () => {
 
   return (
     <div className="lz-editor" ref={editorRef}>
-      <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}${appMode === 'read' ? ' lz-editor-content--read' : ''}`}>
-        {appMode === 'read' && (
-          <div className="read-mode-inline">
-            <div className="read-mode-toolbar">
-              <span className="read-mode-label">
-                <span className="remix ri-book-open-line" style={{ marginRight: 5, fontSize: 15 }}></span>
-                阅读模式
-              </span>
-              <div className="read-mode-controls">
-                <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
-                  onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
-                  <span className="remix ri-layout-2-line"></span>
-                  <span>{LAYOUT_LABELS[readLayout]}</span>
-                </button>
-                <button className="read-tool-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
-                  <span className="remix ri-subtract-line"></span>
-                </button>
-                <span className="read-font-size-value">{readFontSize}</span>
-                <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
-                  <span className="remix ri-add-line"></span>
-                </button>
-              </div>
-              <span className="read-mode-meta">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟阅读</span>
-              <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
-                <span className="remix ri-edit-line"></span>
-                <span>继续编辑</span>
-              </button>
-            </div>
-            <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column' }}>
-              {readTocOpen && storeTocItems.length > 0 && (
-                <div className="read-toc-sidebar">
-                  <div className="read-toc-header">
-                    <span className="remix ri-menu-fill"></span>
-                    <span>目录</span>
-                    <button className="read-toc-close" onClick={() => setReadTocOpen(false)}>
-                      <span className="remix ri-close-line"></span>
-                    </button>
-                  </div>
-                  <div className="read-toc-list">
-                    {storeTocItems.map(item => (
-                      <button key={item.id} className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
-                        style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-                        onClick={() => scrollToHeading(item.id)}>
-                        <span className="read-toc-dot" />
-                        <span className="read-toc-text">{item.text}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="read-article-wrapper" ref={readTocRef}>
-                <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
-                  <div className="read-article-header">
-                    <div className="read-tags-row">
-                      <span className="read-tag read-tag-tech">Markdown</span>
-                      <span className="read-tag read-tag-system">阅读模式</span>
-                    </div>
-                    <h1 className="read-article-title">{docTitle || '文档'}</h1>
-                    <div className="read-meta">
-                      <div className="read-avatar"><svg viewBox="0 0 70 70" width="32" height="32"><circle cx="35" cy="26" r="13" fill="currentColor" opacity="0.85"/><path d="M8 60c0-13 11-23 27-23s27 10 27 23" fill="currentColor" opacity="0.6"/></svg></div>
-                      <div className="read-author-info">
-                        <div className="read-author-name">LZEditor</div>
-                        <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
-                      </div>
-                      <div className="read-divider-v" />
-                      <div className="read-views">
-                        <span className="remix read-views-icon ri-time-line"></span>
-                        <span className="read-views-text">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="read-article-body"
-                    style={{ fontSize: `${readFontSize}px`, lineHeight: '1.9' }}
-                    dangerouslySetInnerHTML={{ __html: readContent }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {codeMode && appMode !== 'read' && (
+      <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`}>
+        {codeMode && (
           <div className="read-mode-inline read-mode-code">
             <div className="read-mode-toolbar">
               <span className="read-mode-label">

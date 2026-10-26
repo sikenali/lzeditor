@@ -56,7 +56,7 @@ export const LeftNav: React.FC = () => {
     useEditorStore.getState().setOpenPanel('settings')
   }, [])
 
-  const toggleMode = useCallback((mode: 'history' | 'style') => {
+  const toggleMode = useCallback((mode: 'history' | 'style' | 'read') => {
     const st = useEditorStore.getState()
     const next = st.appMode === mode ? 'edit' : mode
     st.setAppMode(next)
@@ -134,6 +134,7 @@ export const LeftNav: React.FC = () => {
           {menu('mode', modeBtnRef, 'ri-eye-2-fill', '模式')}
           {btn('ri-history-fill', '历史', () => toggleMode('history'), appMode === 'history')}
           {btn('ri-palette-fill', '样式', () => toggleMode('style'), appMode === 'style')}
+          {btn('ri-book-open-fill', '阅读', () => toggleMode('read'), appMode === 'read')}
           {btn('ri-download-2-line', '导出', () => toggleDialog('export'), openPanel === 'export')}
           {btn('ri-settings-3-fill', '设置', () => toggleDialog('settings'), openPanel === 'settings')}
         </div>
