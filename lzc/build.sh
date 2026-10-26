@@ -151,6 +151,10 @@ echo "Bundled runtime: node.gz $(du -h "$SCRIPT_DIR/_lpk_content/backend/node.gz
 mkdir -p "$SCRIPT_DIR/_lpk_content/backend/data"
 cp -a "$PROJECT_ROOT/server/data/." "$SCRIPT_DIR/_lpk_content/backend/data/" 2>/dev/null || true
 
+# 版本号给后端健康检查读：/api/health 返回 version，首启就能确认部署的是哪一版。
+# LPK 里没有 git 仓库，git describe 永远拿不到值。
+echo "{\"version\":\"${VERSION}\"}" > "$SCRIPT_DIR/_lpk_content/backend/version.json"
+
 # ========== 构建前端 ==========
 echo "Building frontend..."
 rm -rf "$PROJECT_ROOT/dist"

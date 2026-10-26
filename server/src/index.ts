@@ -1,5 +1,6 @@
 import http from 'http'
 import { execSync } from 'child_process'
+import { readFileSync } from 'fs'
 
 // AI 请求全部由前端直连 provider，本机服务只剩健康检查这一件事。
 //
@@ -13,17 +14,31 @@ import { execSync } from 'child_process'
 const PORT = Number(process.env.PORT || 3001)
 const HOST = process.env.HOST || '127.0.0.1'
 
+// 版本号在启动时读一次，不在每个健康检查请求里读。
+// 之前每个请求都 execSync('git describe')：LPK 里没有 git 仓库所以永远失败，
+// 白白每 10 秒 fork 一次子进程，返回的还是 'unknown'。
+// 打包时 build.sh 会写 backend/version.json；没有它就退回 git describe（dev 用）。
+const VERSION = versionFromPackage() || versionFromGit() || 'unknown'
+
 const ok = () => ({ status: 'ok', timestamp: new Date().toISOString() })
 
-function version(): string {
+function versionFromPackage(): string {
+  try {
+    return JSON.parse(readFileSync(new URL('../version.json', import.meta.url), 'utf8')).version || ''
+  } catch {
+    return ''
+  }
+}
+
+function versionFromGit(): string {
   try {
     return execSync('git describe --tags --always 2>/dev/null', {
       encoding: 'utf8',
       timeout: 2000,
-    }).trim() || 'unknown'
+    }).trim() || ''
   } catch {
     // LPK 里没有 git 仓库，git describe 直接失败
-    return 'unknown'
+    return ''
   }
 }
 
@@ -34,7 +49,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(404, { 'Content-Type': 'application/json', 'Connection': 'close' })
     return res.end(JSON.stringify({ error: 'not found' }))
   }
-  const body = JSON.stringify({ ...ok(), version: version() })
+  const body = JSON.stringify({ ...ok(), version: VERSION })
   res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
   res.end(body)
 })
