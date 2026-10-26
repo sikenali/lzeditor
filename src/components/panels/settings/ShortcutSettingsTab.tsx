@@ -15,7 +15,7 @@ function renderShortcutContent(tab: string) {
 
   if (tab === 'doc') return (
     <div>
-      <div className="settings-section-title"><span className="remix ri-file-lines-line shortcut-section-icon"></span><span>文档操作</span></div>
+      <div className="settings-section-title"><span className="remix ri-file-list-line shortcut-section-icon"></span><span>文档操作</span></div>
       <div className="shortcut-list">
         {row('新建文档', `${mod}+N`)}
         {row('打开文档', `${mod}+O`)}

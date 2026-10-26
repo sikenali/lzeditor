@@ -35,7 +35,7 @@ const ElectronWindowControls: React.FC = () => {
         <span className="remix ri-subtract-line"></span>
       </button>
       <button className="win-ctrl" onClick={() => api.maximize?.()} title={maximized ? '还原' : '最大化'} aria-label={maximized ? '还原' : '最大化'}>
-        <span className={`remix ${maximized ? 'ri-restore-line' : 'ri-maximize-line'}`}></span>
+        <span className={`remix ${maximized ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line'}`}></span>
       </button>
       <button className="win-ctrl win-ctrl--close" onClick={() => api.close?.()} title="关闭" aria-label="关闭">
         <span className="remix ri-close-line"></span>

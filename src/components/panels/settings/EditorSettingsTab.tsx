@@ -26,7 +26,7 @@ function renderKernelSection(s: any, u: any) {
   return (
     <div className="settings-section">
       <div className="settings-section-title"><span>编辑器内核</span></div>
-      <UDSettingRow icon="ri-focus-2" label="高亮当前行" desc="在光标所在的行显示底色">
+      <UDSettingRow icon="ri-focus-2-line" label="高亮当前行" desc="在光标所在的行显示底色">
         <UiSwitch size="sm" checked={ s.currentLine !== false } onChange={ v => u('currentLine', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
@@ -128,7 +128,7 @@ function renderLocalizationSection(s: any, u: any) {
     <>
       <div className="settings-section">
         <div className="settings-section-title"><span>拼写检查</span></div>
-        <UDSettingRow icon="ri-spell-check-line" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
+        <UDSettingRow icon="ri-english-input" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
         <UiSwitch size="sm" checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
       </UDSettingRow>
         <div style={{ padding: '8px 0 0 44px', marginBottom: 8 }}>
@@ -152,7 +152,7 @@ function renderLocalizationSection(s: any, u: any) {
            <UiSwitch size="sm" checked={s.smartQuotes !== false} onChange={v => u('smartQuotes', v)} />
          </UDSettingRow>
          <div className="setting-divider" />
-         <UDSettingRow icon="ri-language-fill" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
+         <UDSettingRow icon="ri-text-spacing" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
         <UiSwitch size="sm" checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
       </UDSettingRow>
          <div className="setting-divider" />
@@ -188,7 +188,7 @@ function renderEditModeSection(s: any, u: any) {
         <UiSwitch size="sm" checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
-         <UDSettingRow icon="ri-focus-2" label="专注模式" desc="仅高亮当前段落，其余淡化">
+         <UDSettingRow icon="ri-focus-2-line" label="专注模式" desc="仅高亮当前段落，其余淡化">
         <UiSwitch size="sm" checked={ s.focusMode || false } onChange={ v => u('focusMode', v) } />
       </UDSettingRow>
          <div className="setting-divider" />

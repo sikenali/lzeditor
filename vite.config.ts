@@ -4,6 +4,9 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  // Electron 用 file:// 加载 dist/index.html，绝对路径 /assets/* 会解析成 file:///assets/* 而 404，
+  // 所以资产一律走相对路径
+  base: './',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

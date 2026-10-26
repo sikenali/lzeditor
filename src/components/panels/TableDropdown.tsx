@@ -314,7 +314,7 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
                            opacity: (!activeCell || cols <= 1) ? 0.4 : 1
                          }}
                        >
-                         <span className="remix ri-delete-column-line"></span> 删除列
+                         <span className="remix ri-delete-column"></span> 删除列
                        </button>
                        </div>
                      </td>

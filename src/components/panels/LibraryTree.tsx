@@ -100,7 +100,7 @@ export const LibraryTree: React.FC<{
             title="还原为出厂内容"
             onClick={(e) => { e.stopPropagation(); onResetDoc(node.id) }}
           >
-            <span className="remix ri-replay-line"></span>
+            <span className="remix ri-restart-line"></span>
           </button>
         )}
       </div>

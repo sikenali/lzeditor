@@ -32,7 +32,7 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   { id: 'quote',      icon: 'ri-double-quotes-l', label: '引用',    keywords: '引用 quote' },
   // 片段
   { id: 'code-inline', icon: 'ri-code-line',   label: '行内代码',  keywords: '代码 code inline', body: '`code`' },
-  { id: 'math-inline', icon: 'ri-square-root-2-line', label: '行内公式', keywords: '公式 math inline', body: '$E = mc^2$' },
+  { id: 'math-inline', icon: 'ri-function-line', label: '行内公式', keywords: '公式 math inline', body: '$E = mc^2$' },
   { id: 'mermaid',     icon: 'ri-git-branch-line', label: 'Mermaid 图表', keywords: '图表 mermaid diagram', body: '```mermaid\nflowchart LR\n  A --> B\n```\n' },
   // 插入
   { id: 'link',       icon: 'ri-link',        label: '链接',       keywords: '链接 link url', dialog: true },

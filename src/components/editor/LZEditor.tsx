@@ -416,7 +416,7 @@ export const LZEditor = () => {
                       </div>
                       <div className="read-divider-v" />
                       <div className="read-views">
-                        <span className="remix read-views-icon ri-clock-line"></span>
+                        <span className="remix read-views-icon ri-time-line"></span>
                         <span className="read-views-text">约 {Math.max(1, Math.ceil(wordCount / 200))} 分钟</span>
                       </div>
                     </div>

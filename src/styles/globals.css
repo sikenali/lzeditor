@@ -106,9 +106,11 @@ select:focus-visible {
   }
 }
 
+/* 图标字体本地打包：走远程 CDN 时，断网或被墙的桌面环境会整块图标消失 */
 @font-face  {
   font-family: 'RemixIcon';
-  src: url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.woff2') format('woff2');
+  src: url('../assets/fonts/remixicon.woff2') format('woff2');
+  font-display: block;
 }
 
 .remix  {

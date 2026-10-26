@@ -45,7 +45,7 @@ export const StatusBar: React.FC = () => {
             </span>
             <span className="statusbar-divider" />
             <span className="statusbar-item">
-              <span className="remix ri-clock-fill"></span>
+              <span className="remix ri-time-fill"></span>
               <span>{formattedTime}</span>
             </span>
           </div>
@@ -57,12 +57,12 @@ export const StatusBar: React.FC = () => {
             </span>
             <span className="statusbar-divider" />
             <span className="statusbar-item">
-              <span className="remix ri-hash"></span>
+              <span className="remix ri-hashtag"></span>
               <span>{charCount.toLocaleString()} 字符</span>
             </span>
             <span className="statusbar-divider" />
             <span className="statusbar-item">
-              <span className="remix ri-clock-line"></span>
+              <span className="remix ri-time-line"></span>
               <span>约 {readTime} 分钟</span>
             </span>
             <span className="statusbar-divider" />
