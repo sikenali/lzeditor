@@ -69,6 +69,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   focusMode: false,
   previewModeEnabled: true,
   navMode: 'top' as 'top' | 'left',
+  codeSplitRatio: 0.5,
   // ── Toolbar defaults ──
   quickFormatButtons: true,
   showToolbarLabels: true,

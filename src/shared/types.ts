@@ -142,6 +142,8 @@ export interface SettingsState {
   previewModeEnabled?: boolean
   // ── Navigation layout ──
   navMode?: 'top' | 'left'
+  /** 代码模式分栏：左栏（源码）占整宽的比重，0..1 */
+  codeSplitRatio?: number
   // ── Toolbar ──
   quickFormatButtons?: boolean
   showToolbarLabels?: boolean
