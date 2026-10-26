@@ -142,9 +142,6 @@ select:focus-visible {
   position: relative;
   min-height: 0;
 }
-.lz-editor.has-line-numbers  {
-  flex-direction: row;
-}
 .lz-editor-content  {
   flex: 1;
   overflow-y: auto;
@@ -3025,53 +3022,6 @@ input[type="checkbox"]  {
   font-weight: 700;
 }
 .legend-tip .remix  { color: var(--accent-primary); font-size: 14px; }
-
-/* ── Markdown Markers ──
-   开关落在 .lz-editor-content 的 data-md-markers 上：inline 显示标记、none 隐藏。
-   标记只属于编辑态，阅读模式（lz-editor-content--read）永不显示。
-   注意 h1~h6 必须逐个写，缺一个那个层级就永远不显示标记。 */
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h1::before  { content: '#'; }
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h2::before  { content: '##'; }
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h3::before  { content: '###'; }
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h4::before  { content: '####'; }
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h5::before  { content: '#####'; }
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h6::before  { content: '######'; }
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h1::before,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h2::before,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h3::before,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h4::before,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h5::before,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h6::before  {
-  color: var(--accent-primary);
-  font-size: 14px;
-  font-weight: 400;
-  margin-right: 6px;
-  flex-shrink: 0;
-}
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h1,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h2,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h3,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h4,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h5,
-.lz-editor-content:not(.lz-editor-content--read)[data-md-markers="inline"] h6  {
-  display: flex;
-  align-items: center;
-}
-/* List markers */
-.lz-editor-content[data-md-markers="inline"] ul li::before  {
-  content: '·' !important;
-  color: var(--accent) !important;
-  margin-right: 6px;
-}
-.lz-editor-content[data-md-markers="inline"] ol  {
-  counter-reset: item;
-}
-.lz-editor-content[data-md-markers="inline"] ol li::before  {
-  content: counter(item) '.' !important;
-  color: var(--accent) !important;
-  margin-right: 6px;
-  counter-increment: item;
-}
 
 /* ── Mac-style code block window decoration ── */
 [data-mac-code="true"] .lz-editor-content pre,

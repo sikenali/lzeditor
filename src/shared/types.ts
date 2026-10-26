@@ -174,6 +174,8 @@ export interface SettingsState {
   customModelId?: string
   selectedProvider?: string
   selectedModelName?: string
+  /** 模型设置页当前停在「按服务商选」还是「填自定义地址」tab */
+  modelConfigTab?: 'provider' | 'custom'
   // ── Typography & reading ──
   textIndent?: boolean
   textJustify?: boolean

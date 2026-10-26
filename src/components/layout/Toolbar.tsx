@@ -15,7 +15,7 @@ import {
  * 不自绘的话窗口就无法最小化 / 最大化 / 关闭。浏览器里没有 electronAPI，直接不渲染。
  */
 const ElectronWindowControls: React.FC = () => {
-  const api = (window as any).electronAPI
+  const api = window.electronAPI
   const [maximized, setMaximized] = useState(false)
 
   useEffect(() => {
@@ -159,7 +159,7 @@ export const Toolbar: React.FC = () => {
         </div>
 
         {/* ── Right ── */}
-        <div className={`toolbar-group${quickFormatButtons ? ' toolbar-group--compact' : ''}`}>
+        <div className="toolbar-group">
           <button
             className={`toolbar-btn${aiPanelVisible ? ' toolbar-btn--active' : ''}`}
             onClick={openAI}

@@ -40,7 +40,9 @@ const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').
 
 // 主进程只读这四个开关（托盘、关窗即退、新窗口、标签页），
 // 全量 settings 里带明文 API Key，没必要发进主进程。
-const APP_SETTING_KEYS = ['enableTabs', 'showTrayIcon', 'openInNewWindow', 'quitWhenAllWindowsClosed'] as const
+// 只推主进程真正会读的键。enableTabs 是渲染进程自己消费的（DocumentMetaBar），
+// 混进来只是多一次 IPC 往返，还会让人误以为主进程在读它。
+const APP_SETTING_KEYS = ['showTrayIcon', 'openInNewWindow', 'quitWhenAllWindowsClosed'] as const
 
 const buildImageMd = (url: string, alt: string, align: 'top' | 'left' | 'right' | undefined) => {
   if (align === 'left' || align === 'right') {
@@ -224,7 +226,7 @@ function App() {
     }
 
     document.addEventListener('keydown', onKey)
-    const api = (window as any).electronAPI
+    const api = window.electronAPI
     // onMenu* 是 ipcRenderer.on 的包装，必须成对解绑，否则 StrictMode 重挂会叠出重复监听
     const onNew = () => { dismissWelcome(); useEditorStore.getState().createDoc('untitled.md') }
     const onOpen = () => { dismissWelcome(); useEditorStore.getState().setOpenPanel('file') }
@@ -242,7 +244,7 @@ function App() {
 
   // Electron：同步行为设置给主进程，并处理「从资源管理器打开文档」
   useEffect(() => {
-    const api = (window as any).electronAPI
+    const api = window.electronAPI
     if (!api) return
     const pushSettings = () => {
       const s = useSettingsStore.getState()

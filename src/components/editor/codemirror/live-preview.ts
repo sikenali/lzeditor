@@ -1,5 +1,8 @@
 import { syntaxTree } from '@codemirror/language'
-import { type EditorState, type Extension, type Range, RangeSet } from '@codemirror/state'
+import {
+  type EditorState, type Extension, type Range, RangeSet,
+  StateField, StateEffect,
+} from '@codemirror/state'
 import {
   Decoration,
   type DecorationSet,
@@ -21,6 +24,22 @@ function activeLines(state: EditorState): Set<number> {
 }
 
 const hide = Decoration.replace({})
+
+// 「Markdown 标记常显」：开启时跳过所有隐藏源标记的装饰，# ** ` > 这些内联
+// 原文就留在屏幕上看得到。块级标记（项目符号、勾选框、图片、分割线）仍然
+// 用 widget 替换原文，行为不变。
+const setKeepMarkdownMarkers = StateEffect.define<boolean>()
+
+export const keepMarkdownMarkers = StateField.define<boolean>({
+  create: () => false,
+  update(value, transaction) {
+    for (const effect of transaction.effects) if (effect.is(setKeepMarkdownMarkers)) return effect.value
+    return value
+  },
+})
+
+export const setKeepMarkdownMarkersEffect = (on: boolean): StateEffect<boolean> =>
+  setKeepMarkdownMarkers.of(on)
 
 class BulletWidget extends WidgetType {
   override eq(): boolean { return true }
@@ -137,6 +156,7 @@ function build(view: EditorView): DecorationSet {
   const doc = state.doc
   const active = activeLines(state)
   const isActive = (pos: number) => active.has(doc.lineAt(pos).number)
+  const keepMarks = state.field(keepMarkdownMarkers, false) ?? false
   const ranges: Range<Decoration>[] = []
   const tree = syntaxTree(state)
 
@@ -155,7 +175,7 @@ function build(view: EditorView): DecorationSet {
         }
         switch (name) {
           case 'HeaderMark': {
-            if (isActive(node.from)) return
+            if (isActive(node.from) || keepMarks) return
             const parent = node.node.parent?.name ?? ''
             if (parent.startsWith('Setext')) {
               ranges.push(hide.range(node.from, node.to))
@@ -170,16 +190,16 @@ function build(view: EditorView): DecorationSet {
           }
           case 'EmphasisMark':
           case 'StrikethroughMark':
-            if (!isActive(node.from) && node.to > node.from)
+            if (!isActive(node.from) && !keepMarks && node.to > node.from)
               ranges.push(hide.range(node.from, node.to))
             return
           case 'CodeMark': {
-            if (node.node.parent?.name !== 'InlineCode' || isActive(node.from)) return
+            if (node.node.parent?.name !== 'InlineCode' || isActive(node.from) || keepMarks) return
             ranges.push(hide.range(node.from, node.to))
             return
           }
           case 'Link': {
-            if (isActive(node.from) || isActive(node.to)) return false
+            if (isActive(node.from) || isActive(node.to) || keepMarks) return false
             const marks = childrenOf(node, 'LinkMark')
             const open = marks[0]
             const close = marks[1]
@@ -205,7 +225,7 @@ function build(view: EditorView): DecorationSet {
             return false
           }
           case 'ListMark': {
-            if (isActive(node.from)) return
+            if (isActive(node.from) || keepMarks) return
             const item = node.node.parent
             const list = item?.parent?.name
             const task = item ? childrenOf(item, 'Task')[0] : undefined
@@ -218,7 +238,7 @@ function build(view: EditorView): DecorationSet {
             return
           }
           case 'TaskMarker': {
-            if (isActive(node.from)) return
+            if (isActive(node.from) || keepMarks) return
             const done = doc.sliceString(node.from + 1, node.from + 2) !== ' '
             ranges.push(
               Decoration.replace({ widget: new CheckboxWidget(done, node.from) }).range(
@@ -230,13 +250,13 @@ function build(view: EditorView): DecorationSet {
           case 'QuoteMark': {
             const line = doc.lineAt(node.from)
             ranges.push(quoteLine.range(line.from))
-            if (isActive(node.from)) return
+            if (isActive(node.from) || keepMarks) return
             const space = doc.sliceString(node.to, node.to + 1) === ' ' ? 1 : 0
             ranges.push(hide.range(node.from, node.to + space))
             return
           }
           case 'HorizontalRule':
-            if (!isActive(node.from)) ranges.push(rule.range(node.from, node.to))
+            if (!isActive(node.from) && !keepMarks) ranges.push(rule.range(node.from, node.to))
             return
           case 'FencedCode':
           case 'CodeBlock': {
@@ -268,7 +288,9 @@ const plugin = ViewPlugin.fromClass(
         update.docChanged ||
         update.viewportChanged ||
         linesMoved ||
-        syntaxTree(update.startState) !== syntaxTree(update.state)
+        syntaxTree(update.startState) !== syntaxTree(update.state) ||
+        (update.startState.field(keepMarkdownMarkers) ?? false)
+          !== (update.state.field(keepMarkdownMarkers) ?? false)
       ) {
         this.decorations = build(update.view)
       }

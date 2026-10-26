@@ -85,7 +85,7 @@ ipcMain.on('window-close', () => {
   mainWindow?.close()
 })
 
-// 渲染进程的行为设置（enableTabs / showTrayIcon / openInNewWindow / quitWhenAllWindowsClosed）
+// 渲染进程的行为设置（showTrayIcon / openInNewWindow / quitWhenAllWindowsClosed）
 let appSettings: Record<string, unknown> = {}
 
 function getSetting<K extends string>(key: K, fallback: unknown): unknown {
@@ -161,12 +161,15 @@ const createMenu = () => {
         { label: '剪切', accelerator: 'CmdOrCtrl+X', role: 'cut' },
         { label: '复制', accelerator: 'CmdOrCtrl+C', role: 'copy' },
         { label: '粘贴', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+        { label: '全选', accelerator: 'CmdOrCtrl+A', role: 'selectall' },
       ],
     },
     {
       label: '视图',
       submenu: [
-        { label: '重新加载', accelerator: 'CmdOrCtrl+R', click: () => mainWindow?.reload() },
+        // 不给重新加载配加速器：Ctrl/⌘+R 归渲染进程切阅读模式，
+        // 菜单加速器会把它吃掉，阅读模式的快捷键就永远到不了
+        { label: '重新加载', click: () => mainWindow?.reload() },
         { label: '开发者工具', accelerator: 'CmdOrCtrl+Shift+I', click: () => mainWindow?.webContents.openDevTools() },
         { type: 'separator' },
         { label: '实际大小', accelerator: 'CmdOrCtrl+0', click: () => { if (mainWindow) mainWindow.webContents.zoomLevel = 0 } },

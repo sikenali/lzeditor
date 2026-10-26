@@ -20,6 +20,9 @@ const preload = read('electron/preload.ts')
 const mainTs = read('electron/main.ts')
 const healthServer = read('server/src/index.ts')
 const settingsStore = read('src/store/settingsStore.ts')
+const typesTs = read('src/shared/types.ts')
+const electronApi = read('electron/api.ts')
+const electronApiD = read('src/electron-api.d.ts')
 const pkg = read('package.json')
 
 // ── 批次 A：参数不再被静默丢弃 ──────────────────────────────────────────
@@ -102,7 +105,13 @@ assert.match(toolbar, /ElectronWindowControls/, '无边框窗口必须自绘窗�
 assert.match(toolbar, /api\.minimize\?\.\(\)/, '最小化按钮必须接通')
 assert.match(toolbar, /api\.maximize\?\.\(\)/, '最大化按钮必须接通')
 assert.match(toolbar, /api\.close\?\.\(\)/, '关闭按钮必须接通')
-assert.match(toolbar, /const api = \(window as any\)\.electronAPI/, '必须从 window 上取 electronAPI')
+assert.match(toolbar, /const api = window\.electronAPI/, '必须从 window 上取 electronAPI（走 Window 全局声明，不留 as any）')
+assert.match(app, /const api = window\.electronAPI/, 'App.tsx 也必须走类型化的 window.electronAPI')
+assert.match(electronApi, /export interface ElectronAPI/, 'preload 暴露的接口必须有一份共享类型')
+assert.match(electronApiD, /electronAPI\?: ElectronAPI/, 'Window 必须声明 electronAPI 可选字段，浏览器里是 undefined')
+assert.match(preload, /const api: ElectronAPI = \{/, 'preload 必须按共享类型标注，保证暴露的方法名没打错')
+assert.match(preload, /import type \{ ElectronAPI \} from '\.\/api'/, 'preload 必须从 electron/ 内引用类型，不能跨目录 import 撑开编译根目录')
+assert.doesNotMatch(app, /\(window as any\)\.electronAPI/, '不能再靠 as any 绕过类型检查')
 assert.match(toolbar, /if \(!api\) return null/, '浏览器里必须不渲染窗口按钮')
 assert.match(mainTs, /frame: false/, '确认是无边框窗口，所以必须自绘按钮')
 assert.match(app, /api\?\.offMenuNew\?\.\(onNew\)/, 'onMenuNew 必须成对解绑')
@@ -146,13 +155,22 @@ assert.match(editorTs, /^\s*headingKeymap,/m, 'headingKeymap 必须注册进扩�
 const shortcutTab = read('src/components/panels/settings/ShortcutSettingsTab.tsx')
 assert.doesNotMatch(shortcutTab, /\$\{alt\}\+Tab/, 'Alt+Tab 是系统窗口切换键，永远抢不到，不能列进快捷键表')
 
-// 「Markdown 标记常显」开关此前失效：h1/h4/h5/h6 的 content 没有 data-md-markers 门控
+// 「Markdown 标记常显」开关此前失效：旧实现给 .lz-editor-content 设 data-md-markers，
+// 但 CM6 编辑态 DOM 只有 line/span、没有 h1/ul/ol，CSS 选择器永远匹配不到。
+// 现在改接到 live-preview 的 keepMarkdownMarkers，标记隐藏与否由 decoration 决定。
 const globalsCss = read('src/styles/globals.css')
-assert.doesNotMatch(globalsCss, /--md-markers-visible/, '--md-markers-visible 从未被定义，相关规则是空操作')
-assert.doesNotMatch(globalsCss, /\.lz-editor-content h1::before/, '标题标记必须受 data-md-markers 门控，不能无条件显示')
-assert.match(globalsCss, /data-md-markers="inline"\] h2::before/, 'h2 也必须显示 ## 标记')
-assert.match(globalsCss, /data-md-markers="inline"\] h3::before/, 'h3 也必须显示 ### 标记')
-assert.match(globalsCss, /not\(\.lz-editor-content--read\)\[data-md-markers/, '阅读模式不能显示 markdown 标记')
+const livePreview = read('src/components/editor/codemirror/live-preview.ts')
+assert.doesNotMatch(globalsCss, /data-md-markers/, '标记常显不能再靠 CSS 类名，编辑态 DOM 没有标题元素')
+assert.doesNotMatch(lzeditor, /data-md-markers\s*[:=]/, 'LZEditor 不再往编辑器容器写 data-md-markers')
+assert.match(livePreview, /export const keepMarkdownMarkers = StateField\.define<boolean>/, '必须有 keepMarkdownMarkers 状态字段')
+assert.match(livePreview, /export const setKeepMarkdownMarkersEffect/, '必须有 StateEffect 供外部改值')
+assert.match(livePreview, /const keepMarks = state\.field\(keepMarkdownMarkers, false\)/, '构建 decoration 时必须读开关')
+assert.match(livePreview, /isActive\(node\.from\) \|\| keepMarks\) return/, '开了常显就不能隐藏标题标记')
+assert.match(livePreview, /field\(keepMarkdownMarkers\)/, '开关变化必须触发 decoration 重算')
+assert.match(editorTs, /setKeepMarkdownMarkersEffect/, 'editor.ts 必须把 effect 派发给 EditorView')
+assert.match(editorTs, /^\s*keepMarkdownMarkers,$/m, '字段必须挂进扩展，定义了不挂载等于没写')
+assert.match(editorTs, /setKeepMarkdownMarkers\(on: boolean\)/, '必须暴露 setKeepMarkdownMarkers')
+assert.match(cm6, /setKeepMarkdownMarkers\(\!\!keepMdMarkers\)/, 'CM6Editor 必须把设置值传进来')
 
 // 「首行缩进」「两端对齐」此前只写 CSS 变量，没有任何规则消费
 const readModeCss = read('src/styles/read-mode.css')
@@ -178,3 +196,46 @@ assert.doesNotMatch(app, /PreviewPanel/, 'PreviewPanel 已无任何入口，必�
 assert.match(app, /APP_SETTING_KEYS/, '推给主进程的设置必须白名单化')
 assert.match(app, /quitWhenAllWindowsClosed/, '白名单必须覆盖主进程实际读的键')
 assert.doesNotMatch(app, /sendSettings\?\.\(useSettingsStore\.getState\(\)\)/, '不能把全量 settings 发给主进程')
+
+// ── 批次 H：设置项必须真的落盘、真的被消费 ────────────────────────────────
+
+// 落盘不能绑在 SettingsDialog 的生命周期上——ExportDialog / CodeDialog / StyleMainPanel / Footer
+// 都在改设置，它们不经过设置中心，挂订阅之前这些改动全部丢了。
+assert.match(settingsStore, /useSettingsStore\.subscribe\(\(state, prev\)/, '必须订阅全 store 而不是等设置中心打开')
+assert.match(settingsStore, /PERSIST_SKIP = new Set\(\['activeGroup', 'subTab'\]\)/, '导航态字段不能当设置落盘')
+assert.match(settingsStore, /window\.addEventListener\('beforeunload'/, '退出前必须同步 flush，定时器赶不上关机')
+assert.match(settingsStore, /raw\.map\(migrateApiKey\)/, '老存档的 apiKeys 必须按条目补新字段，整包替换会让用户补的字段全丢')
+assert.match(typesTs, /modelConfigTab\?: 'provider' \| 'custom'/, '模型设置页的 tab 选择必须能落盘')
+
+// Ctrl+A 不能只靠 contenteditable 的原生行为
+assert.match(editorTs, /selectAllKeymap/, 'Ctrl+A 必须显式绑定')
+assert.match(editorTs, /'Mod-a', run: selectAll/, 'Ctrl+A 必须接到 selectAll')
+assert.match(editorTs, /^\s*selectAllKeymap,$/m, 'selectAllKeymap 必须注册进扩展')
+
+// setSpellcheck 里有早退，lang 必须在早退之前写，否则首次调用永不生效
+assert.match(editorTs, /if \(lang\) view\.dom\.setAttribute\('lang', lang\)/, '检查语言必须真正写到 DOM 的 lang 属性')
+
+// showLineNumbers 的 store 默认值是 false，?? true 等于反着写
+assert.doesNotMatch(cm6, /showLineNumbers \?\? true/, '行号回退值不能和 store 默认值相反')
+assert.match(cm6, /setLineNumbers\(showLineNumbers \?\? false\)/, '行号回退值必须是 false')
+
+// 两个引号开关共用同一条替换管线，都开会静默覆盖
+const editorTab = read('src/components/panels/settings/EditorSettingsTab.tsx')
+assert.match(editorTab, /u\('smartQuotes', v\); if \(v\) u\('cornerQuotes', false\)/, '开智能引号必须关掉直角引号')
+assert.match(editorTab, /u\('cornerQuotes', v\); if \(v\) u\('smartQuotes', false\)/, '开直角引号必须关掉智能引号')
+assert.match(editorTab, /逗号与分号/, '半角转全角只替换逗号与分号，文案必须说准')
+
+// 字号 / 行高 / 字体此前只写 CSS 变量、没有规则消费
+assert.match(readModeCss, /font-size: var\(--read-font-size/, '默认字号必须被消费')
+assert.match(readModeCss, /line-height: var\(--read-line-height/, '默认行高必须被消费')
+assert.match(readModeCss, /font-family: var\(--read-font-family/, '默认字体必须被消费')
+
+// Ctrl+R 归渲染进程切阅读模式，主进程再配一次同名加速器会把它吃掉
+assert.doesNotMatch(mainTs, /accelerator: 'CmdOrCtrl\+R'/, '不能给窗口重新加载配 Ctrl+R 加速器')
+assert.match(mainTs, /role: 'selectall'/, '全选必须走标准角色，让浏览器默认行为生效')
+
+// Ctrl+Shift+O 有实现，快捷键表不能漏
+assert.match(shortcutTab, /row\('打开文件夹批量导入', `\$\{mod\}\+\$\{shift\}\+O`\)/, 'Ctrl+Shift+O 必须在快捷键表里')
+assert.match(shortcutTab, /row\('退出应用', `\$\{mod\}\+Q`, '仅桌面端'\)/, 'Ctrl+Q 只在 Electron 生效，必须标注')
+assert.doesNotMatch(shortcutTab, /重新加载窗口/, '窗口重新加载的加速器已移除，不能再列成快捷键')
+

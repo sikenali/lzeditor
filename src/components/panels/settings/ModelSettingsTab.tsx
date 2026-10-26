@@ -89,7 +89,7 @@ export const ModelSettingsTab: React.FC = () => {
   const u = s.updateSetting
   const apiKeys: ApiKeyEntry[] = s.apiKeys || []
 
-  const [configTab, setConfigTab] = useState<ConfigTab>('provider')
+  const [configTab, setConfigTabState] = useState<ConfigTab>(s.modelConfigTab === 'custom' ? 'custom' : 'provider')
   const [keyInput, setKeyInput] = useState('')
   const [keyVisible, setKeyVisible] = useState(false)
 
@@ -113,13 +113,14 @@ export const ModelSettingsTab: React.FC = () => {
   const currentModels = (selectedProvider ? (PROVIDER_MODELS[selectedProvider] || []) : [])
     .map(m => ({ value: m, label: m }))
 
-  // 表单草稿同步写回 store：关掉设置面板再打开还能看到上次选的服务商 / 模型 / 自定义地址，
-  // 也保证 useAI.ts 读到的 selectedProvider / selectedModelName 与界面一致
+  // 表单草稿同步写回 store：关掉设置面板再打开还能看到上次选的服务商 / 模型 / 自定义地址。
+  // 注意 useAI.ts 并不读这几个草稿字段，它只认 handleSave 落进 apiKeys 的条目。
   const setProvider = (v: string) => { setSelectedProvider(v); u('selectedProvider', v) }
   const setModel = (v: string) => { setSelectedModelName(v); u('selectedModelName', v) }
   const setCustomFormat = (v: 'openai' | 'anthropic') => { setCustomApiFormat(v); u('customApiFormat', v) }
   const setEndpointDraft = (v: string) => { setCustomEndpoint(v); u('customEndpoint', v) }
   const setModelDraft = (v: string) => { setCustomModelId(v); u('customModelId', v) }
+  const setConfigTab = (v: ConfigTab) => { setConfigTabState(v); u('modelConfigTab', v) }
 
   useEffect(() => {
     // 每次打开设置面板都从 store 还原草稿，不能只在首次挂载时读一次
@@ -128,6 +129,7 @@ export const ModelSettingsTab: React.FC = () => {
     setCustomModelId(s.customModelId || '')
     setSelectedProvider(s.selectedProvider || '')
     setSelectedModelName(s.selectedModelName || '')
+    setConfigTabState(s.modelConfigTab === 'custom' ? 'custom' : 'provider')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

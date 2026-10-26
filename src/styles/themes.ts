@@ -5,7 +5,6 @@ export interface TypographyOverrides {
   fontSize?: number
   lineHeight?: string
   fontFamily?: string
-  contentWidth?: string
   textIndent?: boolean
   textJustify?: boolean
 }

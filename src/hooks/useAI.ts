@@ -29,6 +29,17 @@ const extractSSEText = (frame: string, acc: string): { acc: string; done: boolea
   return { acc, done: false }
 }
 
+/**
+ * 上游报错体里可能回显请求头（某些网关/代理会把 Authorization 原样吐回来），
+ * 这里在把 detail 展示到 UI 之前先抹掉疑似凭证的片段。
+ */
+function scrubSecrets(text: string): string {
+  return text
+    .replace(/\b(Bearer)\s+[A-Za-z0-9._\-~+/=]+/gi, '$1 ***')
+    .replace(/(sk-[A-Za-z0-9_-]{8,})/g, '***')
+    .replace(/([A-Za-z0-9]{2,40}[Aa]uthorization|x-api-key|api[-_]?key)["']?\s*[:=]\s*["']([^"']{8,})["']/gi, '$1="***"')
+}
+
 export function useAI() {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -105,7 +116,7 @@ export function useAI() {
         if (!resp.ok) {
           let detail = ''
           try { detail = await resp.text() } catch {}
-          throw new Error(`API Error: ${resp.status}${detail ? ' ' + detail.slice(0, 160) : ''}`)
+          throw new Error(`API Error: ${resp.status}${detail ? ' ' + scrubSecrets(detail).slice(0, 160) : ''}`)
         }
         const reader = resp.body?.getReader()
         if (!reader) {

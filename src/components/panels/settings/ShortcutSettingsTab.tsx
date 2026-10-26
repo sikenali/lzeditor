@@ -19,10 +19,10 @@ function renderShortcutContent(tab: string) {
       <div className="shortcut-list">
         {row('新建文档', `${mod}+N`)}
         {row('打开文档', `${mod}+O`)}
+        {row('打开文件夹批量导入', `${mod}+${shift}+O`)}
         {row('自动保存（无需手动）', `${mod}+S`, '仅提示')}
         {row('导出文件', `${mod}+E`)}
-        {row('退出应用', `${mod}+Q`)}
-        {row('重新加载窗口', `${mod}+R`)}
+        {row('退出应用', `${mod}+Q`, '仅桌面端')}
       </div>
     </div>
   )
@@ -74,7 +74,6 @@ function renderShortcutContent(tab: string) {
       <div className="settings-section-title"><span className="remix ri-code-box-line shortcut-section-icon"></span><span>代码块</span></div>
       <div className="shortcut-list">
         {row('代码块', `${mod}+${alt}+C`)}
-        {row('软换行', `${mod}+Enter`)}
       </div>
     </div>
   )
@@ -91,6 +90,7 @@ function renderShortcutContent(tab: string) {
       <div style={{ marginTop: 12, padding: '8px 14px', borderRadius: 10, background: 'var(--bg-code)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-muted)' }}>
         <span className="remix ri-information-fill" style={{ color: 'var(--accent-primary)', marginRight: 6 }}></span>
         水平分割线、段落对齐等功能暂无快捷键，可通过工具栏按钮插入。
+        窗口重新加载、开发者工具、缩放等只挂在「视图」菜单里，不占快捷键。
       </div>
     </div>
   )

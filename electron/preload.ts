@@ -1,6 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { ElectronAPI } from './api'
 
-contextBridge.exposeInMainWorld('electronAPI', {
+// 渲染侧靠这份 ElectronAPI 消掉 (window as any)；这里标注是为了保证暴露的名字
+// 没写错。onMenu* 的返回值（ipcRenderer.on 的链式结果）不用，解绑走 offMenu*。
+const api: ElectronAPI = {
   // Window controls
   minimize: () => ipcRenderer.send('window-minimize'),
   maximize: () => ipcRenderer.send('window-maximize'),
@@ -29,4 +32,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Platform
   platform: process.platform,
-})
+}
+
+contextBridge.exposeInMainWorld('electronAPI', api)

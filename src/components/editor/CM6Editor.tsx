@@ -35,6 +35,7 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
   const currentLine = useSettingsStore((s) => s.currentLine)
   const softWrap = useSettingsStore((s) => s.softWrap)
   const tabSize = useSettingsStore((s) => s.tabSize)
+  const keepMdMarkers = useSettingsStore((s) => s.showMarkdownMarkers)
 
   // 「自动配对」在内核区和「Markdown 快捷符号」区各有一个开关，两个都开才生效
   const autoPairOn = (autoPairEnabled ?? true) && (autoCompleteMdPairs ?? true)
@@ -81,12 +82,13 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
 
     editor.setAutoPair(autoPairOn)
     editor.setContinueLists(continueLists ?? true)
-    editor.setLineNumbers(showLineNumbers ?? true)
+    editor.setLineNumbers(showLineNumbers ?? false)
     editor.setSpellcheck(enableSpellCheck ?? true, spellCheckLang)
     editor.setCurrentLine(currentLine ?? true)
     editor.setSoftWrap(softWrap ?? true)
     editor.setTypewriter(typewriterMode ?? false)
     editor.setLivePreview(livePreview ?? false)
+    editor.setKeepMarkdownMarkers(!!keepMdMarkers)
     editor.setFocusMode(focusMode ?? false)
     editor.setTabSize(tabSize ?? 2)
     editor.setSnippets(DEFAULT_SNIPPETS)
@@ -135,15 +137,16 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
     if (!editor) return
     editor.setAutoPair(autoPairOn)
     editor.setContinueLists(continueLists ?? true)
-    editor.setLineNumbers(showLineNumbers ?? true)
+    editor.setLineNumbers(showLineNumbers ?? false)
     editor.setSpellcheck(enableSpellCheck ?? true, spellCheckLang)
     editor.setCurrentLine(currentLine ?? true)
     editor.setSoftWrap(softWrap ?? true)
     editor.setTypewriter(typewriterMode ?? false)
     editor.setLivePreview(livePreview ?? false)
+    editor.setKeepMarkdownMarkers(!!keepMdMarkers)
     editor.setFocusMode(focusMode ?? false)
     editor.setTabSize(tabSize ?? 2)
-  }, [autoPairOn, continueLists, showLineNumbers, enableSpellCheck, spellCheckLang, currentLine, softWrap, typewriterMode, livePreview, focusMode, tabSize])
+  }, [autoPairOn, continueLists, showLineNumbers, enableSpellCheck, spellCheckLang, currentLine, softWrap, typewriterMode, livePreview, focusMode, tabSize, keepMdMarkers])
 
   return (
     <div className="cm6-editor-wrapper" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

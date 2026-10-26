@@ -165,7 +165,6 @@ export const LZEditor = () => {
       fontSize: defaultFontSize,
       lineHeight: lineHeight,
       fontFamily: editorFont === 'serif' ? '"Noto Serif SC", serif' : (editorFont === 'monospace' ? 'monospace' : editorFont),
-      contentWidth: contentWidth,
       textIndent,
       textJustify,
     })
@@ -191,15 +190,8 @@ export const LZEditor = () => {
     return () => observer.disconnect()
   }, [])
 
-  // ── Markdown markers: show ### etc. in editor ──
-  const showMarkdownMarkers = useSettingsStore((s) => s.showMarkdownMarkers)
-  useEffect(() => {
-    const el = editorRef.current
-    if (!el) return
-    const inner = el.querySelector('.lz-editor-content') as HTMLElement | null
-    if (!inner) return
-    inner.setAttribute('data-md-markers', showMarkdownMarkers ? 'inline' : 'none')
-  }, [showMarkdownMarkers])
+  // 「Markdown 标记常显」在 CM6 的 live-preview 里生效（keepMarkdownMarkers facet），
+  // 不靠 data-md-markers 属性 —— 编辑区没有 h1/ul DOM，那个属性一直是空开关
 
   // 弹出面板打开时别让编辑器抢走焦点
   useEffect(() => {

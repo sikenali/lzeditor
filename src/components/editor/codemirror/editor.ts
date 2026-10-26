@@ -1,7 +1,7 @@
 import { EditorView } from '@codemirror/view'
 import { EditorState, type Extension, Compartment } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
-import { history, undo, redo } from '@codemirror/commands'
+import { history, undo, redo, selectAll } from '@codemirror/commands'
 import {
   search,
   SearchQuery,
@@ -24,7 +24,7 @@ import { typewriterExtension, enableTypewriter, disableTypewriter } from './type
 import { setSnippetImpl, snippetCompletionSource, snippetSource, snippetDataField, completionSetup, snippetTabKeymap, setSnippetDataEffect } from './complete'
 import { slashPaletteExtension } from './slash'
 import type { MarkdownSnippet } from './snippets'
-import { livePreviewExtension } from './live-preview'
+import { livePreviewExtension, keepMarkdownMarkers, setKeepMarkdownMarkersEffect } from './live-preview'
 import { focusModeExtension, enableFocusMode } from './focus-mode'
 
 /** 中英混排词数：CJK 字符逐个计词，其余部分按空白切分。 */
@@ -75,6 +75,7 @@ export interface CM6EditorCommands {
   setSoftWrap: (on: boolean) => void
   setTypewriter: (on: boolean) => void
   setLivePreview: (on: boolean) => void
+  setKeepMarkdownMarkers: (on: boolean) => void
   setSnippets: (snippets: MarkdownSnippet[]) => void
   setInputFormat: (next: Partial<InputFormatSettings>) => void
   onScroll: (handler: () => void) => () => void
@@ -85,6 +86,12 @@ export interface CM6EditorCommands {
 const undoKeymap = keymap.of([
   { key: 'Mod-z', run: undo, preventDefault: true },
   { key: 'Mod-Shift-z', run: redo, preventDefault: true },
+])
+
+// Ctrl+A 不能只靠 contenteditable 的原生行为：焦点在编辑器外时按它是全选整页，
+// 焦点在编辑器内时浏览器也可能先做页面级全选再落回选区。显式绑一次。
+const selectAllKeymap = keymap.of([
+  { key: 'Mod-a', run: selectAll, preventDefault: true },
 ])
 
 // 列表/任务项回车续写：受「续写列表」开关控制，单独成 keymap 便于动态增删
@@ -157,11 +164,13 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
     history(),
     search({ top: true }),
     undoKeymap,
+    selectAllKeymap,
     lineNumbersC.of([]),
     currentLineC.of([highlightActiveLine(), highlightActiveLineGutter()]),
     wrapC.of(EditorView.lineWrapping),
     typewriterC.of([]),
     livePreviewC.of([]),
+    keepMarkdownMarkers,
     focusModeExtension,
     continuationC.of(continuationKeymap),
     hardBreakKeymap,
@@ -200,6 +209,7 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
   let currentSpellcheck = true
   let currentSoftWrap = true
   let currentCurrentLine = true
+  let currentKeepMarkdownMarkers = false
 
   setSnippetImpl(snippetCompletionSource())
   setupAutoPair(view, true)
@@ -360,10 +370,12 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
       view.dispatch({ effects: lineNumbersC.reconfigure(on ? lineNumbers() : []) })
     },
     setSpellcheck(on: boolean, lang?: string): void {
+      // lang 是独立参数，必须在早退之前写：初始态开关和 store 默认值相同，
+      // 早退会让 lang 永远写不进去，语言下拉就成了空开关
+      if (lang) view.dom.setAttribute('lang', lang)
       if (on === currentSpellcheck) return
       currentSpellcheck = on
       view.dom.setAttribute('spellcheck', on ? 'true' : 'false')
-      if (lang) view.dom.setAttribute('lang', lang)
     },
     setFocusMode(on: boolean): void {
       if (on === currentFocusMode) return
@@ -374,8 +386,6 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
       if (on === currentSoftWrap) return
       currentSoftWrap = on
       view.dispatch({ effects: wrapC.reconfigure(on ? EditorView.lineWrapping : []) })
-      if (on) view.dom.classList.add('cm-lineWrapping')
-      else view.dom.classList.remove('cm-lineWrapping')
     },
     setTypewriter(on: boolean): void {
       if (on === currentTypewriter) return
@@ -388,6 +398,12 @@ export function createCM6Editor(options: CM6EditorOptions): CM6EditorCommands {
       if (on === currentLivePreview) return
       currentLivePreview = on
       view.dispatch({ effects: livePreviewC.reconfigure(on ? livePreviewExtension : []) })
+    },
+    setKeepMarkdownMarkers(on: boolean): void {
+      // 只控制 live 预览里「游标不在标题上就隐藏 # 和 **」这个行为
+      if (on === currentKeepMarkdownMarkers) return
+      currentKeepMarkdownMarkers = on
+      view.dispatch({ effects: setKeepMarkdownMarkersEffect(on) })
     },
     setSnippets(snippetList: MarkdownSnippet[]): void {
       view.dispatch({ effects: setSnippetDataEffect({ snippets: snippetList }) })
