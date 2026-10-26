@@ -104,7 +104,6 @@ type SettingsStore = SettingsState & {
   setActiveGroup: (group: SettingsGroup) => void
   setSubTab: (subTab: string) => void
   updateSetting: (key: keyof SettingsState, value: any) => void
-  addApiKey: (key: ApiKeyEntry) => void
   removeApiKey: (id: string) => void
   toggleApiKey: (id: string) => void
   setSelectedModelId: (id: string) => void
@@ -116,11 +115,6 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   setActiveGroup: (activeGroup) => set({ activeGroup }),
   setSubTab: (subTab) => set({ subTab }),
   updateSetting: (key, value) => set({ [key]: value }),
-
-  addApiKey: (key) => set((state) => ({
-    apiKeys: [...state.apiKeys, key],
-    selectedModelId: key.id,
-  })),
 
   removeApiKey: (id) => set((state) => {
     const remaining = state.apiKeys.filter((k) => k.id !== id)
