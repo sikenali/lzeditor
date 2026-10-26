@@ -499,6 +499,32 @@
 .sidebar-empty .remix  { font-size: 24px; opacity: 0.5; }
 .sidebar-empty span  { font-size: 12px; letter-spacing: -0.01em; }
 
+/* ── Mermaid 流程图 — 预览 / 阅读共用 ── */
+/* 渲染器把 <pre><code class="language-mermaid"> 换成 .mermaid-diagram div，
+   配色和同段落的代码块保持一致，否则图看起来像外来物。 */
+.mermaid-diagram {
+  background: var(--bg-code);
+  border: 0.7px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  text-align: center;
+}
+.mermaid-diagram svg { max-width: 100%; height: auto; display: inline-block; }
+
+/* 语法错误：源码 + 一行提示，不能留空白让人以为渲染丢了 */
+.mermaid-diagram.mermaid-error { text-align: left; border-color: var(--danger-bg); }
+.mermaid-diagram.mermaid-error code {
+  background: none; padding: 0; border: none;
+  color: var(--text-primary); font-size: 12px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.mermaid-error-note {
+  display: block; margin-top: 8px;
+  color: var(--red-text); font-size: 11px;
+}
+
 /* ── Sidebar Preview — glassmorphism ── */
 .sidebar-preview-wrapper  {
   flex-shrink: 0; position: relative;
