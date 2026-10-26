@@ -6,6 +6,8 @@ import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getDocMd } from '../../utils/docSource'
+import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
+import { resolveTheme } from '../../hooks/useTheme'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
@@ -34,6 +36,7 @@ export const SidebarPreview: React.FC = () => {
   const docsMd = useEditorStore((s) => s.docsMd || {})
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
+  const appTheme = useSettingsStore((s) => s.theme)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
@@ -74,7 +77,16 @@ export const SidebarPreview: React.FC = () => {
       el.textContent = css
       document.head.appendChild(el)
     }
+    // mermaid 是异步增强：占位符先显示，渲完再换成图
+    void renderMermaidBlocks(previewEl, resolveTheme(appTheme) === 'dark')
   }, [previewHtml, typographyTheme])
+
+  // 换主题不会重新生成 html，也就不会重建 .mermaid-diagram，已渲染的图要自己重渲。
+  // 单独成一个 effect：并进上面那个会在换主题时和 innerHTML 赋值打架。
+  useEffect(() => {
+    if (!previewElRef.current) return
+    void renderMermaidBlocks(previewElRef.current, resolveTheme(appTheme) === 'dark')
+  }, [appTheme])
 
   // ── 滚动同步：按源码行号对位，不是按百分比 ──
   useScrollSync({

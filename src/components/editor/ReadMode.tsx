@@ -6,6 +6,9 @@ import { parseMdOutline } from '../../utils/mdOutline'
 import { tagToKind, type BlockKind } from '../../utils/blockKind'
 import { paginate, pageOfLine, spreadCount, type Page } from '../../utils/pagination'
 import { OWN_ACTION } from '../../utils/markdown/lines'
+import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
+import { useSettingsStore } from '../../store/settingsStore'
+import { resolveTheme } from '../../hooks/useTheme'
 
 /** 双联页阅读模式：左右两页并排，整块不可切，点屏幕翻页。 */
 
@@ -39,6 +42,7 @@ export const ReadMode: React.FC = () => {
   const readFontSize = useEditorStore((s) => s.readFontSize)
   const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
   const readLayout = useEditorStore((s) => s.readLayout)
+  const appTheme = useSettingsStore((s) => s.theme)
   const setReadLayout = useEditorStore((s) => s.setReadLayout)
   const readTocOpen = useEditorStore((s) => s.readTocOpen)
   const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
@@ -235,6 +239,17 @@ export const ReadMode: React.FC = () => {
       (p?.blocks ?? []).map(b => b.html).join('')
     return { left: of(pages[i * 2]), right: of(pages[i * 2 + 1]) }
   }, [pages])
+
+  // 阅读模式的分页 DOM 是翻页才挂载的，pages / spread 都要进依赖；换主题同样要重渲。
+  // 整批重渲可接受：一页最多两栏，图块很少。
+  // 注意 read-article-body 是 dangerouslySetInnerHTML 托管的，React 不追踪我们改的子节点；
+  // __html 一变 React 会整段重写、我们的替换随之消失，所以要靠这个 effect 再补一次。
+  useEffect(() => {
+    const dark = resolveTheme(appTheme) === 'dark'
+    document.querySelectorAll('.read-article-body').forEach((el) => {
+      void renderMermaidBlocks(el as HTMLElement, dark)
+    })
+  }, [pages, spread, appTheme])
 
   const renderSpread = (i: number, cls: string): React.ReactNode => {
     const { left, right } = spreadHtml(i)
