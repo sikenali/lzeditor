@@ -6,6 +6,7 @@ import hljs from 'highlight.js'
 import { sanitizeHtml } from '../sanitizeHtml'
 import { escapeHtml, makeHeadingIdGen } from './id'
 import { resolveFlavor, type FlavorId, type FlavorSetting } from './flavors'
+import { registerBlockLinesRule } from './lines'
 
 /**
  * 统一的 Markdown 渲染管线：markdown-it + 方言表 + KaTeX + highlight.js + DOMPurify。
@@ -19,6 +20,8 @@ import { resolveFlavor, type FlavorId, type FlavorSetting } from './flavors'
 export interface RenderOptions {
   /** 方言。`auto` 或缺省时按文档特征推断 */
   flavor?: FlavorSetting
+  /** 给每个顶层块写 data-line / data-end-line 行号，滚动同步用。导出、剪贴板一律不要开 */
+  lines?: boolean
   /** 渲染完成后回调，拿到最终方言（`auto` 时的实际结果） */
   onFlavor?: (flavor: FlavorId) => void
 }
@@ -491,6 +494,7 @@ export function createMarkdownIt(flavor: FlavorId): MarkdownItType {
     return `${MATH_SLOT_OPEN}${list.length - 1}${MATH_SLOT_CLOSE}`
   }
 
+  registerBlockLinesRule(md)
   instances.set(flavor, md)
   return md
 }
@@ -502,6 +506,7 @@ export function renderMarkdownRaw(md: string, options: RenderOptions = {}): Rend
   if (flavor === 'mdx') src = stripMdxStatements(src)
 
   const env: Env = { maths: [] }
+  if (options.lines) env.blockLines = true
   let html: string
   try {
     html = createMarkdownIt(flavor).render(src, env)

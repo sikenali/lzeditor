@@ -8,6 +8,7 @@
 export function stripPreviewMeta(html: string): string {
   return html
     .replace(/ data-line="\d+"/g, '')
+    .replace(/ data-end-line="\d+"/g, '')
     .replace(/ data-tip(?=[ >])/g, '')
     .replace(/ data-md-marker="[^"]*"/g, '');
 }

@@ -11,9 +11,19 @@ import DOMPurify from 'dompurify'
  * 属性白名单只做加法：DOMPurify 默认已放行 style（KaTeX 公式、表格对齐全靠它）
  * 和 data:* 图片（DATA_URI_TAGS 含 img，图表导出的 base64 不会误删）；
  * align / checked / disabled / target / id / value 是 markdown-it 会写但默认不放行的。
+ * data-line / data-end-line 是预览块的源码行号，滚动同步要读；剪贴板导出前会剥掉。
  */
 const CONFIG = {
-  ADD_ATTR: ['align', 'checked', 'disabled', 'target', 'id', 'value'],
+  ADD_ATTR: [
+    'align',
+    'checked',
+    'disabled',
+    'target',
+    'id',
+    'value',
+    'data-line',
+    'data-end-line',
+  ],
 }
 
 export function sanitizeHtml(html: string | null | undefined): string {

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
-import { useScrollSync } from '../../hooks/useScrollSync'
+import { useScrollSync, lineBridgeOf } from '../../hooks/scrollSync'
 import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -17,12 +17,11 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
   return getDocMd(activeDocId || 'readme')
 }
 
-/** Convert markdown source → rendered HTML for the preview. */
+/** Markdown → 预览 HTML。开 lines：每个顶层块带源码行号，滚动同步按行对位 */
 function mdToPreviewHtml(mdContent: string): string {
   if (!mdContent) return ''
   try {
-    const result = mdToHtml(mdContent)
-    return result.toString()
+    return mdToHtml(mdContent, undefined, { lines: true })
   } catch {
     return mdContent
   }
@@ -38,7 +37,7 @@ export const SidebarPreview: React.FC = () => {
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
   const previewWidth = useEditorStore((s) => s.previewWidth || DEFAULT_WIDTH)
   const setPreviewWidth = useEditorStore((s) => s.setPreviewWidth)
-  const [previewEl, setPreviewEl] = useState<HTMLDivElement | null>(null)
+  const previewElRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -57,6 +56,7 @@ export const SidebarPreview: React.FC = () => {
   }, [effectiveMd, docHTML])
 
   useEffect(() => {
+    const previewEl = previewElRef.current
     if (!previewEl) return
     const theme = getTypographyTheme(typographyTheme || 'classic')
     previewEl.innerHTML = previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
@@ -74,14 +74,19 @@ export const SidebarPreview: React.FC = () => {
       el.textContent = css
       document.head.appendChild(el)
     }
-  }, [previewHtml, typographyTheme, previewEl])
+  }, [previewHtml, typographyTheme])
 
-  // ── Scroll sync via hook (non-React, no re-renders) ──
-  useScrollSync(
-    { current: editorContentRef },
-    scrollContainerRef,
-    true,
-  )
+  // ── 滚动同步：按源码行号对位，不是按百分比 ──
+  useScrollSync({
+    editorEl: editorContentRef,
+    scroller: scrollContainerRef,
+    article: previewElRef,
+    enabled: true,
+    onSourceLine: (line) => {
+      // 预览里点一下跳源码：光标移到行首并最小滚动，不夺焦点
+      lineBridgeOf(editorContentRef)?.goToLine(line)
+    },
+  })
 
   // ── Resize handle
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -110,6 +115,7 @@ export const SidebarPreview: React.FC = () => {
 
   // ── Copy as WeChat rich text
   const handleCopyWechat = async () => {
+    const previewEl = previewElRef.current
     if (!previewEl) return
     const html = previewEl.innerHTML
     const ok = await copyRichText(html)
@@ -139,12 +145,7 @@ export const SidebarPreview: React.FC = () => {
         </div>
         <div className="sidebar-scroll" ref={scrollContainerRef}>
           <div className="preview-article-card">
-            <div
-              className="preview-doc"
-               ref={(node) => {
-                  setPreviewEl(node)
-               }}
-            />
+            <div className="preview-doc" ref={previewElRef} />
           </div>
         </div>
       </div>
