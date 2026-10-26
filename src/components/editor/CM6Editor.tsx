@@ -6,6 +6,7 @@ import { DEFAULT_SNIPPETS } from './codemirror/snippets'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { mdToHtml } from '../../utils/mdToHtml'
+import { flushPendingEdit, persistEdit, setPendingEdit } from '../../utils/pendingSave'
 
 interface CM6EditorProps {
   docId: string
@@ -21,7 +22,6 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
   const setCharCountStore = useEditorStore((s: any) => s.setCharCount)
   const setWordCountStore = useEditorStore((s: any) => s.setWordCount)
   const setCursorPosition = useEditorStore((s: any) => s.setCursorPosition)
-  const addVersion = useEditorStore((s: any) => s.addVersion)
 
   const typewriterMode = useSettingsStore((s) => s.typewriterMode)
   const livePreview = useSettingsStore((s) => s.livePreview)
@@ -55,20 +55,11 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
         store.setLastEditTime(Date.now())
 
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+        // 先登记待存内容，防抖没跑完就关窗口时 flushPendingEdit 还能捞到
+        setPendingEdit({ md: text, html })
         saveTimerRef.current = setTimeout(() => {
-          addVersion({
-            id: String(Date.now()),
-            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-            date: new Date().toLocaleDateString('zh-CN'),
-            desc: text.trim().slice(0, 24) || '空文档',
-            changes: text.length,
-            html,
-            md: text,
-          })
-          useEditorStore.getState().setSyncStatus('synced')
-          try {
-            localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: text, html, savedAt: Date.now() }))
-          } catch {}
+          setPendingEdit(null)
+          persistEdit(docId, { md: text, html })
         }, 800)
         useEditorStore.getState().setSyncStatus('saving')
       },
@@ -110,6 +101,21 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
       }
       editorRef.current = null
       viewRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    // 800ms 防抖意味着硬关窗口必然丢最后一段输入，这里补一刀
+    const onBefore = () => flushPendingEdit()
+    // pagehide 比 beforeunload 可靠：移动端和标签页复用都会触发它
+    window.addEventListener('pagehide', onBefore)
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushPendingEdit()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', onBefore)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
