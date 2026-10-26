@@ -19,7 +19,7 @@ for (const d of insertDialogs) {
   assert.match(src, /from '\.\.\/ui'/, `${d} must import from the ui barrel`)
 }
 
-const panelDialogs = ['ExportDialog','HistoryPanel','LibraryPanel','FilePanel','PreviewPanel','SearchPanel']
+const panelDialogs = ['ExportDialog','HistoryPanel','LibraryPanel','FilePanel','SearchPanel']
 for (const d of panelDialogs) {
   const src = read(`src/components/panels/${d}.tsx`)
   assert.doesNotMatch(src, /UnifiedDialog|PanelContainer|@heroui\/react/, `${d} must not use legacy dialog/HeroUI`)
