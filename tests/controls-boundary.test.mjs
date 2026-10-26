@@ -127,3 +127,54 @@ assert.match(layoutCss, /\.win-controls/, '窗口按钮需要样式')
 
 const tokensCss = read('src/styles/color-tokens.css')
 assert.match(tokensCss, /--font-serif/, '必须有 --font-serif 变量，否则衬线字体回退失效')
+
+// ── P2：声明了却没人接上的控件 ─────────────────────────────────────────
+
+// 「插入 → 数学公式」此前 action 写成 'math'，而 App 只渲染 insertPanel === 'formula'，点了等于没点
+assert.doesNotMatch(actions, /label: '数学公式', action: 'math'/, "数学公式的 action 不能写成 'math'，App 里只认 'formula'")
+assert.match(actions, /label: '数学公式', action: 'formula'/, '数学公式必须落到 formula 面板')
+assert.match(actions, /'formula'/, 'PANEL_ACTIONS 必须包含 formula')
+assert.doesNotMatch(actions, /PANEL_ACTIONS = new Set\([^)]*'math'/, "PANEL_ACTIONS 里的 'math' 是死值")
+
+// Ctrl+Alt+1..6 此前只有快捷键页的文案，CM6 里没有绑定
+assert.match(editorTs, /headingKeymap/, '必须有标题快捷键 keymap')
+assert.match(editorTs, /Mod-Alt-1/, 'H1 快捷键必须真的绑上')
+assert.match(editorTs, /Mod-Alt-6/, 'H6 快捷键必须真的绑上')
+assert.match(editorTs, /heading-6/, '标题快捷键必须调 runFormatCommand 的 heading-N')
+assert.match(editorTs, /^\s*headingKeymap,/m, 'headingKeymap 必须注册进扩展，定义了不挂载等于没写')
+
+const shortcutTab = read('src/components/panels/settings/ShortcutSettingsTab.tsx')
+assert.doesNotMatch(shortcutTab, /\$\{alt\}\+Tab/, 'Alt+Tab 是系统窗口切换键，永远抢不到，不能列进快捷键表')
+
+// 「Markdown 标记常显」开关此前失效：h1/h4/h5/h6 的 content 没有 data-md-markers 门控
+const globalsCss = read('src/styles/globals.css')
+assert.doesNotMatch(globalsCss, /--md-markers-visible/, '--md-markers-visible 从未被定义，相关规则是空操作')
+assert.doesNotMatch(globalsCss, /\.lz-editor-content h1::before/, '标题标记必须受 data-md-markers 门控，不能无条件显示')
+assert.match(globalsCss, /data-md-markers="inline"\] h2::before/, 'h2 也必须显示 ## 标记')
+assert.match(globalsCss, /data-md-markers="inline"\] h3::before/, 'h3 也必须显示 ### 标记')
+assert.match(globalsCss, /not\(\.lz-editor-content--read\)\[data-md-markers/, '阅读模式不能显示 markdown 标记')
+
+// 「首行缩进」「两端对齐」此前只写 CSS 变量，没有任何规则消费
+const readModeCss = read('src/styles/read-mode.css')
+assert.match(readModeCss, /text-indent: var\(--read-text-indent/, '首行缩进必须被真正消费')
+assert.match(readModeCss, /text-align: var\(--read-text-align/, '两端对齐必须被真正消费')
+
+// 完全没有 UI 能写的设置项，留着只是误导
+assert.doesNotMatch(settingsStore, /^\s*headingStyles:/m, 'headingStyles 没有任何界面能写入，必须清掉')
+assert.doesNotMatch(settingsStore, /^\s*linkColor:/m, 'linkColor 没有任何界面能写入，必须清掉')
+assert.doesNotMatch(settingsStore, /^\s*blockquoteBackground:/m, 'blockquoteBackground 没有任何界面能写入，必须清掉')
+assert.doesNotMatch(settingsStore, /addApiKey/, 'addApiKey 从未被调用，模型设置页走 updateSetting')
+
+const editorStore = read('src/store/editorStore.ts')
+assert.match(editorStore, /previewModeEnabled/, '记住的预览开关必须参与首次启动的布局初始化')
+assert.match(editorStore, /showPreview: initialLayout\.showPreview/, '上次关闭前的预览状态必须恢复')
+
+const types = read('src/shared/types.ts')
+assert.doesNotMatch(types, /statusbarCollapsed\?/, 'SettingsState 里的 statusbarCollapsed 是幽灵副本，真身在 editorStore')
+assert.match(types, /openPanel: 'none' \| 'library' \| 'file' \| 'history' \| 'settings' \| 'export'/, 'openPanel 类型必须收窄到真实可达的值')
+assert.doesNotMatch(app, /PreviewPanel/, 'PreviewPanel 已无任何入口，必须移除')
+
+// 主进程只需要四个开关，不能把含明文密钥的全量设置发过去
+assert.match(app, /APP_SETTING_KEYS/, '推给主进程的设置必须白名单化')
+assert.match(app, /quitWhenAllWindowsClosed/, '白名单必须覆盖主进程实际读的键')
+assert.doesNotMatch(app, /sendSettings\?\.\(useSettingsStore\.getState\(\)\)/, '不能把全量 settings 发给主进程')
