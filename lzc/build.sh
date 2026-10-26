@@ -165,6 +165,14 @@ if [ ! -f "$PROJECT_ROOT/dist/index.html" ]; then
 fi
 cp -a "$PROJECT_ROOT/dist/." "$SCRIPT_DIR/_lpk_content/frontend/"
 
+# 许可证声明随包分发。Apache-2.0 §4 和 BSD-3-Clause 要求声明跟着分发走，
+# 而前端产物是 minified bundle，构建产物里带不出这些文本。
+# 放 frontend 下顺带让它们在 /licenses/ 路径可直接访问。
+mkdir -p "$SCRIPT_DIR/_lpk_content/frontend/licenses"
+cp "$PROJECT_ROOT/THIRD_PARTY_NOTICES.md" "$SCRIPT_DIR/_lpk_content/frontend/licenses/"
+cp "$PROJECT_ROOT/THIRD_PARTY_LICENSES.txt" "$SCRIPT_DIR/_lpk_content/frontend/licenses/"
+cp "$PROJECT_ROOT/LICENSE" "$SCRIPT_DIR/_lpk_content/frontend/licenses/"
+
 # 写入版本文件，供前端 "关于" 页面动态读取
 echo "{\"version\":\"${VERSION}\"}" > "$SCRIPT_DIR/_lpk_content/frontend/version.json"
 
