@@ -1,5 +1,6 @@
 import { useEditorStore } from '../store/editorStore'
 import { silentError } from './silentError'
+import { nextVersionId } from './versionId'
 import { toast } from './toast'
 
 export interface PendingEdit {
@@ -23,7 +24,7 @@ export function setPendingEdit(edit: PendingEdit | null): void {
 export function persistEdit(docId: string, { md, html }: PendingEdit): void {
   const store = useEditorStore.getState()
   store.addVersion({
-    id: String(Date.now()),
+    id: nextVersionId(),
     time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     date: new Date().toLocaleDateString('zh-CN'),
     desc: md.trim().slice(0, 24) || '空文档',

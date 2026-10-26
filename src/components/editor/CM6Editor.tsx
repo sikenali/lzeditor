@@ -95,6 +95,9 @@ const CM6EditorInner: React.FC<CM6EditorProps> = ({ docId, initialContent }) => 
 
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      // 切到「历史」「阅读」模式时 centerContent 会把 LZEditor 整个换成别的组件，
+      // CM6 随之卸载。只清定时器不兜底的话，最后 800ms 内那段编辑连版本快照都不会有。
+      flushPendingEdit()
       const view = viewRef.current
       if (view) {
         container._cm6Editor = undefined
