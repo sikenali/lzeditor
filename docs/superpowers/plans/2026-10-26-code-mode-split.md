@@ -365,7 +365,7 @@ git commit -m "feat(settings): 代码模式分栏比例可落盘，默认五五�
 
 - [ ] **步骤 1：改 `layout.css` 前缀**
 
-在 `src/styles/layout.css` 里，把 `.sidebar-preview .preview-doc` 全部替换成 `.preview-pane .preview-doc`。这一段是 553-564 行的 12 条规则：
+在 `src/styles/layout.css` 里，把 `.sidebar-preview .preview-doc` 全部替换成 `.preview-pane .preview-doc`。这一段是 553-569 行（16 个选择器，第 566 行一行有两个）：
 
 ```
 .sidebar-preview .preview-doc

@@ -139,7 +139,7 @@ export const SidebarPreview: React.FC = () => {
 
   return (
     <div className="sidebar-preview-wrapper" style={{ width: previewWidth }}>
-      <div className="sidebar-preview">
+      <div className="sidebar-preview preview-pane">
         <div className="sidebar-header">
           <span className="remix sidebar-header-icon ri-eye-2-fill"></span>
           <span className="sidebar-header-title">预览</span>
