@@ -404,7 +404,13 @@ function App() {
         {showOutline && <SidebarOutline />}
         {showLibrary && <LibraryPanel sidebar className={libraryClosing ? 'closing' : ''} />}
         {centerContent}
-        {showRightPreview && <SidebarPreview />}
+        {/* 顶部布局同样要给排版面板留右栏：showRightPreview 已排除 style，
+            没有这一段的话点「样式」只会把预览藏掉，面板不出现，看起来像没反应 */}
+        {appMode === 'style' ? (
+          <div className={`app-right-panel app-right-panel--style${stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
+            <div className="style-mode-stack"><StyleMainPanel /></div>
+          </div>
+        ) : showRightPreview && <SidebarPreview />}
       </div>
       <StatusBar />
       <Footer />
