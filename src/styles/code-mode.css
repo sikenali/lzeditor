@@ -1,0 +1,119 @@
+/* ── 代码模式：左右分栏工作区 ──────────────────────────────────────────
+   左栏源码（CM6）、中间可拖拽分割线、右栏实时预览。
+   编辑模式下 .lz-editor-content 是唯一的滚动容器（globals.css）；
+   进代码模式后它变成 grid 壳，滚动权下放到 .lz-editor-page。 */
+
+.lz-editor-content--code {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+  background: var(--chrome-surface);
+}
+
+/* 左栏：栏头固定，源码区占满剩余高度并自己滚动 */
+.lz-editor-content--code .code-source-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--chrome-surface);
+}
+
+/* 真正的滚动容器。CM6 本身 height:auto + overflow:visible（见 app.css 注释），
+   所以滚动只能由外层承接，否则滚动同步找不到唯一容器。 */
+.lz-editor-content--code .lz-editor-page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 20px 0;
+  margin: 0;
+  width: 100%;
+}
+
+/* 栏头：细长小标，只放状态信息，不承担操作 */
+.code-pane-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-code);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  user-select: none;
+}
+
+.code-pane-title {
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.code-pane-sep { color: var(--text-faint); opacity: 0.6; }
+
+.code-pane-meta {
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 分割线：可见线 6px，命中区 24px。
+   grid 轨道只有 6px，两边各 -9px 的负外边距把盒子撑成 24px，
+   负值等量所以线还是居中的。WCAG 2.5.8 要求目标够大，6px 点不中。 */
+.code-splitter {
+  position: relative;
+  z-index: 1;
+  margin: 0 -9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.code-splitter-line {
+  width: 6px;
+  height: 100%;
+  background: var(--border-subtle);
+  transition: background 0.12s ease;
+}
+
+.code-splitter:hover .code-splitter-line,
+.code-splitter.dragging .code-splitter-line {
+  background: var(--accent-primary);
+  opacity: 0.55;
+}
+
+.code-splitter:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+/* 右栏：预览独立滚动，与左栏互不干扰 */
+.lz-editor-content--code .code-preview-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-code);
+  border-left: 1px solid var(--border-subtle);
+}
+
+.code-preview-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px 20px;
+}
