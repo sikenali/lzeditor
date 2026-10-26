@@ -1,20 +1,15 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { getCM6Editor } from '../editor/codemirror/registry'
 import { parseMdOutline, type MdOutlineItem } from '../../utils/mdOutline'
+import {
+  OUTLINE_DEPTHS, currentSectionIndex, depthLabel, filterByDepth,
+  nextStop, sectionCountLabel, shownCurrent, type OutlineDepth,
+} from '../../utils/outline'
 
-/** Group flat items into a tree keyed by parent number (1 → 1.1 → 1.1.1). */
-function buildTree(items: MdOutlineItem[]): Map<string, MdOutlineItem[]> {
-  const tree = new Map<string, MdOutlineItem[]>()
-  for (const item of items) {
-    const parentNumber = item.number.includes('.')
-      ? item.number.slice(0, item.number.lastIndexOf('.'))
-      : ''
-    const key = parentNumber || '__root__'
-    if (!tree.has(key)) tree.set(key, [])
-    tree.get(key)!.push(item)
-  }
-  return tree
+/** 标题级别到徽标样式类：只有两级视觉差异，4/5/6 共用第三级。 */
+function badgeClass(level: number): string {
+  return `outline-badge${level === 1 ? ' l1' : level === 2 ? ' l2' : ' l3'}`
 }
 
 export const SidebarOutline: React.FC = () => {
@@ -23,76 +18,53 @@ export const SidebarOutline: React.FC = () => {
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const cursorPosition = useEditorStore((s: any) => s.cursorPosition)
   const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  // 大纲从 markdown 源文本解析：CM6 没有文档树，标题层级只能从 `#` 号推
+  const [depth, setDepth] = useState<OutlineDepth>(0)
+  /** 上次拿过焦点的那一项，Tab 回来还是它。 */
+  const [focused, setFocused] = useState<number | null>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+
+  // 大纲从 markdown 源文本解析：CM6 没有文档树，标题只能从 `#` 号推
   const md = docsMd[activeDocId || 'readme'] || mdContent || ''
   const items = useMemo(() => parseMdOutline(md), [md])
+  const entries = useMemo(() => filterByDepth(items, depth), [items, depth])
 
-  // 当前高亮跟随光标行号，不重扫文档
-  const activeId = useMemo(() => {
-    const line = cursorPosition?.line
-    if (!line) return ''
-    let active: MdOutlineItem | undefined
-    for (const item of items) {
-      if (item.line <= line) active = item
-      else break
-    }
-    return active?.id ?? ''
-  }, [cursorPosition, items])
+  // 当前节 = 最后一个不晚于光标行的标题；深度过滤只显示上级可见项
+  const current = useMemo(() => currentSectionIndex(items, cursorPosition?.line ?? 1), [items, cursorPosition])
+  const shownIndex = useMemo(() => shownCurrent(entries, current), [entries, current])
+  /** 唯一的 tab 停点：上次焦点，否则当前项。 */
+  const stop = Math.min(focused ?? shownIndex ?? 0, entries.length - 1)
+
+  // 光标或预览换节时，当前项留在视口内
+  useEffect(() => {
+    if (shownIndex === null) return
+    const btns = listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn')
+    btns?.[shownIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [shownIndex])
 
   const handleJump = useCallback((item: MdOutlineItem) => {
     getCM6Editor()?.goto(item.pos, item.pos + item.text.length)
   }, [])
 
-  const toggleCollapse = (number: string) => {
-    setCollapsed((prev) => ({ ...prev, [number]: !prev[number] }))
-  }
-
-  const tree = buildTree(items)
-
-  const renderGroup = (parentNumber: string, depth: number): React.ReactNode[] => {
-    const children = tree.get(parentNumber) || []
-    return children.map((item) => {
-      const hasChildren = (tree.get(item.number) || []).length > 0
-      const isCollapsed = !!collapsed[item.number]
-      return (
-        <div key={item.id} className="outline-node">
-          <div
-            className={`sidebar-item ${activeId === item.id ? 'active' : ''}`}
-            style={{ paddingLeft: `${depth * 16 + 10}px` }}
-          >
-            {hasChildren ? (
-              <button
-                className="outline-toggle-btn"
-                onClick={(e) => { e.stopPropagation(); toggleCollapse(item.number) }}
-                title={isCollapsed ? '展开' : '折叠'}
-              >
-                <span className={`remix ${isCollapsed ? 'ri-arrow-right-s-line' : 'ri-arrow-down-s-line'}`}></span>
-              </button>
-            ) : (
-              <span className="outline-toggle-placeholder" />
-            )}
-            <button
-              className="outline-content-btn"
-              onClick={() => handleJump(item)}
-              title={`${item.number} ${item.text}`}
-            >
-              <span className="outline-number">{item.number}</span>
-              <span className="sidebar-item-text">{item.text}</span>
-            </button>
-          </div>
-          {hasChildren && !isCollapsed && renderGroup(item.number, depth + 1)}
-        </div>
-      )
-    })
-  }
+  /** 上下移动、Home/End 跳首尾、Return/Space 打开（原生 button 自带）。 */
+  const onListKeyDown = useCallback((e: React.KeyboardEvent<HTMLUListElement>) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') return
+    const btns = Array.from(listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn') ?? [])
+    const index = btns.indexOf(document.activeElement as HTMLButtonElement)
+    const next = nextStop(e.key, index < 0 ? 0 : index, btns.length)
+    if (next === null) return
+    e.preventDefault()
+    btns[next]?.focus()
+  }, [])
 
   return (
     <div className="sidebar-outline">
       <div className="sidebar-header">
         <span className="remix sidebar-header-icon ri-list-unordered"></span>
         <span className="sidebar-header-title">目录</span>
+        {items.length > 0 && (
+          <span className="outline-count" title="当前显示 / 全部标题">{sectionCountLabel(entries.length, items.length)}</span>
+        )}
         <button className="sidebar-close-btn" onClick={() => setShowOutline(false)}>
           <span className="remix ri-close-line"></span>
         </button>
@@ -101,12 +73,52 @@ export const SidebarOutline: React.FC = () => {
         {items.length === 0 ? (
           <div className="sidebar-empty">
             <span className="remix ri-article-line"></span>
-            <span>添加标题以生成目录</span>
+            <span>暂无标题，以 # 开头的一行会出现在这里</span>
           </div>
         ) : (
-          renderGroup('__root__', 0)
+          <ul ref={listRef} className="outline-list" onKeyDown={onListKeyDown}>
+            {entries.map((entry, position) => {
+              const isCurrent = position === shownIndex
+              return (
+                <li key={entry.heading.id}>
+                  <button
+                    type="button"
+                    className={`outline-jump-btn${isCurrent ? ' current' : ''}`}
+                    style={{ paddingLeft: `${(entry.heading.level - 1) * 12 + 4}px` }}
+                    aria-current={isCurrent ? 'location' : undefined}
+                    tabIndex={position === stop ? 0 : -1}
+                    onFocus={() => setFocused(position)}
+                    onClick={() => handleJump(entry.heading)}
+                    title={entry.heading.text}
+                  >
+                    <span className={badgeClass(entry.heading.level)}>H{entry.heading.level}</span>
+                    <span className="outline-text">{entry.heading.text}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
         )}
       </div>
+      {items.length > 0 && (
+        <div className="outline-footer">
+          <span className="outline-footer-label"><span className="remix ri-filter-line"></span>层级</span>
+          <div role="radiogroup" aria-label="层级" className="outline-depth-group">
+            {OUTLINE_DEPTHS.map(d => (
+              <button
+                key={d}
+                type="button"
+                role="radio"
+                aria-checked={depth === d}
+                className={`outline-depth-btn${depth === d ? ' active' : ''}`}
+                onClick={() => setDepth(d)}
+              >
+                {depthLabel(d)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

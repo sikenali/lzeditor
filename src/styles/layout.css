@@ -320,72 +320,134 @@
   font-family: "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif;
 }
 
-/* ── Sidebar outline (numbered + collapsible) — glassmorphism ── */
-.sidebar-outline .outline-node  { width: 100%; }
-.sidebar-outline .sidebar-item  {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  padding-block: 6px;
-  border-radius: 8px;
-  cursor: default;
-  transition: background var(--t-fast);
-}
-.sidebar-outline .outline-toggle-btn  {
-  flex: 0 0 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  padding: 0;
-  border-radius: 4px;
-  transition: background-color, color, border-color, box-shadow, opacity, transformvar(--t-base) var(--ease);
-}
-.sidebar-outline .outline-toggle-btn:hover  {
-  color: var(--accent-primary);
-  background: var(--glass-bg);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.15);
-}
-.sidebar-outline .outline-toggle-placeholder  { flex: 0 0 16px; }
-.sidebar-outline .outline-content-btn  {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  background: transparent;
-  border: 0.7px solid transparent;
-  padding: 4px 8px;
-  cursor: pointer;
-  text-align: left;
-  border-radius: 8px;
-  transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-base) var(--ease);
-}
-.sidebar-outline .outline-content-btn:hover  {
-  background: var(--glass-bg);
-  border-color: var(--glass-border);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.12);
-}
-.sidebar-outline .outline-number  {
+/* ── Sidebar outline — backtickle 式：H 级徽标 + 深度过滤 + 当前节跟随光标 ── */
+.sidebar-outline .outline-count  {
   flex: 0 0 auto;
-  font-size: 11px;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 0.7px solid var(--glass-border);
+  font-size: 10.5px;
+  font-weight: 600;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.sidebar-outline .sidebar-item.active .outline-number  { color: var(--accent-primary); }
-.sidebar-outline .sidebar-item.active .sidebar-item-text  { color: var(--accent-primary); }
-.sidebar-outline .outline-content-btn .sidebar-item-text  {
+.sidebar-outline .outline-list  {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-outline .outline-jump-btn  {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0.7px solid transparent;
+  border-left: 2px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color, color, border-color, box-shadow, transform var(--t-fast) var(--ease);
+}
+.sidebar-outline .outline-jump-btn:hover  {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.sidebar-outline .outline-jump-btn.current  {
+  background: var(--accent-a10);
+  border-color: var(--glass-border);
+  border-left-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+.sidebar-outline .outline-jump-btn:focus-visible  {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-primary), 0 2px 8px rgba(0,0,0,0.10);
+}
+.sidebar-outline .outline-badge  {
+  flex: 0 0 auto;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+.sidebar-outline .outline-badge.l1  { background: var(--accent-a10); color: var(--accent-primary); }
+.sidebar-outline .outline-badge.l2  { background: rgba(140,140,150,0.16); color: var(--text-secondary); }
+.sidebar-outline .outline-badge.l3  { background: rgba(140,140,150,0.10); color: var(--text-muted); }
+.sidebar-outline .outline-jump-btn.current .outline-badge  {
+  background: var(--accent-primary);
+  color: var(--glass-text);
+  font-weight: 700;
+}
+.sidebar-outline .outline-text  {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 12.5px;
   letter-spacing: -0.01em;
+}
+.sidebar-outline .outline-footer  {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 0.7px solid var(--glass-border);
+  background: var(--chrome-surface);
+}
+.sidebar-outline .outline-footer-label  {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.sidebar-outline .outline-depth-group  {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--glass-bg);
+  border: 0.7px solid var(--glass-border);
+}
+.sidebar-outline .outline-depth-btn  {
+  min-width: 24px;
+  padding: 2px 6px;
+  border: 0.7px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color, color, border-color, box-shadow, transform var(--t-fast) var(--ease);
+}
+.sidebar-outline .outline-depth-btn:hover  {
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.06);
+}
+.sidebar-outline .outline-depth-btn.active  {
+  background: var(--chrome-surface);
+  color: var(--accent-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 .history-snapshot-desc .remix  { font-size: 14px; color: var(--accent-primary); }
 
@@ -539,7 +601,7 @@
   padding: 8px 10px;
   border-radius: 6px;
   cursor: pointer;
-  transition: backgroundvar(--t-fast) var(--ease);
+  transition: background-color var(--t-fast) var(--ease);
 }
 .sidebar-library .library-doc-icon  {
   font-size: 16px;
