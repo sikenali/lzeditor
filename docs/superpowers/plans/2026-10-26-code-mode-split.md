@@ -426,7 +426,7 @@ git commit -m "refactor(preview): 预览排版选择器提到 .preview-pane，�
 /* ── 代码模式：左右分栏工作区 ──────────────────────────────────────────
    左栏源码（CM6）、中间可拖拽分割线、右栏实时预览。
    .lz-editor-content 在编辑模式是唯一的滚动容器；进代码模式后它变成 grid 壳，
-   滚动权交给左栏 .code-source-pane。 */
+   滚动权下放到左栏的 .lz-editor-page。 */
 
 .lz-editor-content--code {
   display: grid;
@@ -569,7 +569,7 @@ git commit -m "feat(code-mode): 分栏布局与栏头样式，左栏持有滚动
 这是本计划里唯一的大改动。两处原则：
 
 1. **CM6 的 DOM 位置不动**。`.lz-editor-page` 里的 `<CM6Editor>` 永远是 `.lz-editor-content` 的第一个子节点；代码模式只是在它后面追加兄弟节点。如果换成条件分支渲染，切模式时 CM6 会 unmount 再 mount，`getCM6Editor()` 单例被换掉，光标与 undo 历史全丢。
-2. **`editorContentRef` 必须指向当前真正的滚动容器**。编辑模式是 `.lz-editor-content`，代码模式是左栏 `.code-source-pane`。这个 ref 被 `SidebarPreview` 和 `editorStore` 的 `setShowPreview` 消费，代码模式里不能设成 null。
+2. **`editorContentRef` 必须指向当前真正能滚的那个元素**。编辑模式是 `.lz-editor-content`，代码模式是左栏的 `.lz-editor-page`（`.code-source-pane` 自己是 `overflow:hidden`，不滚）。`ScrollSync` 是直接在 `editorEl` 上 `addEventListener('scroll')` 的，指向不滚的祖先等于同步完全失效。这个 ref 还被 `SidebarPreview` 和 `editorStore.setShowPreview` 消费，代码模式里不能设成 null。
 
 - [ ] **步骤 1：改 import**
 
@@ -725,14 +725,13 @@ const FONT_LABELS: Record<string, string> = {
 替换为：
 
 ```tsx
-  const sourcePaneRef = useRef<HTMLElement | null>(null)
   React.useEffect(() => {
     setEditorRef(editorRef.current)
-    // 代码模式下 .lz-editor-content 是 grid 壳，滚动权在左栏；
-    // 编辑模式滚容器还是 .lz-editor-content 本身。这个 ref 被 SidebarPreview
-    // 和 editorStore.setShowPreview 消费，代码模式里不能设成 null。
+    // 编辑模式滚容器是 .lz-editor-content；代码模式它变成 grid 壳，
+    // 滚动权下放到左栏的 .lz-editor-page。editorContentRef 必须指向真正
+    // 能滚的那一个 —— 滚动同步是听它的 scroll 事件的，指向不滚的祖先等于失效。
     const scroll = codeMode
-      ? sourcePaneRef.current
+      ? editorRef.current?.querySelector('.lz-editor-page')
       : editorRef.current?.querySelector('.lz-editor-content')
     setEditorContentRef(scroll ?? null)
   }, [codeMode, setEditorContentRef, setEditorRef])
@@ -806,7 +805,7 @@ const FONT_LABELS: Record<string, string> = {
       >
         {/* CM6 永远是第一个子节点：代码模式只是在它后面追加兄弟节点，
             不让它 unmount —— 切模式重建实例会丢光标和 undo 历史。 */}
-        <div ref={sourcePaneRef as React.RefObject<HTMLDivElement>} className="code-source-pane">
+        <div className="code-source-pane">
           {codeMode && (
             <header className="code-pane-header">
               <span className="code-pane-title">MARKDOWN SOURCE</span>
@@ -1030,7 +1029,8 @@ assert.match(lz, /className="code-source-pane"[^>]*>[\s\S]*?<CM6Editor/, 'CM6 �
 assert.doesNotMatch(lz, /cm6Visible/, '不再靠 display:none 切代码模式，那会让 CM6 反复重建')
 
 // ── 滚动容器与同步 ──
-assert.match(lz, /codeMode\s*\n\s*\?\s*sourcePaneRef\.current/, '代码模式滚容器要指到左栏')
+assert.match(lz, /codeMode\s*\n\s*\?\s*editorRef\.current\?\.querySelector\('\.lz-editor-page'\)/, '代码模式滚容器要指到左栏真正能滚的那一层')
+assert.doesNotMatch(lz, /sourcePaneRef/, '滚动权在 .lz-editor-page，别把 ref 留在不滚的 pane 上')
 assert.match(lz, /enabled: codeMode/, '滚动同步只在代码模式启用')
 assert.match(lz, /useScrollSync/, '分栏预览必须接滚动同步')
 assert.match(lz, /\{ lines: true \}/, '预览块要带源码行号，同步才能按行对位')

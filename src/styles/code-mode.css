@@ -10,6 +10,13 @@
   background: var(--chrome-surface);
 }
 
+/* 编辑模式下这层只是 CM6 的透传包装。给它一个满高度，
+   让 .lz-editor-page 的 min-height:100% 仍然有确定的参照，
+   行为与改造前完全一致。同特异性下后面 --code 规则覆盖这里。 */
+.lz-editor-content > .code-source-pane {
+  min-height: 100%;
+}
+
 /* 左栏：栏头固定，源码区占满剩余高度并自己滚动 */
 .lz-editor-content--code .code-source-pane {
   display: flex;

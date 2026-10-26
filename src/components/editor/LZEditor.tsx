@@ -4,13 +4,18 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { README_CONTENT } from './constants'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { getDocMd } from '../../utils/docSource'
-import { useTheme } from '../../hooks/useTheme'
+import { useTheme, resolveTheme } from '../../hooks/useTheme'
 import { applyTypographyOverrides } from '../../styles/themes'
 import { CM6Editor } from './CM6Editor'
 import { getCM6Editor } from './codemirror/registry'
 import { setSlashHost, type SlashRange } from './codemirror/slash'
 import { setInputFormatSettings } from './codemirror/input-format'
 import { SlashCommand } from './SlashCommand'
+import { Splitter } from '../splitter/Splitter'
+import { gridColumns } from '../../utils/split'
+import { useScrollSync, lineBridgeOf } from '../../hooks/scrollSync'
+import { getTypographyTheme } from '../../styles/typography-themes'
+import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
 
 const CONTENT_WIDTH_MAP: Record<string, string> = {
   '960': '960px',
@@ -20,31 +25,26 @@ const CONTENT_WIDTH_MAP: Record<string, string> = {
   'full': '100%',
 }
 
+/** 源栏栏头显示用的字体中文名。 */
+const FONT_LABELS: Record<string, string> = {
+  'sans-serif': '无衬线',
+  serif: '衬线',
+  monospace: '等宽',
+}
+
 export const LZEditor = () => {
   const editorRef = useRef<HTMLDivElement>(null)
-  const codeAreaRef = useRef<HTMLTextAreaElement>(null)
-  const remarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const slashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const setEditorRef = useEditorStore((s: any) => s.setEditorRef)
   const setEditorContentRef = useEditorStore((s: any) => s.setEditorContentRef)
   const setMdContent = useEditorStore((s: any) => s.setMdContent)
-  const updateDoc = useEditorStore((s: any) => s.updateDoc)
   const setDocsMd = useEditorStore((s: any) => s.setDocsMd)
   const activeDocId = useEditorStore((s: any) => s.activeDocId)
   const docs = useEditorStore((s: any) => s.docs)
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const codeMode = useEditorStore((s: any) => s.codeMode)
-  const setAppMode = useEditorStore((s: any) => s.setAppMode)
-  const wordCount = useEditorStore((s: any) => s.wordCount)
   const panelOpen = useEditorStore((s: any) => s.panelOpen)
   const mdContent = useEditorStore((s: any) => s.docsMd?.[activeDocId] || s.mdContent || '')
-  const readFontSize = useEditorStore((s) => s.readFontSize)
-  const setReadFontSize = useEditorStore((s) => s.setReadFontSize)
-  const readLayout = useEditorStore((s) => s.readLayout)
-  const setReadLayout = useEditorStore((s) => s.setReadLayout)
-  const readTocOpen = useEditorStore((s) => s.readTocOpen)
-  const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
-  const docTitle = useEditorStore((s) => s.docTitle)
 
   // 确保 mdContent 有默认值
   const defaultMd = useMemo(() => {
@@ -52,16 +52,6 @@ export const LZEditor = () => {
     if (docsMd?.[docId]) return docsMd[docId]
     return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
   }, [activeDocId, docsMd])
-
-  // 代码模式隐藏源码编辑区，但 CM6 实例必须常驻
-  const cm6Visible = !codeMode
-
-  const codeEditMdRef = useRef(mdContent)
-  const [codeEditMd, setCodeEditMd] = useState(mdContent)
-  useEffect(() => {
-    codeEditMdRef.current = mdContent
-    if (codeMode) setCodeEditMd(mdContent)
-  }, [mdContent, codeMode])
 
   // 同步 mdContent 到 store：优先使用 docsMd，其次用 getDocMd 兜底
   useEffect(() => {
@@ -75,54 +65,18 @@ export const LZEditor = () => {
     }
   }, [defaultMd, docsMd, activeDocId])
 
-
-  const LAYOUTS = ['narrow', 'normal', 'wide'] as const
-  const LAYOUT_LABELS: Record<string, string> = { narrow: '窄栏', normal: '标准', wide: '宽屏' }
-  const LAYOUT_MAX_W: Record<string, number> = { narrow: 530, normal: 760, wide: 1000 }
-  const activeTocId = useEditorStore((s) => s.activeTocId)
-  const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
-
-  // Code mode: build TOC from markdown headings with line numbers
-  const codeTocItems = useMemo(() => {
-    if (!codeEditMd) return []
-    const lines = codeEditMd.split('\n')
-    const items: { id: string; text: string; level: number; line: number }[] = []
-    let inFence = false
-    lines.forEach((line: string, i: number) => {
-      if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; return }
-      if (inFence) return
-      const match = line.match(/^(#{1,6})\s+(.+)$/)
-      if (match) {
-        items.push({
-          id: `code-h-${i}`,
-          text: match[2].trim(),
-          level: match[1].length,
-          line: i,
-        })
-      }
-    })
-    return items
-  }, [codeEditMd])
-
-  const scrollToCodeHeading = useCallback((item: { id: string; line: number }) => {
-    const ta = codeAreaRef.current
-    if (!ta) return
-    const lines = codeEditMdRef.current.split('\n')
-    let charPos = 0
-    for (let i = 0; i < item.line; i++) charPos += lines[i].length + 1
-    ta.focus()
-    ta.setSelectionRange(charPos, charPos)
-    const container = ta.closest('.read-article-wrapper') as HTMLElement | null
-    container?.scrollTo({ top: ta.offsetTop - 20, behavior: 'smooth' })
-    setActiveTocId(item.id)
-  }, [codeEditMd])
-
   useTheme()
 
   React.useEffect(() => {
     setEditorRef(editorRef.current)
-    setEditorContentRef(editorRef.current?.querySelector('.lz-editor-content') ?? null)
-  }, [])
+    // 编辑模式滚容器是 .lz-editor-content；代码模式它变成 grid 壳，
+    // 滚动权下放到左栏的 .lz-editor-page。editorContentRef 必须指向真正
+    // 能滚的那一个 —— 滚动同步是听它的 scroll 事件的，指向不滚的祖先等于失效。
+    const scroll = codeMode
+      ? editorRef.current?.querySelector('.lz-editor-page')
+      : editorRef.current?.querySelector('.lz-editor-content')
+    setEditorContentRef(scroll ?? null)
+  }, [codeMode, setEditorContentRef, setEditorRef])
 
   // Apply editor style settings from store
   const editorFont = useSettingsStore((s) => s.editorFont)
@@ -138,11 +92,14 @@ export const LZEditor = () => {
     if (!inner) return
     // width/size styles go to the page wrapper, not the scroll container
     const page = inner.querySelector('.lz-editor-page') as HTMLElement ?? inner
-    const fw = contentWidth && CONTENT_WIDTH_MAP[contentWidth]
-      ? CONTENT_WIDTH_MAP[contentWidth]
-      : showPreview
-        ? '1024px'
-        : '100%'
+    // 代码模式左栏比整宽窄得多，1024px 会直接溢出，源码栏必须 100%
+    const fw = codeMode
+      ? '100%'
+      : contentWidth && CONTENT_WIDTH_MAP[contentWidth]
+        ? CONTENT_WIDTH_MAP[contentWidth]
+        : showPreview
+          ? '1024px'
+          : '100%'
     page.style.width = fw
     page.style.maxWidth = fw === '100%' ? 'none' : fw
     if (defaultFontSize) page.style.fontSize = `${defaultFontSize}px`
@@ -155,7 +112,7 @@ export const LZEditor = () => {
       else if (editorFont === 'monospace') page.style.fontFamily = 'var(--font-mono)'
       else page.style.fontFamily = editorFont
     }
-  }, [editorFont, defaultFontSize, lineHeight, contentWidth, showPreview])
+  }, [editorFont, defaultFontSize, lineHeight, contentWidth, showPreview, codeMode])
 
   // Apply typography overrides to :root for read-mode / preview areas
   const textIndent = useSettingsStore((s) => s.textIndent)
@@ -244,6 +201,89 @@ export const LZEditor = () => {
     if (targetMd && mdContent !== targetMd) setMdContent(targetMd)
   }, [codeMode, activeDocId, docsMd])
 
+  // ── 代码模式：左右分栏 ──
+  const updateSetting = useSettingsStore((s) => s.updateSetting)
+  const codeSplitRatio = useSettingsStore((s) => s.codeSplitRatio ?? 0.5)
+  const typographyTheme = useSettingsStore((s) => s.typographyTheme)
+  const appTheme = useSettingsStore((s) => s.theme)
+  const tabSize = useSettingsStore((s) => s.tabSize ?? 2)
+  const editorContentRef = useEditorStore((s) => s.editorContentRef)
+  const docHTML = useEditorStore((s) => s.docHTML || '')
+
+  const splitHostRef = useRef<HTMLDivElement>(null)
+  const [splitWidth, setSplitWidth] = useState(0)
+  const previewScrollRef = useRef<HTMLDivElement>(null)
+  const previewArticleRef = useRef<HTMLDivElement>(null)
+
+  // 量容器宽：clampRatio 需要像素宽才能夹出最小栏宽。
+  // 只在代码模式挂观察器，编辑模式的窗口 resize 不必多渲染一次。
+  useEffect(() => {
+    if (!codeMode) return
+    const el = splitHostRef.current
+    if (!el) return
+    const measure = () => setSplitWidth(el.clientWidth)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [codeMode])
+
+  // Markdown → 预览 HTML。开 lines：每个顶层块带源码行号，滚动同步按行对位
+  const previewHtml = useMemo(() => {
+    if (docHTML) return docHTML
+    if (!mdContent) return ''
+    try {
+      return mdToHtml(mdContent, undefined, { lines: true })
+    } catch {
+      return mdContent
+    }
+  }, [mdContent, docHTML])
+
+  // 灌预览 HTML + 套排版主题 + 渲 mermaid，三步必须同一批做完。
+  // codeMode 进依赖：预览容器每次进代码模式都新建，innerHTML 要重灌一次。
+  // 退出代码模式时容器已 unmount，ref 为 null 直接返回，编辑模式无额外开销。
+  useEffect(() => {
+    const previewEl = previewArticleRef.current
+    if (!previewEl) return
+    const theme = getTypographyTheme(typographyTheme || 'classic')
+    previewEl.innerHTML = previewHtml
+      || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
+    previewEl.style.cssText = ''
+    if (theme) {
+      const css = theme.css
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.\lz-editor-content/g, '.preview-doc')
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.read-article-body/g, '.preview-doc')
+        .replace(/\[data-typography-theme="[^"]+"\]\s*\.export-preview-body/g, '.preview-doc')
+      // 独立 style 节点：SidebarPreview 用的是 lz-sidebar-typography-css，
+      // 两者选择器相同，共用 id 会互相摘掉对方的样式
+      const styleEl = document.getElementById('lz-code-preview-typography-css') as HTMLStyleElement | null
+      if (styleEl) styleEl.remove()
+      const el = document.createElement('style')
+      el.id = 'lz-code-preview-typography-css'
+      el.textContent = css
+      document.head.appendChild(el)
+    }
+    // mermaid 是异步增强：占位符先显示，渲完再换成图
+    void renderMermaidBlocks(previewEl, resolveTheme(appTheme) === 'dark')
+  }, [previewHtml, typographyTheme, appTheme, codeMode])
+
+  // 换主题不会重新生成 html，也就不会重建 .mermaid-diagram，已渲染的图要自己重渲。
+  // 单独成一个 effect：并进上面那个会在换主题时和 innerHTML 赋值打架。
+  useEffect(() => {
+    if (!previewArticleRef.current) return
+    void renderMermaidBlocks(previewArticleRef.current, resolveTheme(appTheme) === 'dark')
+  }, [appTheme])
+
+  useScrollSync({
+    editorEl: editorContentRef,
+    scroller: previewScrollRef,
+    article: previewArticleRef,
+    enabled: codeMode,
+    onSourceLine: (line) => {
+      lineBridgeOf(editorContentRef)?.goToLine(line)
+    },
+  })
+
   // ── Slash command palette ──
   const [slashVisible, setSlashVisible] = useState(false)
   const [slashPosition, setSlashPosition] = useState({ x: 0, y: 0 })
@@ -281,128 +321,53 @@ export const LZEditor = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [hideSlash])
 
-  const handleCodeModeChange = useCallback((value: string) => {
-    if (remarkTimerRef.current) clearTimeout(remarkTimerRef.current)
-    remarkTimerRef.current = setTimeout(() => {
-      const docId = useEditorStore.getState().activeDocId
-      let html = ''
-      try { html = mdToHtml(value || '') } catch { html = '' }
-      setMdContent(value)
-      // readme 的 markdown 只作为派生视图，不进 docsMd（避免被当成内容来源）
-      updateDoc({ md: value, html, docsMd: docId && docId !== 'readme' ? { [docId]: value } : undefined })
-      if (docId) {
-        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md: value, html, savedAt: Date.now() }))
-      }
-      // 代码模式写的是同一个文档，同步进 CM6 让编辑模式的下次打开是最新内容
-      getCM6Editor()?.setText(value)
-      if (!html && docId) {
-        setDocsMd((prev: Record<string, string> = {}) => ({ ...prev, [docId]: value }))
-      }
-    }, 150)
-  }, [updateDoc, setMdContent, setDocsMd])
-
   return (
     <div className="lz-editor" ref={editorRef}>
-      <div className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`}>
-        {codeMode && (
-          <div className="read-mode-inline read-mode-code">
-            <div className="read-mode-toolbar">
-              <span className="read-mode-label">
-                <span className="remix ri-code-s-line" style={{ marginRight: 4, fontSize: 15 }}></span>
-                代码模式
+      <div
+        ref={splitHostRef}
+        className={`lz-editor-content${codeMode ? ' lz-editor-content--code' : ''}`}
+        style={codeMode ? { gridTemplateColumns: gridColumns(codeSplitRatio, splitWidth) } : undefined}
+      >
+        {/* CM6 永远是第一个子节点：代码模式只是在它后面追加兄弟节点，
+            不让它 unmount —— 切模式重建实例会丢光标和 undo 历史。 */}
+        <div className="code-source-pane">
+          {codeMode && (
+            <header className="code-pane-header">
+              <span className="code-pane-title">MARKDOWN SOURCE</span>
+              <span className="code-pane-sep">·</span>
+              <span className="code-pane-meta">UTF-8</span>
+              <span className="code-pane-sep">|</span>
+              <span className="code-pane-meta">
+                {(editorFont && FONT_LABELS[editorFont]) || editorFont} {defaultFontSize}px · Tab {tabSize} 空格
               </span>
-              <div className="read-mode-controls">
-                <button className="read-tool-btn" title={`布局: ${LAYOUT_LABELS[readLayout]}`}
-                  onClick={() => setReadLayout(LAYOUTS[(LAYOUTS.indexOf(readLayout) + 1) % LAYOUTS.length])}>
-                  <span className="remix ri-layout-2-line"></span>
-                  <span>{LAYOUT_LABELS[readLayout]}</span>
-                </button>
-                <button className="read-tool-btn" title="缩小字体" onClick={() => setReadFontSize(Math.max(12, readFontSize - 1))}>
-                  <span className="remix ri-subtract-line"></span>
-                </button>
-                <span className="read-font-size-value">{readFontSize}</span>
-                <button className="read-tool-btn" title="放大字体" onClick={() => setReadFontSize(Math.min(24, readFontSize + 1))}>
-                  <span className="remix ri-add-line"></span>
-                </button>
-                <button className={`read-tool-btn ${readTocOpen ? 'active' : ''}`} title="目录" onClick={() => setReadTocOpen(!readTocOpen)}>
-                  <span className="remix ri-menu-fill"></span>
-                  <span>目录</span>
-                </button>
-              </div>
-              <span className="read-mode-meta">{mdContent.length} 字符 · {wordCount} 字</span>
-              <button className="read-mode-exit-btn" onClick={() => setAppMode('edit')}>
-                <span className="remix ri-edit-line"></span>
-                <span>编辑模式</span>
-              </button>
-            </div>
-            <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column' }}>
-              <div className="read-article-wrapper">
-                <div className="read-article-container" style={{ maxWidth: LAYOUT_MAX_W[readLayout] }}>
-                  <div className="read-article-header">
-                    <div className="read-tags-row">
-                      <span className="read-tag read-tag-tech">Markdown</span>
-                      <span className="read-tag read-tag-system">代码模式</span>
-                    </div>
-                    <h1 className="read-article-title">{docTitle || '文档'}</h1>
-                    <div className="read-meta">
-                      <div className="read-avatar"><svg viewBox="0 0 70 70" width="32" height="32"><circle cx="35" cy="26" r="13" fill="currentColor" opacity="0.85"/><path d="M8 60c0-13 11-23 27-23s27 10 27 23" fill="currentColor" opacity="0.6"/></svg></div>
-                      <div className="read-author-info">
-                        <div className="read-author-name">LZEditor</div>
-                        <div className="read-author-date">{new Date().toLocaleDateString('zh-CN')}</div>
-                      </div>
-                      <div className="read-divider-v" />
-                      <div className="read-views">
-                        <span className="remix read-views-icon ri-code-s-line"></span>
-                        <span className="read-views-text">{wordCount} 字</span>
-                      </div>
-                    </div>
-                  </div>
-                  <textarea
-                    ref={codeAreaRef}
-                    className="read-article-code"
-                    value={codeEditMd}
-                    onChange={e => { setCodeEditMd(e.target.value); handleCodeModeChange(e.target.value) }}
-                    spellCheck={false}
-                  />
-                </div>
-              </div>
-              {readTocOpen && codeTocItems.length > 0 && (
-                <div className="read-toc-sidebar">
-                  <div className="read-toc-header">
-                    <span className="remix ri-menu-fill"></span>
-                    <span>目录</span>
-                    <button className="read-toc-close" onClick={() => setReadTocOpen(false)}>
-                      <span className="remix ri-close-line"></span>
-                    </button>
-                  </div>
-                  <div className="read-toc-list">
-                    {codeTocItems.map(item => (
-                      <button
-                        key={item.id}
-                        className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
-                        style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-                        onClick={() => scrollToCodeHeading(item)}
-                      >
-                        <span className="read-toc-dot" />
-                        <span className="read-toc-text">{item.text}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        <div className="lz-editor-page">
-          {/* CM6 保持挂载：切到阅读/代码/历史模式时只用 display:none 隐藏。
-              卸载后 getCM6Editor() 返回 null，工具栏与搜索命令会全部失效。 */}
-          <div style={{ display: cm6Visible ? 'block' : 'none', height: '100%' }}>
+            </header>
+          )}
+          <div className="lz-editor-page">
             <CM6Editor
               docId={activeDocId || 'readme'}
               initialContent={mdContent}
             />
           </div>
         </div>
+        {codeMode && (
+          <Splitter
+            ratio={codeSplitRatio}
+            containerWidth={splitWidth}
+            onChange={(next) => updateSetting('codeSplitRatio', next)}
+          />
+        )}
+        {codeMode && (
+          <section className="code-pane preview-pane code-preview-pane" aria-label="预览">
+            <header className="code-pane-header">
+              <span className="code-pane-title">LIVE PREVIEW</span>
+              <span className="code-pane-sep">·</span>
+              <span className="code-pane-meta">滚动同步</span>
+            </header>
+            <div className="code-preview-scroll" ref={previewScrollRef}>
+              <div className="preview-doc" ref={previewArticleRef} />
+            </div>
+          </section>
+        )}
       </div>
       <SlashCommand
         position={slashPosition}

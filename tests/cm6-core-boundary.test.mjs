@@ -56,7 +56,8 @@ assert.match(app, /getCM6Editor\(\)/, '插入对话框必须接入 CM6')
 assert.match(app, /buildTableMd/, '表格对话框必须能产出 markdown 表格')
 
 // ── CM6 实例必须常驻 ──
-assert.match(lzeditor, /cm6Visible \? 'block' : 'none'/, '切换模式时必须用 display 隐藏而不是卸载 CM6')
+assert.doesNotMatch(lzeditor, /cm6Visible|display:\s*none/, 'CM6 必须直接常驻渲染，不能靠 display 隐藏')
+assert.match(lzeditor, /className="code-source-pane"[\s\S]*?<CM6Editor/, 'CM6 挂在常驻的源码栏里，不被 codeMode 条件包住')
 assert.doesNotMatch(lzeditor, /useCM6 &&/, '内核切换分支必须删掉')
 
 // ── 设置项必须真的落 CM6，不能只记变量 ──
