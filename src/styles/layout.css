@@ -803,12 +803,17 @@
   font-size: 13px; flex-shrink: 0; transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast);
 }
 .library-folder-rename-btn:hover  { background: var(--accent-a5); color: var(--accent-primary); }
+/* §8.2 的颜色与圆角；高度取紧凑档 34px（等同 .ui-input--sm）——
+   树行本身约 33px，套满 42px 会让整行在编辑时跳动 */
 .library-folder-rename-input  {
-  flex: 1; min-width: 0; border: 0.7px solid var(--accent-primary);
-  border-radius: 6px; padding: 4px 8px; font-size: 13px;
-  background: var(--background-elevated); color: var(--text-primary);
+  flex: 1; min-width: 0; height: 34px;
+  border: 0.7px solid var(--color-border);
+  border-radius: var(--radius-md); padding: 0 12px; font-size: 13px;
+  background: var(--color-bg-secondary); color: var(--color-text-primary);
   outline: none; font-family: var(--font-sans);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
+.library-folder-rename-input:focus  { border-color: var(--color-primary); background: var(--color-bg-white); }
 .library-docs-section  { flex: 1; min-height: 0; padding: 10px; overflow: auto; }
 .library-section-title  { font-size: 11px; color: var(--text-muted); padding: 4px 2px 8px; }
 .library-sidebar-footer  { padding: 10px; border-top: 0.7px solid var(--border-subtle); }
@@ -1203,18 +1208,24 @@
   font-size: 14px;
   color: var(--text-muted);
 }
+/* §8.2 UiInput 规范：42px、0.7px var(--color-border)、var(--color-bg-secondary)、
+   focus 时 var(--color-bg-white) + 主色边框、圆角 var(--radius-md)、
+   placeholder var(--color-text-muted) */
 .library-search-input  {
-  width: 100%;
-  padding: 6px 28px 6px 32px;
-  border: 0.7px solid var(--border-subtle);
-  border-radius: 6px;
-  background: var(--background);
-  color: var(--text-primary);
+  width: 100%; height: 42px;
+  padding: 0 28px 0 32px;
+  border: 0.7px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
   font-size: 12px;
   outline: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
+.library-search-input::placeholder  { color: var(--color-text-muted); }
 .library-search-input:focus  {
-  border-color: var(--accent-primary);
+  border-color: var(--color-primary);
+  background: var(--color-bg-white);
 }
 .library-search-clear  {
   position: absolute;

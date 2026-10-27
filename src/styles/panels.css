@@ -927,15 +927,17 @@
 
 .search-ops-col  { display: flex; flex-direction: column; gap: 10px; }
 .search-row  { display: flex; align-items: center; gap: 8px; }
+/* §8.2 UiInput 规范：42px、0.7px var(--color-border)、var(--color-bg-secondary)、
+   focus 时 var(--color-bg-white) + 主色边框、圆角 var(--radius-md) */
 .search-input-group  {
   display: flex; align-items: center;
-  flex: 1; min-width: 0; height: 34px;
-  border: 0.7px solid var(--border-subtle);
-  border-radius: 6px; background: var(--background-elevated);
-  padding: 0 10px; gap: 8px;
-  transition: border-color var(--t-fast);
+  flex: 1; min-width: 0; height: 42px;
+  border: 0.7px solid var(--color-border);
+  border-radius: var(--radius-md); background: var(--color-bg-secondary);
+  padding: 0 12px; gap: 8px;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
-.search-input-group:focus-within  { border-color: var(--accent-primary); }
+.search-input-group:focus-within  { border-color: var(--color-primary); background: var(--color-bg-white); }
 .search-input-label  {
   font-size: 13px; font-family: var(--font-sans);
   color: var(--text-muted); white-space: nowrap; flex-shrink: 0; font-weight: 500;
@@ -946,7 +948,7 @@
   font-family: var(--font-sans);
   color: var(--text-primary); line-height: 1.4; padding: 0;
 }
-.search-input::placeholder  { color: var(--text-muted); }
+.search-input::placeholder  { color: var(--color-text-muted); }
 .search-btn  {
   height: 34px; padding: 0 12px; border-radius: 6px;
   border: 0.7px solid var(--border-subtle); background: var(--background-elevated);
@@ -1197,10 +1199,6 @@
 
 .search-option  {
   color: var(--t-fg-15);
-}
-
-.search-input-group  {
-  background: var(--t-bg-21); border-color: var(--t-bd-10);
 }
 
 .search-input  {

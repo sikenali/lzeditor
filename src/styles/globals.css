@@ -3374,16 +3374,19 @@ select:where(:not([size])) {
   outline: none;
 }
 
-input[type="text"], input[type="url"], input[type="email"], input[type="password"], input[type="search"], textarea {
-  background: var(--t-bg-6) !important; border-color: var(--t-bd-1) !important;
+/* 输入框兜底底色/边框：用 :where() 把特异性降到 0，任何组件类都能覆盖它。
+   原先写成 !important 会否决掉 .ui-input / .search-input 等组件的 §8.2 规范样式，
+   导致「变白 + 主色边框」的聚焦态永远渲染不出来。 */
+:where(input[type="text"], input[type="url"], input[type="email"], input[type="password"], input[type="search"], textarea) {
+  background: var(--t-bg-6); border-color: var(--t-bd-1);
 }
 
-input[type="text"]:focus, input[type="url"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="search"]:focus, textarea:focus {
-  box-shadow: var(--t-sh-2) !important;
+:where(input[type="text"]:focus, input[type="url"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="search"]:focus, textarea:focus) {
+  box-shadow: var(--t-sh-2);
 }
 
-input::placeholder, textarea::placeholder  {
-  color: var(--t-fg-6) !important; opacity: var(--t-op-2);
+:where(input::placeholder, textarea::placeholder)  {
+  color: var(--t-fg-6); opacity: var(--t-op-2);
 }
 
 table  {
