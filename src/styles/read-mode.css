@@ -466,32 +466,39 @@
   pointer-events: none;
 }
 
-/* 翻页动画：只动 transform 和 opacity，两个都在合成层 */
-.read-spread--enter  { animation: read-spread-in-right 240ms cubic-bezier(.2,.7,.2,1) both; }
-.read-spread--leaving  { pointer-events: none; }
-.read-spread--enter.r-from-right  { animation-name: read-spread-in-right; }
-.read-spread--enter.r-from-left  { animation-name: read-spread-in-left; }
+/* 翻页动画：只动 transform 和 opacity，两个都在合成层。
+   时长走 token；leaving 节点靠 animationend 摘除，JS 不需要同步一份计时。 */
+.read-spread--enter  { animation: read-spread-in-right var(--t-slow) var(--ease-out) both; }
+/* 翻起的页必须压在下面那版上面，否则半透明的新页会盖住它，翻着看是双重像 */
+.read-spread--leaving  { pointer-events: none; z-index: 1; }
+/* 新页绕书脊边转，和刚才翻走的那页在同一个轴上 */
+.read-spread--enter.r-from-right  { animation-name: read-spread-in-right; transform-origin: left center; }
+.read-spread--enter.r-from-left  { animation-name: read-spread-in-left; transform-origin: right center; }
 
 .read-spread--leaving.r-dir-1 .read-page--right  {
-  animation: read-turn-out-left 240ms cubic-bezier(.2,.7,.2,1) both;
+  animation: read-turn-out-left var(--t-slow) var(--ease-in-out) both;
   transform-origin: left center;
 }
 .read-spread--leaving.r-dir-neg1 .read-page--left  {
-  animation: read-turn-out-right 240ms cubic-bezier(.2,.7,.2,1) both;
+  animation: read-turn-out-right var(--t-slow) var(--ease-in-out) both;
   transform-origin: right center;
 }
+/* 留守页和书脊先让位：跟翻页同时跑完会跟它抢注意力 */
 .read-spread--leaving.r-dir-1 .read-page--left,
-.read-spread--leaving.r-dir-neg1 .read-page--right,
+.read-spread--leaving.r-dir-neg1 .read-page--right  {
+  animation: read-fade-out var(--t-fast) var(--ease-out) both;
+}
 .read-spread--leaving .read-spine  {
-  animation: read-fade-out 240ms ease both;
+  animation: read-fade-out var(--t-fast) var(--ease-out) both;
 }
 
+/* 残留的旋角沿用翻页那一条的符号：右页往左翻是 -90，进入版就是 -6 的余量 */
 @keyframes read-spread-in-right  {
-  from { transform: translateX(28px) rotateY(8deg); opacity: 0; }
+  from { transform: translateX(24px) rotateY(-6deg); opacity: 0; }
   to   { transform: none; opacity: 1; }
 }
 @keyframes read-spread-in-left  {
-  from { transform: translateX(-28px) rotateY(-8deg); opacity: 0; }
+  from { transform: translateX(-24px) rotateY(6deg); opacity: 0; }
   to   { transform: none; opacity: 1; }
 }
 @keyframes read-turn-out-left  { to { transform: rotateY(-90deg); opacity: 0; } }

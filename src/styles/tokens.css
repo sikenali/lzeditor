@@ -60,6 +60,8 @@
   --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* 入场 / 离场：起步快，落在最后一刻 */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* 屏幕内的位移与旋转：两端收住 */
   --t-fast: 150ms; --t-base: 200ms; --t-slow: 300ms;
   --transition-fast: var(--t-fast) var(--ease);
   --transition-base: var(--t-base) var(--ease); --transition-slow: var(--t-slow) var(--ease);

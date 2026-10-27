@@ -19,7 +19,6 @@ const PAGE_PAD = 28
 /** .read-book 的左右内边距，量可用宽度时要扣掉 */
 const BOOK_PAD_H = 20
 const SPINE = 24
-const FLIP_MS = 240
 const MIN_FONT = 12
 const MAX_FONT = 24
 /** 超过这么多页对时，进度点改成进度条 */
@@ -68,12 +67,12 @@ export const ReadMode: React.FC = () => {
   const probeRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<HTMLDivElement>(null)
   const bookRef = useRef<HTMLDivElement>(null)
-  const flipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [pages, setPages] = useState<Page<MeasuredBlock>[]>([])
   const [spread, setSpread] = useState(0)
   const [leaving, setLeaving] = useState<{ i: number; dir: 1 | -1 } | null>(null)
-  const [flipping, setFlipping] = useState(false)
+  /** 上一次是往哪个方向翻的；0 表示跳转（目录 / Home / End），不播进入动画 */
+  const [animDir, setAnimDir] = useState<0 | 1 | -1>(0)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [pageW, setPageW] = useState(PAGE_W.normal)
 
@@ -152,17 +151,13 @@ export const ReadMode: React.FC = () => {
     return () => ro.disconnect()
   }, [syncPageW, measure])
 
-  useEffect(() => {
-    return () => {
-      if (flipTimerRef.current) clearTimeout(flipTimerRef.current)
-    }
-  }, [])
-
   const totalSpreads = spreadCount(pages.length)
   const maxSpread = Math.max(0, totalSpreads - 1)
 
-  // 字号或窗口变化会让页码变少，别停在已经不存在的页对上
+  // 字号或窗口变化会让页码变少，别停在已经不存在的页对上。
+  // 顺手清 animDir：页数变化不是翻页，不该播滑入
   useEffect(() => {
+    setAnimDir(0)
     setSpread(s => Math.min(s, maxSpread))
   }, [maxSpread])
 
@@ -172,30 +167,40 @@ export const ReadMode: React.FC = () => {
     if (mdRef.current !== md) {
       mdRef.current = md
       setLeaving(null)
+      setAnimDir(0)
       setSpread(0)
     }
   }, [md])
 
+  // 翻页不加锁：连按必须每按一页，锁住就等于静默丢掉键盘输入。
+  // leaving 靠 animationend 摘除，JS 不用知道动画跑了多久。
   const go = useCallback((dir: 1 | -1) => {
-    if (flipping) return
     const next = spread + dir
     if (next < 0 || next > maxSpread) return
-    if (!reducedMotion) {
-      setLeaving({ i: spread, dir })
-      setFlipping(true)
-      if (flipTimerRef.current) clearTimeout(flipTimerRef.current)
-      flipTimerRef.current = setTimeout(() => {
-        setLeaving(null)
-        setFlipping(false)
-      }, FLIP_MS)
-    }
     setSpread(next)
-  }, [flipping, reducedMotion, spread, maxSpread])
+    if (reducedMotion) {
+      setLeaving(null)
+      setAnimDir(0)
+      return
+    }
+    setLeaving({ i: spread, dir })
+    setAnimDir(dir)
+  }, [spread, maxSpread, reducedMotion])
 
+  // 目录 / Home / End 是跳转不是翻页：跨很多页不能播滑入
   const jumpTo = useCallback((i: number) => {
     setLeaving(null)
+    setAnimDir(0)
     setSpread(Math.max(0, Math.min(i, maxSpread)))
   }, [maxSpread])
+
+  // 只在翻页那一条动画结束时摘旧页；留守页的淡出更短，先触发会留下半空的版。
+  // 同时清 animDir：它是一个「刚翻过」的瞬态标记，留着会让之后无关的 spread 变化又播一次
+  const onFlipEnd = (e: React.AnimationEvent<HTMLDivElement>): void => {
+    if (!e.animationName.startsWith('read-turn')) return
+    setLeaving(null)
+    setAnimDir(0)
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -251,10 +256,12 @@ export const ReadMode: React.FC = () => {
     })
   }, [pages, spread, appTheme])
 
+  // key 绑页号：翻页时节点重建，进入动画才从头播。
+  // 不重建的话连续同方向翻页 class 没变，keyframe 不会重跑，第二页就没有动画了。
   const renderSpread = (i: number, cls: string): React.ReactNode => {
     const { left, right } = spreadHtml(i)
     return (
-      <div className={`read-spread ${cls}`}>
+      <div key={i} className={`read-spread ${cls}`}>
         <div className="read-page read-page--left">
           <div className="read-article-body" dangerouslySetInnerHTML={{ __html: left }} />
         </div>
@@ -332,10 +339,12 @@ export const ReadMode: React.FC = () => {
           {/* 测量容器：与页内容吃同一套排版类、同一个净宽，量出的槽位高就是渲染出来的高 */}
           <div ref={probeRef} className="read-article-body read-measure-probe" aria-hidden="true" />
 
-          <div className="read-book-scene" ref={sceneRef}>
+          <div className="read-book-scene" ref={sceneRef} onAnimationEnd={onFlipEnd}>
             {leaving && renderSpread(leaving.i,
               `read-spread--leaving ${leaving.dir === 1 ? 'r-dir-1' : 'r-dir-neg1'}`)}
-            {renderSpread(spread, `read-spread--enter ${spread > 0 ? 'r-from-right' : 'r-from-left'}`)}
+            {renderSpread(spread, animDir === 0
+              ? ''
+              : `read-spread--enter ${animDir === 1 ? 'r-from-right' : 'r-from-left'}`)}
           </div>
 
           <div className="read-book-footer">
