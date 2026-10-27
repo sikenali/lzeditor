@@ -5,7 +5,7 @@ import { UiSelect, UiSwitch, UDSettingRow } from '../../ui'
 // 字体全部自托管在 src/assets/fonts/（见 styles/fonts.css），盒子零系统字体，不能靠系统栈。
 // 不再列思源黑体 / 思源宋体：思源黑体已是默认栈本身；宋体变体字体要 21 MB，不值得带。
 const FONT_OPTIONS = [
-  { value: 'sans-serif', label: '思源黑体 + Inter (默认)' },
+  { value: 'sans-serif', label: 'Inter + Noto Sans SC (默认)' },
   { value: 'serif',      label: '宋体' },
   { value: 'monospace',  label: 'JetBrains Mono' },
   { value: '"PingFang SC", sans-serif', label: '苹方 (macOS)' },
