@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { exportDocument } from '../../services/exportService'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { UDSection, UDSettingRow, UDPreviewCard, UiModal, UiSelect, UiSwitch } from '../ui'
 import { getDocMd } from '../../utils/docSource'
+import { toast } from '../../utils/toast'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
@@ -102,7 +102,12 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     updateSetting('orientation', orientation)
     const html = docHTML || '<h1>Empty</h1>'
     const safeTitle = (docTitle || 'document').replace(/\.[^.]+$/, '')
+    // 失败不关弹窗：保留用户已选的格式和排版项，能直接重试。
+    // 之前是无条件 onClose()，失败和成功一个样，用户以为文件已经导出了。
+    let failed = false
     try {
+      // 导出链路牵动 jszip / xlsx 等，改动态 import：不点导出就不加载 vendor-export 那个 500+ KB 的块
+      const { exportDocument } = await import('../../services/exportService')
       await exportDocument({
         title: safeTitle, content: format === 'md' ? mdContent || html : html, format,
           options: isPrintFormat ? {
@@ -113,8 +118,14 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
             fontFamily: exportFontStack(editorFont), textIndent: textIndent, textJustify: textJustify,
           } : {},
       })
-    } catch (err) { console.error('export failed', err) }
+    } catch (err) {
+      failed = true
+      console.error('export failed', err)
+      toast('导出失败，文件没有生成，可以换个格式重试', { type: 'error', duration: 4000 })
+    }
     setExporting(false)
+    if (failed) return
+    toast(`已导出 ${safeTitle}.${format}`)
     onClose()
   }
 

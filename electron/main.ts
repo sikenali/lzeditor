@@ -1,9 +1,19 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, Tray, nativeImage } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, Tray, nativeImage, shell } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as url from 'url'
 
 let mainWindow: BrowserWindow | null = null
+
+// 允许被 file:read 读取的路径。只在「操作系统文件关联」这条链路上发放授权——
+// 那是用户主动双击 .md 文件触发的，路径由 OS 给出。渲染进程拿不到别的路径读取能力：
+// 没有它，任何从预览里逃出的脚本都能读任意本地文件（readLocalFile('~/.ssh/id_rsa')）。
+// 注：UI 里没有自由输入路径的入口，FilePanel 只提供模板，所以不需要对话框发放授权。
+const allowedPaths = new Set<string>()
+
+const ALLOWED_FILE_EXT = ['.md', '.markdown', '.txt']
+const isAllowedPath = (filePath: string): boolean =>
+  ALLOWED_FILE_EXT.includes(path.extname(filePath).toLowerCase()) && allowedPaths.has(path.resolve(filePath))
 
 const isDev = !app.isPackaged
 
@@ -37,6 +47,32 @@ function createWindow() {
       url.pathToFileURL(path.join(__dirname, '../../dist/index.html')).href,
     )
   }
+
+  // 外链一律交给系统浏览器：不让它在应用窗口里打开，也不让任何页面把当前窗口导航走。
+  // 例外是 window.open('', '_blank') 的 PDF 打印窗口——它是 about:blank，靠 document.write 写纯
+  // HTML+CSS，必须在应用内开窗口才能调起系统打印。这个窗口不带 preload，拿不到任何 IPC。
+  const openExternal = (target: string): void => {
+    if (!target || target === 'about:blank') return
+    if (/^https?:/i.test(target)) void shell.openExternal(target)
+  }
+
+  const wc = mainWindow.webContents
+
+  wc.setWindowOpenHandler(({ url }) => {
+    if (!url || url === 'about:blank') return { action: 'allow' }
+    if (/^https?:/i.test(url)) {
+      void shell.openExternal(url)
+      return { action: 'deny' }
+    }
+    return { action: 'deny' }
+  })
+
+  wc.on('will-navigate', (event, target) => {
+    // location.reload() 的目标等于当前 URL，放行，否则开发模式的热更新刷新会被拦掉
+    if (target === wc.getURL()) return
+    event.preventDefault()
+    openExternal(target)
+  })
 
   mainWindow.on('closed', () => {
     mainWindow = null
@@ -120,8 +156,8 @@ ipcMain.on('app:settings', (_event, settings: Record<string, unknown>) => {
 app.on('second-instance', (_event, argv) => {
   const file = argv.slice(1).pop()
   if (!file) return
-  const ext = path.extname(file).toLowerCase()
-  if (!['.md', '.markdown', '.txt'].includes(ext)) return
+  if (!isAllowedPath(file)) return
+  allowedPaths.add(path.resolve(file))
   if (getSetting('openInNewWindow', false) === true) {
     createWindow()
   }
@@ -130,11 +166,17 @@ app.on('second-instance', (_event, argv) => {
 
 // 读取本地文件（供「打开文档」使用，返回文本内容）
 ipcMain.handle('file:read', async (_event, filePath: string) => {
+  const name = path.basename(String(filePath || ''))
+  // 两道闸门：先查授权集合（谁发放的），再看扩展名（读什么）。
+  // 拒绝时返回 ok:false，渲染进程按普通读取失败处理，不会抛异常。
+  if (!isAllowedPath(String(filePath || ''))) {
+    return { ok: false, error: 'path not allowed', name }
+  }
   try {
     const text = await fs.promises.readFile(filePath, 'utf8')
-    return { ok: true, text, name: path.basename(filePath) }
+    return { ok: true, text, name }
   } catch (err: any) {
-    return { ok: false, error: err.message || 'read failed', name: path.basename(filePath) }
+    return { ok: false, error: err.message || 'read failed', name }
   }
 })
 

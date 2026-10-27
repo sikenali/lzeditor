@@ -14,7 +14,9 @@ export default defineConfig({
   },
   build: {
     // echarts / emoji-picker-react 已由 App.tsx 里的 React.lazy 切分，
-    // 这里把编辑器运行时单独成块，让核心 UI 与编辑器库可独立缓存
+    // 这里把编辑器运行时单独成块，让核心 UI 与编辑器库可独立缓存。
+    // react 抽成独立块：它被所有懒加载块共享，和 app 主块拆开能独立缓存
+    // （改业务代码不重下框架，改框架不重下业务）
     rollupOptions: {
       output: {
         manualChunks(id: string) {
@@ -23,6 +25,8 @@ export default defineConfig({
             if (id.includes('/xlsx') || id.includes('/jszip') || id.includes('/epub')) return 'vendor-export'
             if (id.includes('katex')) return 'vendor-katex'
             if (id.includes('markdown-it')) return 'vendor-markdown'
+            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/')
+              || id.includes('/node_modules/scheduler/')) return 'vendor-react'
           }
         },
       },

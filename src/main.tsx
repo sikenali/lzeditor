@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import 'katex/dist/katex.min.css'
 import App from './App'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { useSettingsStore, loadSettingsFromStorage, DEFAULT_SETTINGS } from './store/settingsStore'
 import { applyTheme } from './hooks/useTheme'
 import { applyTypographyTheme } from './styles/typography-themes'
@@ -28,6 +29,8 @@ applyTypographyTheme(state.typographyTheme || 'classic')
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>,
 )

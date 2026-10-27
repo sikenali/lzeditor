@@ -35,6 +35,7 @@ import { useTypographyOverrides } from './hooks/useTypographyOverrides'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
 import { pickFolderFiles, importFolderFiles } from './utils/docImport'
 import { silentError } from './utils/silentError'
+import { toast } from './utils/toast'
 
 /** HTML 属性值转义（对齐图片、新标签页链接走 HTML 输出时用）。 */
 const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -259,7 +260,13 @@ function App() {
       try {
         dismissWelcome()
         const res = await api.readLocalFile(filePath)
-        if (!res?.ok || !res.text) return
+        if (!res?.ok || !res.text) {
+          // 主进程会拒绝未授权的路径（file:read 只放行文件关联发放的授权）。
+          // 这里原本静默 return，配合欢迎页已经 dismissWelcome()，用户双击文件只会看到欢迎页
+          // 消失然后什么都没有——失败必须说出来
+          toast(`打开文件失败：${res?.error || filePath}`, { type: 'error', duration: 4000 })
+          return
+        }
         const name = String(res.name || filePath.split(/[\\/]/).pop() || 'untitled.md')
         const es = useEditorStore.getState()
         const id = es.createDoc(name)

@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 只挡内联脚本执行，不碰其他项：
+         · 不加 style-src —— React 内联 style、toast/mermaid 运行时注入的 <style> 都依赖 'unsafe-inline'
+         · 不加 connect-src —— AI 端点由用户在设置里自填（阿里云/百度/智谱/DeepSeek…），锁了等于删掉核心功能
+         · 不加 img-src —— 本地嵌入的 base64 图片、markdown 里的外链图都要用
+         · 不加 frame-ancestors —— <meta> 投递的策略里 frame-ancestors 被浏览器直接忽略（已实测，
+           Chromium 报 "is ignored when delivered via a <meta> element"），写了等于没写。它只能走
+           HTTP 响应头，而本应用由 Electron 自己加载固定 URL，不存在被别的站点 iframe 嵌入的场景。
+         已核对的安全前提：src/ 无 eval / new Function；mermaid 走 securityLevel:'strict'；
+         exportPDF 的打印文档只写 HTML+CSS 不含 script，about:blank 继承本策略也不受影响。 -->
+    <meta http-equiv="Content-Security-Policy"
+          content="script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>LZEditor — AI Markdown Editor</title>
     <!-- 字体全部自托管在 src/assets/fonts/（见 styles/fonts.css）。
