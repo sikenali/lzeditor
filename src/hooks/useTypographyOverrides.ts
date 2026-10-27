@@ -26,8 +26,9 @@ export function useTypographyOverrides(): void {
   }, [editorFont, defaultFontSize, lineHeight, textIndent, textJustify])
 }
 
-/** 设置里的字体取值 → CSS 字体栈。走 var() 而不是裸字体名，换主题时回退链才跟着走。 */
-function fontStackFor(editorFont?: string): string {
+/** 设置里的字体取值 → CSS 字体栈。走 var() 而不是裸字体名，换主题时回退链才跟着走。
+ *  导出供测试：这个映射错了用户的字体选择会静默失效，不值得只靠人工看。 */
+export function fontStackFor(editorFont?: string): string {
   switch (editorFont) {
     case 'serif': return 'var(--font-serif)'
     case 'monospace': return 'var(--font-mono)'
