@@ -176,8 +176,10 @@
 
   /* Fonts */
   --font-sans: var(--font-family);
-  --font-serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", "SimSun", serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  /* 宋体未自托管（变体字体要 21 MB，不值得为一个非默认选项带）。
+     逐字符回退：拉丁走系统宋体，中文在盒子上落到自托管的思源黑体，不出现豆腐块。 */
+  --font-serif: "Songti SC", "Source Han Serif SC", "STSong", "Noto Serif SC", serif, "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, "SFMono-Regular", monospace;
 
   /* Seal accent */
   --accent-seal:       var(--color-primary);

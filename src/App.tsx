@@ -31,6 +31,7 @@ import { useSettingsStore } from './store/settingsStore'
 import { getCM6Editor } from './components/editor/codemirror/registry'
 import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
+import { useTypographyOverrides } from './hooks/useTypographyOverrides'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
 import { pickFolderFiles, importFolderFiles } from './utils/docImport'
 import { silentError } from './utils/silentError'
@@ -78,6 +79,7 @@ async function openFolderAndImport(): Promise<void> {
 
 function App() {
   useTheme()
+  useTypographyOverrides()
   const openPanel = useEditorStore(s => s.openPanel)
   const insertPanel = useEditorStore(s => s.insertPanel)
   const appMode = useEditorStore(s => s.appMode)

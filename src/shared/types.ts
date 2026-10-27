@@ -134,7 +134,7 @@ export interface SettingsState {
   // ── Editor layout ──
   editorFont?: string
   defaultFontSize?: number
-  lineHeight?: '1.0' | '1.5' | '2.0'
+  lineHeight?: '1.0' | '1.5' | '1.7' | '2.0'
   contentWidth?: '960' | '1024' | '1200' | '1280'
   showMarkdownMarkers?: boolean
   typewriterMode?: boolean

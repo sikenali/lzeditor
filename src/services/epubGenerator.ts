@@ -108,7 +108,7 @@ ${this.options.chapters.map((ch, i) => `      <li><a href="chapter${i + 1}.xhtml
 <head>
   <title>${this.escapeXml(title)}</title>
   <style>
-    body { font-family: "Source Han Sans", serif; line-height: 1.8; padding: 1em; color: #333; }
+    body { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif; line-height: 1.8; padding: 1em; color: #333; }
     h1 { font-size: 1.8em; color: #1a1a1a; border-bottom: 2px solid #39FF9E; padding-bottom: 0.3em; margin-top: 0; }
     h2 { font-size: 1.4em; color: #333; margin-top: 1.5em; }
     h3 { font-size: 1.2em; color: #444; margin-top: 1.2em; }

@@ -61,8 +61,8 @@ export const DEFAULT_SETTINGS: SettingsState = {
   orientation: 'portrait',
   // ── Editor layout defaults ──
   editorFont: 'sans-serif',
-  defaultFontSize: 17,
-  lineHeight: '1.5',
+  defaultFontSize: 16,
+  lineHeight: '1.7',
   contentWidth: '1024',
   showMarkdownMarkers: true,
   typewriterMode: false,
@@ -98,7 +98,8 @@ export const DEFAULT_SETTINGS: SettingsState = {
   livePreview: false,
   // ── Typography & reading ──
   textIndent: false,
-  textJustify: false,
+  // 中文正文两端对齐是排版惯例，默认开；改行高后不留右边缺口
+  textJustify: true,
   // ── AI Settings (bid-maker style) ──
   customApiFormat: 'openai',
   customEndpoint: '',

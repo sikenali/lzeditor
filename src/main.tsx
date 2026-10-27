@@ -6,6 +6,7 @@ import { useSettingsStore, loadSettingsFromStorage, DEFAULT_SETTINGS } from './s
 import { applyTheme } from './hooks/useTheme'
 import { applyTypographyTheme } from './styles/typography-themes'
 import './styles/tokens.css'
+import './styles/fonts.css'
 import './styles/ui.css'
 import './styles/globals.css'
 import './styles/layout.css'

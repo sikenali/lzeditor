@@ -5,7 +5,6 @@ import { README_CONTENT } from './constants'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { getDocMd } from '../../utils/docSource'
 import { useTheme, resolveTheme } from '../../hooks/useTheme'
-import { applyTypographyOverrides } from '../../styles/themes'
 import { CM6Editor } from './CM6Editor'
 import { getCM6Editor } from './codemirror/registry'
 import { setSlashHost, type SlashRange } from './codemirror/slash'
@@ -113,19 +112,6 @@ export const LZEditor = () => {
       else page.style.fontFamily = editorFont
     }
   }, [editorFont, defaultFontSize, lineHeight, contentWidth, showPreview, codeMode])
-
-  // Apply typography overrides to :root for read-mode / preview areas
-  const textIndent = useSettingsStore((s) => s.textIndent)
-  const textJustify = useSettingsStore((s) => s.textJustify)
-  useEffect(() => {
-    applyTypographyOverrides({
-      fontSize: defaultFontSize,
-      lineHeight: lineHeight,
-      fontFamily: editorFont === 'serif' ? '"Noto Serif SC", serif' : (editorFont === 'monospace' ? 'monospace' : editorFont),
-      textIndent,
-      textJustify,
-    })
-  }, [defaultFontSize, lineHeight, editorFont, contentWidth, textIndent, textJustify])
 
   // ── Strip read-frog extension injected nodes from the editor DOM ──
   useEffect(() => {

@@ -31,27 +31,23 @@
 }
 
 /* ── Article body content ── */
+/* 字号 / 行高 / 字体由 applyTypographyOverrides 折算成 --read-* 写进 :root，
+   编辑区、侧栏预览、阅读模式、导出四处共用同一组变量。回退值统一用无衬线栈。 */
 .read-article-body  {
   margin-top: 32px;
   color: var(--text-primary);
-  line-height: 1.9;
-  font-family: "Noto Serif SC", serif;
   letter-spacing: -0.01em;
 }
-/* 「默认字号」「行高」「默认字体」由 applyTypographyOverrides 写进 :root，
-   此前只写变量、没有任何规则消费，三个设置等于没接上。回退值承接上面写死的
-   样式，用户没改过时表现不变。 */
 .read-article-body,
 .preview-doc  {
   font-size: var(--read-font-size, inherit);
-  line-height: var(--read-line-height, 1.9);
-  font-family: var(--read-font-family, "Noto Serif SC", serif);
+  line-height: var(--read-line-height, 1.7);
+  font-family: var(--read-font-family, var(--font-sans));
 }
 .read-article-body h1  {
   font-size: 28px; font-weight: 700; color: var(--text-heading);
   margin: 0 0 20px 0; padding-bottom: 12px;
   border-bottom: 2px solid var(--border-subtle);
-  font-family: "Ma Shan Zheng", "Noto Serif SC", serif;
 }
 .read-article-body h2  {
   font-size: 22px; font-weight: 600; color: var(--text-heading-2);
@@ -102,7 +98,7 @@
   margin: 24px 0;
   font-size: 16px;
   color: var(--text-secondary);
-  font-family: "Noto Serif SC", serif;
+  font-family: var(--read-font-family, var(--font-sans));
   line-height: 1.7;
 }
 .read-article-body blockquote::before  {

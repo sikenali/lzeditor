@@ -13,6 +13,17 @@ function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Rec
   return getDocMd(activeDocId || 'readme')
 }
 
+// 导出产物是独立 HTML 文档，吃不到应用里的 --font-* 变量，必须展开成真实字体栈。
+// 与应用内栈保持一致（color-tokens.css 的 --font-sans / --font-serif / --font-mono）。
+// 设置里存的是 'sans-serif' / 'serif' / 'monospace' 这类键，直接透传会让导出件退化成泛型家族。
+const EXPORT_FONT_STACKS: Record<string, string> = {
+  'sans-serif': '"Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif',
+  serif: '"Songti SC", "Source Han Serif SC", "Noto Serif SC", "STSong", serif',
+  monospace: '"JetBrains Mono", ui-monospace, "SFMono-Regular", monospace',
+}
+const exportFontStack = (editorFont?: string): string =>
+  EXPORT_FONT_STACKS[editorFont || ''] || editorFont || EXPORT_FONT_STACKS['sans-serif']
+
 
 const EXPORT_FORMATS = [
    { id: 'pdf',   name: 'PDF',   icon: 'ri-file-pdf-fill',    desc: '可打印',   color: 'var(--color-error)' },
@@ -99,7 +110,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
             macCodeBlock: macCodeBlock || false, includeTOC: includeTOC !== false,
             includeLineNumbers: includeLineNumbers || false, includePageNumbers: includePageNumbers || false,
             paperSize, orientation, fontSize: defaultFontSize, lineHeight: lineHeight,
-            fontFamily: editorFont, textIndent: textIndent, textJustify: textJustify,
+            fontFamily: exportFontStack(editorFont), textIndent: textIndent, textJustify: textJustify,
           } : {},
       })
     } catch (err) { console.error('export failed', err) }

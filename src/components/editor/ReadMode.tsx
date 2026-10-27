@@ -326,7 +326,9 @@ export const ReadMode: React.FC = () => {
         )}
 
         <div className="read-book" ref={bookRef} onClick={onBookClick}
-          style={{ fontSize: `${readFontSize}px`, '--read-page-w': `${pageW}px` } as React.CSSProperties}>
+          /* 写 --read-font-size 而不是 fontSize：正文和测量探针都用 var() 取值，
+             两个地方才不会各走各的字号；页宽另有一个独立滑块控制。 */
+          style={{ '--read-font-size': `${readFontSize}px`, '--read-page-w': `${pageW}px` } as React.CSSProperties}>
           {/* 测量容器：与页内容吃同一套排版类、同一个净宽，量出的槽位高就是渲染出来的高 */}
           <div ref={probeRef} className="read-article-body read-measure-probe" aria-hidden="true" />
 

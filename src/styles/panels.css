@@ -911,13 +911,13 @@
   display: flex; align-items: center; gap: 6px;
   flex-shrink: 0; margin-bottom: 8px;
   font-size: 12px; color: var(--color-error);
-  font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 .search-pattern-error .remix  { font-size: 14px; }
 .search-option  {
   display: flex; align-items: center; gap: 7px;
   cursor: pointer; font-size: 13px;
-  font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-family: var(--font-sans);
   color: var(--text-secondary); line-height: 1.2;
   user-select: none; white-space: nowrap;
 }
@@ -937,13 +937,13 @@
 }
 .search-input-group:focus-within  { border-color: var(--accent-primary); }
 .search-input-label  {
-  font-size: 13px; font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-size: 13px; font-family: var(--font-sans);
   color: var(--text-muted); white-space: nowrap; flex-shrink: 0; font-weight: 500;
 }
 .search-input  {
   flex: 1; min-width: 0; border: none; outline: none;
   background: transparent; font-size: 13px;
-  font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-family: var(--font-sans);
   color: var(--text-primary); line-height: 1.4; padding: 0;
 }
 .search-input::placeholder  { color: var(--text-muted); }
@@ -951,7 +951,7 @@
   height: 34px; padding: 0 12px; border-radius: 6px;
   border: 0.7px solid var(--border-subtle); background: var(--background-elevated);
   color: var(--text-secondary); font-size: 13px;
-  font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-family: var(--font-sans);
   cursor: pointer; white-space: nowrap;
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
   line-height: 1.4; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
@@ -1050,7 +1050,7 @@
   padding: 8px 16px;
   border-bottom: 0.7px solid var(--border-subtle);
   font-size: 13px;
-  font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.2;
 }
 .history-version-label  {
@@ -1097,7 +1097,7 @@
   background: var(--background-elevated);
   color: var(--text-secondary);
   font-size: 13px;
-  font-family: "Source Han Sans", "Noto Serif SC", system-ui, sans-serif;
+  font-family: var(--font-sans);
   cursor: pointer;
   transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast);
   line-height: 1;
