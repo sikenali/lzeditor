@@ -237,41 +237,6 @@
 
 }
 
-/* ── Code Mode Modal (centered) ── */
-.code-mode-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  z-index: 1500;
-  display: flex; flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-}
-.code-line-num.active  {
-  color: var(--accent-primary);
-}
-.code-mode-status-left .remix  { font-size: 13px; color: var(--accent-primary); }
-
-/* ── Code Mode Responsive ── */
-@media (max-width: 960px)  {
-  .code-mode-overlay {
-    padding: 12px;
-  }
-
-  .code-mode-container {
-    width: 100%;
-    height: 94vh;
-  }
-
-  .code-mode-center,
-  .code-mode-label {
-    display: none;
-  }
-}
-.code-mode-exit-btn .remix  { font-size: 14px; }
-.code-mode-insert-title .remix  { color: var(--accent-primary); }
 @keyframes version-panel-in  {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }

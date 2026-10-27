@@ -165,7 +165,6 @@ select:focus-visible {
   padding: 0;
   max-width: none;
 }
-.code-mode-switch-btn .remix  { font-size: 14px; }
 
 /* Dynamic padding when preview sidebar is shown */
 

@@ -96,7 +96,31 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
   await sleep(700)
   check('新建文档：编辑器挂载', (await page.locator('.cm-editor').count()) > 0)
 
-  // 1. 打开设置中心
+  // 1. §8.1 所有弹框统一样式 + 交互（默认顶栏布局下逐个开：导出/图片/链接/设置）
+  const DIALOGS = [
+    { name: '导出', btn: '.ri-download-2-line' },
+    { name: '图片', btn: '.ri-image-line' },
+    { name: '链接', btn: '.ri-link' },
+    { name: '设置', btn: '.ri-settings-3-fill' },
+  ]
+  for (const { name, btn } of DIALOGS) {
+    await page.locator('.toolbar-btn', { has: page.locator(btn) }).click()
+    await page.waitForSelector('.ui-modal-overlay', { timeout: 8000 })
+    await sleep(350)
+    const hasClose = await page.locator('.ui-modal-close').count()
+    const m = await page.locator('.ui-modal').first().evaluate((el) => {
+      const c = getComputedStyle(el)
+      const ov = document.querySelector('.ui-modal-overlay')
+      return { r: parseFloat(c.borderRadius), mask: ov ? getComputedStyle(ov).backgroundColor : '' }
+    })
+    check(`${name}弹框：走 UiModal（遮罩+✕ 关闭按钮）`, hasClose > 0 && /rgba\(0,\s*0,\s*0,\s*0\.4\)/.test(m.mask), `close=${hasClose}, mask=${m.mask}`)
+    check(`${name}弹框：§8.1 圆角 18px`, m.r === 18, `实测 ${m.r}px`)
+    await page.keyboard.press('Escape')
+    await sleep(350)
+    check(`${name}弹框：Escape 关闭`, (await page.locator('.ui-modal-overlay').count()) === 0)
+  }
+
+  // 2. 打开设置中心
   await page.locator('.toolbar-btn', { has: page.locator('.ri-settings-3-fill') }).click()
   await page.waitForSelector('.settings-panel-shell', { timeout: 10000 })
   await sleep(300)

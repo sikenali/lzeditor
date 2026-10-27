@@ -1250,19 +1250,6 @@
   to   { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Inline code mode transition ── */
-.code-mode-active .lz-editor-content  {
-  animation: editorFadeOut var(--t-base) var(--ease) forwards;
-}
-@keyframes editorFadeOut  {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.98); }
-}
-@keyframes editorFadeIn  {
-  from { opacity: 0; transform: scale(0.98); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
 /* ── Inline read mode transition ── */
 .read-mode-active .app-layout > :not(.sidebar-outline):not(.sidebar-library)  {
   animation: readPanelOut var(--t-base) var(--ease) forwards;
