@@ -144,6 +144,7 @@ export function toast(message: string, options: ToastOptions | number = {}): voi
   close.style.lineHeight = '1'
   close.style.cursor = 'pointer'
   close.style.transition = 'color var(--transition-fast)'
+  el.appendChild(close)
 
   getContainer().appendChild(el)
 

@@ -186,7 +186,7 @@
   outline: none; letter-spacing: -0.01em;
 }
 .toolbar-submenu-item:hover  { background: var(--bg-hover); color: var(--text-primary); }
-.toolbar-submenu-item:focus-visible  { box-shadow: 0 0 0 2px rgba(196,58,43,0.3); border-radius: 6px; }
+.toolbar-submenu-item:focus-visible  { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent); border-radius: var(--radius-sm); }
 .toolbar-submenu-item:active  { transform: scale(0.98); }
 .toolbar-submenu-item .remix  { font-size: 16px; color: rgba(58,58,58,0.60); flex-shrink: 0; transition: color var(--t-fast); }
 .toolbar-submenu-item:hover .remix  { color: rgba(58,58,58,1); }
