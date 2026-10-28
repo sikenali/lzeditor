@@ -130,6 +130,15 @@ export const YeliEditor = forwardRef<YeliEditorHandle, YeliEditorProps>(
       };
     }, []);
 
+    // 把视图根注入 facade：focus/scrollToBlock/getTableContext 的定位范围
+    // （A1 表格上下文 focusin 追踪 + A2 滚动定位），卸载时解除。
+    useEffect(() => {
+      const shell = shellRef.current;
+      if (!shell) return;
+      facade.setViewRoot(shell);
+      return () => facade.setViewRoot(null);
+    }, [facade]);
+
     // 输入辅助装配：autopair / smart-paste 走 facade typed 事务；
     // typewriter / focus-mode 纯视角（selection 同步 + class 切换）。
     useEffect(() => {

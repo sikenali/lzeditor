@@ -41,6 +41,14 @@ const {
 const {
   YELI_LABELS_ZH,
 } = await import("../../src/components/editor/yeli-labels.ts");
+const {
+  tableCellFromSourceOffset,
+  tableContextFromCell,
+} = await import("../../src/components/editor/assist/table-context.ts");
+const {
+  scrollBlockIntoView,
+  focusSourceOffset,
+} = await import("../../src/components/editor/assist/source-offset.ts");
 
 // ── autopair 纯逻辑 ──────────────────────────────────────────────────────────
 
@@ -387,4 +395,148 @@ test("installFocusMode：焦点进出切换 yeli-focus-mode class", () => {
   );
   assert.equal(root.classList.contains("yeli-focus-mode"), false);
   uninstall();
+});
+
+// ── A1 表格上下文（table-context 纯逻辑 + facade.getTableContext） ───────────
+
+const TABLE_SOURCE = "| a | b |\n| --- | --- |\n| 1 | 2 |";
+
+test("tableCellFromSourceOffset：表头/数据行/列号反推", () => {
+  // "a" 在表头（数据行 0）第 0 列：| a | b | 中偏移 2。
+  assert.deepEqual(tableCellFromSourceOffset(TABLE_SOURCE, 2), { row: 0, column: 0 });
+  // "b" 表头第 1 列：偏移 6。
+  assert.deepEqual(tableCellFromSourceOffset(TABLE_SOURCE, 6), { row: 0, column: 1 });
+  // "1" 在数据行 1 第 0 列：| 1 | 2 | 起始于 24，偏移 26。
+  assert.deepEqual(tableCellFromSourceOffset(TABLE_SOURCE, 26), { row: 1, column: 0 });
+  // "2" 数据行 1 第 1 列：偏移 30。
+  assert.deepEqual(tableCellFromSourceOffset(TABLE_SOURCE, 30), { row: 1, column: 1 });
+});
+
+test("tableCellFromSourceOffset：偏移在分隔线/块尾归属最近数据行", () => {
+  // 分隔线（| --- | --- | 起于 10）归属其上一数据行（表头），列号夹到最后列。
+  assert.deepEqual(tableCellFromSourceOffset(TABLE_SOURCE, 12), { row: 0, column: 1 });
+  // 块尾（含末尾换行）归属最后数据行。
+  assert.deepEqual(tableCellFromSourceOffset(`${TABLE_SOURCE}\n`, 32), { row: 1, column: 1 });
+});
+
+test("tableCellFromSourceOffset：非表格源码 → null", () => {
+  assert.equal(tableCellFromSourceOffset("", 0), null);
+  assert.equal(tableCellFromSourceOffset("---\n---", 2), null);
+});
+
+test("tableContextFromCell：活动单元格元素 → blockId + 行列", () => {
+  const root = win.document.createElement("div");
+  const shell = win.document.createElement("div");
+  shell.setAttribute("data-block-kind", "table");
+  shell.setAttribute("data-source-block-id", "0:20:table");
+  const cell = win.document.createElement("textarea");
+  cell.setAttribute("data-table-row", "2");
+  cell.setAttribute("data-table-column", "1");
+  shell.append(cell);
+  root.append(shell);
+  assert.deepEqual(tableContextFromCell(cell), {
+    blockId: "0:20:table",
+    activeCell: { row: 2, column: 1 },
+  });
+  assert.equal(tableContextFromCell(root), null);
+});
+
+test("facade.getTableContext：非表格块返回 null（A1）", () => {
+  const facade = createYeliFacade();
+  facade.setText("# 标题\n\n正文段落");
+  facade.setSelection(3, 3);
+  assert.equal(facade.getTableContext(), null);
+});
+
+test("facade.getTableContext：表格块内反推 blockId + 单元格（A1）", () => {
+  const facade = createYeliFacade();
+  facade.setText(TABLE_SOURCE);
+  // 光标落在 "b"（表头第 1 列）。
+  facade.setSelection(6, 6);
+  const ctx = facade.getTableContext();
+  assert.ok(ctx);
+  assert.equal(ctx.activeCell.row, 0);
+  assert.equal(ctx.activeCell.column, 1);
+  // 块 id 指向同一表格块（0 起，含换行，kind=table）。
+  assert.ok(ctx.blockId.includes(":table"));
+});
+
+// ── A2 滚动定位（scrollBlockIntoView / focusSourceOffset / facade） ──────────
+
+test("scrollBlockIntoView：定位 blockId 并 scrollIntoView（A2）", () => {
+  const root = win.document.createElement("div");
+  const block = win.document.createElement("div");
+  block.setAttribute("data-source-block-id", "12:40:heading");
+  root.append(block);
+  let scrolled = null;
+  block.scrollIntoView = (opts) => { scrolled = opts; };
+  assert.equal(scrollBlockIntoView(root, "12:40:heading"), true);
+  assert.deepEqual(scrolled, { behavior: "smooth", block: "start" });
+  assert.equal(scrollBlockIntoView(root, "nope"), false);
+});
+
+test("focusSourceOffset：聚焦目标块的可编辑并放置光标（A2）", () => {
+  const root = win.document.createElement("div");
+  const shell = win.document.createElement("div");
+  shell.setAttribute("data-source-from", "0");
+  shell.setAttribute("data-source-to", "8");
+  const editable = win.document.createElement("div");
+  editable.className = "block-content-editable";
+  editable.contentEditable = "true";
+  editable.textContent = "标题";
+  shell.append(editable);
+  root.append(shell);
+  shell.scrollIntoView = () => {};
+  editable.focus = () => {};
+  assert.equal(focusSourceOffset(root, 2), true);
+});
+
+test("facade.scrollToBlock：注入视图根后定位块（A2）", () => {
+  const facade = createYeliFacade();
+  const root = win.document.createElement("div");
+  const block = win.document.createElement("div");
+  block.setAttribute("data-source-block-id", "b1");
+  root.append(block);
+  let scrolled = false;
+  block.scrollIntoView = () => { scrolled = true; };
+  facade.setViewRoot(root);
+  facade.scrollToBlock("b1");
+  assert.equal(scrolled, true);
+  facade.setViewRoot(null);
+});
+
+// ── A3 getSelection DOM 反推 ────────────────────────────────────────────────
+
+test("getSelection：#selection 未就绪时从 DOM 反推当前光标（A3）", () => {
+  const root = win.document.createElement("div");
+  const shell = win.document.createElement("div");
+  shell.setAttribute("data-source-from", "0");
+  shell.setAttribute("data-source-to", "11");
+  const editable = win.document.createElement("div");
+  editable.className = "block-content-editable";
+  editable.contentEditable = "true";
+  editable.textContent = "hello world";
+  shell.append(editable);
+  root.append(shell);
+  win.document.body.append(root);
+  const textNode = editable.firstChild;
+  const range = win.document.createRange();
+  range.setStart(textNode, 0);
+  range.setEnd(textNode, 5);
+  const selection = win.window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  const facade = createYeliFacade();
+  facade.setText("hello world");
+  // 不调 setSelection（模拟 typewriter 未触发）：getSelection 应从 DOM 反推。
+  assert.deepEqual(facade.getSelection(), { from: 0, to: 5 });
+  root.remove();
+});
+
+test("getSelection：DOM 无法确定（无选区）时返回 null", () => {
+  win.window.getSelection().removeAllRanges();
+  const facade = createYeliFacade();
+  facade.setText("hello world");
+  assert.equal(facade.getSelection(), null);
 });

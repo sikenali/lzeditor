@@ -85,14 +85,9 @@ export function useTableActive(): boolean {
       try {
         const facade = getYeliFacade()
         if (!facade) { setActive(false); return }
-        const sel = facade.getSelection()
-        if (!sel) { setActive(false); return }
-        // 源码行判断（CM6 时代读 state.doc.lineAt）：光标所在行是否为 GFM 表格行
-        const source = facade.getText()
-        const lineStart = source.lastIndexOf('\n', sel.from - 1) + 1
-        const lineEnd = source.indexOf('\n', sel.from)
-        const line = source.slice(lineStart, lineEnd === -1 ? source.length : lineEnd)
-        setActive(/^\s*\|.*\|\s*$/.test(line))
+        // getTableContext() 在光标/活动单元格位于表格块内时返回上下文（A1），
+        // 否则 null → 置灰。DOM 单元格 + 源码偏移双路径，均不依赖行正则。
+        setActive(facade.getTableContext() !== null)
       } catch { setActive(false) }
     }
     // facade 在编辑器挂载时注册，第一次进工具栏时可能还没就绪，轮询几次再挂监听
@@ -240,9 +235,13 @@ export function useEditorActions() {
     const facade = getYeliFacade()
     if (!facade) return
     const yeliId = TABLE_OP_TO_YELI[action]
-    // yeli 的 table.* 命令需块上下文（blockId/activeCell）；工具栏无法感知当前块，
-    // 无上下文时 facade 安全返回 null（no-op），等后续任务把块上下文接进来。
-    if (yeliId) facade.execCommand(yeliId)
+    if (!yeliId) return
+    // yeli 的 table.* 命令需块上下文（blockId/activeCell）。facade.getTableContext()
+    // 从当前 selection/活动单元格反推所在表格块 + 单元格坐标（A1）；不在表格内时
+    // 返回 null，此处安全 no-op（与 CM6 时代「不在表格内禁用」一致，菜单项也已置灰）。
+    const ctx = facade.getTableContext()
+    if (!ctx) return
+    facade.execCommand(yeliId, { blockId: ctx.blockId, activeCell: ctx.activeCell })
   }, [setInsertPanel])
 
   // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（左源码 + 右样式预览）

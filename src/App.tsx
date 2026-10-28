@@ -349,6 +349,8 @@ function App() {
   }
   const insertMarkdown = (md: string) => {
     const facade = getYeliFacade()
+    // getSelection() 已从 DOM 反推当前光标（A3）：typewriter 未同步时也能锚定光标
+    // 而非退化到文末。?? undefined 仅在 DOM 也确定不了时兜底为「追加到文末」。
     if (facade) { facade.insertText(md, facade.getSelection() ?? undefined); closeInsert(); return }
     const cur = useEditorStore.getState()
     const pos = cur.codeModeCursor ?? 0

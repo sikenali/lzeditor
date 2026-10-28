@@ -148,6 +148,37 @@ export function refocusAfterEdit(
   });
 }
 
+/** 定位到指定 blockId 的块元素并滚动进视口（scrollIntoView 平滑）。 */
+export function scrollBlockIntoView(root: HTMLElement, blockId: string): boolean {
+  const blocks = root.querySelectorAll<HTMLElement>("[data-source-block-id]");
+  for (const block of blocks) {
+    if (block.getAttribute("data-source-block-id") === blockId) {
+      block.scrollIntoView({ behavior: "smooth", block: "start" });
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 把焦点与光标放到源码偏移处，并把所在块滚入视口。
+ * 供 facade.focus() 使用：大纲跳转 setSelection 后调用，视图跟随目标块。
+ * 失败静默返回 false（不阻断调用方）。
+ */
+export function focusSourceOffset(
+  root: HTMLElement,
+  sourceOffset: number,
+): boolean {
+  const editable = editableForSourceOffset(root, sourceOffset);
+  if (!editable) return false;
+  editable.focus();
+  placeCaretAtSourceOffset(root, sourceOffset);
+  editable
+    .closest<HTMLElement>("[data-source-block-id]")
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
 function textPointAt(
   root: HTMLElement,
   offset: number,

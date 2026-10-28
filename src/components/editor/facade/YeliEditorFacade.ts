@@ -17,7 +17,16 @@ import {
   type TableDimensions,
 } from "../../../vendor/yeli/editor/table-commands.ts";
 import type { DocumentTransactionResult } from "../../../vendor/yeli/document/transactions.ts";
-import { selectionSourceRange } from "../assist/source-offset.ts";
+import {
+  focusSourceOffset,
+  scrollBlockIntoView,
+  selectionSourceRange,
+} from "../assist/source-offset.ts";
+import {
+  tableCellFromSourceOffset,
+  tableContextFromCell,
+  type TableBlockContext,
+} from "../assist/table-context.ts";
 
 /**
  * A plain, serializable view of the editor selection, expressed in JavaScript
@@ -79,6 +88,19 @@ export interface YeliEditorFacade {
   setSelection(from: number, to: number): void;
   /** Subscribes to selection changes (view-layer scroll/typewriter follow). */
   onSelectionChange(listener: (selection: FacadeSelection | null) => void): () => void;
+  /**
+   * 当前光标/活动单元格所在的表格块上下文；不在表格内 → null。
+   *
+   * 供顶层工具栏的 table.* 结构命令填充 blockId/activeCell（见 A1）。推导顺序：
+   * 1. 最近 focusin 的活动单元格（DOM 优先，toolbar 点击不会清掉）；
+   * 2. 源码偏移兜底（#selection / DOM 选区 → 所在表格块 → 反推行列）。
+   */
+  getTableContext(): { blockId: string; activeCell: TableCellPosition } | null;
+  /**
+   * 注入编辑器视图根（.yeli-canvas-shell）。facade 在此挂 focusin 监听以追踪
+   * 表格活动单元格，并作为 focus/scrollToBlock 的定位范围。卸载时传 null。
+   */
+  setViewRoot(root: HTMLElement | null): void;
   focus(): void;
   scrollToBlock(blockId: string): void;
   undo(): boolean;
@@ -136,6 +158,26 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
   // DOM 读当前选区兜底（#readDomSelection），DOM 不可及时才静默降级。
   #selection: FacadeSelection | null = null;
   #selectionListeners = new Set<(selection: FacadeSelection | null) => void>();
+  // 最近聚焦的表格单元格上下文（focusin 记录；点 toolbar 按钮时焦点移出 root，
+  // focusin 不向 root 冒泡，故保留——见 setViewRoot 的 #onFocusIn）。
+  #tableContext: TableBlockContext | null = null;
+  #viewRoot: HTMLElement | null = null;
+  #onFocusIn = (event: FocusEvent): void => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const context = tableContextFromCell(target);
+    if (context) {
+      this.#tableContext = context;
+      // 通知 useTableActive 等重算：表格上下文变化也走 selection 监听面。
+      this.#notifySelection();
+      return;
+    }
+    // 焦点进入编辑区但不在表格单元格 → 表格上下文失效。
+    if (this.#viewRoot && this.#viewRoot.contains(target)) {
+      this.#tableContext = null;
+      this.#notifySelection();
+    }
+  };
   #labels: Labels;
   #locale: "en" | "zh-CN";
 
@@ -202,6 +244,9 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
   }
 
   setText(markdown: string): void {
+    // 换文档时清掉旧选区与表格上下文，避免用过期 anchor 插入（越界抛错）。
+    this.#selection = null;
+    this.#tableContext = null;
     if (this.#store) {
       this.#store.replaceSource(markdown);
       return;
@@ -291,7 +336,10 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
   }
 
   getSelection(): FacadeSelection | null {
-    return this.#selection;
+    // #selection 由 typewriter 的 selectionchange 同步；未就绪（首次挂载/点击瞬间）
+    // 时从 DOM 反推当前光标，避免调用方拿到 null 而退化为追加到文末（见 A3）。
+    // 仅在 DOM 也无法确定时返回 null。
+    return this.#selection ?? this.#readDomSelection();
   }
 
   setSelection(from: number, to: number): void {
@@ -308,13 +356,59 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     };
   }
 
-  focus(): void {
-    // Pure-logic facade: focus/scroll reconciliation belongs to the edit-surface
-    // layer (later tasks) that renders the yeli canvas.
+  getTableContext(): { blockId: string; activeCell: TableCellPosition } | null {
+    // 1. 最近 focusin 的单元格（DOM 优先，覆盖 toolbar 点击瞬间焦点已移出的场景）。
+    if (this.#tableContext) return this.#tableContext;
+    // 2. 源码偏移兜底：光标所在块为表格 → 反推行列。
+    const selection = this.#selection ?? this.#readDomSelection();
+    if (!selection) return null;
+    const block = this.#currentBlocks().find(
+      (candidate) =>
+        selection.from >= candidate.range.from &&
+        selection.from <= candidate.range.to,
+    );
+    if (!block || block.kind !== "table" || !block.editable) return null;
+    const activeCell = tableCellFromSourceOffset(
+      block.expectedText,
+      selection.from - block.range.from,
+    );
+    if (!activeCell) return null;
+    return { blockId: block.id, activeCell };
   }
 
-  scrollToBlock(_blockId: string): void {
-    // Pure-logic facade: scroll reconciliation belongs to the edit-surface layer.
+  setViewRoot(root: HTMLElement | null): void {
+    if (this.#viewRoot === root) return;
+    this.#viewRoot?.removeEventListener("focusin", this.#onFocusIn);
+    this.#viewRoot = root;
+    this.#viewRoot?.addEventListener("focusin", this.#onFocusIn);
+  }
+
+  focus(): void {
+    const root = this.#viewRoot;
+    if (!root) return;
+    // 大纲跳转等：setSelection 已就位，把光标放到选区并滚动跟随。
+    const selection = this.#selection ?? this.#readDomSelection();
+    if (selection && focusSourceOffset(root, selection.from)) return;
+    // 无选区：聚焦第一个可编辑块。
+    root
+      .querySelector<HTMLElement>("[data-source-block-id] .block-content-editable")
+      ?.focus();
+  }
+
+  scrollToBlock(blockId: string): void {
+    const root = this.#viewRoot;
+    if (!root) return;
+    if (!scrollBlockIntoView(root, blockId)) return;
+    // 滚动后聚焦块内首个可编辑（尽力而为，失败不阻断）。
+    const blocks = root.querySelectorAll<HTMLElement>("[data-source-block-id]");
+    for (const block of blocks) {
+      if (block.getAttribute("data-source-block-id") === blockId) {
+        block
+          .querySelector<HTMLElement>(".block-content-editable")
+          ?.focus();
+        break;
+      }
+    }
   }
 
   undo(): boolean {

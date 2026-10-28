@@ -49,7 +49,8 @@ export const SidebarOutline: React.FC = () => {
   }, [shownIndex])
 
   const handleJump = useCallback((item: MdOutlineItem) => {
-    // yeli 无 goto：选中目标标题源码区间并聚焦，滚动由编辑层随选区跟随。
+    // yeli 无 goto：选中目标标题源码区间并聚焦；facade.focus() 会定位到该块
+    // 并 scrollIntoView（A2 大纲跳转滚动跟随），不再依赖编辑层随选区跟随。
     const facade = getYeliFacade()
     if (!facade) return
     facade.setSelection(item.pos, item.pos + item.text.length)
