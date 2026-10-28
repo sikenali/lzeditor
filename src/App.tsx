@@ -368,7 +368,9 @@ function App() {
     closeInsert()
   }
   const insertCode = (code: string, lang: string) => {
-    getYeliFacade()?.insertCodeBlock(lang, code)
+    const facade = getYeliFacade()
+    // 与图片/链接/表情/表格一致：锚定光标（getSelection()），而非退化到文末（A3）。
+    if (facade) facade.insertText(`\`\`\`${lang}\n${code}\n\`\`\``, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertLink = (text: string, url: string, newTab?: boolean) => {
@@ -385,7 +387,9 @@ function App() {
     closeInsert()
   }
   const insertFormula = (formula: string) => {
-    getYeliFacade()?.insertFormula(formula)
+    const facade = getYeliFacade()
+    // 行内 $$f$$（与 CM6 一致）+ 光标锚定，与其它插入行为一致（A3）。
+    if (facade) facade.insertText(`$$${formula}$$`, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertChart = (src: string, alt: string, type: string) => {

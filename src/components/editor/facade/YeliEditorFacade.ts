@@ -80,7 +80,7 @@ export interface YeliEditorFacade {
   insertBlock(text: string): void;
   /** Inserts a fenced code block (with optional language) at the end of the document. */
   insertCodeBlock(language: string, code: string): void;
-  /** Inserts a math block at the end of the document. */
+  /** Inserts an inline math span (`$$…$$`) at the end of the document. */
   insertFormula(text: string): void;
   /** Subscribes to document changes, re-emitting fidelity markdown. Returns unsubscribe. */
   onChange(listener: (markdown: string) => void): () => void;
@@ -325,7 +325,7 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
   }
 
   insertFormula(text: string): void {
-    this.insertBlock(`$$\n${text}\n$$`);
+    this.insertText(`$$${text}$$`);
   }
 
   onChange(listener: (markdown: string) => void): () => void {

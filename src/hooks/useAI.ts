@@ -2,9 +2,10 @@ import { useState, useCallback, useRef } from 'react'
 import { useAIStore } from '../store/aiStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { getYeliFacade } from '../components/editor/facade/registry'
-import type { YeliEditorFacade, FacadeSelection } from '../components/editor/facade/YeliEditorFacade'
+import type { YeliEditorFacade } from '../components/editor/facade/YeliEditorFacade'
 import { parseMdOutline, outlineToMarkdownTree } from '../utils/mdOutline'
 import { buildPrompt } from '../services/promptTemplate'
+import { planApply, type AIStreamState } from './aiApply'
 import type { AIAction, ChatMessage } from '../shared/types'
 
 /** Parse one SSE event block and append its text payload. */
@@ -47,15 +48,7 @@ export function useAI() {
 
   // 流式插入的游标：跨 send/applyToDoc 共享，记录 anchor/revision 与已插入区间，
   // 使「已流式入文档」的 apply 幂等（不二次插入）且 undo 能精确回滚。
-  const streamRef = useRef<{
-    active: boolean
-    stale: boolean
-    anchor: FacadeSelection | null
-    expectedRev: number
-    originalText: string
-    insertStart: number
-    totalLen: number
-  }>({
+  const streamRef = useRef<AIStreamState>({
     active: false, stale: false, anchor: null, expectedRev: -1,
     originalText: '', insertStart: 0, totalLen: 0,
   })
@@ -229,35 +222,15 @@ export function useAI() {
     if (state.panelStatus !== 'result') return
     const output = state.panelOutput || ''
     const facade = getYeliFacade()
-    const s = streamRef.current
-    // 内容已在流式期间逐 chunk 写入文档：只登记已实际写入的区间，不二次插入
-    // （stale 时只登记中断前写入的片段，避免与用户中途编辑叠加/重复）。
-    if (facade && s.active && s.totalLen > 0) {
-      const appliedText = s.stale ? output.slice(0, s.totalLen) : output
-      useAIStore.getState().recordApply({
-        action: state.panelAction,
-        originalText: s.originalText,
-        newText: appliedText,
-        position: { from: s.insertStart, to: s.insertStart + s.totalLen },
-      })
+    // 无 facade：仅标记 applied（与旧路径一致，不登记）。
+    if (!facade) {
       useAIStore.getState().setPanelStatus('applied')
       return
     }
-    if (facade) {
-      const range = facade.getSelection()
-      const from = range ? range.from : facade.getText().length
-      const to = range ? range.to : from
-      const original = facade.getText().slice(from, to)
-      facade.replaceRange(from, to, output)
-      useAIStore.getState().recordApply({
-        action: state.panelAction,
-        originalText: original,
-        newText: output,
-        position: { from, to: from + output.length },
-      })
-      useAIStore.getState().setPanelStatus('applied')
-      return
-    }
+    // planApply 内含 stale 保护：首 chunk revision 不匹配时不覆盖用户中途编辑，
+    // 且 replaceRange 事务失败（越界）不抛未捕获异常，只登记空应用。
+    const plan = planApply(facade, streamRef.current, output, state.panelAction)
+    useAIStore.getState().recordApply(plan.record)
     useAIStore.getState().setPanelStatus('applied')
   }, [])
 

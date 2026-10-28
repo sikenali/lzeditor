@@ -15,6 +15,7 @@ const toolbar = read('src/components/layout/Toolbar.tsx')
 const lzeditor = read('src/components/editor/LZEditor.tsx')
 const app = read('src/App.tsx')
 const useAI = read('src/hooks/useAI.ts')
+const aiApply = read('src/hooks/aiApply.ts')
 
 // ── 单一事实源：CM6 的编辑必须落 docsMd + md + html ──
 assert.match(cm6, /mdToHtml/, 'CM6Editor 必须把 markdown 同步成 html')
@@ -50,7 +51,7 @@ assert.match(actions, /PANEL_ACTIONS/, '无映射的插入动作必须打开面�
 // ── 写入路径全部接入 yeli facade（CM6 卸载后入口已迁到 getYeliFacade）──
 assert.match(editorTs, /insertText|replaceRange|getSelectionRange/, 'CM6 必须暴露文本写入接口')
 assert.match(history, /getYeliFacade\(\)\?\.setText\(selected\.md\)/, '历史回滚必须写 yeli facade')
-assert.match(useAI, /replaceRange\(from, to, output\)/, 'AI 应用必须写 yeli facade')
+assert.match(aiApply, /replaceRange\(from, to, output\)/, 'AI 应用必须写 yeli facade')
 assert.match(toolbar, /getYeliFacade\(\)/, 'AI 面板必须经 facade 带选区上下文')
 assert.match(app, /getYeliFacade\(\)/, '插入对话框必须接入 yeli facade')
 assert.match(app, /buildTableMd/, '表格对话框必须能产出 markdown 表格')

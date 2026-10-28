@@ -59,6 +59,7 @@ export const TABLE_ITEMS: MenuItem[] = [
   // markdown 无法表达单元格合并（需要 HTML colspan），不提供合并/拆分
   { icon: 'ri-layout-column-line', label: '切换标题行', action: 'headerRow', disabled: true },
   { sep: true },
+  // yeli 无 table 删除命令，保持禁用（不提供无效果入口，见 applyTableItems）
   { icon: 'ri-delete-bin-line', label: '删除表格', action: 'delete', disabled: true },
 ]
 
@@ -69,9 +70,18 @@ export const MODE_ITEMS: MenuItem[] = [
   { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
 ]
 
-/** 表格工具项的置灰只和「光标是否在表格内」有关，两个入口共用同一份。 */
+/**
+ * 表格工具项的置灰只和「光标是否在表格内」有关，两个入口共用同一份。
+ * 仅对 yeli 有结构命令的项（见 TABLE_OP_TO_YELI）在表格内启用；headerRow/delete
+ * 无 yeli 命令对应（markdown 无法表达标题行 / yeli 未实现删除表格），保持禁用，
+ * 避免「点击无反应」的静默 no-op（见任务 5 B 组）。
+ */
 export const applyTableItems = (tableActive: boolean): MenuItem[] =>
-  TABLE_ITEMS.map(item => (item.disabled ? { ...item, disabled: !tableActive } : item))
+  TABLE_ITEMS.map(item =>
+    item.disabled && item.action && TABLE_OP_TO_YELI[item.action]
+      ? { ...item, disabled: !tableActive }
+      : item
+  )
 
 /** 光标是否在表格内 —— 表格子菜单的置灰依赖它。 */
 export function useTableActive(): boolean {
