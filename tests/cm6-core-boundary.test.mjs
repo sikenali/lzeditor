@@ -47,12 +47,12 @@ assert.match(actions, /strikeThrough: 'strikethrough'/, '大小写变体必须�
 assert.match(actions, /underline: 'underline'/, 'underline 必须映射')
 assert.match(actions, /PANEL_ACTIONS/, '无映射的插入动作必须打开面板')
 
-// ── 写入路径全部接入 CM6 ──
+// ── 写入路径全部接入 yeli facade（CM6 卸载后入口已迁到 getYeliFacade）──
 assert.match(editorTs, /insertText|replaceRange|getSelectionRange/, 'CM6 必须暴露文本写入接口')
-assert.match(history, /cm\.setText\(selected\.md\)|getCM6Editor\(\)\?\.setText\(selected\.md\)/, '历史回滚必须写 CM6')
-assert.match(useAI, /replaceRange\(range\.from, range\.to, output\)/, 'AI 应用必须写 CM6')
-assert.match(toolbar, /getCM6Editor\(\)\?\.getSelectionText\(\)/, 'AI 面板必须带选区上下文')
-assert.match(app, /getCM6Editor\(\)/, '插入对话框必须接入 CM6')
+assert.match(history, /getYeliFacade\(\)\?\.setText\(selected\.md\)/, '历史回滚必须写 yeli facade')
+assert.match(useAI, /replaceRange\(from, to, output\)/, 'AI 应用必须写 yeli facade')
+assert.match(toolbar, /getYeliFacade\(\)/, 'AI 面板必须经 facade 带选区上下文')
+assert.match(app, /getYeliFacade\(\)/, '插入对话框必须接入 yeli facade')
 assert.match(app, /buildTableMd/, '表格对话框必须能产出 markdown 表格')
 
 // ── CM6 实例必须常驻 ──
@@ -93,7 +93,8 @@ assert.match(inputFormat, /smartQuotes/, '引号智能替换必须可开关')
 assert.match(slash, /slashPaletteExtension/, 'slash.ts 必须导出触发扩展')
 assert.match(slashUi, /runFormatCommand/, '斜杠面板必须落到 CM6 的格式命令')
 assert.match(outline, /parseMdOutline/, '大纲必须从 markdown 源文本解析')
-assert.match(outline, /getCM6Editor\(\)\?\.goto/, '大纲跳转必须写 CM6')
+assert.match(outline, /getYeliFacade\(\)/, '大纲跳转必须经 yeli facade')
+assert.match(outline, /setSelection\(item\.pos/, '大纲跳转必须选中标题源码区间')
 
 // ── S2 清理：TipTap 的 store 槽位、开关与样式类不能残留 ──
 const settingsStore = read('src/store/settingsStore.ts')

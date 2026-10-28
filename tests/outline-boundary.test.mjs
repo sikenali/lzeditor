@@ -65,11 +65,12 @@ test('rovingIndex 回绕、四方向都移动，与 backtickle 一致', () => {
   assert.equal(rovingIndex('ArrowDown', 0, 0), null, '空列表无处可去')
 })
 
-test('大纲接在 CM6 上，跳转走字符偏移', () => {
+test('大纲接在 yeli 编辑器上，跳转走字符偏移', () => {
   assert.match(sidebar, /currentSectionIndex/, '当前节必须用纯模型算')
   assert.match(sidebar, /filterByDepth/, '深度过滤必须走纯模型')
   assert.match(sidebar, /sectionCountLabel/, '头部要显示节数')
-  assert.match(sidebar, /getCM6Editor\(\)\?\.goto\(item\.pos/, '点击标题必须跳到源码位置')
+  assert.match(sidebar, /getYeliFacade\(\)/, '点击标题必须经 facade 跳到源码位置')
+  assert.match(sidebar, /setSelection\(item\.pos/, '跳转必须选中标题源码区间')
 })
 
 test('大纲列表用 roving tabindex + aria-current 暴露当前位置', () => {

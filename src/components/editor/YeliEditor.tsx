@@ -8,6 +8,7 @@ import { EditCanvas } from "../../vendor/yeli/ui/edit-canvas.tsx";
 import { useDocumentStore } from "../../vendor/yeli/ui/use-document-store.ts";
 import { registerRenderExtension } from "../../vendor/yeli/render/markdown.ts";
 import { createYeliFacade, type YeliEditorFacade } from "./facade/YeliEditorFacade";
+import { getYeliFacade, registerYeliFacade } from "./facade/registry";
 import { YELI_LABELS_ZH } from "./yeli-labels";
 import { installAutopair } from "./assist/autopair";
 import { installSmartPaste } from "./assist/smart-paste";
@@ -104,6 +105,17 @@ export const YeliEditor = forwardRef<YeliEditorHandle, YeliEditorProps>(
     const store = facade.getDocumentStore();
     const snapshot = useDocumentStore(store);
 
+    // Register this facade as the single global entry point (replaces the old
+    // getCM6Editor()). Only clear it if it is still the one we registered, so a
+    // remount (StrictMode double-invoke, mode switch) can't unregister a newer
+    // instance.
+    useEffect(() => {
+      registerYeliFacade(facade);
+      return () => {
+        if (getYeliFacade() === facade) registerYeliFacade(null);
+      };
+    }, [facade]);
+
     // editorContentRef is the scroll container consumed by scroll-sync
     // (SidebarPreview). The yeli canvas scrolls inside .edit-surface.
     const shellRef = useRef<HTMLDivElement>(null);
@@ -112,6 +124,10 @@ export const YeliEditor = forwardRef<YeliEditorHandle, YeliEditorProps>(
       // editorContentRef is only consumed for scroll events / line bridging, so
       // the <main> edit surface satisfies it; the store type is HTMLDivElement.
       useEditorStore.getState().setEditorContentRef((surface as HTMLDivElement | null) ?? null);
+      return () => {
+        // 卸载时重置，避免切到历史/阅读模式后残留指向已卸载的编辑容器。
+        useEditorStore.getState().setEditorContentRef(null);
+      };
     }, []);
 
     // 输入辅助装配：autopair / smart-paste 走 facade typed 事务；

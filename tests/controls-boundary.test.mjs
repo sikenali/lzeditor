@@ -39,8 +39,8 @@ assert.doesNotMatch(app, /_align|_newTab|_type|_withHeaderRow/, '不能再留被
 
 // ── 表格单元格操作 ──────────────────────────────────────────────────────
 
-assert.match(actions, /runTableOp/, 'tableAction 必须真正执行单元格操作')
-assert.match(actions, /runTableOp\(cm\.view, action as TableOp\)/, '单元格操作必须接到 table-edit.ts')
+assert.match(actions, /TABLE_OP_TO_YELI/, 'tableAction 必须映射到 yeli 表格命令')
+assert.match(actions, /facade\.execCommand\(yeliId\)/, '单元格操作必须经 facade 表格命令路由')
 assert.doesNotMatch(actions, /合并单元格|拆分单元格/, 'markdown 无法表达单元格合并，菜单里不能留空转项')
 assert.match(tableEdit, /export type TableOp = 'row' \| 'delRow' \| 'col' \| 'colBefore' \| 'delCol' \| 'headerRow' \| 'delete'/)
 assert.match(tableEdit, /isSepRow/, '分隔行必须能识别')

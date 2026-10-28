@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
-import { getCM6Editor } from '../editor/codemirror/registry'
-import { runTableOp, type TableOp } from '../editor/codemirror/table-edit'
+import { getYeliFacade } from '../editor/facade/registry'
 import type { FormatCommand } from '../editor/codemirror/commands'
 
 export interface MenuItem {
@@ -84,23 +83,29 @@ export function useTableActive(): boolean {
     let tries = 0
     const tick = () => {
       try {
-        const cm = getCM6Editor()
-        if (!cm) { setActive(false); return }
-        const { from } = cm.view.state.selection.main
-        setActive(/^\s*\|.*\|\s*$/.test(cm.view.state.doc.lineAt(from).text))
+        const facade = getYeliFacade()
+        if (!facade) { setActive(false); return }
+        const sel = facade.getSelection()
+        if (!sel) { setActive(false); return }
+        // 源码行判断（CM6 时代读 state.doc.lineAt）：光标所在行是否为 GFM 表格行
+        const source = facade.getText()
+        const lineStart = source.lastIndexOf('\n', sel.from - 1) + 1
+        const lineEnd = source.indexOf('\n', sel.from)
+        const line = source.slice(lineStart, lineEnd === -1 ? source.length : lineEnd)
+        setActive(/^\s*\|.*\|\s*$/.test(line))
       } catch { setActive(false) }
     }
-    // CM6 是懒挂载的，第一次进工具栏时可能还没实例，轮询几次再挂监听
+    // facade 在编辑器挂载时注册，第一次进工具栏时可能还没就绪，轮询几次再挂监听
     const attach = () => {
       if (!alive) return
-      const cm = getCM6Editor()
-      if (!cm) {
+      const facade = getYeliFacade()
+      if (!facade) {
         if (tries++ > 25) return
         setTimeout(attach, 200)
         return
       }
       tick()
-      unbind = cm.onSelection(tick)
+      unbind = facade.onSelectionChange(tick)
     }
     attach()
     return () => { alive = false; unbind?.() }
@@ -159,6 +164,43 @@ const INSERT_MAP: Record<string, FormatCommand> = {
 
 const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'formula', 'chart', 'emoji', 'table'])
 
+/**
+ * CM6 FormatCommand → yeli command-registry id。只有 yeli 有对应语义的命令才映射；
+ * underline/highlight/sup/sub/toc/footnote 等 markdown 无法在 yeli 表达的命令不映射
+ * （调用方会返回 false，菜单项保持现状）。
+ */
+const YELI_COMMAND: Partial<Record<FormatCommand, string>> = {
+  bold: 'selection.bold',
+  italic: 'selection.italic',
+  strikethrough: 'selection.strike',
+  code: 'selection.code',
+  link: 'selection.link',
+  clear: 'selection.clear',
+  quote: 'insert.quote',
+  'bullet-list': 'insert.bullet-list',
+  'numbered-list': 'insert.numbered-list',
+  'task-list': 'insert.task',
+  'code-block': 'insert.code-block',
+  table: 'insert.table',
+  rule: 'insert.divider',
+  'heading-1': 'insert.heading1',
+  'heading-2': 'insert.section',
+  'heading-3': 'insert.heading3',
+  'heading-4': 'insert.heading4',
+  'heading-5': 'insert.heading5',
+  'heading-6': 'insert.heading6',
+  paragraph: 'insert.paragraph',
+}
+
+/** 表格结构命令（列/行增删）→ yeli table.* 命令；执行需块上下文，无则安全 no-op。 */
+const TABLE_OP_TO_YELI: Partial<Record<string, string>> = {
+  colBefore: 'table.insert-column-left',
+  col: 'table.insert-column-right',
+  row: 'table.insert-row-below',
+  delCol: 'table.delete-column',
+  delRow: 'table.delete-row',
+}
+
 /** 编辑动作，供顶栏和左侧 rail 共用，避免两套逻辑漂移。 */
 export function useEditorActions() {
   const setInsertPanel = useEditorStore((s: any) => s.setInsertPanel)
@@ -166,14 +208,17 @@ export function useEditorActions() {
 
   // 无映射的动作不静默失败：插入类改为打开对应面板
   const runMapped = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
-    const cm = getCM6Editor()
-    if (!cm) return false
+    const facade = getYeliFacade()
+    if (!facade) return false
     const fc = map[action]
     if (!fc) {
       if (PANEL_ACTIONS.has(action)) setInsertPanel(action)
       return true
     }
-    return cm.run(fc)
+    const yeliId = YELI_COMMAND[fc]
+    if (!yeliId) return false
+    facade.execCommand(yeliId)
+    return true
   }, [setInsertPanel])
 
   const applyCmd = useCallback((cmd: string) => {
@@ -192,9 +237,12 @@ export function useEditorActions() {
 
   const tableAction = useCallback((action: string) => {
     if (action === 'insert') { setInsertPanel('table'); return }
-    const cm = getCM6Editor()
-    if (!cm) return
-    runTableOp(cm.view, action as TableOp)
+    const facade = getYeliFacade()
+    if (!facade) return
+    const yeliId = TABLE_OP_TO_YELI[action]
+    // yeli 的 table.* 命令需块上下文（blockId/activeCell）；工具栏无法感知当前块，
+    // 无上下文时 facade 安全返回 null（no-op），等后续任务把块上下文接进来。
+    if (yeliId) facade.execCommand(yeliId)
   }, [setInsertPanel])
 
   // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（左源码 + 右样式预览）

@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from 'react'
 import { useAIStore } from '../store/aiStore'
 import { useSettingsStore } from '../store/settingsStore'
-import { getCM6Editor } from '../components/editor/codemirror/registry'
+import { getYeliFacade } from '../components/editor/facade/registry'
+import type { YeliEditorFacade, FacadeSelection } from '../components/editor/facade/YeliEditorFacade'
 import { parseMdOutline, outlineToMarkdownTree } from '../utils/mdOutline'
 import { buildPrompt } from '../services/promptTemplate'
 import type { AIAction, ChatMessage } from '../shared/types'
@@ -44,6 +45,46 @@ export function useAI() {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
+  // 流式插入的游标：跨 send/applyToDoc 共享，记录 anchor/revision 与已插入区间，
+  // 使「已流式入文档」的 apply 幂等（不二次插入）且 undo 能精确回滚。
+  const streamRef = useRef<{
+    active: boolean
+    stale: boolean
+    anchor: FacadeSelection | null
+    expectedRev: number
+    originalText: string
+    insertStart: number
+    totalLen: number
+  }>({
+    active: false, stale: false, anchor: null, expectedRev: -1,
+    originalText: '', insertStart: 0, totalLen: 0,
+  })
+
+  /** 把一段流式文本写入文档：首个 chunk 定位 anchor 并替换选区，后续在 anchor 后追加；
+   *  revision 不匹配（用户中途编辑）则丢弃该 chunk 并停止实时插入，绝不覆盖最新内容。 */
+  const streamIntoDoc = useCallback((facade: YeliEditorFacade, delta: string) => {
+    const s = streamRef.current
+    if (!delta || s.stale) return
+    try {
+      if (!s.active || !s.anchor) {
+        const sel = facade.getSelection()
+        s.anchor = sel ?? { from: facade.getText().length, to: facade.getText().length }
+        s.originalText = facade.getText().slice(s.anchor.from, s.anchor.to)
+        s.insertStart = s.anchor.from
+        s.expectedRev = facade.getRevision()
+        s.active = true
+      }
+      facade.insertText(delta, s.anchor, s.expectedRev)
+      const insertFrom = s.anchor.from + delta.length
+      s.anchor = { from: insertFrom, to: insertFrom }
+      s.expectedRev = facade.getRevision()
+      s.totalLen += delta.length
+    } catch {
+      // revision 不匹配：用户在流式期间编辑了文档，丢弃该 chunk 并停止实时插入。
+      s.stale = true
+    }
+  }, [])
+
   const stop = useCallback(() => {
     abortRef.current?.abort()
     abortRef.current = null
@@ -72,8 +113,15 @@ export function useAI() {
     abortRef.current = controller
     const signal = controller.signal
 
-    // 文档结构上下文从 markdown 源码解析（CM6 没有文档树）
-    const schemaContext = outlineToMarkdownTree(parseMdOutline(getCM6Editor()?.getText() || ''))
+    // 每次发送前重置流式游标（上一轮可能残留 stale/已插入状态）
+    streamRef.current = {
+      active: false, stale: false, anchor: null, expectedRev: -1,
+      originalText: '', insertStart: 0, totalLen: 0,
+    }
+    const facade = getYeliFacade()
+
+    // 文档结构上下文从 markdown 源码解析（yeli 是源码画布，无文档树）
+    const schemaContext = outlineToMarkdownTree(parseMdOutline(facade?.getText() || ''))
 
     const vars: any = { selected_text: selectedText, schema_context: schemaContext }
     if (action === 'rewrite' || action === 'polish') vars.style = input || '流畅自然'
@@ -141,14 +189,19 @@ export function useAI() {
           }
           buffer = buffer.slice(cursor)
           for (const frame of frames) {
+            const prevLen = accumulated.length
             const r = extractSSEText(frame, accumulated)
             accumulated = r.acc
             useAIStore.getState().setPanelOutput(accumulated)
+            // 逐 chunk 事务：把新到增量写入文档（stale 时自动丢弃，不覆盖用户编辑）
+            if (facade) streamIntoDoc(facade, accumulated.slice(prevLen))
           }
         }
         if (buffer.trim()) {
+          const prevLen = accumulated.length
           accumulated = extractSSEText(buffer, accumulated).acc
           useAIStore.getState().setPanelOutput(accumulated)
+          if (facade) streamIntoDoc(facade, accumulated.slice(prevLen))
         }
         useAIStore.getState().setPanelStatus(signal.aborted ? (accumulated ? 'result' : 'idle') : 'result')
       }
@@ -175,16 +228,32 @@ export function useAI() {
     const state = useAIStore.getState()
     if (state.panelStatus !== 'result') return
     const output = state.panelOutput || ''
-    const cm = getCM6Editor()
-    if (cm) {
-      const range = cm.getSelectionRange()
-      const original = cm.getSelectionText()
-      cm.replaceRange(range.from, range.to, output)
+    const facade = getYeliFacade()
+    const s = streamRef.current
+    // 内容已在流式期间逐 chunk 写入文档：只登记已实际写入的区间，不二次插入
+    // （stale 时只登记中断前写入的片段，避免与用户中途编辑叠加/重复）。
+    if (facade && s.active && s.totalLen > 0) {
+      const appliedText = s.stale ? output.slice(0, s.totalLen) : output
+      useAIStore.getState().recordApply({
+        action: state.panelAction,
+        originalText: s.originalText,
+        newText: appliedText,
+        position: { from: s.insertStart, to: s.insertStart + s.totalLen },
+      })
+      useAIStore.getState().setPanelStatus('applied')
+      return
+    }
+    if (facade) {
+      const range = facade.getSelection()
+      const from = range ? range.from : facade.getText().length
+      const to = range ? range.to : from
+      const original = facade.getText().slice(from, to)
+      facade.replaceRange(from, to, output)
       useAIStore.getState().recordApply({
         action: state.panelAction,
         originalText: original,
         newText: output,
-        position: { from: range.from, to: range.from + output.length },
+        position: { from, to: from + output.length },
       })
       useAIStore.getState().setPanelStatus('applied')
       return
@@ -195,12 +264,12 @@ export function useAI() {
   const undo = useCallback(() => {
     const record = useAIStore.getState().getUndoRecord()
     if (!record) return
-    const cm = getCM6Editor()
-    if (cm) {
-      const text = cm.getText()
+    const facade = getYeliFacade()
+    if (facade) {
+      const text = facade.getText()
       const start = record.newText ? text.indexOf(record.newText) : record.position.from
       const end = start >= 0 ? start + record.newText.length : record.position.to
-      if (start >= 0) cm.replaceRange(start, end, record.originalText || '')
+      if (start >= 0) facade.replaceRange(start, end, record.originalText || '')
       useAIStore.getState().undoLastApply()
       useAIStore.getState().setPanelStatus('result')
       return

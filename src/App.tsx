@@ -30,7 +30,7 @@ const EmojiDialog = lazy(() => import('./components/panels/EmojiDialog').then(m 
 const ChartDialog = lazy(() => import('./components/panels/ChartDialog').then(m => ({ default: m.ChartDialog })))
 import { useEditorStore, switchDocSilently } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
-import { getCM6Editor } from './components/editor/codemirror/registry'
+import { getYeliFacade } from './components/editor/facade/registry'
 import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
 import { useTypographyOverrides } from './hooks/useTypographyOverrides'
@@ -105,8 +105,10 @@ function App() {
     const hasPanel = openPanel !== 'none' || insertPanel !== 'none' || showSearch
     if (!hasPanel) return
     try {
-      const content = getCM6Editor()?.view.contentDOM as HTMLElement | null
-      content?.blur()
+      // yeli 画布聚焦的是块级 contenteditable，CM6 时代 blur 的是 view.contentDOM；
+      // 这里 blur 掉画布 shell 内的焦点元素即可（面板打开时编辑器应让位）。
+      const active = document.activeElement
+      if (active instanceof HTMLElement && active.closest('.yeli-canvas-shell')) active.blur()
     } catch {}
   }, [openPanel, insertPanel, showSearch])
 
@@ -176,7 +178,7 @@ function App() {
   // 全局快捷键（与「快捷键设置」页列出的组合一致）
   useEffect(() => {
     const mod = (e: KeyboardEvent) => e.ctrlKey || e.metaKey
-    const ed = () => getCM6Editor()
+    const ed = () => getYeliFacade()
 
     const toggleAI = () => {
       const s = useAIStore.getState()
@@ -220,15 +222,15 @@ function App() {
       } else if (e.key === '/') {
         e.preventDefault(); toggleAI()
       } else if (e.altKey && key === 'c') {
-        e.preventDefault(); ed()?.run('code-block')
+        e.preventDefault(); ed()?.execCommand('insert.code-block')
       } else if (key === '8' && e.shiftKey) {
-        e.preventDefault(); ed()?.run('bullet-list')
+        e.preventDefault(); ed()?.execCommand('insert.bullet-list')
       } else if (key === '7' && e.shiftKey) {
-        e.preventDefault(); ed()?.run('numbered-list')
+        e.preventDefault(); ed()?.execCommand('insert.numbered-list')
       } else if (key === '9' && e.shiftKey) {
-        e.preventDefault(); ed()?.run('task-list')
+        e.preventDefault(); ed()?.execCommand('insert.task')
       } else if (key === 'b' && e.shiftKey) {
-        e.preventDefault(); ed()?.run('quote')
+        e.preventDefault(); ed()?.execCommand('insert.quote')
       }
     }
 
@@ -277,7 +279,7 @@ function App() {
         const html = mdToHtml(res.text)
         es.updateDoc({ md: res.text, html, docsMd: { [id]: res.text } })
         try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md: res.text, html, savedAt: Date.now() })) } catch {}
-        getCM6Editor()?.setText(res.text)
+        getYeliFacade()?.setText(res.text)
       } catch (e) { silentError('导入文件写入编辑器失败', e) }
     }
     const offLocalFile = api.onMenuOpenFile?.(onLocalFile)
@@ -334,20 +336,20 @@ function App() {
     setSearchPanelAnimating(null)
     prevShowSearch.current = showSearch
   }, [showSearch])
-  // CM6 编辑的是 markdown 源码：左右对齐没有 markdown 语法，落 HTML 的 float；渲染管线放行 img/style
+  // markdown 源码：左右对齐没有 markdown 语法，落 HTML 的 float；渲染管线放行 img/style
   const insertImage = (url: string, alt: string, align?: 'top' | 'left' | 'right') => {
     insertMarkdown(buildImageMd(url, alt, align))
   }
   const uploadImage = (file: File, align?: 'top' | 'left' | 'right') => {
-    if (!getCM6Editor()) return
+    if (!getYeliFacade()) return
     const reader = new FileReader()
     reader.onload = (ev) => insertImage(ev.target?.result as string, file.name, align)
     reader.readAsDataURL(file)
     closeInsert()
   }
   const insertMarkdown = (md: string) => {
-    const cm = getCM6Editor()
-    if (cm) { cm.insertText(md); closeInsert(); return }
+    const facade = getYeliFacade()
+    if (facade) { facade.insertText(md, facade.getSelection() ?? undefined); closeInsert(); return }
     const cur = useEditorStore.getState()
     const pos = cur.codeModeCursor ?? 0
     const content = cur.mdContent
@@ -364,38 +366,42 @@ function App() {
     closeInsert()
   }
   const insertCode = (code: string, lang: string) => {
-    getCM6Editor()?.insertText(`\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`)
+    getYeliFacade()?.insertCodeBlock(lang, code)
     closeInsert()
   }
   const insertLink = (text: string, url: string, newTab?: boolean) => {
-    const cm = getCM6Editor()
-    if (!cm) return
+    const facade = getYeliFacade()
+    if (!facade) return
     const label = (text.trim() || url).replace(/\s+/g, ' ')
+    const anchor = facade.getSelection() ?? undefined
     if (newTab) {
       // markdown 链接无法表达 target，落 HTML（消毒白名单放行 target 属性）
-      cm.insertText(`<a href="${escAttr(url)}" target="_blank" rel="noopener">${label}</a>`)
+      facade.insertText(`<a href="${escAttr(url)}" target="_blank" rel="noopener">${label}</a>`, anchor)
     } else {
-      cm.insertText(`[${label}](${url})`)
+      facade.insertText(`[${label}](${url})`, anchor)
     }
     closeInsert()
   }
   const insertFormula = (formula: string) => {
-    getCM6Editor()?.insertText(`$$${formula}$$`)
+    getYeliFacade()?.insertFormula(formula)
     closeInsert()
   }
   const insertChart = (src: string, alt: string, type: string) => {
     // 图表是位图，类型信息只能进 alt 文本（读屏/导出 Word 都能看到）
     const label = `${CHART_TYPE_LABEL[type] ?? '图表'}：${alt}`.replace(/\]/g, '\\]')
-    getCM6Editor()?.insertText(`\n\n![${label}](${src})\n\n`)
+    const facade = getYeliFacade()
+    facade?.insertText(`\n\n![${label}](${src})\n\n`, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertEmoji = (text: string) => {
-    getCM6Editor()?.insertText(text)
+    const facade = getYeliFacade()
+    facade?.insertText(text, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertTable = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
     if (rows <= 0 || cols <= 0) return
-    getCM6Editor()?.insertText(`\n\n${buildTableMd(rows, cols, data, withHeaderRow)}\n\n`)
+    const facade = getYeliFacade()
+    facade?.insertText(`\n\n${buildTableMd(rows, cols, data, withHeaderRow)}\n\n`, facade.getSelection() ?? undefined)
     closeInsert()
   }
 

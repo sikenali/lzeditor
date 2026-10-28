@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { getCM6Editor } from '../editor/codemirror/registry'
+import { getYeliFacade } from '../editor/facade/registry'
 import { parseMdOutline, type MdOutlineItem } from '../../utils/mdOutline'
 import {
   OUTLINE_DEPTHS, currentSectionIndex, depthLabel, filterByDepth,
@@ -49,7 +49,11 @@ export const SidebarOutline: React.FC = () => {
   }, [shownIndex])
 
   const handleJump = useCallback((item: MdOutlineItem) => {
-    getCM6Editor()?.goto(item.pos, item.pos + item.text.length)
+    // yeli 无 goto：选中目标标题源码区间并聚焦，滚动由编辑层随选区跟随。
+    const facade = getYeliFacade()
+    if (!facade) return
+    facade.setSelection(item.pos, item.pos + item.text.length)
+    facade.focus()
   }, [])
 
   /** 方向键在列表里走焦点，Home/End 跳首尾，Return/Space 打开（原生 button 自带）。 */

@@ -44,14 +44,33 @@ export interface YeliEditorFacade {
   setText(markdown: string): void;
   /** Returns the current canonical source string (fidelity: no re-serialization). */
   getText(): string;
+  /**
+   * Returns the current document revision. Every committed transaction (via
+   * facade or the edit surface) bumps it by 1; a mismatch against a previously
+   * captured value means the document changed underneath the caller.
+   */
+  getRevision(): number;
   /** Replaces [from, to) with text. Throws when the range is out of bounds. */
   replaceRange(from: number, to: number, text: string): void;
-  /** Appends text at the end of the document in a single transaction. */
-  insertText(text: string): void;
+  /**
+   * Inserts `text` at `anchor` in a single transaction, or appends at the end
+   * when `anchor` is omitted.
+   *
+   * `anchor` is the replacement range expressed in canonical-source offsets
+   * (from {@link getSelection}). With a collapsed anchor (`from === to`) this
+   * inserts at that point; with a non-empty range it replaces the selection.
+   * This is how AI streaming feeds chunks in one transaction at a time.
+   *
+   * `expectedRevision` optionally pins the write to a known document revision.
+   * When it does not match the current revision (the user edited mid-stream),
+   * a `RangeError` is thrown and nothing is written — the caller drops the
+   * chunk instead of overwriting the user's latest content.
+   */
+  insertText(text: string, anchor?: FacadeSelection, expectedRevision?: number): void;
   /** Inserts a block at the end of the document. */
   insertBlock(text: string): void;
-  /** Inserts a fenced code block at the end of the document. */
-  insertCodeBlock(text: string): void;
+  /** Inserts a fenced code block (with optional language) at the end of the document. */
+  insertCodeBlock(language: string, code: string): void;
   /** Inserts a math block at the end of the document. */
   insertFormula(text: string): void;
   /** Subscribes to document changes, re-emitting fidelity markdown. Returns unsubscribe. */
@@ -69,10 +88,12 @@ export interface YeliEditorFacade {
   /**
    * The live {@link DocumentStore} backing this facade.
    *
-   * For the edit-surface renderer (`EditCanvas`) only: it must operate on the
-   * exact same store the facade writes through, so keystrokes, undo/redo and
-   * programmatic writes all share one revision stream. External callers should
-   * keep using the typed facade methods instead of touching the store.
+   * ⚠️ INTERNAL LEAK (accepted for now): only the edit-surface renderer
+   * (`EditCanvas`) may call this — it must render off the exact same store the
+   * facade writes through, so keystrokes, undo/redo and programmatic writes all
+   * share one revision stream. Every other caller must keep using the typed
+   * facade methods and never touch the store. A later task replaces this with
+   * constructor injection so the store never crosses the boundary.
    */
   getDocumentStore(): DocumentStore;
 }
@@ -193,6 +214,10 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     return this.#store?.getSnapshot().source ?? "";
   }
 
+  getRevision(): number {
+    return this.#store?.getSnapshot().revision ?? 0;
+  }
+
   #applyPatch(
     from: number,
     to: number,
@@ -225,9 +250,22 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     this.#applyPatch(from, to, text, "replace-range");
   }
 
-  insertText(text: string): void {
-    const offset = this.getText().length;
-    this.#applyPatch(offset, offset, text, "insert-text");
+  insertText(
+    text: string,
+    anchor?: FacadeSelection,
+    expectedRevision?: number,
+  ): void {
+    if (
+      expectedRevision !== undefined &&
+      expectedRevision !== this.getRevision()
+    ) {
+      throw new RangeError(
+        `insert-text stale revision: expected ${expectedRevision}, got ${this.getRevision()}`,
+      );
+    }
+    const from = anchor ? anchor.from : this.getText().length;
+    const to = anchor ? anchor.to : from;
+    this.#applyPatch(from, to, text, "insert-text");
   }
 
   insertBlock(text: string): void {
@@ -237,8 +275,8 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     this.#applyPatch(offset, offset, `${separator}${text}`, "insert-block");
   }
 
-  insertCodeBlock(text: string): void {
-    this.insertBlock(`\`\`\`\n${text}\n\`\`\``);
+  insertCodeBlock(language: string, code: string): void {
+    this.insertBlock(`\`\`\`${language}\n${code}\n\`\`\``);
   }
 
   insertFormula(text: string): void {

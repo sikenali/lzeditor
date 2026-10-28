@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
-import { getCM6Editor } from '../editor/codemirror/registry'
+import { getYeliFacade } from '../editor/facade/registry'
 import {
   NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
@@ -72,7 +72,12 @@ export const Toolbar: React.FC = () => {
     const s = useAIStore.getState()
     if (s.panelVisible) { s.hidePanel(); return }
     // 带上当前选区作为上下文，AI 面板据此判断润色/改写范围
-    const sel = getCM6Editor()?.getSelectionText() ?? ''
+    const facade = getYeliFacade()
+    const sel = facade ? (() => {
+      const range = facade.getSelection()
+      if (!range || range.from >= range.to) return ''
+      return facade.getText().slice(range.from, range.to)
+    })() : ''
     s.showPanel('question', sel, { x: Math.max(8, window.innerWidth - 380), y: 120 })
   }, [])
 
