@@ -17,6 +17,7 @@ import {
   type TableDimensions,
 } from "../../../vendor/yeli/editor/table-commands.ts";
 import type { DocumentTransactionResult } from "../../../vendor/yeli/document/transactions.ts";
+import { selectionSourceRange } from "../assist/source-offset.ts";
 
 /**
  * A plain, serializable view of the editor selection, expressed in JavaScript
@@ -107,6 +108,11 @@ const VALID_COMMAND_IDS = new Set<string>(
 class YeliEditorFacadeImpl implements YeliEditorFacade {
   #store: DocumentStore | null = null;
   #listeners = new Set<(markdown: string) => void>();
+  // #selection 仅由 setSelection 更新，而 setSelection 由 typewriter 的
+  // selectionchange handler（assist/typewriter.ts）调用。若未装 typewriter 或
+  // selectionchange 未触发，selection.* 命令会因 #selection 为空而静默 no-op
+  // （#selectionWrap 返回 null）。execCommand 的 selection.* 分支会先尝试从
+  // DOM 读当前选区兜底（#readDomSelection），DOM 不可及时才静默降级。
   #selection: FacadeSelection | null = null;
   #selectionListeners = new Set<(selection: FacadeSelection | null) => void>();
   #labels: Labels;
@@ -139,9 +145,20 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     return this.#currentBlocks().find((block) => block.id === id) ?? null;
   }
 
+  /**
+   * typewriter 的 selectionchange → setSelection 同步链未就绪时，回退读 DOM
+   * 当前选区（浏览器环境可及才生效；失败静默返回 null，selection.* 保持 no-op）。
+   */
+  #readDomSelection(): FacadeSelection | null {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return null;
+    }
+    return selectionSourceRange();
+  }
+
   #selectionWrap(name: string, args?: Record<string, unknown>): DocumentTransactionResult | null {
     const wrap = SELECTION_WRAP[name];
-    const selection = this.#selection;
+    const selection = this.#selection ?? this.#readDomSelection();
     if (!wrap || !selection || selection.from >= selection.to) return null;
     const source = this.getText();
     const selected = source.slice(selection.from, selection.to);
@@ -281,7 +298,9 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     }
 
     // selection.*：command-registry 无对应 execute*，facade 以 typed
-    // selection-wrap 事务实现（见 SELECTION_WRAP）。
+    // selection-wrap 事务实现（见 SELECTION_WRAP）。#selection 由 typewriter
+    // 的 selectionchange handler 同步（见 #selection 注释）；若为空则先读 DOM
+    // 选区兜底，避免未装 typewriter / 点击瞬间未触发时静默 no-op。
     if (id.startsWith("selection.")) {
       return this.#selectionWrap(id, args);
     }

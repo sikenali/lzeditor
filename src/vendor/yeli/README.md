@@ -42,13 +42,14 @@ License：MIT，见 docs/third-party-notices-yeli.md。
    `src/styles/yeli-canvas.css`（区块画布样式抽取）。
 
 6. `src/render/markdown.ts`（任务 4 渲染边界扩展）：新增渲染边界注入点
-   `registerRenderExtension({ install?, postProcess? })` 与 `RenderExtension` 类型。
+   `registerRenderExtension({ install })` 与 `RenderExtension` 类型。
    `rendererFor()` 在创建 markdown-it 实例后调用各扩展的 `install(md)`（注册
-   mermaid/echarts/KaTeX/代码高亮规则）；`renderDocumentMarkdownSegments` /
-   `renderSafeInlineMarkdown` 在 DOMPurify 净化后调用各扩展的 `postProcess(html)`
-   （KaTeX slot 回填，避免公式 style 被净化剥除）。上游无此注入点，属 lzeditor
+   mermaid/echarts/KaTeX/代码高亮规则）。上游无此注入点，属 lzeditor
    适配层需要的扩展接口；上游算法（投影、事务、store）未改动。扩展实现见
-   `src/components/editor/render-ext/`。
+   `src/components/editor/render-ext/`。KaTeX 已惰性化：特效（mermaid/echarts/
+   katex）均走惰性容器，水合发生在 DOMPurify 净化之后，由
+   `observeLazyRenderers` 触发，故不再有 `postProcess` 后处理注册点——该字段与
+   `finalizeHtml` 包装已随惰性化移除（`RenderExtension` 现仅含 `install`）。
 
 ## 依赖补齐（相对上游新增的运行时/配置项）
 

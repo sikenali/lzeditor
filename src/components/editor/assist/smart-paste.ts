@@ -98,7 +98,9 @@ function insertAtCaret(
 
 /**
  * 在 root（.yeli-canvas-shell / .block-canvas）上挂 paste 事件层。
- * 返回卸载函数。智能分派失败静默降级为默认文本粘贴（不 preventDefault）。
+ * 返回卸载函数。智能分派成功才接管事件（preventDefault + stopPropagation）；
+ * 事务失败时静默降级为默认文本粘贴：不 preventDefault、不 stopPropagation，
+ * 交 vendor canvas 的 onPaste 处理（不静默丢内容）。
  */
 export function installSmartPaste(
   root: HTMLElement,
@@ -123,16 +125,17 @@ export function installSmartPaste(
     // 1) 图片 → 图片块事务。
     const image = files.find((file) => file.type.startsWith("image/"));
     if (image) {
-      event.preventDefault();
-      event.stopPropagation();
       try {
         const src = options.onImageBlob
           ? options.onImageBlob(image)
           : URL.createObjectURL(image);
         const alt = image.name.replace(/\.[^.]+$/u, "") || "粘贴的图片";
         insertAtCaret(root, facade, offset, imageMarkdown(alt, src), placeCaret);
+        // 事务成功才接管事件；失败则不 preventDefault，交默认粘贴（不静默丢图）。
+        event.preventDefault();
+        event.stopPropagation();
       } catch {
-        // 图片接入失败：不阻断。
+        // 图片接入失败：不接管事件，让默认粘贴接管。
       }
       return;
     }
@@ -140,8 +143,6 @@ export function installSmartPaste(
     // 2) URL → 链接事务（facade 有选区时以其为链接文字并替换选区区间）。
     const url = singleUrl(text);
     if (url) {
-      event.preventDefault();
-      event.stopPropagation();
       try {
         const selection = facade.getSelection();
         const hasSelection = selection !== null && selection.from < selection.to;
@@ -152,8 +153,10 @@ export function installSmartPaste(
         } else {
           insertAtCaret(root, facade, offset, linkMarkdown(url), placeCaret);
         }
+        event.preventDefault();
+        event.stopPropagation();
       } catch {
-        // 事务失败：不阻断。
+        // 事务失败：不接管事件，让默认粘贴接管。
       }
       return;
     }
@@ -161,12 +164,12 @@ export function installSmartPaste(
     // 3) TSV → 表格事务（vendor table-commands 序列化约定）。
     const rows = tsvRows(text);
     if (rows) {
-      event.preventDefault();
-      event.stopPropagation();
       try {
         insertAtCaret(root, facade, offset, tableFromRows(rows), placeCaret);
+        event.preventDefault();
+        event.stopPropagation();
       } catch {
-        // 事务失败：不阻断。
+        // 事务失败：不接管事件，让默认粘贴接管。
       }
       return;
     }

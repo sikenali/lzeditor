@@ -145,6 +145,36 @@ test("execCommand：selection.bold 用真实命令名包裹选区", () => {
   assert.equal(facade.getText(), "**hello** world");
 });
 
+test("execCommand：selection.* 在 #selection 为空时从 DOM 选区兜底（不经 setSelection 绕过链）", () => {
+  const root = win.document.createElement("div");
+  root.className = "yeli-canvas-shell";
+  const shell = win.document.createElement("div");
+  shell.setAttribute("data-source-from", "0");
+  shell.setAttribute("data-source-to", "11");
+  const editable = win.document.createElement("div");
+  editable.className = "block-content-editable";
+  editable.contentEditable = "true";
+  editable.textContent = "hello world";
+  shell.append(editable);
+  root.append(shell);
+  win.document.body.append(root);
+  // 建立 DOM 选区：选中 "hello"（源码偏移 0..5）。
+  const textNode = editable.firstChild;
+  const range = win.document.createRange();
+  range.setStart(textNode, 0);
+  range.setEnd(textNode, 5);
+  const selection = win.window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  const facade = createYeliFacade({ labels: YELI_LABELS_ZH, locale: "zh-CN" });
+  facade.setText("hello world");
+  // 不调 setSelection（模拟 typewriter 未同步）：selection.bold 应经 DOM 兜底生效。
+  facade.execCommand("selection.bold");
+  assert.equal(facade.getText(), "**hello** world");
+  root.remove();
+});
+
 test("execCommand：斜杠插入命令（insert.paragraph）追加段落", () => {
   const facade = createYeliFacade({ labels: YELI_LABELS_ZH, locale: "zh-CN" });
   facade.setText("# 标题");
@@ -241,6 +271,37 @@ test("installSmartPaste：URL → 链接事务", () => {
   assert.equal(facade.calls[0][0], "replaceRange");
   assert.match(facade.calls[0][3], /^\[.*\]\(https:\/\/example\.com\)$/);
   assert.equal(event.defaultPrevented, true);
+});
+
+test("installSmartPaste：智能分派失败回退默认粘贴（不 preventDefault，不静默丢内容）", () => {
+  const root = win.document.createElement("div");
+  const facade = stubFacade();
+  // 事务失败（如 stale revision / 越界）：必须不接管事件，交默认粘贴。
+  facade.replaceRange = () => {
+    throw new Error("事务失败");
+  };
+  const uninstall = installSmartPaste(root, facade, { readOffset: () => 5 });
+  const event = pasteEvent(win, "https://example.com");
+  root.dispatchEvent(event);
+  uninstall();
+  assert.equal(event.defaultPrevented, false);
+});
+
+test("installSmartPaste：图片事务失败也不接管事件（默认粘贴接管，不静默丢图）", () => {
+  const root = win.document.createElement("div");
+  const facade = stubFacade();
+  facade.replaceRange = () => {
+    throw new Error("事务失败");
+  };
+  const blob = { type: "image/png", name: "a.png" };
+  const uninstall = installSmartPaste(root, facade, {
+    readOffset: () => 0,
+    onImageBlob: () => "asset://paste.png",
+  });
+  const event = pasteEvent(win, "", [blob]);
+  root.dispatchEvent(event);
+  uninstall();
+  assert.equal(event.defaultPrevented, false);
 });
 
 test("installSmartPaste：URL 且有选区 → 用选区文字作链接并替换选区区间", () => {

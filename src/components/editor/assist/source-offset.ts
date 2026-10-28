@@ -13,11 +13,35 @@ export function caretSourceOffset(root: HTMLElement): number | null {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) return null;
   const range = selection.getRangeAt(0);
-  const container = range.startContainer;
+  const element =
+    range.startContainer instanceof Element
+      ? range.startContainer
+      : range.startContainer.parentElement;
+  const editable = element?.closest<HTMLElement>(".block-content-editable");
+  if (!editable || !root.contains(editable)) return null;
+  return sourceOffsetAtPoint(range.startContainer, range.startOffset);
+}
+
+/**
+ * 当前 DOM 选区 → 源码区间（typewriter 未同步时的兜底读法，供 facade 在
+ * selection.* 命令且 #selection 为空时回退）。无选中或不可映射 → null。
+ */
+export function selectionSourceRange(): { from: number; to: number } | null {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return null;
+  const range = selection.getRangeAt(0);
+  const from = sourceOffsetAtPoint(range.startContainer, range.startOffset);
+  const to = sourceOffsetAtPoint(range.endContainer, range.endOffset);
+  if (from === null || to === null) return null;
+  return { from: Math.min(from, to), to: Math.max(from, to) };
+}
+
+/** 把 DOM 内某点映射为源码偏移（块 shell data-source-from/to 反推）。 */
+function sourceOffsetAtPoint(container: Node, offset: number): number | null {
   const element =
     container instanceof Element ? container : container.parentElement;
   const editable = element?.closest<HTMLElement>(".block-content-editable");
-  if (!editable || !root.contains(editable)) return null;
+  if (!editable) return null;
   const shell = editable.closest<HTMLElement>("[data-source-from]");
   const from = shell?.getAttribute("data-source-from");
   const to = shell?.getAttribute("data-source-to");
@@ -27,8 +51,14 @@ export function caretSourceOffset(root: HTMLElement): number | null {
   if (!Number.isSafeInteger(blockFrom) || !Number.isSafeInteger(blockTo)) {
     return null;
   }
-  const textOffset = textOffsetWithin(editable, range);
-  if (textOffset === null) return null;
+  const probe = document.createRange();
+  probe.selectNodeContents(editable);
+  try {
+    probe.setEnd(container, offset);
+  } catch {
+    return null;
+  }
+  const textOffset = plainTextLength(probe.cloneContents() as unknown as Node);
   const renderedLength = plainTextLength(editable);
   return blockTo - renderedLength + textOffset;
 }
@@ -116,20 +146,6 @@ export function refocusAfterEdit(
       }
     });
   });
-}
-
-function textOffsetWithin(
-  root: HTMLElement,
-  range: Range,
-): number | null {
-  const probe = document.createRange();
-  probe.selectNodeContents(root);
-  try {
-    probe.setEnd(range.startContainer, range.startOffset);
-  } catch {
-    return null;
-  }
-  return plainTextLength(probe.cloneContents() as unknown as Node);
 }
 
 function textPointAt(

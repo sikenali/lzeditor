@@ -54,16 +54,15 @@ export interface MarkdownRenderSegments {
 
 /**
  * 渲染边界扩展点（lzeditor 适配层注册，见 src/components/editor/render-ext/）。
- *  - `install(md)`：在 markdown-it 实例创建后注入自定义规则（mermaid/echarts/
- *    KaTeX/代码高亮）。
- *  - `postProcess(html)`：DOMPurify 净化后对 HTML 做后处理（如 KaTeX slot 回填，
- *    避免公式的 style 被净化剥除）。
+ *  `install(md)` 在 markdown-it 实例创建后注入自定义规则（mermaid/echarts/
+ *  KaTeX/代码高亮）。特效（mermaid/echarts/katex）均走惰性容器：水合发生在
+ *  DOMPurify 净化之后，由 observeLazyRenderers 触发，故无 postProcess 后处理
+ *  注册点（该字段已随 KaTeX 惰性化移除）。
  *
- * vendor 内改动记录：上游无此注入点，属适配层需要的扩展接口。
+ *  vendor 内改动记录：上游无此注入点，属适配层需要的扩展接口。
  */
 export interface RenderExtension {
   install?: (md: MarkdownItType) => void;
-  postProcess?: (html: string) => string;
 }
 
 const renderExtensions: RenderExtension[] = [];
@@ -76,14 +75,6 @@ function installRenderExtensions(md: MarkdownItType): void {
   for (const extension of renderExtensions) {
     extension.install?.(md);
   }
-}
-
-function finalizeHtml(html: string): string {
-  let output = html;
-  for (const extension of renderExtensions) {
-    output = extension.postProcess?.(output) ?? output;
-  }
-  return output;
 }
 
 let sanitizer: DOMPurifyInstance | null =
@@ -436,10 +427,8 @@ export function renderDocumentMarkdownSegments(
   if (open === -1) {
     return {
       afterCallout: "",
-      beforeCallout: finalizeHtml(
-        sanitize(
-          renderer.renderer.render(tokens, renderer.options, environment),
-        ),
+      beforeCallout: sanitize(
+        renderer.renderer.render(tokens, renderer.options, environment),
       ),
       callout: null,
     };
@@ -454,9 +443,7 @@ export function renderDocumentMarkdownSegments(
   }
 
   const render = (slice: typeof tokens) =>
-    finalizeHtml(
-      sanitize(renderer.renderer.render(slice, renderer.options, environment)),
-    );
+    sanitize(renderer.renderer.render(slice, renderer.options, environment));
   return {
     afterCallout: render(tokens.slice(close + 1)),
     beforeCallout: render(tokens.slice(0, open)),
@@ -487,13 +474,11 @@ export function renderSafeInlineMarkdown(
         [...context.inline.values()].find((entry) => entry.content === content);
   const children = entry?.content === content ? entry.tokens : undefined;
   if (children && context)
-    return finalizeHtml(
-      sanitize(
-        renderer.renderer.renderInline(
-          children,
-          renderer.options,
-          context.environment,
-        ),
+    return sanitize(
+      renderer.renderer.renderInline(
+        children,
+        renderer.options,
+        context.environment,
       ),
     );
   const environment: FootnoteEnvironment = {
@@ -512,10 +497,8 @@ export function renderSafeInlineMarkdown(
   };
   const tokens: Token[] = [];
   renderer.inline.parse(source, renderer, environment, tokens);
-  return finalizeHtml(
-    sanitize(
-      renderer.renderer.renderInline(tokens, renderer.options, environment),
-    ),
+  return sanitize(
+    renderer.renderer.renderInline(tokens, renderer.options, environment),
   );
 }
 
