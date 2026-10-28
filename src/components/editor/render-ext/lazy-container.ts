@@ -8,7 +8,7 @@
  * echarts）由调用方注入，便于在 happy-dom 等无 SVG/Canvas 环境里替换成假件。
  */
 
-export type LazyRenderKind = "mermaid" | "echarts";
+export type LazyRenderKind = "mermaid" | "echarts" | "katex";
 
 export interface LazyRenderJob {
   host: HTMLElement;
@@ -19,6 +19,7 @@ export interface LazyRenderJob {
 export interface LazyRenderers {
   mermaid?: (host: HTMLElement, source: string) => Promise<boolean> | boolean;
   echarts?: (host: HTMLElement, source: string) => Promise<boolean> | boolean;
+  katex?: (host: HTMLElement, source: string) => Promise<boolean> | boolean;
 }
 
 const LAZY_ATTR = "data-yeli-lazy";
@@ -26,18 +27,22 @@ const SRC_ATTR = "data-yeli-src";
 const DONE_ATTR = "data-yeli-lazy-done";
 const FAILED_ATTR = "data-yeli-lazy-failed";
 
-/** 构造一个惰性容器的占位 HTML（渲染前，仅 raw 代码块 + 元数据）。 */
+/** 构造一个惰性容器的占位 HTML（渲染前，仅 raw 代码块 + 元数据）。
+ *  `tag` 为 "span" 时产出行内容器（如 KaTeX 行内公式），内部不再套块级 `<pre>`。 */
 export function lazyContainerHtml(
   kind: LazyRenderKind,
   source: string,
   className = "yeli-lazy",
+  tag: "div" | "span" = "div",
 ): string {
   const safe = source
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
   const encoded = encodeURIComponent(source);
-  return `<div class="${className}" ${LAZY_ATTR}="${kind}" ${SRC_ATTR}="${encoded}"><pre><code class="hljs language-${kind}">${safe}</code></pre></div>`;
+  const code = `<code class="hljs language-${kind}">${safe}</code>`;
+  const inner = tag === "span" ? code : `<pre>${code}</pre>`;
+  return `<${tag} class="${className}" ${LAZY_ATTR}="${kind}" ${SRC_ATTR}="${encoded}">${inner}</${tag}>`;
 }
 
 export function isLazyContainer(element: HTMLElement): boolean {
@@ -62,7 +67,9 @@ export function collectLazyJobs(root: HTMLElement): LazyRenderJob[] {
     })
     .filter(
       (job): job is LazyRenderJob =>
-        (job.kind === "mermaid" || job.kind === "echarts") &&
+        (job.kind === "mermaid" ||
+          job.kind === "echarts" ||
+          job.kind === "katex") &&
         !job.host.hasAttribute(DONE_ATTR) &&
         !job.host.hasAttribute(FAILED_ATTR),
     );

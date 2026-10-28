@@ -1,10 +1,13 @@
 /**
- * KaTeX 渲染扩展：块级 $$...$$（含同行与多行）与行内 $...$ 用 KaTeX 渲染。
+ * KaTeX 渲染扩展：块级 $$...$$（含同行与多行）与行内 $...$ 渲染成惰性容器
+ * （`data-yeli-lazy="katex"`），容器进入视口/聚焦时才调用 `katex.renderToString`
+ * 并回填，与 mermaid/echarts 一致，避免编辑（typing）期间反复重算导致抖动。
  *
- * 因为 KaTeX 输出依赖行内 `style`（而 vendor 渲染边界的 DOMPurify 会剥 style），
- * 这里把公式渲染成占位 slot（`data-yeli-katex`），等整段 HTML 过完 vendor
- * 净化后再 `postProcessKatex` 回填。回填后的 KaTeX HTML 再过一遍宽松 DOMPurify
- * （允许 style），保证渲染结果仍被净化、且不破坏公式样式。
+ * 占位 HTML 只含公式源码（encodeURIComponent 存入 data-yeli-src，无任何可执行
+ * 内容），随整篇文档过完 vendor DOMPurify；水合时 `katex.renderToString` 会转义
+ * 所有用户输入、只产出受信 markup，故无需二次净化（若再过 vendor 净化，公式的
+ * 行内 style 会被剥除）。渲染异常一律降级 `<pre class="yeli-katex-error">`，
+ * 绝不把异常抛进编辑事务。
  */
 
 import katex from "katex";
@@ -13,8 +16,7 @@ import type {
   StateBlock,
   StateInline,
 } from "markdown-it";
-
-const KATEX_SLOT_ATTR = "data-yeli-katex";
+import { lazyContainerHtml } from "./lazy-container";
 
 function escapeHtml(text: string): string {
   return text
@@ -31,22 +33,47 @@ function sanitizeFormula(formula: string): string {
     .replace(/\n/gu, "\\\\");
 }
 
-export function renderKatex(body: string, display: boolean): string {
+export interface KatexInject {
+  (
+    formula: string,
+    options: { displayMode: boolean; throwOnError: boolean },
+  ): string;
+}
+
+/**
+ * 在单个惰性容器宿主上水合 KaTeX：把占位换成 `katex.renderToString` 输出。
+ * 成功返回 true（宿主标记 done）；异常降级 `<pre class="yeli-katex-error">`
+ * 并返回 false（宿主标记 failed，防重复重试）。
+ * `inject` 为测试用假渲染器；缺省用真实 katex。
+ */
+export function renderKatexLazy(
+  host: HTMLElement,
+  source: string,
+  options: { inject?: KatexInject } = {},
+): boolean {
+  const display = host.classList.contains("yeli-katex-display");
   try {
-    return katex.renderToString(sanitizeFormula(body), {
+    const render = options.inject ?? katex.renderToString;
+    const html = render(sanitizeFormula(source), {
       displayMode: display,
       throwOnError: false,
     });
+    host.innerHTML = html;
+    return true;
   } catch {
-    return `<pre class="yeli-katex-error"><code>${escapeHtml(body)}</code></pre>`;
+    host.innerHTML = `<pre class="yeli-katex-error"><code>${escapeHtml(source)}</code></pre>`;
+    return false;
   }
 }
 
-/** 公式 → 占位 slot；vendor 净化后再回填。 */
-function katexSlot(formula: string, display: boolean): string {
-  const encoded = encodeURIComponent(formula);
-  const cls = display ? "yeli-katex-display" : "yeli-katex-inline";
-  return `<span class="${cls}" ${KATEX_SLOT_ATTR}="${encoded}" data-yeli-katex-display="${display ? "1" : "0"}"></span>`;
+/** 公式 → 惰性容器占位 HTML：块级 div / 行内 span，源码存于 data-yeli-src。 */
+function katexLazyHtml(formula: string, display: boolean): string {
+  return lazyContainerHtml(
+    "katex",
+    formula,
+    display ? "yeli-lazy yeli-katex-display" : "yeli-lazy yeli-katex-inline",
+    display ? "div" : "span",
+  );
 }
 
 /** 块级 $$...$$：独占一行（或 $$ 起、$$ 止的多行）。 */
@@ -142,32 +169,7 @@ export function installKatex(md: MarkdownItType): void {
   );
   md.inline.ruler.before("escape", "yeli_math_inline", mathInline);
   md.renderer.rules.yeli_math_display = (tokens, index) =>
-    katexSlot(tokens[index]!.content, true);
+    katexLazyHtml(tokens[index]!.content, true);
   md.renderer.rules.yeli_math_inline = (tokens, index) =>
-    katexSlot(tokens[index]!.content, false);
-}
-
-/**
- * 回填 KaTeX slot：把占位 `<span data-yeli-katex>` 换成渲染后的公式 HTML。
- *
- * 必须在 vendor 净化之后调用（否则公式的 style 被净化剥除）。占位 slot 本身
- * 是惰性的（仅一个带 data 属性的 span，公式以 encodeURIComponent 存入，
- * 无任何可执行内容），因此已随整篇文档过完 vendor DOMPurify；回填时直接把
- * 公式换成 katex 输出——katex.renderToString 会转义所有用户输入、只产出受信
- * markup，故无需二次净化（与旧 render.ts 的 MATH_SLOT 回填同一思路，避免
- * style 被剥）。纯字符串处理，无 DOM 依赖。
- */
-export function postProcessKatex(html: string): string {
-  if (!html.includes(KATEX_SLOT_ATTR)) return html;
-  const pattern = new RegExp(
-    `<span class="([^"]*)" ${KATEX_SLOT_ATTR}="([^"]*)" data-yeli-katex-display="([01])"></span>`,
-    "gu",
-  );
-  return html.replace(
-    pattern,
-    (_match, _cls: string, encoded: string, display: string) => {
-      const formula = decodeURIComponent(encoded);
-      return renderKatex(formula, display === "1");
-    },
-  );
+    katexLazyHtml(tokens[index]!.content, false);
 }

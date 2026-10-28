@@ -15,7 +15,6 @@ import { installTypewriter } from "./assist/typewriter";
 import { installFocusMode } from "./assist/focus-mode";
 import {
   installRenderExt,
-  postProcessRenderExt,
   observeLazyRenderers,
 } from "./render-ext";
 import { useEditorStore } from "../../store/editorStore";
@@ -24,14 +23,14 @@ import { resolveTheme } from "../../hooks/useTheme";
 import "../../styles/yeli-canvas.css";
 
 // 渲染边界扩展注册一次：vendor 渲染器（read/preview 用）挂 mermaid/echarts/
-// KaTeX/代码高亮规则。postProcess 在 DOMPurify 净化后回填 KaTeX slot。
+// KaTeX/代码高亮规则。特效（mermaid/echarts/katex）均走惰性容器，水合由
+// observeLazyRenderers 触发，无 postProcess 回填。
 let renderExtRegistered = false;
 function ensureRenderExtRegistered(): void {
   if (renderExtRegistered) return;
   renderExtRegistered = true;
   registerRenderExtension({
     install: installRenderExt,
-    postProcess: postProcessRenderExt,
   });
 }
 ensureRenderExtRegistered();

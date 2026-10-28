@@ -3,9 +3,8 @@
  *
  * 在 yeli 渲染边界（src/vendor/yeli/render/markdown.ts）上做扩展：
  *  - 注册 markdown-it 规则：```mermaid / ```echarts → 惰性容器；
- *    ```lang → highlight.js 高亮；$$...$$ / $...$ → KaTeX slot。
- *  - postProcessRenderExt：vendor 净化后回填 KaTeX（style 不被剥）。
- *  - observeLazyContainers：惰性容器进入视口/聚焦才跑 mermaid/echarts。
+ *    ```lang → highlight.js 高亮；$$...$$ / $...$ → KaTeX 惰性容器。
+ *  - observeLazyContainers：惰性容器进入视口/聚焦才跑 mermaid/echarts/katex。
  *
  * 渲染异常全部降级为 raw 代码块 + 错误提示，绝不抛进编辑事务。
  */
@@ -14,7 +13,7 @@ import type { MarkdownIt as MarkdownItType } from "markdown-it";
 import { highlightFence } from "./code-highlight";
 import { mermaidLazyHtml, renderMermaidLazy } from "./mermaid";
 import { echartsLazyHtml, renderEchartsLazy } from "./echarts";
-import { installKatex, postProcessKatex } from "./katex";
+import { installKatex, renderKatexLazy } from "./katex";
 import {
   observeLazyContainers,
   type LazyRenderers,
@@ -46,17 +45,13 @@ export function installRenderExt(md: MarkdownItType): void {
   installKatex(md);
 }
 
-/** vendor 净化后的后处理：回填 KaTeX slot。 */
-export function postProcessRenderExt(html: string): string {
-  return postProcessKatex(html);
-}
-
-/** 组装 mermaid/echarts 渲染器（供惰性水合）。 */
+/** 组装 mermaid/echarts/katex 渲染器（供惰性水合）。 */
 export function renderersFor(options: RenderExtHydrateOptions = {}): LazyRenderers {
   return {
     mermaid: (host, source) =>
       renderMermaidLazy(host, source, options.dark ?? false, options.mermaid),
     echarts: (host, source) => renderEchartsLazy(host, source),
+    katex: (host, source) => renderKatexLazy(host, source),
   };
 }
 
