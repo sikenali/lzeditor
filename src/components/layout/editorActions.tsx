@@ -229,7 +229,7 @@ export function useEditorActions() {
 
 /** 飞出菜单。align='right' 贴触发器右侧（左侧 rail 用），'below' 贴下方（顶栏用）。 */
 export const ActionMenu: React.FC<{
-  refEl: React.RefObject<HTMLDivElement>
+  refEl: React.RefObject<HTMLDivElement | null>
   items: MenuItem[]
   anchor: DOMRect | null
   align?: 'below' | 'right'

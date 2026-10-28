@@ -77,7 +77,7 @@ export const LeftNav: React.FC = () => {
     else if (key === 'mode') modeAction(action)
   }
 
-  const menu = (key: string, ref: React.RefObject<HTMLButtonElement>, icon: string, label: string) => (
+  const menu = (key: string, ref: React.RefObject<HTMLButtonElement | null>, icon: string, label: string) => (
     <UiTip text={label} placement="right">
       <div className="rail-menu-btn" onClick={() => flyout.open(key, ref.current)}>
         <button ref={ref} className={`rail-btn rail-btn--menu${flyout.isOpen(key) ? ' active' : ''}`} aria-label={label}>
