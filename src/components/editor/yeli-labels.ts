@@ -23,6 +23,7 @@ export const YELI_LABELS_ZH: Labels = {
   authors: "作者",
   footnote: "脚注",
   code: "代码",
+  codeBlock: "代码块",
   image: "图片",
   linkAddress: "链接地址",
   selectImage: "选择图片",
