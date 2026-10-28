@@ -7,7 +7,6 @@
 <p align="center">
   <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white">
-  <img alt="CodeMirror" src="https://img.shields.io/badge/CodeMirror-6-4EAA25?logo=codemirror&logoColor=white">
   <img alt="markdown-it" src="https://img.shields.io/badge/markdown-it-15-1A5FB4?logo=markdown&logoColor=white">
   <img alt="Electron" src="https://img.shields.io/badge/Electron-31-4790?logo=electron&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow">
@@ -18,7 +17,7 @@
 
 ## 项目介绍
 
-**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + CodeMirror 6，渲染走自研 markdown-it 方言引擎，全部状态与数据落在浏览器本地存储，无任何服务端业务依赖（本机只留一个零依赖健康检查进程），同时支持 LPK 云部署与 Electron 桌面应用。
+**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + 自研 yeli 区块编辑器（source-mapped WYSIWYG block projection，源自 https://github.com/whitesmell/yeli，MIT），渲染走自研 markdown-it 方言引擎，全部状态与数据落在浏览器本地存储，无任何服务端业务依赖（本机只留一个零依赖健康检查进程），同时支持 LPK 云部署与 Electron 桌面应用。
 
 ### 核心功能
 

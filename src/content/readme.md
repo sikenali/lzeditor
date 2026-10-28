@@ -18,13 +18,13 @@
 
 ## 项目介绍
 
-**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + CodeMirror 6，后端采用 Express + 本地 JSON 文件存储（无外部原生依赖），同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
+**懒猫编辑器（LZEditor）**是一款面向个人与团队场景的轻文档 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。前端基于 React + Vite + 自研 yeli 区块编辑器（source-mapped WYSIWYG block projection，源自 https://github.com/whitesmell/yeli，MIT），后端采用 Express + 本地 JSON 文件存储（无外部原生依赖），同时支持 LPK 云部署与 Electron 桌面应用，提供流畅的写作体验与智能 AI 能力。
 
 ### 核心功能
 
 | 功能 | 说明 |
 |------|------|
-| **Markdown 编辑** | CodeMirror 6 源码编辑器，支持 Markdown 语法、实时预览、分屏模式 |
+| **Markdown 编辑** | 自研 yeli 区块所见即所得编辑器，支持 Markdown 语法、实时预览、分屏模式 |
 | **AI 辅助写作** | 支持 Anthropic Claude / OpenAI / 自定义基座，摘要、续写、润色、翻译一键完成 |
 | **多 Provider 支持** | Anthropic、OpenAI、Azure OpenAI、自定义兼容接口，模型自由切换 |
 | **多文档管理** | 文档列表、新建/重命名/删除、快捷搜索、最近打开记录 |
@@ -58,7 +58,7 @@ lzeditor/
 │   │
 │   ├── components/
 │   │   ├── editor/               # 编辑器核心组件
-│   │   │   ├── LZEditor.tsx      # 主编辑器 (CodeMirror 6 封装)
+│   │   │   ├── LZEditor.tsx      # 主编辑器 (yeli 区块编辑器封装)
 │   │   │   ├── AIPanel.tsx       # AI 辅助面板
 │   │   │   ├── FloatingToolbar.tsx  # 浮动工具栏
 │   │   │   ├── Math.tsx          # KaTeX 公式渲染
@@ -137,7 +137,7 @@ lzeditor/
 │  │  预加载: preload.ts (contextBridge → window.electronAPI)    │  │
 │  └────────────────────────────────────────────────────────────┘  │
 ├──────────────────────────────────────────────────────────────────┤
-│                     渲染进程 — React + CodeMirror 6 应用            │
+│                     渲染进程 — React + 自研 yeli 区块编辑器应用      │
 │                                                                  │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────┐ ┌─────────────┐ │
 │  │  App.tsx     │ │  Layout      │ │  Panels  │ │  Sidebar    │ │
