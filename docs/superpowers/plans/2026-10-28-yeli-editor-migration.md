@@ -193,6 +193,7 @@ describe('YeliEditorFacade fidelity', () => {
 - [ ] **步骤 3：实现 facade**
 
 `src/components/editor/facade/YeliEditorFacade.ts` 要点：封装 yeli `document/store`、`transactions`、`editor/command-registry`；`setText` 建 store 并整串载入（仅首载）；`getText` 从 store 合成保真 md；`insertText/replaceRange/insertBlock/insertCodeBlock/insertFormula` 走 typed range-aware 事务（越界/非法 revision 抛错）；`onChange` 订阅 store 变更回吐 md；`getSelection/setSelection/focus/scrollToBlock/undo/redo`；`execCommand(name,args)` 透传 command-registry。导出 `createYeliFacade()` 与 `YeliEditorFacade` 类型。类型不泄漏 yeli 内部 model（用 `@internal` 封住，仅暴露 facade 公共方法）。
+  > ⚠️ 推迟登记：execCommand 的完整 command-registry 透传（需 Labels 实例）由任务 4/5 接入时补齐；insertText 的 anchor 参数由任务 5 AI 流式接入时扩展。
 
 - [ ] **步骤 4：运行确认通过**
 
@@ -263,6 +264,7 @@ git commit -m "feat(editor): 接入 yeli edit-canvas，新编辑器入口替换 
 - [ ] **步骤 1：实现自动配对（autopair.ts）**
 
 keyboard 事件层挂 facade：`(`/`[`/`"`/`**` 等输入走 `insertText` 事务并插闭合符；`Backspace` 空配对删除；在 `tests/vendor/` 补用例（`npx vitest run` 新增 autopair 用例）。
+  > ⚠️ 见任务 2 推迟登记：execCommand 完整 command-registry 透传（需 Labels 实例）在此接入时补齐。
 
 - [ ] **步骤 2：实现智能粘贴（smart-paste.ts）**
 
@@ -306,6 +308,7 @@ grep -rn "getCM6Editor\|getEditor()\s*(" src --include=*.ts --include=*.tsx
 - [ ] **步骤 2：AI 流式插入改逐 chunk 事务**
 
 `src/hooks/useAI.ts` 流式：每 chunk 调 `facade.insertText(chunk, anchor)`（anchor 用 `getSelection()` 定位，revision 递增）；快速编辑期间 revision 不匹配则丢弃该 chunk（不覆盖最新）。补用例：流式插入与编辑交错不丢内容（`tests/vendor/facade-fidelity.test.mjs` 增补）。
+  > ⚠️ 见任务 2 推迟登记：insertText 的 anchor 参数在此 AI 流式接入时扩展。
 
 - [ ] **步骤 3：插代码块 / 公式改 facade**
 
