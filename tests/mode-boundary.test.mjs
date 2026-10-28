@@ -34,8 +34,11 @@ assert.equal(leftLayout.length > 0, true, '必须能定位到左侧布局')
 assert.match(topLayout, /style-mode-stack/, '顶部布局点「样式」必须有样式面板')
 assert.match(leftLayout, /style-mode-stack/, '左侧布局点「样式」必须有样式面板')
 
-// ── 滚动同步需要唯一滚动容器：CM6 不能锁死高度 ──
-assert.match(appCss, /overflow: visible/, 'CM6 内部不能自己滚动')
+// ── 滚动同步需要唯一滚动容器：yeli .edit-surface 拥有滚动（CM6 已移除） ──
+const yeliCss = read('src/styles/yeli-canvas.css')
+const surfaceBlock = yeliCss.match(/\.edit-surface,\n\.read-surface \{[\s\S]*?\}/)?.[0] ?? ''
+assert.match(surfaceBlock, /overflow: auto/, '滚动同步的唯一滚动容器必须是 .edit-surface')
+assert.doesNotMatch(appCss, /cm6-editor-container|--lz-/, 'CM6 死 CSS 与 --lz-* 变量应已清理')
 
 // ── 阅读模式：整块替换编辑区，走分页引擎 ──
 const readMode = read('src/components/editor/ReadMode.tsx')

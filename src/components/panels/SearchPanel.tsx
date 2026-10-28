@@ -7,6 +7,11 @@ interface SearchPanelProps {
   onClose: () => void
 }
 
+/** 查询参数序列化键：用于判断搜索词/开关自上次搜索后是否变化。 */
+function searchOptionsKey(o: SearchQueryOptions): string {
+  return `${o.term}\u0000${o.regex}\u0000${o.caseSensitive}\u0000${o.wholeWord}`
+}
+
 export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [replaceTerm, setReplaceTerm] = useState('')
@@ -16,6 +21,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const [matchCount, setMatchCount] = useState(0)
   const [patternError, setPatternError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  // 最近一次成功 searchMatches 的查询参数键；用于检测「改词未重搜」。
+  const lastSearchKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus()
@@ -35,6 +42,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
     if (!facade || !searchTerm.trim()) return 0
     try {
       const count = facade.searchMatches(buildOptions())
+      lastSearchKeyRef.current = searchOptionsKey(buildOptions())
       setPatternError(null)
       return count
     } catch {
@@ -52,8 +60,10 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
     const facade = getYeliFacade()
     if (!facade) return
     try {
-      // 先为当前查询词建立命中集，避免替换到上一次搜索的过期位置。
+      // 先为当前查询词建立命中集（相同参数时 facade 保留导航下标，已导航到
+      // 第 N 处后替换仍是第 N 处），避免替换到上一次搜索的过期位置。
       facade.searchMatches(buildOptions())
+      lastSearchKeyRef.current = searchOptionsKey(buildOptions())
       setMatchCount(facade.replaceCurrent(replaceTerm))
       setPatternError(null)
     } catch {
@@ -70,6 +80,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
       facade.searchMatches(buildOptions())
       facade.replaceAll(replaceTerm)
       setMatchCount(facade.searchMatches(buildOptions()))
+      lastSearchKeyRef.current = searchOptionsKey(buildOptions())
       setPatternError(null)
     } catch {
       setPatternError('正则表达式无效')
@@ -79,14 +90,36 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const handleNext = useCallback(() => {
     const facade = getYeliFacade()
     if (!facade || !searchTerm.trim()) return
-    facade.findNext()
-  }, [searchTerm])
+    try {
+      if (lastSearchKeyRef.current !== searchOptionsKey(buildOptions())) {
+        // 改词未重搜：先为当前词重置命中集/高亮（跳到第一处）。
+        setMatchCount(facade.searchMatches(buildOptions()))
+        lastSearchKeyRef.current = searchOptionsKey(buildOptions())
+      } else {
+        facade.findNext()
+      }
+      setPatternError(null)
+    } catch {
+      setPatternError('正则表达式无效')
+    }
+  }, [searchTerm, buildOptions])
 
   const handlePrev = useCallback(() => {
     const facade = getYeliFacade()
     if (!facade || !searchTerm.trim()) return
-    facade.findPrev()
-  }, [searchTerm])
+    try {
+      if (lastSearchKeyRef.current !== searchOptionsKey(buildOptions())) {
+        // 改词未重搜：先为当前词重置命中集/高亮（跳到第一处）。
+        setMatchCount(facade.searchMatches(buildOptions()))
+        lastSearchKeyRef.current = searchOptionsKey(buildOptions())
+      } else {
+        facade.findPrev()
+      }
+      setPatternError(null)
+    } catch {
+      setPatternError('正则表达式无效')
+    }
+  }, [searchTerm, buildOptions])
 
   return (
     <div className="search-panel-bar">

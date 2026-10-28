@@ -101,9 +101,10 @@ export interface YeliEditorFacade {
   getSelection(): FacadeSelection | null;
   setSelection(from: number, to: number): void;
   /**
-   * 在保真源码上做匹配遍历，返回命中数并把当前高亮重置到第一处。
-   * 无效正则（regex=true 且编译失败）→ 抛 RangeError，调用方展示错误。
-   * 无命中 → 返回 0 且不高亮。命中按源码升序排列。
+   * 在保真源码上做匹配遍历，返回命中数。查询参数与上次一致时保留当前高亮
+   * 下标（findNext/findPrev 导航后重复 searchMatches 不重置回第一处）；参数
+   * 变化时把当前高亮重置到第一处。无效正则（regex=true 且编译失败）→ 抛
+   * RangeError，调用方展示错误。无命中 → 返回 0 且不高亮。命中按源码升序排列。
    */
   searchMatches(options: SearchQueryOptions): number;
   /** 跳到当前命中的下一处（末处回绕到首处）。无命中 → false。 */
@@ -198,6 +199,16 @@ function buildSearchRegex(options: SearchQueryOptions): RegExp {
       `search regex invalid: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
+}
+
+/** 两组查询参数是否等价（term 与开关全部一致）。 */
+function sameSearchOptions(a: SearchQueryOptions, b: SearchQueryOptions): boolean {
+  return (
+    a.term === b.term &&
+    a.regex === b.regex &&
+    a.caseSensitive === b.caseSensitive &&
+    a.wholeWord === b.wholeWord
+  );
 }
 
 class YeliEditorFacadeImpl implements YeliEditorFacade {
@@ -546,9 +557,15 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
   }
 
   searchMatches(options: SearchQueryOptions): number {
+    // 查询参数与上次一致时保留当前高亮下标（已导航场景），避免面板在
+    // replace 前重建命中集把高亮重置回第一处；参数变化才重置到第一处。
+    const sameOptions =
+      this.#searchOptions !== null && sameSearchOptions(this.#searchOptions, options);
     const matches = this.#computeMatches(options);
-    this.#matchIndex = matches.length > 0 ? 0 : -1;
-    if (this.#matchIndex >= 0) this.#highlightCurrentMatch();
+    if (!sameOptions) {
+      this.#matchIndex = matches.length > 0 ? 0 : -1;
+      if (this.#matchIndex >= 0) this.#highlightCurrentMatch();
+    }
     return matches.length;
   }
 

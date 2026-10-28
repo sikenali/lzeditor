@@ -197,6 +197,21 @@ describe("YeliEditorFacade search/replace (B1)", () => {
     assert.deepEqual(f.getSelection(), { from: 4, to: 7 });
   });
 
+  it("replaceCurrent replaces the highlighted hit after navigation, not the first (issue 1)", () => {
+    const f = createYeliFacade();
+    f.setText("foo foo foo");
+    f.searchMatches(OPT());
+    // 导航到第 2 处（index 1）
+    assert.equal(f.findNext(), true);
+    assert.deepEqual(f.getSelection(), { from: 4, to: 7 });
+    // 面板在 replace 前会先重建命中集（相同查询参数）——不应把高亮重置回第一处
+    f.searchMatches(OPT());
+    assert.deepEqual(f.getSelection(), { from: 4, to: 7 }, "重建命中集不应重置高亮到第一处");
+    const remaining = f.replaceCurrent("bar");
+    assert.equal(remaining, 2);
+    assert.equal(f.getText(), "foo bar foo", "应替换当前高亮处（第 2 处），而非第 1 处");
+  });
+
   it("replaceAll replaces every hit and clears the match set", () => {
     const f = createYeliFacade();
     f.setText("foo foo foo");

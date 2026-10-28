@@ -54,7 +54,9 @@ function clampPanelY(y: number, h: number): number {
 export const AIPanel: React.FC = () => {
   const state = useAIStore()
   const { send, isStreaming, stop, applyToDoc, undo, copyOutput } = useAI()
-  const editorRef = useEditorStore(s => s.editorRef)
+  // editorContentRef 由 YeliEditor 注入为 .edit-surface（.yeli-canvas-shell 内
+  // 的滚动容器），是实际存在的编辑区；editorRef 已无注入方（恒为 null）。
+  const editorContentRef = useEditorStore(s => s.editorContentRef)
   const panelRef = useRef<HTMLDivElement>(null)
 
   const PANEL_W = 360
@@ -64,7 +66,7 @@ export const AIPanel: React.FC = () => {
     const stored = state.panelPosition
     if (stored) return stored
 
-    const editorEl = editorRef?.querySelector?.('.cm-editor') as HTMLElement | null
+    const editorEl = editorContentRef as HTMLElement | null
     if (!editorEl) return { x: 8, y: 120 }
 
     const editorRect = editorEl.getBoundingClientRect()
