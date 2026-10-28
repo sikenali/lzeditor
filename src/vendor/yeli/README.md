@@ -2,7 +2,9 @@
 
 来源：https://github.com/whitesmell/yeli （MIT License）
 钉住 commit：ade95cba294a72b8db033599367c3ddc250e2b0b
-拷贝范围：src/editor、src/document、src/render、src/types、src/format/assets.ts、src/i18n/en.ts（+ 后续任务补齐 src/ui/edit-canvas.tsx）
+拷贝范围：src/editor、src/document、src/render、src/types、src/format/assets.ts、
+src/i18n/en.ts、src/i18n/locale.ts、src/ui/{edit-canvas,metadata-inline,image-block,
+image-preview,starter-assets,table-size-picker,use-document-store,use-dialog-focus}.*
 
 同步方式：上游 main 更新后，以同一 commit 基准重新拷贝，本地只允许在
 src/vendor/yeli/ 之外的适配层做改动；vendor 内改动需在 README 记录 diff 原因。
@@ -29,10 +31,23 @@ License：MIT，见 docs/third-party-notices-yeli.md。
 3. `src/types/jsdom.d.ts`：上游为测试（jsdom）声明的环境类型。vendor 拷贝范围内
    无任何文件 import "jsdom"，该声明为死代码，予以保留仅为忠实记录。
 
+4. `src/i18n/locale.ts`：为 `ui/metadata-inline.tsx` 的运行时依赖
+   （`normalizeLocale`）补拷。纯函数、零 import，原样拷贝。
+
+5. `src/ui/*`（任务 3 补齐）：edit-canvas.tsx 及其直接 import 的 ui 兄弟模块
+   （metadata-inline.tsx、image-block.ts、image-preview.tsx、starter-assets.ts、
+   table-size-picker.tsx、use-document-store.ts、use-dialog-focus.ts）原样拷贝。
+   它们依赖的 yeli 应用级资源（文案 `Labels`、样式、图标）由 lzeditor 适配层提供，
+   见 `src/components/editor/yeli-labels.ts`（中文 `Labels` 实例）与
+   `src/styles/yeli-canvas.css`（区块画布样式抽取）。
+
 ## 依赖补齐（相对上游新增的运行时/配置项）
 
 - `yaml`：document/frontmatter.ts 运行时依赖（YAML 前文档元数据解析）。
   已在 package.json dependencies 中加入（上游同版本 yaml@2.9.0）。
+- `@heroicons/react`：ui/* 模块的图标依赖（edit-canvas、metadata-inline、
+  image-preview 从 `@heroicons/react/24/{outline,solid}` 取图标）。lzeditor 原无此包，
+  已按上游版本（2.2.0）加入 dependencies 并同步 lockfile（vendor 原样，不改图标）。
 - tsconfig `allowImportingTsExtensions: true`：上游源码全部使用带 `.ts`
   扩展名的相对 import（46 处），项目原 tsconfig 为 false 会导致 TS5097。
   已开启（bundler 模块解析下仅放开能力，不强制，向后兼容）。

@@ -46,6 +46,15 @@ export interface YeliEditorFacade {
   redo(): boolean;
   /** Dispatches a named command; undo/redo are supported directly. */
   execCommand(name: string, args?: Record<string, unknown>): unknown;
+  /**
+   * The live {@link DocumentStore} backing this facade.
+   *
+   * For the edit-surface renderer (`EditCanvas`) only: it must operate on the
+   * exact same store the facade writes through, so keystrokes, undo/redo and
+   * programmatic writes all share one revision stream. External callers should
+   * keep using the typed facade methods instead of touching the store.
+   */
+  getDocumentStore(): DocumentStore;
 }
 
 class YeliEditorFacadeImpl implements YeliEditorFacade {
@@ -169,6 +178,10 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
     throw new Error(
       `execCommand: unsupported command "${name}" (labels/locale wiring arrives with the edit-surface layer)`,
     );
+  }
+
+  getDocumentStore(): DocumentStore {
+    return this.#ensureStore();
   }
 }
 

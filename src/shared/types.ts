@@ -99,6 +99,7 @@ export interface EditorStoreState {
   setTocItems: (items: { id: string; text: string; level: number }[]) => void
   setActiveTocId: (id: string) => void
   setEditorRef: (ref: HTMLDivElement | null) => void
+  setEditorContentRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
   editorContentRef: HTMLDivElement | null
   addVersion: (version: DocVersion) => void

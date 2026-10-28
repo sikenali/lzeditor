@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react'
 import { mdToHtml } from './utils/mdToHtml'
 import { Toolbar } from './components/layout/Toolbar'
 import { LeftNav } from './components/layout/LeftNav'
@@ -9,7 +9,9 @@ import { SettingsDialog } from './components/panels/SettingsDialog'
 import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { StyleMainPanel } from './components/panels/StyleMainPanel'
-import { LZEditor } from './components/editor/LZEditor'
+import { YeliEditor } from './components/editor/YeliEditor'
+import { getDocMd } from './utils/docSource'
+import { README_CONTENT } from './components/editor/constants'
 import { ReadMode } from './components/editor/ReadMode'
 import { SearchPanel } from './components/panels/SearchPanel'
 import { LibraryPanel } from './components/panels/LibraryPanel'
@@ -93,6 +95,8 @@ function App() {
   const showLibrary = useEditorStore(s => s.showLibrary)
   const showRightPanel = useEditorStore(s => s.showRightPanel)
   const showWelcome = useEditorStore(s => s.showWelcome)
+  const activeDocId = useEditorStore(s => s.activeDocId)
+  const docsMd = useEditorStore(s => s.docsMd || {})
   const navMode = useSettingsStore(s => s.navMode || 'top')
   const showSearch = useEditorStore(s => s.showSearch)
 
@@ -395,6 +399,27 @@ function App() {
     closeInsert()
   }
 
+  // ── 新编辑器（yeli 区块画布）的受控数据面 ──
+  // md 输入：优先 docsMd，其次文档源码兜底（builtin/README），避免首开空内容。
+  const editorMd = useMemo(() => {
+    const docId = activeDocId || 'readme'
+    if (docsMd?.[docId]) return docsMd[docId]
+    return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
+  }, [activeDocId, docsMd])
+
+  // onChange(md) 输出：保真 md 回写 store + docsMd + 本地存储（与 CM6 保存路径一致）。
+  const handleEditorChange = useCallback((md: string) => {
+    const es = useEditorStore.getState()
+    es.setMdContent(md)
+    const docId = es.activeDocId
+    if (!docId) return
+    try {
+      const html = mdToHtml(md)
+      es.updateDoc({ md, html, docsMd: { [docId]: md } })
+      localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
+    } catch (e) { silentError('编辑器内容回写文档失败', e) }
+  }, [])
+
   // ── 中心内容 ──
   const centerContent = (() => {
     // 首次启动：欢迎页替代编辑区，不再默认展开 welcome/README 文档
@@ -408,7 +433,7 @@ function App() {
     }
     // 编辑 / 代码 / 排版 三种模式都挂源码编辑器：
     // 预览模式与排版模式的右侧内容走右栏，代码模式不给右栏留位。
-    return <LZEditor />
+    return <YeliEditor md={editorMd} onChange={handleEditorChange} />
   })()
 
   // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容
