@@ -1,7 +1,7 @@
 import DOMPurify from "dompurify";
 import type { DOMPurify as DOMPurifyInstance, WindowLike } from "dompurify";
 import MarkdownIt from "markdown-it";
-import type { Token } from "markdown-it";
+import type { MarkdownIt as MarkdownItType, Token } from "markdown-it";
 
 import {
   indexFrontmatter,
@@ -50,6 +50,40 @@ export interface MarkdownRenderSegments {
   afterCallout: string;
   beforeCallout: string;
   callout: string | null;
+}
+
+/**
+ * 渲染边界扩展点（lzeditor 适配层注册，见 src/components/editor/render-ext/）。
+ *  - `install(md)`：在 markdown-it 实例创建后注入自定义规则（mermaid/echarts/
+ *    KaTeX/代码高亮）。
+ *  - `postProcess(html)`：DOMPurify 净化后对 HTML 做后处理（如 KaTeX slot 回填，
+ *    避免公式的 style 被净化剥除）。
+ *
+ * vendor 内改动记录：上游无此注入点，属适配层需要的扩展接口。
+ */
+export interface RenderExtension {
+  install?: (md: MarkdownItType) => void;
+  postProcess?: (html: string) => string;
+}
+
+const renderExtensions: RenderExtension[] = [];
+
+export function registerRenderExtension(extension: RenderExtension): void {
+  renderExtensions.push(extension);
+}
+
+function installRenderExtensions(md: MarkdownItType): void {
+  for (const extension of renderExtensions) {
+    extension.install?.(md);
+  }
+}
+
+function finalizeHtml(html: string): string {
+  let output = html;
+  for (const extension of renderExtensions) {
+    output = extension.postProcess?.(output) ?? output;
+  }
+  return output;
 }
 
 let sanitizer: DOMPurifyInstance | null =
@@ -250,6 +284,7 @@ function rendererFor(options: MarkdownRenderOptions) {
     }
     return self.renderToken(tokens, index, rendererOptions);
   };
+  installRenderExtensions(renderer);
   return renderer;
 }
 
@@ -401,8 +436,10 @@ export function renderDocumentMarkdownSegments(
   if (open === -1) {
     return {
       afterCallout: "",
-      beforeCallout: sanitize(
-        renderer.renderer.render(tokens, renderer.options, environment),
+      beforeCallout: finalizeHtml(
+        sanitize(
+          renderer.renderer.render(tokens, renderer.options, environment),
+        ),
       ),
       callout: null,
     };
@@ -417,7 +454,9 @@ export function renderDocumentMarkdownSegments(
   }
 
   const render = (slice: typeof tokens) =>
-    sanitize(renderer.renderer.render(slice, renderer.options, environment));
+    finalizeHtml(
+      sanitize(renderer.renderer.render(slice, renderer.options, environment)),
+    );
   return {
     afterCallout: render(tokens.slice(close + 1)),
     beforeCallout: render(tokens.slice(0, open)),
@@ -448,11 +487,13 @@ export function renderSafeInlineMarkdown(
         [...context.inline.values()].find((entry) => entry.content === content);
   const children = entry?.content === content ? entry.tokens : undefined;
   if (children && context)
-    return sanitize(
-      renderer.renderer.renderInline(
-        children,
-        renderer.options,
-        context.environment,
+    return finalizeHtml(
+      sanitize(
+        renderer.renderer.renderInline(
+          children,
+          renderer.options,
+          context.environment,
+        ),
       ),
     );
   const environment: FootnoteEnvironment = {
@@ -471,8 +512,10 @@ export function renderSafeInlineMarkdown(
   };
   const tokens: Token[] = [];
   renderer.inline.parse(source, renderer, environment, tokens);
-  return sanitize(
-    renderer.renderer.renderInline(tokens, renderer.options, environment),
+  return finalizeHtml(
+    sanitize(
+      renderer.renderer.renderInline(tokens, renderer.options, environment),
+    ),
   );
 }
 

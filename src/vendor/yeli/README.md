@@ -41,6 +41,15 @@ License：MIT，见 docs/third-party-notices-yeli.md。
    见 `src/components/editor/yeli-labels.ts`（中文 `Labels` 实例）与
    `src/styles/yeli-canvas.css`（区块画布样式抽取）。
 
+6. `src/render/markdown.ts`（任务 4 渲染边界扩展）：新增渲染边界注入点
+   `registerRenderExtension({ install?, postProcess? })` 与 `RenderExtension` 类型。
+   `rendererFor()` 在创建 markdown-it 实例后调用各扩展的 `install(md)`（注册
+   mermaid/echarts/KaTeX/代码高亮规则）；`renderDocumentMarkdownSegments` /
+   `renderSafeInlineMarkdown` 在 DOMPurify 净化后调用各扩展的 `postProcess(html)`
+   （KaTeX slot 回填，避免公式 style 被净化剥除）。上游无此注入点，属 lzeditor
+   适配层需要的扩展接口；上游算法（投影、事务、store）未改动。扩展实现见
+   `src/components/editor/render-ext/`。
+
 ## 依赖补齐（相对上游新增的运行时/配置项）
 
 - `yaml`：document/frontmatter.ts 运行时依赖（YAML 前文档元数据解析）。
