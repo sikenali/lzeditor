@@ -238,7 +238,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   addVersion: (version: DocVersion) => {
     const versions = get().versions
     const last = versions[versions.length - 1]
-    // 以 markdown 正文比较：CM6 曾长期传 html:''，按 html 去重会丢掉所有后续快照
+    // 以 markdown 正文比较：旧编辑器曾长期传 html:''，按 html 去重会丢掉所有后续快照
     if (last && last.md === version.md) return
     set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
   },
@@ -273,9 +273,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       set({ docTitle: doc.title, docPath: doc.path || '', activeLibraryId: doc.libraryId || s.activeLibraryId })
       return
     }
-    // 切换前把未落盘的编辑写回当前文档。CM6 已在 onChange 里写 docsMd，
+    // 切换前把未落盘的编辑写回当前文档。编辑器已在 onChange 里写 docsMd，
     // 这里只兜底 mdContent（代码模式编辑走的是 mdContent）；
-    // 不能再读 s.editor?.getHTML() —— 那是旧编辑器的历史内容，会把 CM6 的编辑覆盖掉。
+    // 不能再读 s.editor?.getHTML() —— 那是旧编辑器的历史内容，会把新编辑覆盖掉。
     if (s.activeDocId && s.mdContent && s.mdContent !== s.docsMd?.[s.activeDocId]) {
       s.updateDoc({ docsMd: { [s.activeDocId]: s.mdContent } })
     }

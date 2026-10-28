@@ -161,6 +161,52 @@ export function scrollBlockIntoView(root: HTMLElement, blockId: string): boolean
 }
 
 /**
+ * 在当前 DOM 把选区放到源码区间 [from, to)（同块内跨文本选择，供查找高亮）。
+ * 跨块区间退化为选中首块内的可达部分；任一步骤不可映射 → 返回 false（不抛）。
+ */
+export function selectSourceRange(
+  root: HTMLElement,
+  from: number,
+  to: number,
+): boolean {
+  const editable = editableForSourceOffset(root, from);
+  if (!editable) return false;
+  const shell = editable.closest<HTMLElement>("[data-source-from]");
+  const blockFrom = Number(shell?.getAttribute("data-source-from") ?? NaN);
+  const blockTo = Number(shell?.getAttribute("data-source-to") ?? NaN);
+  if (!Number.isSafeInteger(blockFrom) || !Number.isSafeInteger(blockTo)) {
+    return false;
+  }
+  const renderedLength = plainTextLength(editable);
+  const startTextOffset = Math.max(0, from - blockTo + renderedLength);
+  const endTextOffset = Math.max(
+    startTextOffset,
+    Math.min(renderedLength, to - blockTo + renderedLength),
+  );
+  const start = textPointAt(editable, startTextOffset);
+  if (!start) return false;
+  const end = textPointAt(editable, endTextOffset) ?? start;
+  const range = document.createRange();
+  range.setStart(start.node, start.offset);
+  range.setEnd(end.node, end.offset);
+  const selection = window.getSelection();
+  if (!selection) return false;
+  selection.removeAllRanges();
+  selection.addRange(range);
+  return true;
+}
+
+/** 把源码偏移所在块滚进视口（查找跳转高亮用，不夺焦点）。 */
+export function scrollOffsetIntoView(root: HTMLElement, sourceOffset: number): boolean {
+  const editable = editableForSourceOffset(root, sourceOffset);
+  if (!editable) return false;
+  editable
+    .closest<HTMLElement>("[data-source-block-id]")
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
+/**
  * 把焦点与光标放到源码偏移处，并把所在块滚入视口。
  * 供 facade.focus() 使用：大纲跳转 setSelection 后调用，视图跟随目标块。
  * 失败静默返回 false（不阻断调用方）。

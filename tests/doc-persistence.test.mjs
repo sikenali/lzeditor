@@ -6,28 +6,9 @@ import { test } from 'node:test'
 // 链式 require() 读原始内容文件，在 node 测试里加载不了。
 // 这类接线靠行为测试覆盖不了，只能锁源码形状。
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
-const cm6 = read('src/components/editor/CM6Editor.tsx')
 const store = read('src/store/editorStore.ts')
 const pendingSave = read('src/utils/pendingSave.ts')
 const catalog = read('src/utils/docCatalog.ts')
-
-test('待存内容在防抖回调外登记，落盘走统一入口', () => {
-  assert.match(cm6, /setPendingEdit\(\{ md: text, html \}\)/, '防抖窗口内登记待存内容')
-  assert.match(cm6, /persistEdit\(docId, \{ md: text, html \}\)/, '防抖到期走 persistEdit')
-  assert.doesNotMatch(cm6, /localStorage\.setItem/, 'CM6 不该再直接写 localStorage')
-  assert.doesNotMatch(cm6, /catch \{\}/, '静默吞掉的 catch 必须清掉')
-})
-
-test('pagehide 与 hidden 两条路都会兜底落盘', () => {
-  assert.match(cm6, /addEventListener\('pagehide'/)
-  assert.match(cm6, /visibilityState === 'hidden'/)
-  assert.match(cm6, /flushPendingEdit\(\)/)
-})
-
-test('两个监听器都有对应的 remove，不泄漏', () => {
-  assert.match(cm6, /removeEventListener\('pagehide'/)
-  assert.match(cm6, /removeEventListener\('visibilitychange'/)
-})
 
 test('配额写满走 silentError + toast，不再静默 catch', () => {
   assert.match(pendingSave, /silentError\(/)

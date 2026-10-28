@@ -5,11 +5,6 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 
 const app = read('src/App.tsx')
 const actions = read('src/components/layout/editorActions.tsx')
-const tableEdit = read('src/components/editor/codemirror/table-edit.ts')
-const focusMode = read('src/components/editor/codemirror/focus-mode.ts')
-const editorTs = read('src/components/editor/codemirror/editor.ts')
-const cm6 = read('src/components/editor/CM6Editor.tsx')
-const lzeditor = read('src/components/editor/LZEditor.tsx')
 const exportDialog = read('src/components/panels/ExportDialog.tsx')
 const codeDialog = read('src/components/panels/CodeDialog.tsx')
 const modelTab = read('src/components/panels/settings/ModelSettingsTab.tsx')
@@ -42,30 +37,13 @@ assert.doesNotMatch(app, /_align|_newTab|_type|_withHeaderRow/, '不能再留被
 assert.match(actions, /TABLE_OP_TO_YELI/, 'tableAction 必须映射到 yeli 表格命令')
 assert.match(actions, /facade\.execCommand\(yeliId\)/, '单元格操作必须经 facade 表格命令路由')
 assert.doesNotMatch(actions, /合并单元格|拆分单元格/, 'markdown 无法表达单元格合并，菜单里不能留空转项')
-assert.match(tableEdit, /export type TableOp = 'row' \| 'delRow' \| 'col' \| 'colBefore' \| 'delCol' \| 'headerRow' \| 'delete'/)
-assert.match(tableEdit, /isSepRow/, '分隔行必须能识别')
-assert.match(tableEdit, /SEP_CELL\.test\(t\) \? t : '---'/, '分隔行缺格必须补 ---，否则整块表格渲染不出来')
-assert.match(tableEdit, /view\.dispatch\(/, '必须真正派发事务，不能只算不落')
+assert.match(actions, /getTableContext\(\)/, '表格结构命令必须经 facade 反推当前表格上下文')
 assert.match(tableDropdown, /setActiveCell\(prev => \(prev && prev\.c === c/, '删列后 activeCell 索引必须同步，否则连点会删错列')
 assert.match(tableDropdown, /setActiveCell\(prev => \(prev && prev\.r === r/, '删行后 activeCell 索引必须同步')
 
-// ── 批次 B：编辑器设置真正生效 ─────────────────────────────────────────
+// ── 批次 B：编辑器设置真正生效（yeli 侧）──────────────────────────────
 
-assert.match(editorTs, /export function countWords/, '词数统计必须导出以便单测')
-assert.match(editorTs, /\\u3400-\\u4dbf\\u4e00-\\u9fff/, '词数统计必须把 CJK 字符单独计数')
-assert.doesNotMatch(editorTs, /text\.split\(\/\\s\+\/\)\.filter\(Boolean\)\.length/, '不能再按空白切词，中文整段会算成 1 个词')
-assert.match(editorTs, /setSpellcheck\(on: boolean, lang\?: string\)/, '拼写检查必须能带语言')
-assert.match(editorTs, /setAttribute\('lang', lang\)/, '拼写检查语言必须写到 DOM')
-assert.match(editorTs, /setFocusMode/, '专注模式必须有开关入口')
-assert.match(editorTs, /focusModeExtension,/, '专注模式扩展必须装进编辑器')
-assert.match(editorTs, /currentFocusMode/, '专注模式必须有当前值缓存，避免重复派发')
-assert.match(focusMode, /RangeSetBuilder<Decoration>\(\)/, '专注模式必须用 RangeSetBuilder 建装饰')
-assert.match(focusMode, /EditorView\.decorations\.of\(view => view\.state\.field\(focusField\)\)/, '装饰必须挂在 view 上才能显示')
-assert.match(focusMode, /export const focusField/, 'field 必须导出以便单测验证装饰数量')
-assert.match(cm6, /autoPairOn = \(autoPairEnabled \?\? true\) && \(autoCompleteMdPairs \?\? true\)/, '两个自动配对开关必须都生效')
-assert.match(cm6, /setFocusMode\(focusMode \?\? false\)/, 'CM6Editor 必须把专注模式传进去')
-assert.match(cm6, /setSpellcheck\(enableSpellCheck \?\? true, spellCheckLang\)/, 'CM6Editor 必须把拼写检查语言传进去')
-assert.match(lzeditor, /editorFont === 'serif'\) page\.style\.fontFamily = 'var\(--font-serif\)'/, '衬线字体必须指向 --font-serif，不能退回 sans')
+assert.match(actions, /getYeliFacade\(\)/, '编辑动作必须统一走 yeli facade')
 
 // ── 批次 B：导出与图片 ─────────────────────────────────────────────────
 
@@ -145,32 +123,20 @@ assert.match(actions, /label: '数学公式', action: 'formula'/, '数学公式�
 assert.match(actions, /'formula'/, 'PANEL_ACTIONS 必须包含 formula')
 assert.doesNotMatch(actions, /PANEL_ACTIONS = new Set\([^)]*'math'/, "PANEL_ACTIONS 里的 'math' 是死值")
 
-// Ctrl+Alt+1..6 此前只有快捷键页的文案，CM6 里没有绑定
-assert.match(editorTs, /headingKeymap/, '必须有标题快捷键 keymap')
-assert.match(editorTs, /Mod-Alt-1/, 'H1 快捷键必须真的绑上')
-assert.match(editorTs, /Mod-Alt-6/, 'H6 快捷键必须真的绑上')
-assert.match(editorTs, /heading-6/, '标题快捷键必须调 runFormatCommand 的 heading-N')
-assert.match(editorTs, /^\s*headingKeymap,/m, 'headingKeymap 必须注册进扩展，定义了不挂载等于没写')
+// Ctrl+Alt+1..6 标题快捷键补绑在 yeli assist 层（B2）：不再依赖 CM6 headingKeymap
+const headingShortcuts = read('src/components/editor/assist/heading-shortcuts.ts')
+assert.match(headingShortcuts, /ctrlKey \|\| event\.metaKey/, '快捷键必须认 Ctrl 与 ⌘')
+assert.match(headingShortcuts, /event\.altKey/, '必须要求 Alt')
+assert.match(headingShortcuts, /block\.convert\.heading1/, 'H1 必须映射到 block.convert.heading1')
+assert.match(headingShortcuts, /block\.convert\.heading6/, 'H6 必须映射到 block.convert.heading6')
 
 const shortcutTab = read('src/components/panels/settings/ShortcutSettingsTab.tsx')
 assert.doesNotMatch(shortcutTab, /\$\{alt\}\+Tab/, 'Alt+Tab 是系统窗口切换键，永远抢不到，不能列进快捷键表')
 
-// 「Markdown 标记常显」开关此前失效：旧实现给 .lz-editor-content 设 data-md-markers，
-// 但 CM6 编辑态 DOM 只有 line/span、没有 h1/ul/ol，CSS 选择器永远匹配不到。
-// 现在改接到 live-preview 的 keepMarkdownMarkers，标记隐藏与否由 decoration 决定。
 const globalsCss = read('src/styles/globals.css')
-const livePreview = read('src/components/editor/codemirror/live-preview.ts')
 assert.doesNotMatch(globalsCss, /data-md-markers/, '标记常显不能再靠 CSS 类名，编辑态 DOM 没有标题元素')
-assert.doesNotMatch(lzeditor, /data-md-markers\s*[:=]/, 'LZEditor 不再往编辑器容器写 data-md-markers')
-assert.match(livePreview, /export const keepMarkdownMarkers = StateField\.define<boolean>/, '必须有 keepMarkdownMarkers 状态字段')
-assert.match(livePreview, /export const setKeepMarkdownMarkersEffect/, '必须有 StateEffect 供外部改值')
-assert.match(livePreview, /const keepMarks = state\.field\(keepMarkdownMarkers, false\)/, '构建 decoration 时必须读开关')
-assert.match(livePreview, /isActive\(node\.from\) \|\| keepMarks\) return/, '开了常显就不能隐藏标题标记')
-assert.match(livePreview, /field\(keepMarkdownMarkers\)/, '开关变化必须触发 decoration 重算')
-assert.match(editorTs, /setKeepMarkdownMarkersEffect/, 'editor.ts 必须把 effect 派发给 EditorView')
-assert.match(editorTs, /^\s*keepMarkdownMarkers,$/m, '字段必须挂进扩展，定义了不挂载等于没写')
-assert.match(editorTs, /setKeepMarkdownMarkers\(on: boolean\)/, '必须暴露 setKeepMarkdownMarkers')
-assert.match(cm6, /setKeepMarkdownMarkers\(\!\!keepMdMarkers\)/, 'CM6Editor 必须把设置值传进来')
+const yeliEditor = read('src/components/editor/YeliEditor.tsx')
+assert.doesNotMatch(yeliEditor, /data-md-markers\s*[:=]/, 'YeliEditor 不再往编辑器容器写 data-md-markers')
 
 // 「首行缩进」「两端对齐」此前只写 CSS 变量，没有任何规则消费
 const readModeCss = read('src/styles/read-mode.css')
@@ -206,18 +172,6 @@ assert.match(settingsStore, /PERSIST_SKIP = new Set\(\['activeGroup', 'subTab'\]
 assert.match(settingsStore, /window\.addEventListener\('beforeunload'/, '退出前必须同步 flush，定时器赶不上关机')
 assert.match(settingsStore, /raw\.map\(migrateApiKey\)/, '老存档的 apiKeys 必须按条目补新字段，整包替换会让用户补的字段全丢')
 assert.match(typesTs, /modelConfigTab\?: 'provider' \| 'custom'/, '模型设置页的 tab 选择必须能落盘')
-
-// Ctrl+A 不能只靠 contenteditable 的原生行为
-assert.match(editorTs, /selectAllKeymap/, 'Ctrl+A 必须显式绑定')
-assert.match(editorTs, /'Mod-a', run: selectAll/, 'Ctrl+A 必须接到 selectAll')
-assert.match(editorTs, /^\s*selectAllKeymap,$/m, 'selectAllKeymap 必须注册进扩展')
-
-// setSpellcheck 里有早退，lang 必须在早退之前写，否则首次调用永不生效
-assert.match(editorTs, /if \(lang\) view\.dom\.setAttribute\('lang', lang\)/, '检查语言必须真正写到 DOM 的 lang 属性')
-
-// showLineNumbers 的 store 默认值是 false，?? true 等于反着写
-assert.doesNotMatch(cm6, /showLineNumbers \?\? true/, '行号回退值不能和 store 默认值相反')
-assert.match(cm6, /setLineNumbers\(showLineNumbers \?\? false\)/, '行号回退值必须是 false')
 
 // 两个引号开关共用同一条替换管线，都开会静默覆盖
 const editorTab = read('src/components/panels/settings/EditorSettingsTab.tsx')

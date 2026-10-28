@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
 import { getYeliFacade } from '../editor/facade/registry'
-import type { FormatCommand } from '../editor/codemirror/commands'
 
 export interface MenuItem {
   icon?: string
@@ -11,6 +10,9 @@ export interface MenuItem {
   sep?: boolean
   disabled?: boolean
 }
+
+/** 格式/插入命令名（yeli 适配层：action → 命令名 → YELI_COMMAND → facade）。 */
+type FormatCommand = string
 
 export const NEW_ITEMS: MenuItem[] = [
   { icon: 'ri-file-add-line', label: '新建文档', action: 'new' },
@@ -32,19 +34,17 @@ export const FORMAT_ITEMS: MenuItem[] = [
   { icon: 'ri-list-ordered', label: '有序列表', action: 'ol' },
   { icon: 'ri-list-unordered', label: '无序列表', action: 'ul' },
   { icon: 'ri-task-line', label: '任务列表', action: 'task' },
-  { icon: 'ri-superscript', label: '上角标', action: 'sup' },
-  { icon: 'ri-subscript', label: '下角标', action: 'sub' },
+  // 上标/下标 markdown 无法在 yeli 表达，不提供（见 B3）。
 ]
 
 export const INSERT_ITEMS: MenuItem[] = [
-  { icon: 'ri-menu-line', label: '目录', action: 'toc' },
   { icon: 'ri-double-quotes-l', label: '引言', action: 'quote' },
-  { icon: 'ri-bookmark-line', label: '脚注', action: 'footnote' },
   { icon: 'ri-emotion-line', label: '表情', action: 'emoji' },
   { icon: 'ri-double-quotes-r', label: '块引用', action: 'blockquote' },
   { icon: 'ri-code-box-line', label: '代码块', action: 'code' },
   { icon: 'ri-function-fill', label: '数学公式', action: 'formula' },
   { icon: 'ri-bar-chart-2-line', label: '图表', action: 'chart' },
+  // 目录/脚注 yeli 无插入命令，不提供（见 B3）。
 ]
 
 export const TABLE_ITEMS: MenuItem[] = [
@@ -148,7 +148,7 @@ export function useFlyout() {
 
 const CMD_MAP: Record<string, FormatCommand> = {
   bold: 'bold', italic: 'italic', strikeThrough: 'strikethrough', strikethrough: 'strikethrough',
-  underline: 'underline', highlight: 'highlight', toggleHighlight: 'highlight',
+  // 下划线/高亮 markdown 无法在 yeli 表达，按钮已移除（见 B3）。
   code: 'code', link: 'link', image: 'image', quote: 'quote',
   'bullet-list': 'bullet-list', 'numbered-list': 'numbered-list', 'task-list': 'task-list',
   'code-block': 'code-block', table: 'table', rule: 'rule', hr: 'rule',
@@ -159,20 +159,21 @@ const CMD_MAP: Record<string, FormatCommand> = {
 const FORMAT_MAP: Record<string, FormatCommand> = {
   h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
   clear: 'clear', hr: 'rule', ol: 'numbered-list', ul: 'bullet-list', task: 'task-list',
-  sup: 'sup', sub: 'sub', quote: 'quote', toc: 'toc', footnote: 'footnote',
-  link: 'link', image: 'image',
+  quote: 'quote', link: 'link', image: 'image',
+  // 上标/下标/目录/脚注 yeli 无命令，菜单项已移除（见 B3）。
 }
 
 const INSERT_MAP: Record<string, FormatCommand> = {
-  toc: 'toc', quote: 'quote', blockquote: 'quote', footnote: 'footnote', hr: 'rule',
+  quote: 'quote', blockquote: 'quote', hr: 'rule',
+  // 目录/脚注 yeli 无插入命令，菜单项已移除（见 B3）。
 }
 
 const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'formula', 'chart', 'emoji', 'table'])
 
 /**
- * CM6 FormatCommand → yeli command-registry id。只有 yeli 有对应语义的命令才映射；
- * underline/highlight/sup/sub/toc/footnote 等 markdown 无法在 yeli 表达的命令不映射
- * （调用方会返回 false，菜单项保持现状）。
+ * 命令名 → yeli command-registry id。只有 yeli 有对应语义的命令才映射；
+ * underline/highlight/sup/sub/toc/footnote 等 markdown 无法在 yeli 表达的命令
+ * 不映射（对应按钮/菜单项已在 B3 移除，不再出现「点击无反应」入口）。
  */
 const YELI_COMMAND: Partial<Record<FormatCommand, string>> = {
   bold: 'selection.bold',

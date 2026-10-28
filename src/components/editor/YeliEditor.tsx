@@ -14,6 +14,7 @@ import { installAutopair } from "./assist/autopair";
 import { installSmartPaste } from "./assist/smart-paste";
 import { installTypewriter } from "./assist/typewriter";
 import { installFocusMode } from "./assist/focus-mode";
+import { installHeadingShortcuts } from "./assist/heading-shortcuts";
 import {
   installRenderExt,
   observeLazyRenderers,
@@ -37,9 +38,9 @@ function ensureRenderExtRegistered(): void {
 ensureRenderExtRegistered();
 
 /**
- * The imperative surface exposed via ref, standing in for the old
- * `getCM6Editor()` entry point. All methods are typed facade operations;
- * no caller touches the yeli store directly.
+ * The imperative surface exposed via ref, the single editor entry point.
+ * All methods are typed facade operations; no caller touches the yeli
+ * store directly.
  */
 export interface YeliEditorHandle {
   focus(): void;
@@ -105,10 +106,9 @@ export const YeliEditor = forwardRef<YeliEditorHandle, YeliEditorProps>(
     const store = facade.getDocumentStore();
     const snapshot = useDocumentStore(store);
 
-    // Register this facade as the single global entry point (replaces the old
-    // getCM6Editor()). Only clear it if it is still the one we registered, so a
-    // remount (StrictMode double-invoke, mode switch) can't unregister a newer
-    // instance.
+    // Register this facade as the single global entry point. Only clear it if
+    // it is still the one we registered, so a remount (StrictMode double-invoke,
+    // mode switch) can't unregister a newer instance.
     useEffect(() => {
       registerYeliFacade(facade);
       return () => {
@@ -149,6 +149,7 @@ export const YeliEditor = forwardRef<YeliEditorHandle, YeliEditorProps>(
         installSmartPaste(shell, facade),
         installTypewriter(shell, facade),
         installFocusMode(shell, facade),
+        installHeadingShortcuts(shell, facade),
       ];
       return () => {
         for (const dispose of disposers) dispose();

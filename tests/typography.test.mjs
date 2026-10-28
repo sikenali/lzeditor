@@ -98,7 +98,7 @@ test('排版变量接到段落选择器，不接到编辑区', () => {
   assert.ok(braceIdx > 0, 'no rule block before the var')
   const selector = before.slice(0, braceIdx).trim()
   assert.match(selector, /\.read-article-body p|\.preview-doc p/, `must scope to rendered paragraphs, got: ${selector}`)
-  for (const f of ['src/styles/app.css', 'src/components/editor/LZEditor.tsx', 'src/components/editor/CM6Editor.tsx']) {
+  for (const f of ['src/styles/app.css', 'src/components/editor/YeliEditor.tsx']) {
     const src = read(f)
     assert.doesNotMatch(src, /read-text-indent|read-text-align/, `${f} must not consume paragraph vars`)
   }
@@ -128,6 +128,6 @@ test('fonts.css 已在 main.tsx 引入', () => {
 test('useTypographyOverrides 挂在 App 上而非编辑器里', () => {
   const app = read('src/App.tsx')
   assert.match(app, /useTypographyOverrides\(\)/, 'hook must be called in App')
-  // 读/历史模式会把 LZEditor 整个替换掉，所以变量写入必须挂在更上层
-  assert.doesNotMatch(read('src/components/editor/LZEditor.tsx'), /applyTypographyOverrides/, 'must not live in LZEditor')
+  // 读/历史模式会把编辑器整个替换掉，所以变量写入必须挂在更上层
+  assert.doesNotMatch(read('src/components/editor/YeliEditor.tsx'), /applyTypographyOverrides/, 'must not live in YeliEditor')
 })

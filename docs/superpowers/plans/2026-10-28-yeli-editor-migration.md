@@ -297,6 +297,8 @@ git commit -m "feat(editor): 输入辅助与区块内特效渲染接入新编辑
 **文件：**
 - 修改：`src/App.tsx`、`src/components/layout/editorActions.tsx`、`src/components/layout/Toolbar.tsx`、`src/hooks/useAI.ts`、`src/utils/docImport.ts`、`src/store/editorStore.ts`
 
+> **⚠️ 任务 3 审查登记的补充范围（任务 5 必须覆盖全部失效入口，非子集）：** App.tsx / editorActions.tsx / Toolbar.tsx 中以下 CM6 驱动入口已随 LZEditor 卸载而 no-op，须全部重接到 facade：`insertCode`、`insertLink`、`insertFormula`、`insertChart`、`insertEmoji`、`insertTable`、`uploadImage`、快捷键 `ed()?.run(...)`、`getCM6Editor()?.setText(...)`（App.tsx:280 死路径）、`editorActions` 其余 getCM6Editor 调用点。另：`YeliEditor.tsx` 的 `setEditorContentRef` effect 卸载不重置（次要，顺带修）；`YeliEditorFacade.getDocumentStore()` 泄内部 store（后续改构造注入）。
+
 - [ ] **步骤 1：把 getCM6Editor() 引用替换为 facade**
 
 ```bash
@@ -336,6 +338,10 @@ git commit -m "refactor(ai): AI 接入点重接到 YeliEditorFacade，流式插�
 - 修改：`src/components/editor/codemirror/registry.ts` 相关残留引用（若有）
 
 - [ ] **步骤 1：删除 CM6 源码文件**
+
+> **⚠️ 任务 5 审查登记的 B 组重接（任务 6/7 必须完成）：** ① SearchPanel 查找/替换重接到 facade（匹配遍历 + replaceRange + setSelection）；② Ctrl+Alt+1..6 标题快捷键在 YeliEditor 补绑；③ 下划线/高亮/上标/下标/目录/脚注 工具栏项映射（yeli 支持则映射、不支持则明确移除该项）。
+
+> **⚠️ 任务 3 审查登记的补充范围（任务 6 跟进）：** 深色主题对齐——`src/styles/yeli-canvas.css` 当前硬编码浅色 `:root`（`--ink #091336`、`--focus #2359d8` 等），未接 lzeditor token 体系（color-tokens.css 的 `--color-*`/`--background`/`--accent`/`--border`）；深色模式（themes.ts 'parchment'|'dark'）下画布恒为亮白，须在任务 6 接入 token。随删 CM6 一并清理次要 4/5/6（getDocumentStore 泄 store、editorContentRef 悬空、App.tsx:280 死路径）。
 
 ```bash
 git rm -r src/components/editor/codemirror src/components/editor/CM6Editor.tsx src/components/editor/LZEditor.tsx

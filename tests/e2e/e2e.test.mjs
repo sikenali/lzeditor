@@ -94,7 +94,7 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
   // 0. 新建文档，让编辑器/预览挂载
   await page.locator('.welcome-btn--primary').click()
   await sleep(700)
-  check('新建文档：编辑器挂载', (await page.locator('.cm-editor').count()) > 0)
+  check('新建文档：编辑器挂载', (await page.locator('.yeli-canvas-shell').count()) > 0)
 
   // 1. §8.1 所有弹框统一样式 + 交互（默认顶栏布局下逐个开：导出/图片/链接/设置）
   const DIALOGS = [
@@ -247,7 +247,7 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
 
   // 9. 排版设置作用到内容区
   const fontInfo = await page.evaluate(() => {
-    const el = document.querySelector('.preview-doc') || document.querySelector('.cm-editor')
+    const el = document.querySelector('.preview-doc') || document.querySelector('.yeli-canvas-shell')
     return el ? getComputedStyle(el).fontFamily : ''
   })
   check('排版字体设置作用到内容区', fontInfo.length > 5, fontInfo.slice(0, 60))

@@ -130,6 +130,85 @@ describe("YeliEditorFacade fidelity", () => {
   });
 });
 
+describe("YeliEditorFacade search/replace (B1)", () => {
+  const OPT = (over = {}) => ({
+    term: "foo", regex: false, caseSensitive: false, wholeWord: false, ...over,
+  });
+
+  it("searchMatches counts literal hits and highlights the first", () => {
+    const f = createYeliFacade();
+    f.setText("foo bar foo baz");
+    const n = f.searchMatches(OPT());
+    assert.equal(n, 2);
+    // 高亮重置到第一处
+    assert.deepEqual(f.getSelection(), { from: 0, to: 3 });
+  });
+
+  it("case-sensitive search only matches exact case", () => {
+    const f = createYeliFacade();
+    f.setText("Foo foo FOO");
+    assert.equal(f.searchMatches(OPT({ term: "foo", caseSensitive: true })), 1);
+  });
+
+  it("wholeWord search requires non-whitespace boundaries", () => {
+    const f = createYeliFacade();
+    f.setText("foo foobar foo");
+    assert.equal(f.searchMatches(OPT({ wholeWord: true })), 2);
+  });
+
+  it("regex search compiles the term and throws on invalid pattern", () => {
+    const f = createYeliFacade();
+    f.setText("abc123");
+    assert.equal(f.searchMatches(OPT({ term: "\\d+", regex: true })), 1);
+    assert.throws(() => f.searchMatches(OPT({ term: "(", regex: true })), RangeError);
+  });
+
+  it("findNext/findPrev wrap around the match list", () => {
+    const f = createYeliFacade();
+    f.setText("foo x foo y foo");
+    f.searchMatches(OPT());
+    assert.equal(f.findNext(), true);
+    assert.deepEqual(f.getSelection(), { from: 6, to: 9 });
+    assert.equal(f.findNext(), true);
+    assert.deepEqual(f.getSelection(), { from: 12, to: 15 });
+    // 末处回绕到首处
+    assert.equal(f.findNext(), true);
+    assert.deepEqual(f.getSelection(), { from: 0, to: 3 });
+    // 首处回绕到末处
+    assert.equal(f.findPrev(), true);
+    assert.deepEqual(f.getSelection(), { from: 12, to: 15 });
+  });
+
+  it("findNext returns false when there are no matches", () => {
+    const f = createYeliFacade();
+    f.setText("bar");
+    assert.equal(f.searchMatches(OPT()), 0);
+    assert.equal(f.findNext(), false);
+  });
+
+  it("replaceCurrent replaces the highlighted hit and advances to the next", () => {
+    const f = createYeliFacade();
+    f.setText("foo foo");
+    f.searchMatches(OPT());
+    const remaining = f.replaceCurrent("bar");
+    assert.equal(remaining, 1, "替换一处后还剩一处");
+    assert.equal(f.getText(), "bar foo");
+    // 自动前进到下一处
+    assert.deepEqual(f.getSelection(), { from: 4, to: 7 });
+  });
+
+  it("replaceAll replaces every hit and clears the match set", () => {
+    const f = createYeliFacade();
+    f.setText("foo foo foo");
+    f.searchMatches(OPT());
+    const replaced = f.replaceAll("bar");
+    assert.equal(replaced, 3);
+    assert.equal(f.getText(), "bar bar bar");
+    // 命中集已清空
+    assert.equal(f.findNext(), false);
+  });
+});
+
 describe("planApply stale protection", () => {
   const STREAM_BASE = {
     active: false, stale: false, anchor: null, expectedRev: -1,

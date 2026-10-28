@@ -1,22 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { getCM6Editor } from '../editor/codemirror/registry'
-import { getSearchQuery } from '@codemirror/search'
-import type { EditorState } from '@codemirror/state'
+import { getYeliFacade } from '../editor/facade/registry'
+import type { SearchQueryOptions } from '../editor/facade/YeliEditorFacade'
 import { UiSwitch } from '../ui'
 
 interface SearchPanelProps {
   onClose: () => void
-}
-
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-/** 统计当前 SearchQuery 在整篇文档里的命中数，供面板显示结果数。 */
-function countMatches(state: EditorState): number {
-  const q = getSearchQuery(state)
-  if (!q || !q.valid) return 0
-  let re: RegExp
-  try { re = new RegExp(q.search, q.caseSensitive ? 'g' : 'gi') } catch { return 0 }
-  return state.doc.toString().match(re)?.length ?? 0
 }
 
 export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
@@ -25,7 +13,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const [caseSensitive, setCaseSensitive] = useState(false)
   const [wholeWord, setWholeWord] = useState(false)
   const [useRegex, setUseRegex] = useState(false)
-  const [cm6Count, setCm6Count] = useState(0)
+  const [matchCount, setMatchCount] = useState(0)
   const [patternError, setPatternError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -33,52 +21,72 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
     if (inputRef.current) inputRef.current.focus()
   }, [])
 
-  // CM6 的查询词统一转成 `/pattern/gi` 形式，交给 @codemirror/search 的 SearchQuery
-  const buildCM6Query = useCallback((): string | null => {
-    const term = useRegex ? searchTerm : escapeRegex(searchTerm)
-    const body = wholeWord ? `(?<!\\S)${term}(?!\\S)` : term
-    const query = `/${body}/${caseSensitive ? 'g' : 'gi'}`
-    try { new RegExp(query.slice(1, query.lastIndexOf('/'))) } catch { return null }
-    return query
-  }, [searchTerm, useRegex, wholeWord, caseSensitive])
+  /** 面板开关 → facade 查询参数。 */
+  const buildOptions = useCallback((): SearchQueryOptions => ({
+    term: searchTerm,
+    regex: useRegex,
+    caseSensitive,
+    wholeWord,
+  }), [searchTerm, useRegex, caseSensitive, wholeWord])
 
-  // 每次调用都重新取实例：doc 切换后 CM6 会重建，render 期抓到的引用会失效
-  const cm6Dispatch = useCallback((action: 'search' | 'next' | 'prev' | 'replace' | 'replaceAll'): boolean => {
-    const cm = getCM6Editor()
-    if (!cm) return false
-    if (!searchTerm.trim()) return false
-    const query = buildCM6Query()
-    if (!query) { setPatternError('正则表达式无效'); return true }
-    setPatternError(null)
-    cm.search({ query, replace: replaceTerm, caseSensitive, action })
-    setCm6Count(countMatches(cm.view.state))
-    return true
-  }, [searchTerm, replaceTerm, caseSensitive, buildCM6Query])
+  /** 执行查找并更新计数；无效正则写入错误态。 */
+  const runSearch = useCallback((): number => {
+    const facade = getYeliFacade()
+    if (!facade || !searchTerm.trim()) return 0
+    try {
+      const count = facade.searchMatches(buildOptions())
+      setPatternError(null)
+      return count
+    } catch {
+      setPatternError('正则表达式无效')
+      return 0
+    }
+  }, [searchTerm, buildOptions])
 
   const handleSearch = useCallback(() => {
-    if (cm6Dispatch('search')) return
-    if (!searchTerm.trim()) return
-    setPatternError(null)
-  }, [cm6Dispatch, searchTerm])
+    setMatchCount(runSearch())
+  }, [runSearch])
 
   const handleReplace = useCallback(() => {
-    if (cm6Dispatch('replace')) return
-    if (!searchTerm.trim()) return
-  }, [cm6Dispatch, searchTerm])
+    if (!searchTerm.trim() || !replaceTerm) return
+    const facade = getYeliFacade()
+    if (!facade) return
+    try {
+      // 先为当前查询词建立命中集，避免替换到上一次搜索的过期位置。
+      facade.searchMatches(buildOptions())
+      setMatchCount(facade.replaceCurrent(replaceTerm))
+      setPatternError(null)
+    } catch {
+      setPatternError('正则表达式无效')
+    }
+  }, [searchTerm, replaceTerm, buildOptions])
 
   const handleReplaceAll = useCallback(() => {
-    cm6Dispatch('replaceAll')
-  }, [cm6Dispatch])
+    if (!searchTerm.trim() || !replaceTerm) return
+    const facade = getYeliFacade()
+    if (!facade) return
+    try {
+      // 先建立命中集，再自后向前全部替换，最后重算剩余命中数。
+      facade.searchMatches(buildOptions())
+      facade.replaceAll(replaceTerm)
+      setMatchCount(facade.searchMatches(buildOptions()))
+      setPatternError(null)
+    } catch {
+      setPatternError('正则表达式无效')
+    }
+  }, [searchTerm, replaceTerm, buildOptions])
 
   const handleNext = useCallback(() => {
-    if (cm6Dispatch('next')) return
-    if (!searchTerm.trim()) return
-  }, [cm6Dispatch, searchTerm])
+    const facade = getYeliFacade()
+    if (!facade || !searchTerm.trim()) return
+    facade.findNext()
+  }, [searchTerm])
 
   const handlePrev = useCallback(() => {
-    if (cm6Dispatch('prev')) return
-    if (!searchTerm.trim()) return
-  }, [cm6Dispatch, searchTerm])
+    const facade = getYeliFacade()
+    if (!facade || !searchTerm.trim()) return
+    facade.findPrev()
+  }, [searchTerm])
 
   return (
     <div className="search-panel-bar">
@@ -139,7 +147,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
         </div>
         {searchTerm && (
           <div className="search-result-count">
-            {cm6Count > 0 ? `找到 ${cm6Count} 个结果` : '未找到匹配项'}
+            {matchCount > 0 ? `找到 ${matchCount} 个结果` : '未找到匹配项'}
           </div>
         )}
         <button className="search-panel-close" onClick={onClose} title="关闭">

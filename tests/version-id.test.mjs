@@ -31,18 +31,11 @@ test('id 单调递增，HistoryPanel 按 Number(b.id) - Number(a.id) 倒序即�
   assert.ok(a < b && b < c, `期望 ${a} < ${b} < ${c}`)
 })
 
-// 第二个修复靠结构断言锁住：CM6 卸载时把未防抖完的编辑兜底落盘。
-// 行为测试跑不动这条链——editorStore 链式加载 ?raw 内容文件，node 解析不了
-// （见 doc-persistence.test.mjs 的说明），只能锁源码形状。
-test('CM6 卸载清理里必须调用 flushPendingEdit', () => {
-  const cm6 = readFileSync(new URL('../src/components/editor/CM6Editor.tsx', import.meta.url), 'utf8')
-  // 锚定卸载清理里那句清定时器，往后取一个窗口。两处陷阱：
-  // clearTimeout 在 onChange 里也有一次（要先清再加定时器），所以用 lastIndexOf；
-  // destroyCM6Editor 在 import 行也出现，所以不能拿它当锚点。
-  const atClear = cm6.lastIndexOf('clearTimeout(saveTimerRef.current)')
-  assert.ok(atClear !== -1, '卸载时应清除防抖定时器')
-  const cleanup = cm6.slice(atClear, atClear + 500)
-  const atFlush = cleanup.indexOf('flushPendingEdit()')
-  assert.ok(atFlush !== -1, '卸载时应兜底落盘未防抖完的编辑')
-  assert.ok(cleanup.indexOf('destroyCM6Editor(view)') !== -1, '卸载时应销毁编辑器实例')
+// 编辑器卸载时不再有 CM6 视图可销毁，改为锁住：yeli 编辑器卸载必须把
+// editorContentRef 重置为 null，避免切到历史/阅读模式后残留指向已卸载的
+// 编辑容器（滚动同步 / 定位据此回退）。editorStore 链式加载 ?raw 内容文件，
+// node 解析不了，只能锁源码形状。
+test('YeliEditor 卸载必须重置 editorContentRef', () => {
+  const yeli = readFileSync(new URL('../src/components/editor/YeliEditor.tsx', import.meta.url), 'utf8')
+  assert.match(yeli, /setEditorContentRef\(null\)/, '卸载时应重置编辑容器引用')
 })

@@ -181,20 +181,17 @@ lzeditor/
 
 ## 实现原理
 
-### CodeMirror 6 编辑器扩展体系
+### yeli 区块编辑器体系
 
 ```
-LZEditor (CodeMirror 6)
-  ├── @codemirror/lang-markdown / language-data  → Markdown + GFM 语法解析
-  ├── live-preview                               → Markdown 标记实时渲染
-  ├── table-edit                                 → 表格行列与表头操作
-  ├── commands                                   → 工具栏命令（粗体/标题/列表…）
-  ├── complete / slash / snippets / autopair     → 补全与快捷输入
-  ├── input-format / smart-paste                 → 输入与粘贴格式化
-  ├── focus-mode / typewriter                    → 专注模式与打字机模式
-  ├── image-input                                → 图片拖拽插入
-  ├── highlight.js + KaTeX                       → 代码高亮与公式渲染
-  └── flavors / render                           → 方言识别与 HTML 渲染
+LZEditor (yeli 区块编辑器)
+  ├── facade (YeliEditorFacade)                  → 唯一编辑入口，typed 事务
+  ├── command-registry                           → 命令目录（标题/列表/表格…）
+  ├── assist (autopair / smart-paste / typewriter / focus-mode / heading-shortcuts)
+  │                                              → 输入辅助与标题快捷键
+  ├── render-ext                                 → 区块内惰性特效渲染
+  ├── highlight.js + KaTeX + mermaid + echarts   → 代码高亮 / 公式 / 图表渲染
+  └── markdown-it + footnotes                    → Markdown + GFM 解析与渲染
 ```
 
 ### AI 辅助写作流程

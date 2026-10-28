@@ -20,6 +20,8 @@ import type { DocumentTransactionResult } from "../../../vendor/yeli/document/tr
 import {
   focusSourceOffset,
   scrollBlockIntoView,
+  scrollOffsetIntoView,
+  selectSourceRange,
   selectionSourceRange,
 } from "../assist/source-offset.ts";
 import {
@@ -35,6 +37,18 @@ import {
 export interface FacadeSelection {
   from: number;
   to: number;
+}
+
+/** 查找/替换参数（SearchPanel 的查询词与开关）。 */
+export interface SearchQueryOptions {
+  /** 原始查询词；regex=true 时按正则解析，否则字面匹配。 */
+  term: string;
+  /** 是否把 term 当正则解析。 */
+  regex: boolean;
+  /** 是否区分大小写。 */
+  caseSensitive: boolean;
+  /** 是否全字匹配（匹配两侧不能是非空白字符）。 */
+  wholeWord: boolean;
 }
 
 /**
@@ -86,6 +100,24 @@ export interface YeliEditorFacade {
   onChange(listener: (markdown: string) => void): () => void;
   getSelection(): FacadeSelection | null;
   setSelection(from: number, to: number): void;
+  /**
+   * 在保真源码上做匹配遍历，返回命中数并把当前高亮重置到第一处。
+   * 无效正则（regex=true 且编译失败）→ 抛 RangeError，调用方展示错误。
+   * 无命中 → 返回 0 且不高亮。命中按源码升序排列。
+   */
+  searchMatches(options: SearchQueryOptions): number;
+  /** 跳到当前命中的下一处（末处回绕到首处）。无命中 → false。 */
+  findNext(): boolean;
+  /** 跳到当前命中的上一处（首处回绕到末处）。无命中 → false。 */
+  findPrev(): boolean;
+  /**
+   * 用 text 替换当前高亮的那一处（replaceRange 事务），随后重算命中并把
+   * 高亮自动前进到替换点之后的第一处。返回替换后的剩余命中数；无当前
+   * 高亮或替换失败 → 返回重算后的命中数（不替换）。
+   */
+  replaceCurrent(text: string): number;
+  /** 逐处 replaceRange 事务替换全部命中（自后向前，保持偏移有效），返回替换处数。 */
+  replaceAll(text: string): number;
   /** Subscribes to selection changes (view-layer scroll/typewriter follow). */
   onSelectionChange(listener: (selection: FacadeSelection | null) => void): () => void;
   /**
@@ -148,6 +180,26 @@ const VALID_COMMAND_IDS = new Set<string>(
   COMMAND_CATALOG.map((definition) => definition.id),
 );
 
+/**
+ * 把查询词与开关编译为全局 RegExp（匹配遍历用）。字面匹配先转义；全字匹配
+ * 要求两侧不能是非空白字符（与旧 CodeMirror search 的 `(?<!\S)…(?!\S)` 一致）。
+ * 无效正则（regex=true 且语法错）→ 抛 RangeError，调用方展示错误。
+ */
+function buildSearchRegex(options: SearchQueryOptions): RegExp {
+  const raw = options.regex
+    ? options.term
+    : options.term.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const flags = options.caseSensitive ? "g" : "gi";
+  const body = options.wholeWord ? `(?<!\\S)${raw}(?!\\S)` : raw;
+  try {
+    return new RegExp(body, flags);
+  } catch (error) {
+    throw new RangeError(
+      `search regex invalid: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
 class YeliEditorFacadeImpl implements YeliEditorFacade {
   #store: DocumentStore | null = null;
   #listeners = new Set<(markdown: string) => void>();
@@ -178,6 +230,12 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
       this.#notifySelection();
     }
   };
+  // 查找会话状态：最近一次 searchMatches 的参数、命中位置集合与当前高亮下标。
+  // 文档变更后（用户手改）命中可能过期，findNext/findPrev 仅用于导航展示；
+  // 任何替换操作都会基于当前源码重算，不读过期位置。
+  #searchOptions: SearchQueryOptions | null = null;
+  #matches: FacadeSelection[] = [];
+  #matchIndex = -1;
   #labels: Labels;
   #locale: "en" | "zh-CN";
 
@@ -485,6 +543,107 @@ class YeliEditorFacadeImpl implements YeliEditorFacade {
 
     // 无 block：仅追加类命令（insert.* / template）可用。
     return executeAppendCommand(store, id, labels, locale, tableDimensions);
+  }
+
+  searchMatches(options: SearchQueryOptions): number {
+    const matches = this.#computeMatches(options);
+    this.#matchIndex = matches.length > 0 ? 0 : -1;
+    if (this.#matchIndex >= 0) this.#highlightCurrentMatch();
+    return matches.length;
+  }
+
+  /** 对保真源码做匹配遍历，存为当前命中集并返回（无效正则抛 RangeError）。 */
+  #computeMatches(options: SearchQueryOptions): FacadeSelection[] {
+    const regex = buildSearchRegex(options);
+    const source = this.getText();
+    const matches: FacadeSelection[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(source)) !== null) {
+      if (match[0].length === 0) {
+        regex.lastIndex += 1; // 零长命中防死循环。
+        continue;
+      }
+      matches.push({ from: match.index, to: match.index + match[0].length });
+    }
+    this.#searchOptions = options;
+    this.#matches = matches;
+    return matches;
+  }
+
+  findNext(): boolean {
+    const count = this.#matches.length;
+    if (count === 0) return false;
+    this.#matchIndex = (this.#matchIndex + 1) % count;
+    this.#highlightCurrentMatch();
+    return true;
+  }
+
+  findPrev(): boolean {
+    const count = this.#matches.length;
+    if (count === 0) return false;
+    this.#matchIndex = (this.#matchIndex - 1 + count) % count;
+    this.#highlightCurrentMatch();
+    return true;
+  }
+
+  replaceCurrent(text: string): number {
+    if (!this.#searchOptions || this.#matches.length === 0) {
+      return this.#searchOptions ? this.searchMatches(this.#searchOptions) : 0;
+    }
+    const match = this.#matches[this.#matchIndex >= 0 ? this.#matchIndex : 0];
+    const source = this.getText();
+    if (!match || match.from < 0 || match.to > source.length) {
+      return this.searchMatches(this.#searchOptions);
+    }
+    try {
+      this.#applyPatch(match.from, match.to, text, "replace-current");
+    } catch {
+      // 越界/冲突：跳过该处并重算命中，不把异常抛进面板。
+      return this.searchMatches(this.#searchOptions);
+    }
+    const replacementEnd = match.from + text.length;
+    const fresh = this.#computeMatches(this.#searchOptions);
+    const next = fresh.findIndex((candidate) => candidate.from >= replacementEnd);
+    this.#matchIndex = next >= 0 ? next : fresh.length > 0 ? 0 : -1;
+    if (this.#matchIndex >= 0) this.#highlightCurrentMatch();
+    return fresh.length;
+  }
+
+  replaceAll(text: string): number {
+    const matches = this.#matches;
+    const source = this.getText();
+    if (matches.length === 0) return 0;
+    let replaced = 0;
+    // 自后向前逐处替换：未处理的偏移在源串里保持有效。
+    for (let index = matches.length - 1; index >= 0; index--) {
+      const match = matches[index];
+      if (!match || match.from < 0 || match.to > source.length) continue;
+      try {
+        this.#applyPatch(match.from, match.to, text, "replace-all");
+        replaced += 1;
+      } catch {
+        // 单处失败跳过，继续替换剩余。
+      }
+    }
+    this.#matches = [];
+    this.#matchIndex = -1;
+    this.#searchOptions = null;
+    return replaced;
+  }
+
+  /** 高亮当前命中的源码区间：setSelection + DOM 选区 + 滚动到块。 */
+  #highlightCurrentMatch(): void {
+    const match = this.#matches[this.#matchIndex];
+    if (!match) return;
+    this.setSelection(match.from, match.to);
+    const root = this.#viewRoot;
+    if (!root) return;
+    try {
+      selectSourceRange(root, match.from, match.to);
+      scrollOffsetIntoView(root, match.from);
+    } catch {
+      // 视角高亮失败不阻断查找流程。
+    }
   }
 
   getDocumentStore(): DocumentStore {

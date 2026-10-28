@@ -10,8 +10,6 @@
  * 绝不被滚动失效。没有「每块每个滚动事件都量一次 DOM」的路径。
  */
 import React from 'react'
-import { EditorSelection } from '@codemirror/state'
-import type { EditorView } from '@codemirror/view'
 import { buildScrollMap, sourceLineOfClick, type ScrollMap } from '../utils/markdown/lines'
 
 export type Side = 'editor' | 'preview'
@@ -70,7 +68,7 @@ export class FollowGuard {
 
 /** 编辑器这一侧能提供给同步引擎的能力 */
 export interface EditorLineBridge {
-  /** 编辑器已经被换掉了（CM6 view 销毁过），缓存要失效 */
+  /** 编辑器已经被换掉了，缓存要失效 */
   readonly destroyed: boolean
   /** 编辑器真正的滚动容器 */
   readonly scroller: HTMLElement
@@ -83,81 +81,13 @@ export interface EditorLineBridge {
 }
 
 /**
- * 本编辑器把 .cm-editor / .cm-scroller 设成 height:auto + overflow:visible，
- * CM6 自己的 scrollDOM 滚不动，真正滚的是外层 .lz-editor-content。
- * 从 CM6 往上找第一个能滚的祖先。
+ * 编辑器侧行桥：yeli 编辑器（YeliEditor）以源码偏移为坐标，未提供 CM6 式
+ * EditorView 行号桥，故 lineBridgeOf 恒返回 null —— 预览滚动同步在此静默退化
+ * （两侧独立滚动）。保留 EditorLineBridge 接口与同步引擎，供未来接入 yeli
+ * 行号桥时复用，不破坏 SidebarPreview 的装配。
  */
-function scrollerAbove(view: EditorView): HTMLElement {
-  let el = view.scrollDOM.parentElement
-  while (el) {
-    const style = getComputedStyle(el)
-    if (style.overflowY === 'auto' || style.overflowY === 'scroll') return el
-    el = el.parentElement
-  }
-  return view.scrollDOM
-}
-
-/** 从编辑器容器子树里找 CM6 view（挂在 .cm6-editor-container 的 _cm6View 上） */
-function findEditorView(root: HTMLElement): EditorView | null {
-  const stack: HTMLElement[] = [root]
-  while (stack.length) {
-    const el = stack.pop() as HTMLElement
-    const view = (el as { _cm6View?: EditorView })._cm6View
-    if (view) return view
-    for (const child of Array.from(el.children)) stack.push(child as HTMLElement)
-  }
+export function lineBridgeOf(_editorRoot: HTMLElement | null): EditorLineBridge | null {
   return null
-}
-
-const BRIDGES = new WeakMap<HTMLElement, EditorLineBridge>()
-
-/** 取编辑器滚动容器对应的行桥，找不到就建一个并缓存；view 销毁后自动重建 */
-export function lineBridgeOf(editorRoot: HTMLElement | null): EditorLineBridge | null {
-  if (!editorRoot) return null
-  const cached = BRIDGES.get(editorRoot)
-  if (cached && !cached.destroyed) return cached
-
-  const view = findEditorView(editorRoot)
-  if (!view) return null
-  const scroller = scrollerAbove(view)
-  // doc.lines 在每次量位置前都读，编辑过程中行数会变
-  const clampLine = (line: number): number =>
-    Math.min(Math.max(1, Math.floor(line)), view.state.doc.lines)
-  const bridge: EditorLineBridge = {
-    // destroyed 是 EditorView 的私有字段，用 DOM 还挂不挂着当信号
-    get destroyed() {
-      return !view.contentDOM.isConnected
-    },
-    scroller,
-    topVisibleLine() {
-      if (!view.contentDOM.isConnected || !scroller.clientHeight) return null
-      const rect = scroller.getBoundingClientRect()
-      // precise: false → 位置不在已渲染的 DOM 里也给个估计值
-      const pos = view.posAtCoords({ x: rect.left + 8, y: rect.top + 8 }, false)
-      if (pos === null) return null
-      return view.state.doc.lineAt(pos).number
-    },
-    scrollToLine(line) {
-      if (!view.contentDOM.isConnected) return
-      const coords = view.coordsAtPos(view.state.doc.line(clampLine(line)).from)
-      if (!coords) return
-      scroller.scrollTop = Math.max(0, coords.top - scroller.getBoundingClientRect().top)
-    },
-    goToLine(line) {
-      if (!view.contentDOM.isConnected) return
-      const from = view.state.doc.line(clampLine(line)).from
-      // 只移光标不动焦点：预览里点一下是导航，不是抢编辑器
-      view.dispatch({ selection: EditorSelection.cursor(from), userEvent: 'select' })
-      const coords = view.coordsAtPos(from)
-      if (!coords) return
-      // nearest：出界多少滚多少，别把整块推到顶端
-      const rect = scroller.getBoundingClientRect()
-      if (coords.top < rect.top) scroller.scrollTop -= rect.top - coords.top
-      else if (coords.bottom > rect.bottom) scroller.scrollTop += coords.bottom - rect.bottom
-    },
-  }
-  BRIDGES.set(editorRoot, bridge)
-  return bridge
 }
 
 export interface ScrollSyncOptions {
