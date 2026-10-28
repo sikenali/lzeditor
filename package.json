@@ -11,7 +11,7 @@
     "test": "node --import tsx --test tests/*.test.mjs tests/vendor/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run test",
-    "test:e2e": "npm run build && node --test tests/e2e/e2e.test.mjs",
+    "test:e2e": "npm run build && node --import tsx --test tests/e2e/e2e.test.mjs tests/e2e/editor-interactions.spec.ts",
     "e2e:run": "node --test tests/e2e/e2e.test.mjs",
     "server:start": "tsx server/src/index.ts",
     "electron:dev": "concurrently \"npm run dev:web\" \"wait-on http://localhost:5173 && tsc -p electron/tsconfig.json && electron .\"",
