@@ -156,7 +156,7 @@ function insertCommand(
 function applyBlockCommand(
   facade: EditorFacade,
   name: string,
-  args?: Record<string, unknown>,
+  _args?: Record<string, unknown>,
 ): unknown {
   const source = facade.getText();
   const sel = facade.getSelection();

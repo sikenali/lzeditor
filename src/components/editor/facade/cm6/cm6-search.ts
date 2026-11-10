@@ -1,4 +1,4 @@
-import type { EditorFacade, FacadeSelection, SearchQueryOptions } from "../EditorFacade";
+import type { FacadeSelection, SearchQueryOptions } from "../EditorFacade";
 /**
  * Search/replace over the facade's canonical source string, with the same
  * semantics the previous editor exposed:
