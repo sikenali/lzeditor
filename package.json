@@ -8,7 +8,7 @@
     "dev:server": "tsx watch server/src/index.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "node --import tsx --test tests/*.test.mjs tests/vendor/*.test.mjs",
+    "test": "node --import tsx --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run test",
     "test:e2e": "npm run build && node --import tsx --test tests/e2e/e2e.test.mjs tests/e2e/editor-interactions.spec.ts",
@@ -28,7 +28,6 @@
     "@codemirror/search": "6.7.2",
     "@codemirror/state": "6.7.6",
     "@codemirror/view": "6.43.13",
-    "@heroicons/react": "^2.2.0",
     "@lezer/common": "1.5.3",
     "@lezer/highlight": "1.2.5",
     "@lezer/markdown": "1.7.2",
@@ -48,7 +47,6 @@
     "react-dom": "^19.3.1",
     "remixicon": "^3.5.0",
     "xlsx": "^0.18.5",
-    "yaml": "^2.9.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
