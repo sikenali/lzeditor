@@ -21,7 +21,17 @@
     "electron:build:linux": "npm run build && tsc -p electron/tsconfig.json && electron-builder --linux"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "6.20.3",
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-markdown": "6.5.2",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/search": "6.7.2",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.13",
     "@heroicons/react": "^2.2.0",
+    "@lezer/common": "1.5.3",
+    "@lezer/highlight": "1.2.5",
+    "@lezer/markdown": "1.7.2",
     "dompurify": "^3.4.15",
     "echarts": "^6.1.0",
     "echarts-for-react": "^3.0.6",
