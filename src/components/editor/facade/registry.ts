@@ -1,7 +1,7 @@
-import type { YeliEditorFacade } from "./YeliEditorFacade";
+import type { EditorFacade } from "./EditorFacade";
 
 /**
- * Global registry for the single live {@link YeliEditorFacade}.
+ * Global registry for the single live {@link EditorFacade}.
  *
  * The single editor entry point: the editor component registers its facade on
  * mount and clears it on unmount, so imperative callers (toolbar, AI panel,
@@ -9,12 +9,12 @@ import type { YeliEditorFacade } from "./YeliEditorFacade";
  * is mounted at a time, and the facade instance is created once per editor
  * mount, so registration is idempotent in practice.
  */
-let current: YeliEditorFacade | null = null;
+let current: EditorFacade | null = null;
 
-export function registerYeliFacade(facade: YeliEditorFacade | null): void {
+export function registerEditorFacade(facade: EditorFacade | null): void {
   current = facade;
 }
 
-export function getYeliFacade(): YeliEditorFacade | null {
+export function getEditorFacade(): EditorFacade | null {
   return current;
 }
