@@ -1,4 +1,4 @@
-import type { YeliEditorFacade, FacadeSelection } from '../components/editor/facade/YeliEditorFacade'
+import type { EditorFacade, FacadeSelection } from '../components/editor/facade/EditorFacade'
 import type { AIAction, ApplyRecord } from '../shared/types'
 
 /** 流式游标：跨 send/applyToDoc 共享（见 useAI 内 streamRef）。 */
@@ -27,7 +27,7 @@ export interface ApplyPlan {
  * - 未流式/常规：以当前选区 replaceRange，事务失败（越界等）同样不覆盖、不抛错。
  */
 export function planApply(
-  facade: YeliEditorFacade,
+  facade: EditorFacade,
   s: AIStreamState,
   output: string,
   action: AIAction,

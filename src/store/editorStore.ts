@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { EditorStoreState, DocVersion } from '../shared/types'
 import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
 import { getDocMd } from '../utils/docSource'
-import { getYeliFacade } from '../components/editor/facade/registry'
+import { getEditorFacade } from '../components/editor/facade/registry'
 import { persistCatalog, restoreSession, type CatalogEntry } from '../utils/docCatalog'
 
 const MAX_VERSIONS = 10
@@ -313,7 +313,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     delete next[id]
     const md = getDocMd(id)
     set({ docsMd: next, ...(s.activeDocId === id ? { mdContent: md } : {}) })
-    if (s.activeDocId === id) getYeliFacade()?.setText(md)
+    if (s.activeDocId === id) getEditorFacade()?.setText(md)
   },
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => set((s: any) => ({
     docsMd: typeof mds === 'function' ? mds(s.docsMd || {}) : mds,

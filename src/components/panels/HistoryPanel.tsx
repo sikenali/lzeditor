@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { getYeliFacade } from '../editor/facade/registry'
+import { getEditorFacade } from '../editor/facade/registry'
 import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
@@ -38,7 +38,7 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     setDocHTML(selected.html)
     setMdContent(selected.md)
     // yeli 编辑器是源码画布：直接 setText，onChange 会回填 store
-    getYeliFacade()?.setText(selected.md)
+    getEditorFacade()?.setText(selected.md)
   }
 
   const handleRollback = () => {

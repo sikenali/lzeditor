@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef } from 'react'
 import { useAIStore } from '../store/aiStore'
 import { useSettingsStore } from '../store/settingsStore'
-import { getYeliFacade } from '../components/editor/facade/registry'
-import type { YeliEditorFacade } from '../components/editor/facade/YeliEditorFacade'
+import { getEditorFacade } from '../components/editor/facade/registry'
+import type { EditorFacade } from '../components/editor/facade/EditorFacade'
 import { parseMdOutline, outlineToMarkdownTree } from '../utils/mdOutline'
 import { buildPrompt } from '../services/promptTemplate'
 import { planApply, type AIStreamState } from './aiApply'
@@ -55,7 +55,7 @@ export function useAI() {
 
   /** 把一段流式文本写入文档：首个 chunk 定位 anchor 并替换选区，后续在 anchor 后追加；
    *  revision 不匹配（用户中途编辑）则丢弃该 chunk 并停止实时插入，绝不覆盖最新内容。 */
-  const streamIntoDoc = useCallback((facade: YeliEditorFacade, delta: string) => {
+  const streamIntoDoc = useCallback((facade: EditorFacade, delta: string) => {
     const s = streamRef.current
     if (!delta || s.stale) return
     try {
@@ -111,7 +111,7 @@ export function useAI() {
       active: false, stale: false, anchor: null, expectedRev: -1,
       originalText: '', insertStart: 0, totalLen: 0,
     }
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
 
     // 文档结构上下文从 markdown 源码解析（yeli 是源码画布，无文档树）
     const schemaContext = outlineToMarkdownTree(parseMdOutline(facade?.getText() || ''))
@@ -221,7 +221,7 @@ export function useAI() {
     const state = useAIStore.getState()
     if (state.panelStatus !== 'result') return
     const output = state.panelOutput || ''
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     // 无 facade：仅标记 applied（与旧路径一致，不登记）。
     if (!facade) {
       useAIStore.getState().setPanelStatus('applied')
@@ -237,7 +237,7 @@ export function useAI() {
   const undo = useCallback(() => {
     const record = useAIStore.getState().getUndoRecord()
     if (!record) return
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (facade) {
       const text = facade.getText()
       const start = record.newText ? text.indexOf(record.newText) : record.position.from

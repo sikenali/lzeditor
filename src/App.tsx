@@ -30,7 +30,7 @@ const EmojiDialog = lazy(() => import('./components/panels/EmojiDialog').then(m 
 const ChartDialog = lazy(() => import('./components/panels/ChartDialog').then(m => ({ default: m.ChartDialog })))
 import { useEditorStore, switchDocSilently } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
-import { getYeliFacade } from './components/editor/facade/registry'
+import { getEditorFacade } from './components/editor/facade/registry'
 import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
 import { useTypographyOverrides } from './hooks/useTypographyOverrides'
@@ -108,7 +108,7 @@ function App() {
       // yeli 画布聚焦的是块级 contenteditable，CM6 时代 blur 的是 view.contentDOM；
       // 这里 blur 掉画布 shell 内的焦点元素即可（面板打开时编辑器应让位）。
       const active = document.activeElement
-      if (active instanceof HTMLElement && active.closest('.yeli-canvas-shell')) active.blur()
+      if (active instanceof HTMLElement && active.closest('.code-editor-shell')) active.blur()
     } catch {}
   }, [openPanel, insertPanel, showSearch])
 
@@ -178,7 +178,7 @@ function App() {
   // 全局快捷键（与「快捷键设置」页列出的组合一致）
   useEffect(() => {
     const mod = (e: KeyboardEvent) => e.ctrlKey || e.metaKey
-    const ed = () => getYeliFacade()
+    const ed = () => getEditorFacade()
 
     const toggleAI = () => {
       const s = useAIStore.getState()
@@ -279,7 +279,7 @@ function App() {
         const html = mdToHtml(res.text)
         es.updateDoc({ md: res.text, html, docsMd: { [id]: res.text } })
         try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md: res.text, html, savedAt: Date.now() })) } catch {}
-        getYeliFacade()?.setText(res.text)
+        getEditorFacade()?.setText(res.text)
       } catch (e) { silentError('导入文件写入编辑器失败', e) }
     }
     const offLocalFile = api.onMenuOpenFile?.(onLocalFile)
@@ -341,14 +341,14 @@ function App() {
     insertMarkdown(buildImageMd(url, alt, align))
   }
   const uploadImage = (file: File, align?: 'top' | 'left' | 'right') => {
-    if (!getYeliFacade()) return
+    if (!getEditorFacade()) return
     const reader = new FileReader()
     reader.onload = (ev) => insertImage(ev.target?.result as string, file.name, align)
     reader.readAsDataURL(file)
     closeInsert()
   }
   const insertMarkdown = (md: string) => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     // getSelection() 已从 DOM 反推当前光标（A3）：typewriter 未同步时也能锚定光标
     // 而非退化到文末。?? undefined 仅在 DOM 也确定不了时兜底为「追加到文末」。
     if (facade) { facade.insertText(md, facade.getSelection() ?? undefined); closeInsert(); return }
@@ -368,13 +368,13 @@ function App() {
     closeInsert()
   }
   const insertCode = (code: string, lang: string) => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     // 与图片/链接/表情/表格一致：锚定光标（getSelection()），而非退化到文末（A3）。
     if (facade) facade.insertText(`\`\`\`${lang}\n${code}\n\`\`\``, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertLink = (text: string, url: string, newTab?: boolean) => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade) return
     const label = (text.trim() || url).replace(/\s+/g, ' ')
     const anchor = facade.getSelection() ?? undefined
@@ -387,7 +387,7 @@ function App() {
     closeInsert()
   }
   const insertFormula = (formula: string) => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     // 行内 $$f$$（与 CM6 一致）+ 光标锚定，与其它插入行为一致（A3）。
     if (facade) facade.insertText(`$$${formula}$$`, facade.getSelection() ?? undefined)
     closeInsert()
@@ -395,18 +395,18 @@ function App() {
   const insertChart = (src: string, alt: string, type: string) => {
     // 图表是位图，类型信息只能进 alt 文本（读屏/导出 Word 都能看到）
     const label = `${CHART_TYPE_LABEL[type] ?? '图表'}：${alt}`.replace(/\]/g, '\\]')
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     facade?.insertText(`\n\n![${label}](${src})\n\n`, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertEmoji = (text: string) => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     facade?.insertText(text, facade.getSelection() ?? undefined)
     closeInsert()
   }
   const insertTable = (rows: number, cols: number, data?: string[][], withHeaderRow = true) => {
     if (rows <= 0 || cols <= 0) return
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     facade?.insertText(`\n\n${buildTableMd(rows, cols, data, withHeaderRow)}\n\n`, facade.getSelection() ?? undefined)
     closeInsert()
   }

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { getYeliFacade } from '../editor/facade/registry'
-import type { SearchQueryOptions } from '../editor/facade/YeliEditorFacade'
+import { getEditorFacade } from '../editor/facade/registry'
+import type { SearchQueryOptions } from '../editor/facade/EditorFacade'
 import { UiSwitch } from '../ui'
 
 interface SearchPanelProps {
@@ -38,7 +38,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
 
   /** 执行查找并更新计数；无效正则写入错误态。 */
   const runSearch = useCallback((): number => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade || !searchTerm.trim()) return 0
     try {
       const count = facade.searchMatches(buildOptions())
@@ -57,7 +57,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
 
   const handleReplace = useCallback(() => {
     if (!searchTerm.trim() || !replaceTerm) return
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade) return
     try {
       // 先为当前查询词建立命中集（相同参数时 facade 保留导航下标，已导航到
@@ -73,7 +73,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
 
   const handleReplaceAll = useCallback(() => {
     if (!searchTerm.trim() || !replaceTerm) return
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade) return
     try {
       // 先建立命中集，再自后向前全部替换，最后重算剩余命中数。
@@ -88,7 +88,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   }, [searchTerm, replaceTerm, buildOptions])
 
   const handleNext = useCallback(() => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade || !searchTerm.trim()) return
     try {
       if (lastSearchKeyRef.current !== searchOptionsKey(buildOptions())) {
@@ -105,7 +105,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   }, [searchTerm, buildOptions])
 
   const handlePrev = useCallback(() => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade || !searchTerm.trim()) return
     try {
       if (lastSearchKeyRef.current !== searchOptionsKey(buildOptions())) {

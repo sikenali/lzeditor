@@ -41,9 +41,9 @@ assert.match(actions, /getTableContext\(\)/, '表格结构命令必须经 facade
 assert.match(tableDropdown, /setActiveCell\(prev => \(prev && prev\.c === c/, '删列后 activeCell 索引必须同步，否则连点会删错列')
 assert.match(tableDropdown, /setActiveCell\(prev => \(prev && prev\.r === r/, '删行后 activeCell 索引必须同步')
 
-// ── 批次 B：编辑器设置真正生效（yeli 侧）──────────────────────────────
+// ── 批次 B：编辑器设置真正生效（编辑器侧）──────────────────────────────
 
-assert.match(actions, /getYeliFacade\(\)/, '编辑动作必须统一走 yeli facade')
+assert.match(actions, /getEditorFacade\(\)/, '编辑动作必须统一走编辑器 facade')
 
 // ── 批次 B：导出与图片 ─────────────────────────────────────────────────
 
@@ -135,8 +135,8 @@ assert.doesNotMatch(shortcutTab, /\$\{alt\}\+Tab/, 'Alt+Tab 是系统窗口切�
 
 const globalsCss = read('src/styles/globals.css')
 assert.doesNotMatch(globalsCss, /data-md-markers/, '标记常显不能再靠 CSS 类名，编辑态 DOM 没有标题元素')
-const yeliEditor = read('src/components/editor/YeliEditor.tsx')
-assert.doesNotMatch(yeliEditor, /data-md-markers\s*[:=]/, 'YeliEditor 不再往编辑器容器写 data-md-markers')
+const codeEditor = read('src/components/editor/CodeEditor.tsx')
+assert.doesNotMatch(codeEditor, /data-md-markers\s*[:=]/, 'CodeEditor 不再往编辑器容器写 data-md-markers')
 
 // 「首行缩进」「两端对齐」此前只写 CSS 变量，没有任何规则消费
 const readModeCss = read('src/styles/read-mode.css')

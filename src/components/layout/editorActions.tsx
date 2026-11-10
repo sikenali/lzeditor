@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
-import { getYeliFacade } from '../editor/facade/registry'
+import { getEditorFacade } from '../editor/facade/registry'
 
 export interface MenuItem {
   icon?: string
@@ -93,7 +93,7 @@ export function useTableActive(): boolean {
     let tries = 0
     const tick = () => {
       try {
-        const facade = getYeliFacade()
+        const facade = getEditorFacade()
         if (!facade) { setActive(false); return }
         // getTableContext() 在光标/活动单元格位于表格块内时返回上下文（A1），
         // 否则 null → 置灰。DOM 单元格 + 源码偏移双路径，均不依赖行正则。
@@ -103,7 +103,7 @@ export function useTableActive(): boolean {
     // facade 在编辑器挂载时注册，第一次进工具栏时可能还没就绪，轮询几次再挂监听
     const attach = () => {
       if (!alive) return
-      const facade = getYeliFacade()
+      const facade = getEditorFacade()
       if (!facade) {
         if (tries++ > 25) return
         setTimeout(attach, 200)
@@ -214,7 +214,7 @@ export function useEditorActions() {
 
   // 无映射的动作不静默失败：插入类改为打开对应面板
   const runMapped = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade) return false
     const fc = map[action]
     if (!fc) {
@@ -243,16 +243,15 @@ export function useEditorActions() {
 
   const tableAction = useCallback((action: string) => {
     if (action === 'insert') { setInsertPanel('table'); return }
-    const facade = getYeliFacade()
+    const facade = getEditorFacade()
     if (!facade) return
     const yeliId = TABLE_OP_TO_YELI[action]
     if (!yeliId) return
-    // yeli 的 table.* 命令需块上下文（blockId/activeCell）。facade.getTableContext()
-    // 从当前 selection/活动单元格反推所在表格块 + 单元格坐标（A1）；不在表格内时
-    // 返回 null，此处安全 no-op（与 CM6 时代「不在表格内禁用」一致，菜单项也已置灰）。
-    const ctx = facade.getTableContext()
-    if (!ctx) return
-    facade.execCommand(yeliId, { blockId: ctx.blockId, activeCell: ctx.activeCell })
+    // 源码模式无表格块上下文：getTableContext() 恒为 null，此处不可达（菜单项已
+    // 因 getTableContext()===null 置灰）。execCommand 的 table.* 分支在 CM6 下
+    // 回退为插入 markdown 表格（Review Focus #4），不会静默失败。
+    if (!facade.getTableContext()) return
+    facade.execCommand(yeliId)
   }, [setInsertPanel])
 
   // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（左源码 + 右样式预览）

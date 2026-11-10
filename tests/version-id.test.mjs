@@ -31,11 +31,11 @@ test('id 单调递增，HistoryPanel 按 Number(b.id) - Number(a.id) 倒序即�
   assert.ok(a < b && b < c, `期望 ${a} < ${b} < ${c}`)
 })
 
-// 编辑器卸载时不再有 CM6 视图可销毁，改为锁住：yeli 编辑器卸载必须把
+// 编辑器卸载时不再有 CM6 视图可销毁，改为锁住：CodeEditor 卸载必须把
 // editorContentRef 重置为 null，避免切到历史/阅读模式后残留指向已卸载的
 // 编辑容器（滚动同步 / 定位据此回退）。editorStore 链式加载 ?raw 内容文件，
 // node 解析不了，只能锁源码形状。
-test('YeliEditor 卸载必须重置 editorContentRef', () => {
-  const yeli = readFileSync(new URL('../src/components/editor/YeliEditor.tsx', import.meta.url), 'utf8')
-  assert.match(yeli, /setEditorContentRef\(null\)/, '卸载时应重置编辑容器引用')
+test('CodeEditor 卸载必须重置 editorContentRef', () => {
+  const code = readFileSync(new URL('../src/components/editor/CodeEditor.tsx', import.meta.url), 'utf8')
+  assert.match(code, /setEditorContentRef\(null\)/, '卸载时应重置编辑容器引用')
 })
