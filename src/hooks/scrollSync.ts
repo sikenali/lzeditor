@@ -81,10 +81,10 @@ export interface EditorLineBridge {
 }
 
 /**
- * 编辑器侧行桥：yeli 编辑器（CodeEditor）以源码偏移为坐标，未提供 CM6 式
- * EditorView 行号桥，故 lineBridgeOf 恒返回 null —— 预览滚动同步在此静默退化
- * （两侧独立滚动）。保留 EditorLineBridge 接口与同步引擎，供未来接入 yeli
- * 行号桥时复用，不破坏 SidebarPreview 的装配。
+ * 编辑器侧行桥：CM6 源码编辑器以源码偏移为坐标，未提供行号桥，故
+ * lineBridgeOf 恒返回 null —— 预览滚动同步在此静默退化（两侧独立滚动）。
+ * 保留 EditorLineBridge 接口与同步引擎，供未来接入 CM6 行号桥时复用，
+ * 不破坏 SidebarPreview 的装配。
  */
 export function lineBridgeOf(_editorRoot: HTMLElement | null): EditorLineBridge | null {
   return null

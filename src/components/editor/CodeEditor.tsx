@@ -6,7 +6,6 @@ import { getEditorFacade, registerEditorFacade } from "./facade/registry";
 import type { EditorFacade } from "./facade/EditorFacade";
 import { useEditorStore } from "../../store/editorStore";
 import { useSettingsStore } from "../../store/settingsStore";
-import { resolveTheme } from "../../hooks/useTheme";
 import { fontStackFor } from "../../hooks/useTypographyOverrides";
 import "../../styles/code-editor.css";
 
@@ -57,10 +56,8 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
     useEffect(() => {
       const shell = shellRef.current;
       if (!shell) return;
-      const appTheme = useSettingsStore.getState().theme;
-      const dark = resolveTheme(appTheme) === "dark";
       const { facade, view, destroy } = createCM6EditorFacade(shell, {
-        extensions: buildCM6Extensions({ dark }),
+        extensions: buildCM6Extensions(),
       });
       handleRef.current = { facade, destroy };
       facade.setText(mdRef.current);

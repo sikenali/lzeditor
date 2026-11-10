@@ -41,4 +41,43 @@ assert.equal(applyBlockConvert('- [ ] todo', '## ').text, '## todo')
 assert.equal(applyBlockConvert('> quote', '- ').text, '- quote')
 assert.equal(applyBlockConvert('plain', '- [ ] ').text, '- [ ] plain')
 
+// ── behavior: insert.section (H2 按钮) 必须产出 `## `，不能静默 no-op ──
+let isSource = 'hello'
+const insertSectionFacade = {
+  getText: () => isSource,
+  getSelection: () => ({ from: 5, to: 5 }),
+  setSelection: () => {},
+  replaceRange: (from, to, text) => {
+    isSource = isSource.slice(0, from) + text + isSource.slice(to)
+  },
+  insertText: (text, anchor) => {
+    const at = anchor ? anchor.from : isSource.length
+    isSource = isSource.slice(0, at) + text + isSource.slice(at)
+  },
+  insertBlock: (text) => { isSource += text },
+  undo: () => false,
+  redo: () => false,
+}
+applyEditorCommand(insertSectionFacade, 'insert.section')
+assert.equal(isSource, 'hello## ', 'H2 必须插入 `## ` 前缀（不吞掉 H2 按钮）')
+applyEditorCommand(insertSectionFacade, 'insert.heading2')
+assert.equal(isSource, 'hello## ## ', 'insert.heading2 也必须产出 `## `')
+
+// ── behavior: block.delete 末行必须连同前一换行一起删（不能空删） ──
+let dlSource = 'a\nb'
+const deleteLastFacade = {
+  getText: () => dlSource,
+  getSelection: () => ({ from: 2, to: 2 }), // 光标在末行 'b' 行首
+  setSelection: () => {},
+  replaceRange: (from, to, text) => {
+    dlSource = dlSource.slice(0, from) + text + dlSource.slice(to)
+  },
+  insertText: () => {},
+  insertBlock: () => {},
+  undo: () => false,
+  redo: () => false,
+}
+applyEditorCommand(deleteLastFacade, 'block.delete')
+assert.equal(dlSource, 'a', 'block.delete 末行必须删掉 b 与其前换行，得 a')
+
 console.log('cm6 commands ok')

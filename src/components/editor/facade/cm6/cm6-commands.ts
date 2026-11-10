@@ -126,6 +126,8 @@ const INSERT_MD: Record<string, (args?: Record<string, unknown>) => string> = {
   "insert.table": (args) => buildTable(args),
   "insert.divider": () => "---\n",
   "insert.heading1": () => "# ",
+  "insert.heading2": () => "## ",
+  "insert.section": () => "## ",
   "insert.heading3": () => "### ",
   "insert.heading4": () => "#### ",
   "insert.heading5": () => "##### ",
@@ -171,8 +173,15 @@ function applyBlockCommand(
   }
   if (name === "block.delete") {
     const nextNl = source.indexOf("\n", to);
-    const delTo = nextNl === -1 ? (from === 0 ? to : from) : nextNl + 1;
-    facade.replaceRange(from, delTo, "");
+    let delFrom = from;
+    let delTo = to;
+    if (nextNl === -1) {
+      // 最后一行：连同上一行末尾的换行一起删（from>0 时），否则只删本行。
+      if (from > 0) delFrom = from - 1;
+    } else {
+      delTo = nextNl + 1;
+    }
+    facade.replaceRange(delFrom, delTo, "");
     return true;
   }
   if (name === "block.duplicate") {

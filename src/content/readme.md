@@ -181,17 +181,16 @@ lzeditor/
 
 ## 实现原理
 
-### yeli 区块编辑器体系
+### CodeMirror 6 源码编辑器体系
 
 ```
-LZEditor (yeli 区块编辑器)
-  ├── facade (YeliEditorFacade)                  → 唯一编辑入口，typed 事务
-  ├── command-registry                           → 命令目录（标题/列表/表格…）
-  ├── assist (autopair / smart-paste / typewriter / focus-mode / heading-shortcuts)
-  │                                              → 输入辅助与标题快捷键
-  ├── render-ext                                 → 区块内惰性特效渲染
-  ├── highlight.js + KaTeX + mermaid + echarts   → 代码高亮 / 公式 / 图表渲染
-  └── markdown-it + footnotes                    → Markdown + GFM 解析与渲染
+LZEditor (CM6 源码编辑器，左写右读)
+  ├── facade (EditorFacade)                       → 唯一编辑入口，typed 事务
+  ├── cm6-commands                                → 命令目录（标题/列表/表格…）
+  ├── cm6-assist (autopair / smart-paste / typewriter / focus-mode / heading-shortcuts)
+  │                                                → 输入辅助与标题快捷键
+  ├── highlight.js + KaTeX + mermaid + echarts     → 代码高亮 / 公式 / 图表渲染
+  └── markdown-it + footnotes                      → Markdown + GFM 解析与渲染
 ```
 
 ### AI 辅助写作流程

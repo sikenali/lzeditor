@@ -29,7 +29,7 @@ import { smartPasteExtension, headingShortcutKeymap, backspacePairKeymap } from 
  * language highlighting, auto-pairing, autocompletion, keymap, line wrapping,
  * active-line marking (focus mode) and smart-paste.
  */
-export function buildCM6Extensions(_options: { dark?: boolean } = {}): Extension[] {
+export function buildCM6Extensions(): Extension[] {
   return [
     history(),
     indentOnInput(),
