@@ -7,6 +7,7 @@ import { tagToKind, type BlockKind } from '../../utils/blockKind'
 import { paginate, pageOfLine, spreadCount, type Page } from '../../utils/pagination'
 import { OWN_ACTION } from '../../utils/markdown/lines'
 import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
+import { renderEchartsBlocks } from '../../utils/markdown/echarts'
 import { useSettingsStore } from '../../store/settingsStore'
 import { resolveTheme } from '../../hooks/useTheme'
 
@@ -253,6 +254,7 @@ export const ReadMode: React.FC = () => {
     const dark = resolveTheme(appTheme) === 'dark'
     document.querySelectorAll('.read-article-body').forEach((el) => {
       void renderMermaidBlocks(el as HTMLElement, dark)
+      void renderEchartsBlocks(el as HTMLElement)
     })
   }, [pages, spread, appTheme])
 

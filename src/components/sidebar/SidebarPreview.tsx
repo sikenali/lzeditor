@@ -7,6 +7,7 @@ import { getTypographyTheme } from '../../styles/typography-themes'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getDocMd } from '../../utils/docSource'
 import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
+import { renderEchartsBlocks } from '../../utils/markdown/echarts'
 import { resolveTheme } from '../../hooks/useTheme'
 
 const MIN_WIDTH = 200
@@ -79,6 +80,8 @@ export const SidebarPreview: React.FC = () => {
     }
     // mermaid 是异步增强：占位符先显示，渲完再换成图
     void renderMermaidBlocks(previewEl, resolveTheme(appTheme) === 'dark')
+    // echarts 同样事后增强：```echarts JSON → 真图（解析失败降级为源码+提示）
+    void renderEchartsBlocks(previewEl)
   }, [previewHtml, typographyTheme])
 
   // 换主题不会重新生成 html，也就不会重建 .mermaid-diagram，已渲染的图要自己重渲。
