@@ -1,13 +1,11 @@
 /**
  * 浏览器回归：编辑器交互（任务 7）。
  *
- * 在真实 headless Chrome 里驱动生产构建，验证 yeli 编辑器装配层的行为：
+ * 在真实 headless Chrome 里驱动生产构建，验证 CM6 源码编辑器装配层的行为：
  *  - 输入辅助：自动配对（`(`→`()`、空配对 Backspace 整对删除）、智能粘贴
  *    （URL → 链接 markdown）、打字机/焦点跟随。
- *  - 区块内特效渲染降级：mermaid 围栏在编辑画布里呈现为不可编辑的
- *    source-safe 块且源码被原样保留（惰性水合与降级标记见
- *    tests/vendor/render-ext.test.mjs）。
- *  - AI 插入/改写：mock SSE 流式端点，驱动 AIPanel 发送，断言流式增量进入文档。
+ *  - AI 插入/改写：mock SSE 流式端点，驱动 AIPanel 发送，断言流式增量进入文档
+ *    （含 mermaid 围栏源码原样落进编辑器）。
  *
  * 与 e2e.test.mjs 同构：node:test + playwright-core，先 build 再 vite preview。
  */
@@ -110,8 +108,8 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
     t.diagnostic(`${cond ? '✓' : '✗'} ${name}${detail ? ' — ' + detail : ''}`)
     assert.ok(cond, `${name}${detail ? ' — ' + detail : ''}`)
   }
-  const editable = () => page.locator('.yeli-canvas-shell .block-content-editable').first()
-  const shellText = async () => (await page.locator('.yeli-canvas-shell').innerText()) || ''
+  const editable = () => page.locator('.cm-editor .cm-content').first()
+  const shellText = async () => (await page.locator('.cm-editor .cm-content').innerText()) || ''
   page.on('request', (r) => {
     if (/chat\/completions/i.test(r.url())) t.diagnostic(`[net] ${r.method()} ${r.url()}`)
   })
@@ -122,8 +120,8 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
   // ── 0. 新建文档，挂载编辑器 ────────────────────────────────────────────────
   await page.locator('.welcome-btn--primary').click()
   await sleep(700)
-  check('编辑器挂载：出现 .yeli-canvas-shell', (await page.locator('.yeli-canvas-shell').count()) > 0)
-  check('编辑器挂载：出现可编辑块 .block-content-editable', (await editable().count()) > 0)
+  check('编辑器挂载：出现 .cm-editor', (await page.locator('.cm-editor').count()) > 0)
+  check('编辑器挂载：出现内容区 .cm-content', (await editable().count()) > 0)
 
   // ── 1. 自动配对：`(` 键入生成 `()`，光标居中，Backspace 整对删除 ─────────────
   await editable().click()
@@ -149,7 +147,7 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
   await editable().click()
   await sleep(150)
   await page.evaluate(() => {
-    const target = document.querySelector('.yeli-canvas-shell .block-content-editable') as HTMLElement
+    const target = document.querySelector('.cm-editor .cm-content') as HTMLElement
     target.focus()
     const dt = new DataTransfer()
     dt.setData('text/plain', 'https://example.com')
@@ -165,7 +163,7 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
   await sleep(200)
   const focused = await page.evaluate(() => {
     const el = document.activeElement
-    return el instanceof HTMLElement && el.closest('.block-content-editable') !== null
+    return el instanceof HTMLElement && el.closest('.cm-content') !== null
   })
   check('打字机/焦点：点击可编辑块后光标落于块内', focused)
   await page.keyboard.type('X')
@@ -223,11 +221,8 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
   await page.locator('.ai-panel .ai-send-btn').click()
   await page.waitForSelector('.ai-panel .ai-output-content', { timeout: 10000 })
   await sleep(600)
-  const mermaidBlock = page.locator('.yeli-canvas-shell .source-safe-block[data-block-kind="mermaid"]').first()
-  check('特效降级：mermaid 围栏呈现为 source-safe 块', (await mermaidBlock.count()) > 0)
-  const mermaidPre = await mermaidBlock.locator('pre').innerText().catch(() => '')
-  check('特效降级：mermaid 源码被原样保留', mermaidPre.includes('graph TD') && mermaidPre.includes('A-->B'), JSON.stringify(mermaidPre))
-  const mermaidEditable = await mermaidBlock.locator('[contenteditable], textarea').count()
-  check('特效降级：mermaid 块不可直接编辑（source-safe）', mermaidEditable === 0, `contenteditable/textarea=${mermaidEditable}`)
+  const afterMermaid = await shellText()
+  check('特效降级：mermaid 围栏源码进入文档', afterMermaid.includes('```mermaid') && afterMermaid.includes('graph TD'), JSON.stringify(afterMermaid))
+  check('特效降级：mermaid 源码被原样保留（A-->B）', afterMermaid.includes('A-->B'), JSON.stringify(afterMermaid))
   await page.unroute('**/v1/chat/completions')
 })

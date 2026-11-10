@@ -144,6 +144,22 @@ export function headingShortcutKeymap(): Extension {
   );
 }
 
+/** Backspace 落在空配对（`()`/`[]`/`""`/`**`）中间时整对删除（同 yeli 行为）。 */
+function emptyPairBackspace(view: EditorView): boolean {
+  const main = view.state.selection.main;
+  if (!main.empty) return false;
+  const source = view.state.doc.toString();
+  const pair = autopairBackspace(source, main.from);
+  if (!pair) return false;
+  view.dispatch({ changes: { from: pair.from, to: pair.to, insert: "" } });
+  return true;
+}
+
+/** CM6 extension: 空配对 Backspace 整对删除（放在 defaultKeymap 前才有优先级）。 */
+export function backspacePairKeymap(): Extension {
+  return keymap.of([{ key: "Backspace", run: emptyPairBackspace }]);
+}
+
 /**
  * Installs the view-level assist (typewriter + focus-mode). `getSettings` is
  * read at each event so runtime toggles take effect without re-mounting.

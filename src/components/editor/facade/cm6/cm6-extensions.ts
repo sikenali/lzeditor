@@ -19,7 +19,7 @@ import {
   closeBracketsKeymap,
   completionKeymap,
 } from "@codemirror/autocomplete";
-import { smartPasteExtension, headingShortcutKeymap } from "./cm6-assist";
+import { smartPasteExtension, headingShortcutKeymap, backspacePairKeymap } from "./cm6-assist";
 
 /**
  * Builds the CodeMirror 6 extension set for the source editor.
@@ -41,6 +41,7 @@ export function buildCM6Extensions(_options: { dark?: boolean } = {}): Extension
     EditorView.lineWrapping,
     smartPasteExtension(),
     headingShortcutKeymap(),
+    backspacePairKeymap(),
     keymap.of([
       ...defaultKeymap,
       ...historyKeymap,
