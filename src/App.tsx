@@ -9,7 +9,7 @@ import { SettingsDialog } from './components/panels/SettingsDialog'
 import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { StyleMainPanel } from './components/panels/StyleMainPanel'
-import { YeliEditor } from './components/editor/YeliEditor'
+import { CodeEditor } from './components/editor/CodeEditor'
 import { getDocMd } from './utils/docSource'
 import { README_CONTENT } from './components/editor/constants'
 import { ReadMode } from './components/editor/ReadMode'
@@ -445,7 +445,7 @@ function App() {
     }
     // 编辑 / 代码 / 排版 三种模式都挂源码编辑器：
     // 预览模式与排版模式的右侧内容走右栏，代码模式不给右栏留位。
-    return <YeliEditor md={editorMd} onChange={handleEditorChange} />
+    return <CodeEditor md={editorMd} onChange={handleEditorChange} />
   })()
 
   // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容
