@@ -1,12 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { createCM6EditorFacade } from "./facade/cm6/CM6EditorFacade";
 import { buildCM6Extensions } from "./facade/cm6/cm6-extensions";
+import { installAssist } from "./facade/cm6/cm6-assist";
 import { getEditorFacade, registerEditorFacade } from "./facade/registry";
 import type { EditorFacade } from "./facade/EditorFacade";
 import { useEditorStore } from "../../store/editorStore";
 import { useSettingsStore } from "../../store/settingsStore";
 import { resolveTheme } from "../../hooks/useTheme";
 import { fontStackFor } from "../../hooks/useTypographyOverrides";
+import "../../styles/code-editor.css";
 
 /**
  * lzeditor's source editor: a CodeMirror 6 canvas (left-write / right-read,
@@ -43,6 +45,13 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
     const mdRef = useRef(md);
     mdRef.current = md;
 
+    // 输入辅助设置（typewriter/focus-mode）每次渲染刷新到 ref，installAssist
+    // 在事件时读它，这样设置切换即时生效、无需重挂编辑器。
+    const typewriterMode = useSettingsStore((s) => s.typewriterMode) ?? false;
+    const focusMode = useSettingsStore((s) => s.focusMode) ?? false;
+    const assistSettingsRef = useRef({ typewriterMode, focusMode });
+    assistSettingsRef.current = { typewriterMode, focusMode };
+
     // Mount: create the CM6 view + facade over the shell, seed the source,
     // subscribe, register, and expose the scroll container for scroll-sync.
     useEffect(() => {
@@ -56,11 +65,17 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
       handleRef.current = { facade, destroy };
       facade.setText(mdRef.current);
       const unsubscribe = facade.onChange((markdown) => onChangeRef.current(markdown));
+      const uninstallAssist = installAssist(
+        view,
+        facade,
+        () => assistSettingsRef.current,
+      );
       registerEditorFacade(facade);
       useEditorStore.getState().setEditorContentRef(view.scrollDOM as HTMLDivElement);
 
       return () => {
         unsubscribe();
+        uninstallAssist();
         if (getEditorFacade() === facade) registerEditorFacade(null);
         useEditorStore.getState().setEditorContentRef(null);
         handleRef.current = null;

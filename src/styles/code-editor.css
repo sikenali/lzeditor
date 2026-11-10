@@ -1,0 +1,66 @@
+/* CodeMirror 6 source editor theme, scoped to .code-editor-shell.
+   Colors come from the app token system (tokens.css --color-*), so the editor
+   follows parchment/dark themes via hooks/useTheme.ts. The shell mirrors the
+   old yeli canvas layout vars (--document-width set inline by CodeEditor.tsx). */
+
+.code-editor-shell {
+  height: 100%;
+  overflow: hidden;
+  --document-gutter: 96px;
+  --document-width: 690px;
+}
+
+.code-editor-shell .cm-editor {
+  height: 100%;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.code-editor-shell .cm-scroller {
+  overflow: auto;
+  font-family: var(--cm-font-family, var(--font-mono, ui-monospace, monospace));
+  font-size: var(--cm-font-size, 14px);
+  line-height: var(--cm-line-height, 1.7);
+}
+
+.code-editor-shell .cm-content {
+  padding: 24px var(--document-gutter);
+  max-width: var(--document-width);
+  margin: 0 auto;
+  caret-color: var(--color-text-primary);
+}
+
+.code-editor-shell .cm-line {
+  text-indent: var(--cm-text-indent, 0);
+  text-align: var(--cm-text-justify, start);
+}
+
+.code-editor-shell .cm-gutters {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-right: 1px solid var(--color-border-soft, var(--color-border));
+}
+
+.code-editor-shell .cm-activeLine {
+  background: var(--color-bg-secondary, transparent);
+}
+
+.code-editor-shell .cm-cursor {
+  border-left-color: var(--color-primary);
+}
+
+.code-editor-shell .cm-selectionBackground,
+.code-editor-shell .cm-content ::selection {
+  background: var(--color-primary-soft, var(--color-primary));
+}
+
+/* Focus mode: dim every line except the active one (highlightActiveLine()).
+   Only applies while the editor has focus (focusout clears the class). */
+.code-editor-shell .cm-editor.cm-focus-mode .cm-line:not(.cm-activeLine) {
+  opacity: 0.4;
+}
+
+/* Markdown syntax tokens (lezer-highlight default style mapped to tokens). */
+.code-editor-shell .cm-line {
+  color: var(--color-text-primary);
+}

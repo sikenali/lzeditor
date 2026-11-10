@@ -123,12 +123,12 @@ assert.match(actions, /label: '数学公式', action: 'formula'/, '数学公式�
 assert.match(actions, /'formula'/, 'PANEL_ACTIONS 必须包含 formula')
 assert.doesNotMatch(actions, /PANEL_ACTIONS = new Set\([^)]*'math'/, "PANEL_ACTIONS 里的 'math' 是死值")
 
-// Ctrl+Alt+1..6 标题快捷键补绑在 yeli assist 层（B2）：不再依赖 CM6 headingKeymap
-const headingShortcuts = read('src/components/editor/assist/heading-shortcuts.ts')
-assert.match(headingShortcuts, /ctrlKey \|\| event\.metaKey/, '快捷键必须认 Ctrl 与 ⌘')
-assert.match(headingShortcuts, /event\.altKey/, '必须要求 Alt')
-assert.match(headingShortcuts, /block\.convert\.heading1/, 'H1 必须映射到 block.convert.heading1')
-assert.match(headingShortcuts, /block\.convert\.heading6/, 'H6 必须映射到 block.convert.heading6')
+// Ctrl+Alt+1..6 标题快捷键补绑在 CM6 assist keymap（B2）：不再依赖 yeli assist 层
+const cm6Assist = read('src/components/editor/facade/cm6/cm6-assist.ts')
+assert.match(cm6Assist, /headingShortcutKeymap/, '必须导出 CM6 标题快捷键 keymap')
+assert.match(cm6Assist, /Mod-Alt-/, '快捷键必须认 Ctrl 与 ⌘ 并配 Alt')
+assert.match(cm6Assist, /block\.convert\.heading1/, 'H1 必须映射到 block.convert.heading1')
+assert.match(cm6Assist, /block\.convert\.heading6/, 'H6 必须映射到 block.convert.heading6')
 
 const shortcutTab = read('src/components/panels/settings/ShortcutSettingsTab.tsx')
 assert.doesNotMatch(shortcutTab, /\$\{alt\}\+Tab/, 'Alt+Tab 是系统窗口切换键，永远抢不到，不能列进快捷键表')

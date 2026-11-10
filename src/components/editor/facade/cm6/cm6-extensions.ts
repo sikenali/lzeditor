@@ -1,4 +1,4 @@
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, keymap, highlightActiveLine } from "@codemirror/view";
 import type { Extension } from "@codemirror/state";
 import {
   defaultKeymap,
@@ -19,13 +19,15 @@ import {
   closeBracketsKeymap,
   completionKeymap,
 } from "@codemirror/autocomplete";
+import { smartPasteExtension, headingShortcutKeymap } from "./cm6-assist";
 
 /**
  * Builds the CodeMirror 6 extension set for the source editor.
  *
  * The read/preview renderer lives in `src/utils/markdown/` and is independent;
  * this only configures the write side (the source editor): history, markdown
- * language highlighting, auto-pairing, autocompletion, keymap and line wrapping.
+ * language highlighting, auto-pairing, autocompletion, keymap, line wrapping,
+ * active-line marking (focus mode) and smart-paste.
  */
 export function buildCM6Extensions(_options: { dark?: boolean } = {}): Extension[] {
   return [
@@ -35,7 +37,10 @@ export function buildCM6Extensions(_options: { dark?: boolean } = {}): Extension
     markdown({ base: markdownLanguage }),
     closeBrackets(),
     autocompletion(),
+    highlightActiveLine(),
     EditorView.lineWrapping,
+    smartPasteExtension(),
+    headingShortcutKeymap(),
     keymap.of([
       ...defaultKeymap,
       ...historyKeymap,
