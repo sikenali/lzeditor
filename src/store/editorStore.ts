@@ -132,6 +132,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   showSearch: false,
   codeMode: false,
   codeModeCursor: 0,
+  wysiwyg: false,
   appMode: 'edit' as const,
   docLibraries: restored.docLibraries,
   activeLibraryId: 'default',
@@ -201,6 +202,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   },
   setCodeMode: (codeMode: boolean) => set({ codeMode }),
   setAppMode: (appMode: 'edit' | 'code' | 'style' | 'history' | 'read') => set({ appMode }),
+  setWysiwyg: (wysiwyg: boolean) => set({ wysiwyg }),
   createLibrary: (name: string) => {
     const title = (name || '').trim() || `Library ${get().docLibraries.length + 1}`
     const id = `lib-${Date.now()}`

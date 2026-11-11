@@ -50,6 +50,9 @@ assert.match(cm6Facade, /applyEditorCommand/, 'execCommand 必须经命令映射
 assert.match(cm6Facade, /createSearchSession/, '搜索必须委托 search session')
 
 // ── TipTap / ProseMirror / yeli 必须彻底下线，src 里不允许再有引用 ──
+// 例外：src/additional/ 是从 Textus 移植继承的并存功能，有意引入
+// Milkdown 7（其底层是 ProseMirror）；只有那一棵子树允许，主 src 仍禁。
+const ADDITIONAL_PREFIX = join('src', 'additional') + '/'
 const walk = (dir) => {
   const out = []
   for (const name of readdirSync(dir)) {
@@ -61,14 +64,31 @@ const walk = (dir) => {
 }
 const banned = walk('src').filter((f) => {
   const src = readFileSync(f, 'utf8')
-  return /@tiptap|@memfoldai|@milkdown|prosemirror|useEditor\(|_cm6View/.test(src)
-    || src.includes(YELI_NS)
+  // 主 src 任何文件都不得引用这些；src/additional 只许 Milkdown/ProseMirror，
+  // 仍禁 TipTap / yeli。
+  const inAdditional = f.startsWith(ADDITIONAL_PREFIX)
+  const forbidden =
+    /@tiptap|@memfoldai/.test(src) || src.includes(YELI_NS)
+  const milkdownOnlyHere = inAdditional
+    ? false
+    : /@milkdown|prosemirror|useEditor\(|_cm6View/.test(src)
+  return forbidden || milkdownOnlyHere
 })
 assert.deepStrictEqual(
   banned.map((f) => relative(process.cwd(), f)),
   [],
-  'src 不应再依赖 TipTap / ProseMirror / yeli vendor',
+  '主 src 不应再依赖 TipTap / ProseMirror / yeli vendor（Milkdown 仅限 src/additional）',
 )
+
+// ── 并存模式：Milkdown 7 WYSIWYG 编辑器已接入，与 CM6 源码编辑器可切换 ──
+assert.match(app, /MilkdownEditor/, 'App 必须挂载 MilkdownEditor（并存模式）')
+const milkdown = read('src/additional/milkdown/MilkdownEditor.tsx')
+assert.match(milkdown, /@milkdown\/kit\/preset\/commonmark/, 'Milkdown 必须用 CommonMark 预设')
+assert.match(milkdown, /@milkdown\/kit\/preset\/gfm/, 'Milkdown 必须用 GFM 预设')
+assert.match(milkdown, /@milkdown\/kit\/plugin\/listener/, 'Milkdown 必须监听 markdown 变更')
+assert.match(app, /wysiwyg\s*\?/, 'App 必须按 wysiwyg 切换编辑器')
+const editorStore = read('src/store/editorStore.ts')
+assert.match(editorStore, /wysiwyg/, 'editorStore 必须保存 wysiwyg 开关')
 
 // ── CM6 依赖已在 package.json ──
 const pkg = JSON.parse(read('package.json'))
