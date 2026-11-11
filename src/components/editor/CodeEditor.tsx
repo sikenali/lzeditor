@@ -1,6 +1,7 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import type { EditorView } from "@codemirror/view";
 import { createCM6EditorFacade } from "./facade/cm6/CM6EditorFacade";
-import { buildCM6Extensions } from "./facade/cm6/cm6-extensions";
+import { buildCM6Core, createCm6Settings, type Cm6Settings } from "./facade/cm6/cm6-extensions";
 import { installAssist } from "./facade/cm6/cm6-assist";
 import { getEditorFacade, registerEditorFacade } from "./facade/registry";
 import type { EditorFacade } from "./facade/EditorFacade";
@@ -38,7 +39,7 @@ interface CodeEditorProps {
 export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
   function CodeEditor({ md, onChange }, ref) {
     const shellRef = useRef<HTMLDivElement>(null);
-    const handleRef = useRef<{ facade: EditorFacade; destroy: () => void } | null>(null);
+    const handleRef = useRef<{ facade: EditorFacade; view: EditorView; destroy: () => void } | null>(null);
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
     const mdRef = useRef(md);
@@ -51,15 +52,45 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
     const assistSettingsRef = useRef({ typewriterMode, focusMode });
     assistSettingsRef.current = { typewriterMode, focusMode };
 
+    // 编辑设置（换行/高亮行/自动配对/缩进/行号/拼写/输入变换）接入 CM6。
+    // 用 Compartment 控制器在运行时重配置，切换即时生效、不重挂编辑器。
+    const softWrap = useSettingsStore((s) => s.softWrap);
+    const currentLine = useSettingsStore((s) => s.currentLine);
+    const autoPair = useSettingsStore((s) => s.autoPair);
+    const tabSize = useSettingsStore((s) => s.tabSize);
+    const showLineNumbers = useSettingsStore((s) => s.showLineNumbers);
+    const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck);
+    const spellCheckLang = useSettingsStore((s) => s.spellCheckLang);
+    const smartQuotes = useSettingsStore((s) => s.smartQuotes);
+    const cornerQuotes = useSettingsStore((s) => s.cornerQuotes);
+    const autoSpaceCJK = useSettingsStore((s) => s.autoSpaceCJK);
+    const fullwidthSymbols = useSettingsStore((s) => s.fullwidthSymbols);
+    const autoCompleteMarkdownPairs = useSettingsStore((s) => s.autoCompleteMarkdownPairs);
+    const allowMarkdownSymbols = useSettingsStore((s) => s.allowMarkdownSymbols);
+    const cmSettings = useMemo<Cm6Settings>(() => ({
+      softWrap, currentLine, autoPair, tabSize, showLineNumbers,
+      enableSpellCheck, spellCheckLang,
+      smartQuotes, cornerQuotes, autoSpaceCJK, fullwidthSymbols,
+      autoCompleteMarkdownPairs, allowMarkdownSymbols,
+    }), [
+      softWrap, currentLine, autoPair, tabSize, showLineNumbers,
+      enableSpellCheck, spellCheckLang,
+      smartQuotes, cornerQuotes, autoSpaceCJK, fullwidthSymbols,
+      autoCompleteMarkdownPairs, allowMarkdownSymbols,
+    ]);
+    const cmSettingsRef = useRef(cmSettings);
+    cmSettingsRef.current = cmSettings;
+    const settingsCtrl = useRef(createCm6Settings());
+
     // Mount: create the CM6 view + facade over the shell, seed the source,
     // subscribe, register, and expose the scroll container for scroll-sync.
     useEffect(() => {
       const shell = shellRef.current;
       if (!shell) return;
       const { facade, view, destroy } = createCM6EditorFacade(shell, {
-        extensions: buildCM6Extensions(),
+        extensions: [...buildCM6Core(), ...settingsCtrl.current.build(cmSettingsRef.current)],
       });
-      handleRef.current = { facade, destroy };
+      handleRef.current = { facade, view, destroy };
       facade.setText(mdRef.current);
       const unsubscribe = facade.onChange((markdown) => onChangeRef.current(markdown));
       const uninstallAssist = installAssist(
@@ -79,6 +110,13 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
         destroy();
       };
     }, []);
+
+    // 编辑设置切换 → 重配置 Compartment（换行/高亮行/自动配对/缩进/行号/拼写/输入变换）。
+    // cmSettings 仅在任一设置字段变化时重建（useMemo 依赖数组），因此这里只在真正变化时触发。
+    useEffect(() => {
+      const handle = handleRef.current;
+      if (handle) settingsCtrl.current.reconfigure(handle.view, cmSettings);
+    }, [cmSettings]);
 
     // External source changes (document switch, import, programmatic write).
     // An edit that already flowed out of onChange comes back equal, so this is

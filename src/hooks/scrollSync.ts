@@ -10,6 +10,7 @@
  * 绝不被滚动失效。没有「每块每个滚动事件都量一次 DOM」的路径。
  */
 import React from 'react'
+import { EditorView } from '@codemirror/view'
 import { buildScrollMap, sourceLineOfClick, type ScrollMap } from '../utils/markdown/lines'
 
 export type Side = 'editor' | 'preview'
@@ -81,13 +82,48 @@ export interface EditorLineBridge {
 }
 
 /**
- * 编辑器侧行桥：CM6 源码编辑器以源码偏移为坐标，未提供行号桥，故
- * lineBridgeOf 恒返回 null —— 预览滚动同步在此静默退化（两侧独立滚动）。
- * 保留 EditorLineBridge 接口与同步引擎，供未来接入 CM6 行号桥时复用，
- * 不破坏 SidebarPreview 的装配。
+ * 编辑器侧行桥：CM6 源码编辑器以源码偏移为坐标，用 EditorView.findFromDOM
+ * 从编辑器根（.lz-editor-content）找回 CM6 视图，把「行号」换算成 CM6 坐标。
+ *
+ * 之前恒返回 null：预览点击跳源码（goToLine）与双向滚动同步（followEditor/
+ * followPreview 在 bridge 为 null 时静默 return true）全部退化失效。现在返回
+ * 真实桥，预览↔源码按行号对位。
  */
-export function lineBridgeOf(_editorRoot: HTMLElement | null): EditorLineBridge | null {
-  return null
+export function lineBridgeOf(editorRoot: HTMLElement | null): EditorLineBridge | null {
+  if (!editorRoot) return null
+  // findFromDOM 从传入元素的后代找 .cm-content；.lz-editor-content 是 CM6 的父容器
+  const view = EditorView.findFromDOM(editorRoot)
+  if (!view) return null
+
+  return {
+    get destroyed(): boolean {
+      return !view.dom.isConnected
+    },
+    get scroller(): HTMLElement {
+      return view.scrollDOM
+    },
+    topVisibleLine(): number | null {
+      const height = view.scrollDOM.scrollTop
+      if (!view.dom.isConnected) return null
+      const block = view.lineBlockAtHeight(height)
+      return view.state.doc.lineAt(block.from).number
+    },
+    scrollToLine(line: number): void {
+      if (line < 1) return
+      const ln = view.state.doc.line(line)
+      const block = view.lineBlockAt(ln.from)
+      view.scrollDOM.scrollTop = block.top
+    },
+    goToLine(line: number): void {
+      if (line < 1) return
+      const ln = view.state.doc.line(line)
+      // dispatch 只移动光标与滚动，不 focus —— 预览点击跳源码不夺编辑器焦点
+      view.dispatch({
+        selection: { anchor: ln.from },
+        effects: EditorView.scrollIntoView(ln.from, { y: 'start' }),
+      })
+    },
+  }
 }
 
 export interface ScrollSyncOptions {

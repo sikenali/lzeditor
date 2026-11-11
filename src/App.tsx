@@ -37,6 +37,7 @@ import { useTheme } from './hooks/useTheme'
 import { useTypographyOverrides } from './hooks/useTypographyOverrides'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
 import { pickFolderFiles, importFolderFiles } from './utils/docImport'
+import { buildTableMd } from './utils/tableMd'
 import { silentError } from './utils/silentError'
 import { toast } from './utils/toast'
 
@@ -58,20 +59,6 @@ const buildImageMd = (url: string, alt: string, align: 'top' | 'left' | 'right' 
 
 const CHART_TYPE_LABEL: Record<string, string> = { line: '折线图', bar: '柱状图', pie: '饼图', scatter: '散点图' }
 
-const buildTableMd = (rows: number, cols: number, data?: string[][], withHeader = true) => {
-  const r = Math.max(1, Math.min(rows, 50))
-  const c = Math.max(1, Math.min(cols, 30))
-  const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\n/g, ' ').trim()
-  const pad = (i: number, j: number, fallback = '') => cell(data?.[i]?.[j] ?? fallback)
-  const body = (i: number) => `| ${Array.from({ length: c }, (_, j) => pad(i, j)).join(' | ')} |`
-  // 无标题行就不写分隔线：GFM 表格靠第二行的 `|---|` 识别表头，去掉后整块退化成纯竖线文本
-  if (!withHeader) return Array.from({ length: r }, (_, i) => body(i)).join('\n')
-  return [
-    `| ${Array.from({ length: c }, (_, i) => pad(0, i, `表头${i + 1}`)).join(' | ')} |`,
-    `| ${Array.from({ length: c }, () => '---').join(' | ')} |`,
-    ...Array.from({ length: r - 1 }, (_, i) => body(i + 1)),
-  ].join('\n')
-}
 /** 隐藏首次启动欢迎页（sessionStorage 记住，本会话不再弹出）。 */
 const dismissWelcome = () => useEditorStore.getState().setShowWelcome(false)
 
@@ -503,8 +490,10 @@ function App() {
         </div>
       </div>
 
-      {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库。阅读模式占满中编辑区，不留右栏 */}
-      {(appMode !== 'read') && (showRightPanel || showRightPreview || showLibrary || appMode === 'history' || appMode === 'style') && (
+      {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库。阅读模式占满中编辑区，不留右栏。
+          左侧导航模式下历史面板由中心内容渲染（centerContent 的 history 分支），
+          右面板的 history 分支排除 navMode==='left'，否则同一份 HistoryPanel 渲染两次。 */}
+      {(appMode !== 'read') && (showRightPanel || showRightPreview || showLibrary || (appMode === 'history' && navMode !== 'left') || appMode === 'style') && (
         <div className={`app-right-panel${appMode === 'style' ? ' app-right-panel--style' : ''}${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
           {appMode === 'history' ? <HistoryPanel onClose={() => setAppMode('edit')} />
           : appMode === 'style' ? <div className="style-mode-stack"><StyleMainPanel /></div>

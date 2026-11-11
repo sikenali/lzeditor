@@ -34,16 +34,8 @@ function renderKernelSection(s: any, u: any) {
         <UiSwitch size="sm" checked={ s.softWrap !== false } onChange={ v => u('softWrap', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
-      <UDSettingRow icon="ri-list-check-2" label="回车自动续写列表" desc="在列表项后回车自动添加 - 或 1. 等序号">
-        <UiSwitch size="sm" checked={ s.continueLists !== false } onChange={ v => u('continueLists', v) } />
-      </UDSettingRow>
-      <div className="setting-divider" />
       <UDSettingRow icon="ri-braces-fill" label="输入括号时自动配对" desc="输入 ( 「 ` 等符号时自动补全另一半">
         <UiSwitch size="sm" checked={ s.autoPair !== false } onChange={ v => u('autoPair', v) } />
-      </UDSettingRow>
-      <div className="setting-divider" />
-      <UDSettingRow icon="ri-flashlight-line" label="实时预览" desc="边输入边渲染标题、列表、图片等样式">
-        <UiSwitch size="sm" checked={ s.livePreview || false } onChange={ v => u('livePreview', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
       <div className="setting-row">
@@ -181,11 +173,7 @@ function renderEditModeSection(s: any, u: any) {
     <>
       <div className="settings-section">
         <div className="settings-section-title"><span>编辑模式</span></div>
-        <UDSettingRow icon="ri-markdown-fill" label="Markdown 标记常显" desc="实时预览中也显示 #、**、[] 等原始标记">
-          <UiSwitch size="sm" checked={ !!s.showMarkdownMarkers } onChange={ v => u('showMarkdownMarkers', v) } />
-        </UDSettingRow>
-        <div className="setting-divider" />
-                 <UDSettingRow icon="ri-cursor-fill"
+        <UDSettingRow icon="ri-cursor-fill"
  label="打字机模式" desc="光标始终居中垂直位置">
         <UiSwitch size="sm" checked={ s.typewriterMode || false } onChange={ v => u('typewriterMode', v) } />
       </UDSettingRow>

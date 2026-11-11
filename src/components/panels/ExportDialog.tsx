@@ -75,11 +75,14 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
   const isPrintFormat = ['pdf', 'docx', 'html', 'epub'].includes(format)
 
+  const effectiveMd = useMemo(
+    () => getEffectiveMd(activeDocId, mdContent, docsMd),
+    [activeDocId, mdContent, docsMd],
+  )
   const previewHtml = useMemo(() => {
-    const md = getEffectiveMd(activeDocId, mdContent, docsMd)
-    if (!md) return ''
-    try { return mdToHtml(md) } catch { return md }
-  }, [activeDocId, mdContent, docsMd])
+    if (!effectiveMd) return ''
+    try { return mdToHtml(effectiveMd) } catch { return effectiveMd }
+  }, [effectiveMd])
 
   useEffect(() => {
     const el = document.getElementById('lz-export-typography-css')
@@ -100,7 +103,10 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     updateSetting('exportFormat', format)
     updateSetting('paperSize', paperSize)
     updateSetting('orientation', orientation)
-    const html = docHTML || '<h1>Empty</h1>'
+    // 未编辑过的文档 docHTML 为空：回落到当前有效 md 的渲染结果，
+    // 否则内置手册/新开未编辑文档会导出成 <h1>Empty</h1>。
+    const html = docHTML || previewHtml || '<h1>Empty</h1>'
+    const mdSource = effectiveMd || mdContent || ''
     const safeTitle = (docTitle || 'document').replace(/\.[^.]+$/, '')
     // 失败不关弹窗：保留用户已选的格式和排版项，能直接重试。
     // 之前是无条件 onClose()，失败和成功一个样，用户以为文件已经导出了。
@@ -109,7 +115,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
       // 导出链路牵动 jszip / xlsx 等，改动态 import：不点导出就不加载 vendor-export 那个 500+ KB 的块
       const { exportDocument } = await import('../../services/exportService')
       await exportDocument({
-        title: safeTitle, content: format === 'md' ? mdContent || html : html, format,
+        title: safeTitle, content: format === 'md' ? mdSource : html, format,
           options: isPrintFormat ? {
             typographyTheme: typographyTheme || 'classic', codeTheme: codeTheme || 'atom-one-dark',
             macCodeBlock: macCodeBlock || false, includeTOC: includeTOC !== false,

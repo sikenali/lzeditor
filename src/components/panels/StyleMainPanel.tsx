@@ -24,6 +24,7 @@ export const StyleMainPanel: React.FC = () => {
   const storeTocItems = useEditorStore((s) => s.tocItems)
   const activeTocId = useEditorStore((s) => s.activeTocId)
   const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
+  const setTocItems = useEditorStore((s) => s.setTocItems)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
@@ -118,6 +119,9 @@ export const StyleMainPanel: React.FC = () => {
       items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
     })
     setChapters(items)
+    // 同步到 editorStore，样式面板的目录侧栏（read-toc-sidebar）读 storeTocItems。
+    // 之前 setTocItems 从未被调用，tocItems 恒为 []，侧栏永不渲染。
+    setTocItems(items)
   }, [renderedHtml, effectiveHtml])
 
   useEffect(() => {
@@ -247,6 +251,10 @@ export const StyleMainPanel: React.FC = () => {
                   )}
                 </div>
               </div>
+              <button className="style-action-btn" title={readTocOpen ? '隐藏目录' : '显示目录'} onClick={() => setReadTocOpen(!readTocOpen)}>
+                <span className={`remix ${readTocOpen ? 'ri-list-unordered' : 'ri-list-check'}`}></span>
+                <span>目录</span>
+              </button>
               <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
                 <span className={`remix ${previewVisible ? 'ri-eye-off-line' : 'ri-eye-line'}`}></span>
                 <span>{previewVisible ? '隐藏' : '显示'}</span>

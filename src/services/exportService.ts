@@ -1,4 +1,5 @@
 import { silentError } from '../utils/silentError'
+import { getCodeTheme } from '../styles/code-themes'
 export interface ExportOptions {
   title: string
   author?: string
@@ -35,6 +36,30 @@ const PAPER_HEIGHTS: Record<string, string> = {
 // 导出件是独立文档，吃不到应用里的 --font-* 变量，必须用展开后的真实字体栈。
 // 与应用内默认栈保持一致（color-tokens.css 的 --font-sans）。
 const DEFAULT_EXPORT_FONT = '"Inter","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+
+/**
+ * Loads the highlight.js theme CSS for the chosen code theme, so exported
+ * code blocks keep their syntax colours (the app's own CSS is not in the
+ * export document). Returns '' on failure so export never breaks on it.
+ */
+async function loadCodeThemeCSS(codeTheme: string): Promise<string> {
+  const theme = getCodeTheme(codeTheme || 'atom-one-dark')
+  try {
+    const mod: any = await import(/* @vite-ignore */ `highlight.js/styles/${theme.file}.css`)
+    return mod.default || ''
+  } catch {
+    return ''
+  }
+}
+
+/** Mac 窗口装饰（红黄绿三个圆点）的 CSS，挂在 `.mac-code pre` 上。 */
+function macCodeCSS(macBg: string): string {
+  return `
+    .mac-code pre { position: relative; padding-top: 36px; }
+    .mac-code pre::before { content:''; position:absolute; top:0; left:0; right:0; height:24px; background:${macBg}; border-radius:8px 8px 0 0; }
+    .mac-code pre::after { content:''; position:absolute; top:8px; left:10px; width:38px; height:12px; background-image:radial-gradient(circle,#ff5f56 0 4px,transparent 4.5px),radial-gradient(circle,#ffbd2e 0 4px,transparent 4.5px),radial-gradient(circle,#27c93f 0 4px,transparent 4.5px); background-position:0 0,14px 0,28px 0; background-size:12px 12px; background-repeat:no-repeat; }
+  `
+}
 
 
 const TYPOGRAPHY_THEME_VARS: Record<string, Record<string, string>> = {
@@ -132,14 +157,14 @@ function addPageNumbers(html: string, paperSize: string, orientation: string): s
 
 function addLineNumbers(html: string): string {
   return html
-    .replace(/<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/gi, (_m: any, lang: string, code: string) => {
+    .replace(/<pre><code class="[^"]*language-(\w+)[^"]*">([\s\S]*?)<\/code><\/pre>/gi, (_m: any, lang: string, code: string) => {
       const lines = code.split('\n')
       const numbered = lines.map((line: string, i: number) =>
         `<span class="ln">${i + 1}</span><span class="lc">${line}</span>`
       ).join('\n')
       return `<pre class="code-block" data-lang="${lang}"><code>${numbered}</code></pre>`
     })
-    .replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/gi, (_m: any, code: string) => {
+    .replace(/<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, (_m: any, code: string) => {
       const lines = code.split('\n')
       const numbered = lines.map((line: string, i: number) =>
         `<span class="ln">${i + 1}</span><span class="lc">${line}</span>`
@@ -202,7 +227,7 @@ function buildStyledHTML(title: string, content: string, opts: any): string {
   const headingCSS = opts.headingStyles ? generateHeadingCSS(opts.headingStyles, v.primary, fsPx) : ''
   const linkCSS = opts.linkColor ? `a{color:${opts.linkColor};text-decoration:none}` : ''
   const bqCSS = opts.blockquoteBackground ? `blockquote{background:${opts.blockquoteBackground}}` : ''
-  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:${ffVal};font-size:${fsPx}px;line-height:${lhVal};max-width:${opts.orientation==='landscape'?pageH:pageW};margin:0 auto;padding:20px;background:${v.overlay};color:${v.text}}h1,h2,h3,h4{font-weight:600;line-height:1.3}h1{font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em}h2{font-size:1.5em;margin:0.83em 0}h3{font-size:1.17em;margin:1em 0}p{margin:0.5em 0${pStyle ? `;${pStyle}` : ''}}code{font-family:"JetBrains Mono",monospace;background:${v.code};padding:2px 6px;border-radius:4px;font-size:0.88em}pre{background:${v.code};padding:16px;overflow-x:auto;border-radius:8px;border:1px solid ${v.border};margin:12px 0}pre code{background:none;padding:0}blockquote{border-left:3px solid ${v.primary};padding:8px 16px;margin:16px 0;background:${accentA5};border-radius:0 8px 8px 0}${bqCSS}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid ${v.border};padding:8px 12px}th{background:${v.code}}ul,ol{padding-left:24px;margin:8px 0}li{margin:4px 0}hr{border:none;height:1px;background:${v.border};margin:24px 0}a{color:${v.primary};text-decoration:none}a:hover{text-decoration:underline}${linkCSS}img{max-width:100%;height:auto;border-radius:8px}@media print{body{padding:10mm}}${headingCSS}</style></head><body>${innerHTML}</body></html>`
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:${ffVal};font-size:${fsPx}px;line-height:${lhVal};max-width:${opts.orientation==='landscape'?pageH:pageW};margin:0 auto;padding:20px;background:${v.overlay};color:${v.text}}h1,h2,h3,h4{font-weight:600;line-height:1.3}h1{font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em}h2{font-size:1.5em;margin:0.83em 0}h3{font-size:1.17em;margin:1em 0}p{margin:0.5em 0${pStyle ? `;${pStyle}` : ''}}code{font-family:"JetBrains Mono",monospace;background:${v.code};padding:2px 6px;border-radius:4px;font-size:0.88em}pre{background:${v.code};padding:16px;overflow-x:auto;border-radius:8px;border:1px solid ${v.border};margin:12px 0}pre code{background:none;padding:0}blockquote{border-left:3px solid ${v.primary};padding:8px 16px;margin:16px 0;background:${accentA5};border-radius:0 8px 8px 0}${bqCSS}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid ${v.border};padding:8px 12px}th{background:${v.code}}ul,ol{padding-left:24px;margin:8px 0}li{margin:4px 0}hr{border:none;height:1px;background:${v.border};margin:24px 0}a{color:${v.primary};text-decoration:none}a:hover{text-decoration:underline}${linkCSS}img{max-width:100%;height:auto;border-radius:8px}@media print{body{padding:10mm}}${headingCSS}${opts.extraCSS || ''}</style></head><body class="${opts.macCodeBlock ? 'mac-code' : ''}">${innerHTML}</body></html>`
 }
 
 export async function exportDocument(options: ExportOptions): Promise<void> {
@@ -230,7 +255,7 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
 
   switch (format) {
     case 'html':
-      exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
+      await exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'md':
       exportMarkdown(title, content)
@@ -259,10 +284,14 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
   }
 }
 
-function exportHTML(title: string, content: string, opts: any): void {
-  const processed = opts.includeLineNumbers ? addLineNumbers(content) : content
+async function exportHTML(title: string, content: string, opts: any): Promise<void> {
+  const theme = getCodeTheme(opts.codeTheme || 'atom-one-dark')
+  const codeCSS = await loadCodeThemeCSS(opts.codeTheme)
+  const macCSS = opts.macCodeBlock ? macCodeCSS(theme.macBg) : ''
+  const tocHTML = opts.includeTOC ? buildTOC(content) : content
+  const processed = opts.includeLineNumbers ? addLineNumbers(tocHTML) : tocHTML
   const finalContent = opts.includePageNumbers ? addPageNumbers(processed, opts.paperSize, opts.orientation) : processed
-  const html = buildStyledHTML(title, finalContent, { ...opts, typographyTheme: opts.typographyTheme || 'classic' })
+  const html = buildStyledHTML(title, finalContent, { ...opts, typographyTheme: opts.typographyTheme || 'classic', extraCSS: codeCSS + macCSS })
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -290,6 +319,9 @@ Generated by lzeditor
 }
 
 async function exportPDF(title: string, content: string, opts: any): Promise<void> {
+  const theme = getCodeTheme(opts.codeTheme || 'atom-one-dark')
+  const codeCSS = await loadCodeThemeCSS(opts.codeTheme)
+  const macCSS = opts.macCodeBlock ? macCodeCSS(theme.macBg) : ''
   const tocHTML = opts.includeTOC ? buildTOC(content) : content
   const processed = opts.includeLineNumbers ? addLineNumbers(tocHTML) : tocHTML
   const finalContent = opts.includePageNumbers ? addPageNumbers(processed, opts.paperSize, opts.orientation) : processed
@@ -297,7 +329,7 @@ async function exportPDF(title: string, content: string, opts: any): Promise<voi
   const pageH = PAPER_HEIGHTS[opts.paperSize] || '297mm'
 
   const win = window.open('', '_blank')
-  if (!win) return
+  if (!win) throw new Error('导出被浏览器拦截：请允许弹窗后重试')
 
   win.document.write(`
 <!DOCTYPE html>
@@ -335,9 +367,11 @@ async function exportPDF(title: string, content: string, opts: any): Promise<voi
       .page-footer { position: fixed; bottom: 0; left: 0; right: 0; }
     }
     ${opts.cssVars}
+    ${codeCSS}
+    ${macCSS}
   </style>
 </head>
-<body>
+<body class="${opts.macCodeBlock ? 'mac-code' : ''}">
   <h1>${title}</h1>
   ${finalContent}
   <div class="page-footer">— ${opts.paperSize.toUpperCase()} · ${opts.orientation === 'portrait' ? '纵向' : '横向'} —</div>

@@ -64,7 +64,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
   defaultFontSize: 16,
   lineHeight: '1.7',
   contentWidth: '1024',
-  showMarkdownMarkers: true,
   typewriterMode: false,
   focusMode: false,
   previewModeEnabled: true,
@@ -91,11 +90,9 @@ export const DEFAULT_SETTINGS: SettingsState = {
   showLineNumbers: false,
   // ── CodeMirror 6 settings ──
   autoPair: true,
-  continueLists: true,
   currentLine: true,
   softWrap: true,
   tabSize: 2,
-  livePreview: false,
   // ── Typography & reading ──
   textIndent: false,
   // 中文正文两端对齐是排版惯例，默认开；改行高后不留右边缺口

@@ -59,6 +59,8 @@ export interface EditorStoreState {
   codeMode: boolean
   appMode: 'edit' | 'code' | 'style' | 'history' | 'read'
   codeModeCursor: number
+  /** 并存模式：WYSIWYG（Milkdown 7）编辑器开关，与 CodeMirror 源码编辑器可切换。 */
+  wysiwyg: boolean
   docLibraries: Array<{ id: string; name: string }>
   activeLibraryId: string
   previewWidth: number
@@ -87,6 +89,7 @@ export interface EditorStoreState {
   setStatusbarCollapsed: (statusbarCollapsed: boolean) => void
   setCodeMode: (codeMode: boolean) => void
   setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void
+  setWysiwyg: (on: boolean) => void
   createLibrary: (name: string) => string
   setActiveLibrary: (id: string) => void
   setPreviewWidth: (width: number) => void
@@ -137,7 +140,6 @@ export interface SettingsState {
   defaultFontSize?: number
   lineHeight?: '1.0' | '1.5' | '1.7' | '2.0'
   contentWidth?: '960' | '1024' | '1200' | '1280'
-  showMarkdownMarkers?: boolean
   typewriterMode?: boolean
   focusMode?: boolean
   previewModeEnabled?: boolean
@@ -166,11 +168,9 @@ export interface SettingsState {
   showLineNumbers?: boolean
   // ── CodeMirror 6 settings ──
   autoPair?: boolean
-  continueLists?: boolean
   currentLine?: boolean
   softWrap?: boolean
   tabSize?: number
-  livePreview?: boolean
   // ── AI Settings (bid-maker style) ──
   customApiFormat?: 'openai' | 'anthropic'
   customEndpoint?: string
