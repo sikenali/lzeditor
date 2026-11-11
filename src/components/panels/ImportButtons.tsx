@@ -1,70 +1,75 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { UDSection } from '../ui'
+import { toast } from '../../utils/toast'
 
-// 文档库的来源分类。Git 仓库 / 博客 / GitBook 的在线导入能力尚未接入
-// （远程导入服务已删），当前实际支持的是从本地选择 Markdown 文件导入，
-// 故 desc 与按钮文案都如实描述本地导入，避免「连接 X」名不副实。
+// 文档库的来源分类。Git仓库 / 博客 / GitBook 三个来源页面优化为 2 个标签：
+// 「URL 在线导入」（仅 .md 直链）与「本地导入」（本地 Markdown 文件）。
+// 远程 Git 仓库/博客/GitBook 的在线导入能力未接入，故不再单独列来源页面。
 export const CATEGORIES = [
   { id: 'docs', label: '文档库', icon: 'ri-folder-fill', desc: '本地 MD 文件目录' },
-  { id: 'git', label: 'Git 仓库', icon: 'ri-git-repository-line', desc: '从本地 Markdown 文件导入' },
-  { id: 'blog', label: '博客', icon: 'ri-article-fill', desc: '从本地 Markdown 文件导入' },
-  { id: 'gitbook', label: 'GitBook', icon: 'ri-book-mark-fill', desc: '从本地 Markdown 文件导入' },
+  { id: 'url', label: 'URL 在线导入', icon: 'ri-link', desc: '粘贴 .md 直链导入' },
+  { id: 'local', label: '本地导入', icon: 'ri-upload-2-line', desc: '从本地 Markdown 文件导入' },
 ] as const
 
 interface ImportButtonsProps {
   category: string
-  onImportGit: () => void
-  onImportBlog: () => void
-  onImportGitbook: () => void
+  /** URL 在线导入：传入 .md 直链，异步导入（错误由组件 catch 提示）。 */
+  onImportUrl: (url: string) => Promise<void>
+  /** 本地导入：打开本地 Markdown 文件选择器。 */
+  onImportLocal: () => void
 }
 
-// 三个来源类别当前都走同一个本地 Markdown 导入（远程在线导入未接入）。
-// 按钮文案统一为「从本地导入 Markdown」，与真实行为一致。
-const LOCAL_IMPORT_LABEL = '从本地导入 Markdown'
+export const ImportButtons: React.FC<ImportButtonsProps> = ({ category, onImportUrl, onImportLocal }) => {
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(false)
 
-export const ImportButtons: React.FC<ImportButtonsProps> = ({ category, onImportGit, onImportBlog, onImportGitbook }) => {
-  if (category === 'git') {
+  const handleUrlImport = async () => {
+    if (!url.trim() || loading) return
+    setLoading(true)
+    try {
+      await onImportUrl(url.trim())
+      setUrl('')
+    } catch (e: any) {
+      toast(e?.message || '导入失败', { type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (category === 'url') {
     return (
-      <UDSection label="导入 Git 仓库">
+      <UDSection label="URL 在线导入">
         <div className="library-empty-state">
-          <span className="remix ri-git-repository-line library-empty-icon"></span>
-          <div className="library-empty-title">导入 Git 仓库</div>
-          <div className="library-empty-desc">选择本地 Markdown 文件导入文档库（在线 Git 仓库导入暂未接入）</div>
-          <button className="settings-save-btn" style={{ marginTop: 16 }} onClick={onImportGit}>
-            <span className="remix ri-git-repository-line"></span>
-            <span>{LOCAL_IMPORT_LABEL}</span>
+          <span className="remix ri-link library-empty-icon"></span>
+          <div className="library-empty-title">URL 在线导入</div>
+          <div className="library-empty-desc">粘贴 .md 文件直链（raw.githubusercontent.com / gist 等）导入文档库</div>
+          <input
+            className="library-url-input"
+            placeholder="https://raw.githubusercontent.com/.../README.md"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleUrlImport() }}
+            disabled={loading}
+          />
+          <button className="settings-save-btn" style={{ marginTop: 12 }} onClick={handleUrlImport} disabled={!url.trim() || loading}>
+            <span className="remix ri-download-2-line"></span>
+            <span>{loading ? '导入中…' : '导入'}</span>
           </button>
         </div>
       </UDSection>
     )
   }
 
-  if (category === 'blog') {
+  if (category === 'local') {
     return (
-      <UDSection label="导入博客">
+      <UDSection label="本地导入">
         <div className="library-empty-state">
-          <span className="remix ri-article-fill library-empty-icon"></span>
-          <div className="library-empty-title">导入博客</div>
-          <div className="library-empty-desc">选择本地 Markdown 文件导入文档库（WordPress / Hexo / Hugo 在线同步暂未接入）</div>
-          <button className="settings-save-btn" style={{ marginTop: 16 }} onClick={onImportBlog}>
-            <span className="remix ri-global-line"></span>
-            <span>{LOCAL_IMPORT_LABEL}</span>
-          </button>
-        </div>
-      </UDSection>
-    )
-  }
-
-  if (category === 'gitbook') {
-    return (
-      <UDSection label="导入 GitBook">
-        <div className="library-empty-state">
-          <span className="remix ri-book-mark-fill library-empty-icon"></span>
-          <div className="library-empty-title">导入 GitBook</div>
-          <div className="library-empty-desc">选择本地 Markdown 文件导入文档库（GitBook 站点导入暂未接入）</div>
-          <button className="settings-save-btn" style={{ marginTop: 16 }} onClick={onImportGitbook}>
-            <span className="remix ri-book-line"></span>
-            <span>{LOCAL_IMPORT_LABEL}</span>
+          <span className="remix ri-upload-2-line library-empty-icon"></span>
+          <div className="library-empty-title">本地导入</div>
+          <div className="library-empty-desc">从本地选择 Markdown 文件导入文档库（支持多选）</div>
+          <button className="settings-save-btn" style={{ marginTop: 16 }} onClick={onImportLocal}>
+            <span className="remix ri-folder-open-line"></span>
+            <span>从本地导入 Markdown</span>
           </button>
         </div>
       </UDSection>

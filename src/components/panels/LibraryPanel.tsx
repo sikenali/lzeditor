@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { openMarkdownDoc } from '../../utils/docImport'
+import { fetchMarkdownFromUrl } from '../../utils/importUrl'
 import { UiModal, UDSection } from '../ui'
 import { LibraryTree, buildTree } from './LibraryTree'
 import { ImportButtons, CATEGORIES } from './ImportButtons'
@@ -67,8 +68,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
 
   const tree = useMemo(() => buildTree(flatDocs), [flatDocs])
 
-  // Git 仓库 / 博客 / GitBook 三个来源类别当前都支持从本地导入 Markdown
-  // （在线导入未接入），共用同一个本地文件选择器，避免三份重复实现。
+  // 本地导入：打开本地 Markdown 文件选择器（.md/.markdown/.txt，多选）。
   const handleImportLocal = () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -88,9 +88,12 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     }
     input.click()
   }
-  const handleImportGit = handleImportLocal
-  const handleImportBlog = handleImportLocal
-  const handleImportGitbook = handleImportLocal
+
+  // URL 在线导入：拉取 .md 直链并新建文档（错误由 ImportButtons catch 提示）。
+  const handleImportUrl = async (url: string) => {
+    const { title, md } = await fetchMarkdownFromUrl(url)
+    openMarkdownDoc(title, md)
+  }
 
   // Sidebar mode
   if (sidebar) {
@@ -221,9 +224,8 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
       )}
       <ImportButtons
         category={category}
-        onImportGit={handleImportGit}
-        onImportBlog={handleImportBlog}
-        onImportGitbook={handleImportGitbook}
+        onImportUrl={handleImportUrl}
+        onImportLocal={handleImportLocal}
       />
     </div>
   )

@@ -1227,6 +1227,25 @@
   border-color: var(--color-primary);
   background: var(--color-bg-white);
 }
+/* URL 在线导入输入框（library-empty-state 内） */
+.library-url-input  {
+  width: 100%; max-width: 380px; height: 42px;
+  margin-top: 14px;
+  padding: 0 12px;
+  border: 0.7px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  outline: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.library-url-input::placeholder  { color: var(--color-text-muted); }
+.library-url-input:focus  {
+  border-color: var(--color-primary);
+  background: var(--color-bg-white);
+}
+.library-url-input:disabled  { opacity: 0.6; }
 .library-search-clear  {
   position: absolute;
   right: 20px;
