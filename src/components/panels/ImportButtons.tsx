@@ -78,14 +78,3 @@ export const ImportButtons: React.FC<ImportButtonsProps> = ({ category, onImport
 
   return null
 }
-
-export const leftNav = (category: string, setCategory: (c: string) => void) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-    {CATEGORIES.map(c => (
-      <button key={c.id} className={`ud-chip${category === c.id ? ' active' : ''}`} onClick={() => setCategory(c.id)}>
-        <span className={`remix ud-chip-icon ${c.icon}`}></span>
-        <div><div className="ud-chip-label">{c.label}</div><div className="ud-chip-desc">{c.desc}</div></div>
-      </button>
-    ))}
-  </div>
-)
