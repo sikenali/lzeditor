@@ -408,17 +408,29 @@ function App() {
     return getDocMd(docId) || (docId === 'readme' ? README_CONTENT : '')
   }, [activeDocId, docsMd])
 
-  // onChange(md) 输出：保真 md 回写 store + docsMd + 本地存储（与 CM6 保存路径一致）。
+  // 大文档输入性能：mdToHtml 在每键同步全量渲染（497KB → ~900ms/键）会卡输入。
+  // 修复：md 立即保存（不丢内容），html 计算 + docHTML 更新 + localStorage 走
+  // debounce（~180ms 停顿后计算），消除每键同步渲染阻塞。切文档时只更新仍在看的 docHTML。
+  const renderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (renderTimerRef.current) clearTimeout(renderTimerRef.current) }, [])
+
+  // onChange(md) 输出：保真 md 回写 store + docsMd（同步），html 计算与落盘走 debounce。
   const handleEditorChange = useCallback((md: string) => {
     const es = useEditorStore.getState()
     es.setMdContent(md)
     const docId = es.activeDocId
     if (!docId) return
-    try {
-      const html = mdToHtml(md)
-      es.updateDoc({ md, html, docsMd: { [docId]: md } })
-      localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
-    } catch (e) { silentError('编辑器内容回写文档失败', e) }
+    // 立即保存 md：关文档/切文档不丢最新内容（html 由 debounce 补算）
+    es.updateDoc({ md, docsMd: { [docId]: md } })
+    if (renderTimerRef.current) clearTimeout(renderTimerRef.current)
+    renderTimerRef.current = setTimeout(() => {
+      try {
+        const html = mdToHtml(md)
+        const st = useEditorStore.getState()
+        if (st.activeDocId === docId) st.updateDoc({ html })
+        localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
+      } catch (e) { silentError('编辑器内容回写文档失败', e) }
+    }, 180)
   }, [])
 
   // ── 中心内容 ──
