@@ -612,10 +612,11 @@ test('§8.5 UiSelect 与 Input 同风格：同样高度、边框、圆角', () =
   assert.match(uiCss, /\.ui-select-trigger\s*\{[\s\S]{0,500}?border: 0\.7px solid var\(--color-border\)/)
 })
 
-test('§8.3 UiCheck：默认 18px 圆徽标，选中主色底 + 白色对勾', () => {
+test('§8.3 UiCheck：默认 18px 圆徽标，选中主色边框 + 主题主色对勾', () => {
   assert.match(uiCss, /\.ui-check\s*\{[\s\S]{0,300}?width: 18px/)
-  assert.match(uiCss, /\.ui-check\.on\s*\{[\s\S]{0,200}?background: var\(--color-primary\)/)
-  assert.match(uiCss, /\.ui-check\.on\s*\{[\s\S]{0,200}?color: var\(--color-on-primary\)/)
+  // §8.3 明确「✓ 颜色为主题主色」：主色边框 + 主色勾（非主色实心底+白勾）
+  assert.match(uiCss, /\.ui-check\.on\s*\{[\s\S]{0,200}?color: var\(--color-primary\)/)
+  assert.match(uiCss, /\.ui-check\.on\s*\{[\s\S]{0,200}?border-color: var\(--color-primary\)/)
 })
 
 test('§10.2 按钮 hover 用 color-mix 生成层次；§10.3 禁用 filter:brightness', () => {

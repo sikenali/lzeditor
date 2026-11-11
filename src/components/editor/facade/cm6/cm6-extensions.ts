@@ -152,12 +152,3 @@ export function createCm6Settings() {
   };
 }
 
-/**
- * Builds the complete CM6 extension set, including settings-dependent
- * extensions. Creates a fresh {@link Compartment} set each call, so it is only
- * suitable for one-shot construction; the live editor uses
- * {@link createCm6Settings} so toggles can reconfigure at runtime.
- */
-export function buildCM6Extensions(settings?: Cm6Settings): Extension[] {
-  return [...buildCM6Core(), ...createCm6Settings().build(settings ?? {})];
-}

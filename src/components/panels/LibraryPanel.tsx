@@ -67,7 +67,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
 
   const tree = useMemo(() => buildTree(flatDocs), [flatDocs])
 
-  const handleImportGit = () => {
+  // Git 仓库 / 博客 / GitBook 三个来源类别当前都支持从本地导入 Markdown
+  // （在线导入未接入），共用同一个本地文件选择器，避免三份重复实现。
+  const handleImportLocal = () => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.md,.markdown,.txt'
@@ -86,46 +88,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     }
     input.click()
   }
-
-  const handleImportBlog = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.md,.markdown,.txt'
-    input.multiple = true
-    input.onchange = (e: any) => {
-      const files: File[] = Array.from(e.target.files || [])
-      if (!files.length) return
-      files.forEach(file => {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          const text = ev.target?.result as string
-          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''))
-        }
-        reader.readAsText(file)
-      })
-    }
-    input.click()
-  }
-
-  const handleImportGitbook = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.md,.markdown,.txt'
-    input.multiple = true
-    input.onchange = (e: any) => {
-      const files: File[] = Array.from(e.target.files || [])
-      if (!files.length) return
-      files.forEach(file => {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          const text = ev.target?.result as string
-          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''))
-        }
-        reader.readAsText(file)
-      })
-    }
-    input.click()
-  }
+  const handleImportGit = handleImportLocal
+  const handleImportBlog = handleImportLocal
+  const handleImportGitbook = handleImportLocal
 
   // Sidebar mode
   if (sidebar) {

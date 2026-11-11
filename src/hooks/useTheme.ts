@@ -16,6 +16,49 @@ function rgba(rgb: [number, number, number], alpha: number): string {
   return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
 }
 
+/** Hex → HSL（色相 0-360，饱和度/亮度 0-1），用于保色相提亮。 */
+function hexToHsl(hex: string): [number, number, number] {
+  const [r, g, b] = hexToRgb(hex).map(v => v / 255)
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  if (max === min) return [0, 0, l]
+  const d = max - min
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+  let h = 0
+  if (max === r) h = (g - b) / d + (g < b ? 6 : 0)
+  else if (max === g) h = (b - r) / d + 2
+  else h = (r - g) / d + 4
+  return [h * 60, s, l]
+}
+
+/** HSL → Hex。 */
+function hslToHex(h: number, s: number, l: number): string {
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+  const m = l - c / 2
+  let r = 0, g = 0, b = 0
+  if (h < 60) [r, g, b] = [c, x, 0]
+  else if (h < 120) [r, g, b] = [x, c, 0]
+  else if (h < 180) [r, g, b] = [0, c, x]
+  else if (h < 240) [r, g, b] = [0, x, c]
+  else if (h < 300) [r, g, b] = [x, 0, c]
+  else [r, g, b] = [c, 0, x]
+  const to = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0')
+  return `#${to(r)}${to(g)}${to(b)}`
+}
+
+/** WCAG 相对亮度。 */
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex).map(v => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/** 深色强调色亮度地板 ≈ #E05050 的相对亮度（DESIGN.md §1 要求对比度 ≥ 4.5:1）。 */
+const DARK_ACCENT_FLOOR_LUM = relativeLuminance('#E05050')
+
 /** Legacy accent ids → new preset colors */
 const LEGACY_ACCENTS: Record<string, string> = {
   red: '#C0392B',
@@ -34,6 +77,25 @@ const LEGACY_ACCENTS: Record<string, string> = {
 const DARK_ACCENT_BOOST: Record<string, string> = {
   '#C0392B': '#E05050',
   '#BE3B2E': '#E05050',
+}
+
+/**
+ * 深色下把强调色提到亮度地板之上，保证对比度（DESIGN.md §1/§7）。
+ * 先查显式映射（红→亮红，保持品牌红不变）；其余色（鎏金/玉绿/云蓝/黛墨及
+ * 自定义色）按原色相提升亮度直到 ≥ 地板，避免黛墨 #2F3640 对 #17171A 只有
+ * ~1.5:1 的低对比。已达标（如鎏金）原样返回，不改动。
+ */
+function ensureDarkAccent(hex: string): string {
+  const boosted = DARK_ACCENT_BOOST[hex]
+  if (boosted) return boosted
+  if (relativeLuminance(hex) >= DARK_ACCENT_FLOOR_LUM) return hex
+  const [h, s, l] = hexToHsl(hex)
+  let L = l
+  for (let i = 0; i < 40; i++) {
+    L = Math.min(0.92, L + 0.03)
+    if (relativeLuminance(hslToHex(h, s, L)) >= DARK_ACCENT_FLOOR_LUM) break
+  }
+  return hslToHex(h, s, L)
 }
 
 /** Resolve an accent id (legacy or new) or raw hex into a hex color. */
@@ -78,12 +140,11 @@ export function applyTheme(theme: string, accent?: string): void {
 
   // ── Accent colour overrides the theme default primary ──
   // In dark mode, DESIGN.md §1 requires accent ≥ #E05050 for contrast. If the
-  // user picked an accent that is dimmer than that floor, keep the theme's
-  // built-in bright primary instead of painting the whole UI with a dim red.
+  // user picked an accent that is dimmer than that floor, lift it (keep hue)
+  // instead of painting the whole UI with a dim colour like 黛墨.
   let hex = resolveAccent(accent)
   if (type === 'dark') {
-    const boosted = DARK_ACCENT_BOOST[hex]
-    if (boosted) hex = boosted
+    hex = ensureDarkAccent(hex)
   }
   const rgb = hexToRgb(hex)
   s.setProperty('--color-primary', hex)

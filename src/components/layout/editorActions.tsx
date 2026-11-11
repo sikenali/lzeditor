@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
 import { getEditorFacade } from '../editor/facade/registry'
+import { toast } from '../../utils/toast'
 
 export interface MenuItem {
   icon?: string
@@ -16,7 +17,7 @@ type FormatCommand = string
 
 export const NEW_ITEMS: MenuItem[] = [
   { icon: 'ri-file-add-line', label: '新建文档', action: 'new' },
-  { icon: 'ri-folder-open-line', label: '新建文件-模板', action: 'open' },
+  { icon: 'ri-folder-open-line', label: '打开文件 / 模板…', action: 'open' },
   { icon: 'ri-folder-line', label: '打开文件夹…', action: 'openFolder' },
 ]
 
@@ -83,6 +84,24 @@ export const applyTableItems = (tableActive: boolean): MenuItem[] =>
       ? { ...item, disabled: !tableActive }
       : item
   )
+
+/**
+ * WYSIWYG 模式（Milkdown）下禁用需要 editor facade 的命令型菜单项。
+ *
+ * Milkdown 是文档模型（ProseMirror），无源码 offset 语义，EditorFacade 的
+ * replaceRange/insertText/getSelection 等对它不适用，facade 恒为 null。若菜单项
+ * 保持可点会静默 no-op（runMapped 的 `if (!facade) return false`）。诚实做法：
+ * 命令型项（标题/清除/列表/引用）禁用；面板型项（图片/链接/代码/公式/图表/
+ * 表情/表格，走 App 的 fallback 插入）保留可用。
+ */
+export const applyWysiwygItems = (items: MenuItem[], wysiwyg: boolean): MenuItem[] =>
+  wysiwyg
+    ? items.map(item =>
+        item.action && !PANEL_ACTIONS.has(item.action)
+          ? { ...item, disabled: true }
+          : item
+      )
+    : items
 
 /** 光标是否在表格内 —— 表格子菜单的置灰依赖它。 */
 export function useTableActive(): boolean {
@@ -216,7 +235,14 @@ export function useEditorActions() {
   // 无映射的动作不静默失败：插入类改为打开对应面板
   const runMapped = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
     const facade = getEditorFacade()
-    if (!facade) return false
+    if (!facade) {
+      // WYSIWYG（Milkdown）下无源码 facade：不静默失败，明确提示。
+      // 命令型按钮已由 applyWysiwygItems / disabled={wysiwyg} 禁用，此处兜底快捷键等入口。
+      if (useEditorStore.getState().wysiwyg) {
+        toast('WYSIWYG 模式暂不支持该命令，请在编辑器内使用 Markdown 语法', { type: 'info' })
+      }
+      return false
+    }
     const fc = map[action]
     if (!fc) {
       if (PANEL_ACTIONS.has(action)) setInsertPanel(action)
@@ -285,7 +311,10 @@ export function useEditorActions() {
     if (files) await importFolderFiles(files)
   }, [])
 
-  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog }
+  // WYSIWYG 模式状态：Toolbar/LeftNav 据此禁用需要 facade 的命令型入口
+  const wysiwyg = useEditorStore((s: any) => s.wysiwyg)
+
+  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog, wysiwyg }
 }
 
 /** 飞出菜单。align='right' 贴触发器右侧（左侧 rail 用），'below' 贴下方（顶栏用）。 */

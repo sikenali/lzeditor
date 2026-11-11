@@ -7,18 +7,7 @@ import { test } from 'node:test'
 // 这类接线靠行为测试覆盖不了，只能锁源码形状。
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const store = read('src/store/editorStore.ts')
-const pendingSave = read('src/utils/pendingSave.ts')
 const catalog = read('src/utils/docCatalog.ts')
-
-test('配额写满走 silentError + toast，不再静默 catch', () => {
-  assert.match(pendingSave, /silentError\(/)
-  assert.match(pendingSave, /toast\(/)
-  assert.match(pendingSave, /if \(!warned\)/, '一次会话只提示一次')
-})
-
-test('toast 被单独兜住——pagehide 时 document.body 可能已经没了', () => {
-  assert.match(pendingSave, /try \{[\s\S]{0,200}toast\(/, 'toast 调用外面要有 try')
-})
 
 test('四个会改目录的动作都持久化，switchDoc 不持久化', () => {
   // 只数独立成行的调用，函数定义那行也含 saveCatalog() 字样

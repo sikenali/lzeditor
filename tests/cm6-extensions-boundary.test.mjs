@@ -7,8 +7,8 @@ const render = read('src/utils/markdown/render.ts')
 const echarts = read('src/utils/markdown/echarts.ts')
 const preview = read('src/components/sidebar/SidebarPreview.tsx')
 
-// ── buildCM6Extensions configures the source editor ──
-assert.match(ext, /buildCM6Extensions/, 'must export buildCM6Extensions')
+// ── createCm6Settings configures the source editor ──
+assert.match(ext, /createCm6Settings/, 'must export createCm6Settings')
 assert.match(ext, /@codemirror\/lang-markdown/, 'must use the markdown language')
 assert.match(ext, /closeBrackets/, 'must include auto-pairing')
 

@@ -1208,3 +1208,13 @@
 .search-result  {
   background: var(--t-bg-23); outline-color: var(--t-olc-1);
 }
+
+/* ── DESIGN.md §10.3：深色下 history 时间线不得近白/纯白 ── */
+[data-theme="dark"] .history-bar-body  {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+[data-theme="dark"] .history-bar.active .history-bar-body  {
+  background: var(--color-bg-secondary);
+  border-color: var(--accent-primary);
+}

@@ -60,7 +60,7 @@ export const AboutSettingsTab: React.FC = () => {
             <span className="remix ri-feedback-line"></span> 反馈
           </a>
           <span className="about-sep">·</span>
-          <a href="/licenses/THIRD_PARTY_NOTICES.md" className="about-link" target="_blank" rel="noopener noreferrer">
+          <a href="/THIRD_PARTY_NOTICES.md" className="about-link" target="_blank" rel="noopener noreferrer">
             <span className="remix ri-file-text-line"></span> 开源许可
           </a>
         </div>

@@ -513,3 +513,9 @@
   border-color: var(--border-subtle);
   color: var(--text-muted);
 }
+
+/* ── DESIGN.md §10.3：深色下 version 时间线不得亮蓝/白 ── */
+[data-theme="dark"] .version-bar.active .version-bar-body  {
+  border-color: var(--accent-primary);
+  background: var(--color-bg-secondary);
+}

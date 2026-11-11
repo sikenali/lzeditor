@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { resolveIcon } from '../../utils/icon'
 
@@ -41,7 +41,27 @@ export const UiModal: React.FC<UiModalProps> = ({
     }
   }, [open, onClose])
 
-  if (!open) return null
+  // ── 离开过渡：open 变 false 时先播 ui-pop-out，动画播完再真正卸载 ──
+  // DESIGN.md §8.1：弹框不仅要有进入动画，也要有离开动画。
+  const [visible, setVisible] = useState(open)
+  const [closing, setClosing] = useState(false)
+  useEffect(() => {
+    if (open) {
+      setVisible(true)
+      setClosing(false)
+      return
+    }
+    // open=false：若还在展示，播 exit 动画再卸载；已卸载则无操作
+    setVisible(prev => {
+      if (!prev) return prev
+      setClosing(true)
+      return prev
+    })
+    const t = setTimeout(() => { setVisible(false); setClosing(false) }, 200)
+    return () => clearTimeout(t)
+  }, [open])
+
+  if (!visible) return null
 
   const Icon = resolveIcon(icon)
   const Close = resolveIcon('ri-close-line')
@@ -66,8 +86,8 @@ export const UiModal: React.FC<UiModalProps> = ({
   }
 
   const overlay = (
-    <div className="ui-modal-overlay" onClick={() => { if (closeOnOverlay) onClose() }}>
-      <div className={`ui-modal${className ? ` ${className}` : ''}`} style={modalStyle}
+    <div className={`ui-modal-overlay${closing ? ' closing' : ''}`} onClick={() => { if (closeOnOverlay) onClose() }}>
+      <div className={`ui-modal${closing ? ' closing' : ''}${className ? ` ${className}` : ''}`} style={modalStyle}
         onClick={e => e.stopPropagation()}>
         {(title || icon) && (
           <div className="ui-modal-header">

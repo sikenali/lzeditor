@@ -6,8 +6,9 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const ext = read('src/components/editor/facade/cm6/cm6-extensions.ts')
 const codeEditor = read('src/components/editor/CodeEditor.tsx')
 
-// ── buildCM6Extensions 必须接受设置参数（不再是无参硬编码） ──
-assert.match(ext, /buildCM6Extensions\(\s*settings/i, 'buildCM6Extensions must accept a settings param')
+// ── createCm6Settings 必须接受设置并按开关装配（不再是无参硬编码） ──
+assert.match(ext, /createCm6Settings\(\s*\)/, 'createCm6Settings must be the settings controller')
+assert.match(ext, /build\(\s*settings/i, 'createCm6Settings.build must accept settings')
 
 // ── 每个开关都读设置并按值装配对应扩展 ──
 assert.match(ext, /softWrap/, 'must read softWrap')

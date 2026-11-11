@@ -490,13 +490,12 @@ function App() {
         </div>
       </div>
 
-      {/* 右面板：单面板互斥，历史 > 样式 > 预览 > 文档库。阅读模式占满中编辑区，不留右栏。
-          左侧导航模式下历史面板由中心内容渲染（centerContent 的 history 分支），
-          右面板的 history 分支排除 navMode==='left'，否则同一份 HistoryPanel 渲染两次。 */}
-      {(appMode !== 'read') && (showRightPanel || showRightPreview || showLibrary || (appMode === 'history' && navMode !== 'left') || appMode === 'style') && (
+      {/* 右面板：单面板互斥，样式 > 预览 > 文档库。阅读/历史模式由中心内容独占，不留右栏。
+          历史模式下 LeftNav 会把 showRightPanel 置 true，若右栏条件不整体排除 history，
+          会与中心内容的 history 分支重复渲染同一份 HistoryPanel。 */}
+      {(appMode !== 'read' && appMode !== 'history') && (showRightPanel || showRightPreview || showLibrary || appMode === 'style') && (
         <div className={`app-right-panel${appMode === 'style' ? ' app-right-panel--style' : ''}${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
-          {appMode === 'history' ? <HistoryPanel onClose={() => setAppMode('edit')} />
-          : appMode === 'style' ? <div className="style-mode-stack"><StyleMainPanel /></div>
+          {appMode === 'style' ? <div className="style-mode-stack"><StyleMainPanel /></div>
           : showRightPreview ? <SidebarPreview />
           : showLibrary ? <LibraryPanel sidebar />
           : null}

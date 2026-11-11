@@ -82,12 +82,12 @@
   -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
 }
-.toolbar-btn:hover  { background: transparent; }
-.toolbar-btn.format-btn:hover  { background: transparent; }
+.toolbar-btn:hover  { background: var(--color-bg-secondary); transform: translateY(-1px); }
+.toolbar-btn.format-btn:hover  { background: var(--color-bg-secondary); transform: translateY(-1px); }
 .toolbar-btn:active  { transform: scale(0.97); transition: transform var(--t-fast) var(--ease); }
-.toolbar-btn.active  { background: rgba(0,0,0,0.08); }
-.toolbar-btn.active:hover  { background: rgba(0,0,0,0.05); transition: background var(--t-fast); }
-.toolbar-btn.menu-open  { background: rgba(0,0,0,0.08); }
+.toolbar-btn.active  { background: var(--color-primary-soft); }
+.toolbar-btn.active:hover  { background: var(--color-primary-soft); }
+.toolbar-btn.menu-open  { background: var(--color-primary-soft); }
 .toolbar-icon  { font-size: 21px; color: rgba(58,58,58,1); line-height: 1; }
 .toolbar-btn.active .toolbar-icon  { color: var(--accent-primary); }
 .toolbar-btn.menu-open .toolbar-icon  { color: var(--accent-primary); }

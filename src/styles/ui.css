@@ -32,6 +32,21 @@
   from { opacity: 0; transform: translateY(8px) scale(0.985); }
   to { opacity: 1; transform: none; }
 }
+/* DESIGN.md §8.1：弹框离开也要有动画（open→false 时 ui-modal-overlay.closing 触发） */
+@keyframes ui-pop-out  {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(8px) scale(0.985); }
+}
+.ui-modal-overlay.closing .ui-modal  {
+  animation: ui-pop-out var(--t-slow) var(--ease) forwards;
+}
+.ui-modal-overlay.closing  {
+  animation: ui-fade-out var(--t-slow) var(--ease) forwards;
+}
+@keyframes ui-fade-out  {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 
 .ui-modal-header  {
   display: flex;
@@ -251,9 +266,11 @@
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 .ui-check.on  {
-  background: var(--color-primary);
+  /* DESIGN.md §8.3：勾选时显示 ✓，颜色为主题主色。用主色边框+主色勾（空心），
+     而非主色实心底+白勾（后者勾是 on-primary，违背规范）。 */
+  background: var(--color-bg-white);
   border-color: var(--color-primary);
-  color: var(--color-on-primary);
+  color: var(--color-primary);
 }
 
 /* ── Select card ── */
