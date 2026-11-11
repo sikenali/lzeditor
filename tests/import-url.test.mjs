@@ -10,9 +10,14 @@ test('validateImportUrl：拒绝空/非 http(s)', () => {
   assert.equal(validateImportUrl('http://a/b.md'), null)
 })
 
-test('looksLikeHtml：HTML 判定', () => {
+test('looksLikeHtml：HTML 页面判定', () => {
+  // 完整 HTML 页面（doctype / html / head / body）→ true
   assert.ok(looksLikeHtml('<!doctype html><html><body>x</body></html>'))
-  assert.ok(looksLikeHtml('<div class="post">hi</div>'))
+  assert.ok(looksLikeHtml('<html><head><title>t</title></head><body>x</body></html>'))
+  assert.ok(looksLikeHtml('<head><meta charset="utf-8"></head>'))
+  // markdown 里的行内 HTML（徽章块等合法行内 HTML）→ false，不误判为页面
+  assert.equal(looksLikeHtml('<div class="post">hi</div>'), false)
+  assert.equal(looksLikeHtml('<p align="center"><img src="a.png"></p>\n# Title\nbody'), false)
   assert.equal(looksLikeHtml('# 标题\n\n正文 **加粗**'), false)
 })
 
@@ -38,6 +43,18 @@ test('fetchMarkdownFromUrl：markdown 直链 → {title, md}', async () => {
     const r = await fetchMarkdownFromUrl('https://raw.githubusercontent.com/a/b/main/README.md')
     assert.equal(r.title, 'README')
     assert.equal(r.md, '# Hello\n\nbody')
+  } finally { restore() }
+})
+
+test('fetchMarkdownFromUrl：markdown 以 HTML 徽章块开头 → 不误判，正常导入', async () => {
+  const restore = mockFetch(async () => ({
+    ok: true, status: 200,
+    text: async () => '<p align="center"><img src="badge.png"></p>\n# Title\n\nbody',
+  }))
+  try {
+    const r = await fetchMarkdownFromUrl('https://raw.githubusercontent.com/a/b/main/README.md')
+    assert.equal(r.title, 'README')
+    assert.ok(r.md.startsWith('<p align="center">'))
   } finally { restore() }
 })
 

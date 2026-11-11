@@ -18,11 +18,17 @@ export function validateImportUrl(url: string): string | null {
   return null
 }
 
-/** 粗略判断文本是否为 HTML（含常见 HTML 标签或 doctype）。 */
+/**
+ * 判断文本是否为完整 HTML 页面（而非 markdown 里的行内 HTML）。
+ *
+ * 「仅 .md 直链」目标是不误判合法 markdown：GitHub README 常以
+ * `<p align="center">`/`<div align="center">` 徽章块开头，那是合法的行内 HTML，
+ * 不是页面。故只认文档级标记（doctype / <html> / <head> / <body>）。
+ */
 export function looksLikeHtml(text: string): boolean {
   if (!text) return false
   const t = text.trimStart().slice(0, 512).toLowerCase()
-  return /<(html|body|head|div|article|main|p|h[1-6])\b|<!doctype\s+html/i.test(t)
+  return /<!doctype\s+html|<html[\s>]|<head[\s>]|<body[\s>]|<meta[\s>]/i.test(t)
 }
 
 /** 从 URL 末段文件名派生标题（去扩展名）。无路径段时用 hostname。 */
