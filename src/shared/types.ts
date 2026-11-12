@@ -34,6 +34,10 @@ export interface DocVersion {
   changes: number
   html: string
   md: string
+  /** epoch ms：本地=快照时刻；git=commit 时间戳*1000。合并时间线按此倒序。 */
+  ts: number
+  /** 来源：本地编辑快照或 git 提交。 */
+  source: 'git' | 'local'
   gitPath?: string
   isFromGit?: boolean
 }
