@@ -26,7 +26,7 @@ export function floatingCardKey(): string | null {
 export function showHoverCard(key: string, rect: DOMRect, card: HoverCard) {
   hideHoverCard(true);
   const el = build(card);
-  document.body.append(el);
+  (document.querySelector(".textus-editor-shell") ?? document.body).append(el);
   place(el, rect);
   el.addEventListener("mouseenter", keepHoverCard);
   el.addEventListener("mouseleave", () => scheduleHide());

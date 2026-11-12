@@ -154,7 +154,7 @@ export class CompletionPanel {
     el.className = "completion-list floating-surface";
     el.setAttribute("role", "listbox");
     el.hidden = true;
-    document.body.append(el);
+    (document.querySelector(".textus-editor-shell") ?? document.body).append(el);
     return el;
   }
 }

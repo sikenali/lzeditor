@@ -120,3 +120,31 @@ test('keyframe animation names stay global (not prefixed/renamed)', () => {
     })
   }
 })
+
+// The floating layers the vendored editor appends (the / completion panel, the
+// link hover card, the diagram-zoom viewer) render inside document.body, which
+// is NOT a descendant of the .textus-editor-shell div. Scoping the CSS to the
+// shell would orphan them, so each must host its layer under the shell instead.
+const FLOATING_LAYER_HOSTS = [
+  'editor/completion/completion-panel.ts',
+  'editor/hover/hover-card.ts',
+  'editor/diagram-zoom.ts',
+]
+
+test('floating layers are hosted under .textus-editor-shell, not document.body', () => {
+  for (const rel of FLOATING_LAYER_HOSTS) {
+    const src = readFileSync(join(V, rel), 'utf8')
+    // The append target must resolve to the shell (with a document.body fallback
+    // so it never throws), i.e. contain a querySelector for the shell class.
+    assert.match(
+      src,
+      /querySelector\(["']\.textus-editor-shell["']\)/,
+      `${rel}: floating layer must be appended under .textus-editor-shell`,
+    )
+    // No bare append-to-body for the floating layer may remain.
+    assert.ok(
+      !/document\.body\s*\.\s*append/.test(src),
+      `${rel}: floating layer still appends to document.body (orphaned from the shell)`,
+    )
+  }
+})

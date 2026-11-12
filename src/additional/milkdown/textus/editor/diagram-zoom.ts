@@ -227,7 +227,7 @@ export function openDiagramViewer(
     if (event.target === layer) dismiss();
   });
   document.addEventListener("keydown", onKey, true);
-  document.body.append(layer);
+  (document.querySelector(".textus-editor-shell") ?? document.body).append(layer);
   fit();
   close.focus();
   return dismiss;
