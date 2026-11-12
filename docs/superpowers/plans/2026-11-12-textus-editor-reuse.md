@@ -44,7 +44,7 @@
 **Interfaces:**
 - Produces: `node scripts/check-textus-vendor.mjs` —— 遍历 `src/additional/milkdown/textus/**/*.{ts,tsx}`，收集所有相对 import 与裸 import；对每条相对 import 解析，断言其落在 `V` 内**或**命中 `V/shim/**`（不存在时警告不失败，Task 3 起改为硬失败）；对裸 import 断言在「npm 允许表」（package.json dependencies + devDependencies 的键）内。退出码 0/非 0。供后续任务做每任务门禁。
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```js
 // tests/textus-vendor-closure.test.mjs
@@ -56,25 +56,25 @@ test('vendor 闭包 import 全部可解析（npm 依赖已在 package.json）', 
 })
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [x] **Step 2: 运行确认失败**
 
 Run: `node --import tsx --test tests/textus-vendor-closure.test.mjs`
 Expected: FAIL（脚本不存在 → ENOENT）
 
-- [ ] **Step 3: 在 `package.json` dependencies 追加 Task 1 依赖清单**
+- [x] **Step 3: 在 `package.json` dependencies 追加 Task 1 依赖清单**
 
 在 `dependencies` 追加：`remark-cjk-friendly@^2.3.2`、`remark-cjk-friendly-gfm-strikethrough@^2.3.1`、`remark-frontmatter@^5.0.0`、`remark-math@^6.0.0`、`prosemirror-highlight@^0.16.0`、`tiny-pinyin@1.3.2`、`micromark-util-chunked@^2.0.1`、`micromark-util-classify-character@^2.0.1`、`micromark-util-resolve-all@^2.0.1`、`micromark-util-types@^2.0.0`、`mdast-util-from-markdown@^2.1.0`、`mdast-util-to-markdown@^2.2.1`、`decode-named-character-reference@^1.3.0`、`@codemirror/lang-html@^6.4.12`、`@codemirror/language-data@^6.5.2`、`refractor@^5.0.0`。运行 `npm install`。
 
-- [ ] **Step 4: 实现 `scripts/check-textus-vendor.mjs`**
+- [x] **Step 4: 实现 `scripts/check-textus-vendor.mjs`**
 
 逻辑见 Interfaces.Produces。npm 允许表 = `Object.keys(require('./package.json').dependencies)` ∪ devDependencies。相对 import 目标解析用 `path.resolve`；`V` 内相对 import 未解析到存在文件 → FAIL；裸 import 不在允许表 → FAIL；指向 `V/shim/**` 的 import 在 Task 3 前为 WARN（文件可能尚未建），Task 3 起由脚本常量 `STRICT_SHIMS=true` 硬失败（实施者改该常量）。
 
-- [ ] **Step 5: 运行确认通过**
+- [x] **Step 5: 运行确认通过**
 
 Run: `node --import tsx --test tests/textus-vendor-closure.test.mjs`
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add package.json package-lock.json scripts/check-textus-vendor.mjs tests/textus-vendor-closure.test.mjs
