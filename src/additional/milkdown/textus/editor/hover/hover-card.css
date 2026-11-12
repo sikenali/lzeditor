@@ -1,4 +1,4 @@
-.hover-card {
+.textus-editor-shell .hover-card {
   position: fixed;
   z-index: var(--z-popover);
   display: flex;
@@ -13,13 +13,12 @@
     transform var(--dur-fast) var(--ease-out);
 }
 
-.hover-card-open,
-.hover-card-pinned {
+.textus-editor-shell .hover-card-open, .textus-editor-shell .hover-card-pinned {
   opacity: 1;
   transform: none;
 }
 
-.hover-card-head {
+.textus-editor-shell .hover-card-head {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -27,12 +26,12 @@
   border-bottom: 1px solid var(--ui-border);
 }
 
-.hover-card-pinned .hover-card-head {
+.textus-editor-shell .hover-card-pinned .hover-card-head {
   cursor: grab;
   touch-action: none;
 }
 
-.hover-card-title {
+.textus-editor-shell .hover-card-title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -42,7 +41,7 @@
   white-space: nowrap;
 }
 
-.hover-card-button {
+.textus-editor-shell .hover-card-button {
   padding: 1px 8px;
   border: 1px solid var(--ui-border);
   border-radius: var(--shape-pill);
@@ -54,14 +53,14 @@
   cursor: pointer;
 }
 
-.hover-card-button:hover {
+.textus-editor-shell .hover-card-button:hover {
   border-color: var(--ui-accent);
   color: var(--ui-accent);
 }
 
 /* Positioned: the list bullets, drawn out of the flow, scroll and clip with
    the body instead of spilling below the card. */
-.hover-card-body {
+.textus-editor-shell .hover-card-body {
   position: relative;
   overflow: auto;
   padding: 8px 12px 8px;
@@ -69,21 +68,21 @@
   line-height: 1.55;
 }
 
-.hover-card-body > :first-child {
+.textus-editor-shell .hover-card-body > :first-child {
   margin-top: 0;
 }
 
-.hover-card-body > :last-child {
+.textus-editor-shell .hover-card-body > :last-child {
   margin-bottom: 0;
 }
 
-.hover-card-body :is(h1, h2, h3, h4, h5, h6) {
+.textus-editor-shell .hover-card-body :is(h1, h2, h3, h4, h5, h6) {
   margin: 0.6em 0 0.3em;
   font-size: 1.05em;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hover-card {
+  .textus-editor-shell .hover-card {
     transform: none;
     transition: opacity var(--dur-fast) linear;
   }

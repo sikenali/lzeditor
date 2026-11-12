@@ -11,6 +11,17 @@ import { resolveExternalWrite } from "./textus/editor/source-control";
 import type { SourceBlocks } from "./textus/editor/markdown/source-parts";
 import type { Settings } from "./textus/shim/settings-context";
 import "./milkdown.css";
+// The vendored Textus editor CSS, scoped to the `.textus-editor-shell` div
+// below (Task 8), plus ProseMirror's own base styles. Imported directly here
+// (outside V/ so the vendor import gate doesn't walk the CSS side-effect
+// imports); the stylesheet files live under textus/ matching the source tree.
+import "@milkdown/kit/prose/view/style/prosemirror.css";
+import "./textus/theme/content-base.css";
+import "./textus/theme/content-themes.css";
+import "./textus/editor/milkdown-theme.css";
+import "./textus/editor/completion/completion-panel.css";
+import "./textus/editor/diagram-zoom.css";
+import "./textus/editor/hover/hover-card.css";
 
 /**
  * lzeditor's WYSIWYG editor core: the vendored Textus editor chain (Task 6),
@@ -124,7 +135,14 @@ function MilkdownEditorInner({
     };
   }, []);
 
-  return <Milkdown />;
+  // `.textus-editor-shell` is the outermost element of the editor and the
+  // scope of the vendored Textus CSS: everything Milkdown renders — content,
+  // the completion panel, the hover card, diagram zoom — sits under it.
+  return (
+    <div className="textus-editor-shell">
+      <Milkdown />
+    </div>
+  );
 }
 
 /** The Milkdown 7 WYSIWYG editor, wrapped in its provider. */

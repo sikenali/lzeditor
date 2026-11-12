@@ -9,6 +9,13 @@
   --document-width: 690px;
 }
 
+/* The vendored Textus editor's scope: fills the editor area (it is a direct
+   flex child of .app-editor-area) so the Milkdown content sizes to it. */
+.textus-editor-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .milkdown-editor-shell .milkdown {
   height: 100%;
   overflow: auto;
