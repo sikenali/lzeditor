@@ -159,20 +159,20 @@ git commit -m "feat(textus): vendor markdown/html/serialization core"
 **Interfaces:**
 - Produces: `V/editor/math/math-schema.ts` 的 `mathInlineSchema`/`mathBlockSchema`；`V/editor/marks/md-span-schema.ts`；`V/editor/emoji/emoji-completion.ts` 的 `addEmojiCompletion`。
 
-- [ ] **Step 1: 拷贝 keys/ 并改写 import**
+- [x] **Step 1: 拷贝 keys/ 并改写 import**
 
 `block-keys-plugin.ts`、`block-join-plugin.ts`、`bracket-autopair-plugin.ts`、`composition-prune-guard-plugin.ts`、`drag-autoscroll-plugin.ts`、`format-shortcut-plugin.ts`、`ime.ts`、`inline-source-plugin.ts`、`keyboard-reveal-plugin.ts`、`linux-ime-enter-plugin.ts`（`isLinuxPlatform`→shim）、`mac-navigation-plugin.ts`（`isMacPlatform`→shim）、`margin-click-plugin.ts`、`move-block-plugin.ts`、`select-all.ts`、`tab-extend-plugin.ts`。
 
-- [ ] **Step 2: 拷贝 marks/ + math/ + emoji/ 并改写 import**
+- [x] **Step 2: 拷贝 marks/ + math/ + emoji/ 并改写 import**
 
 `marks/*`（含 `highlight-syntax.ts` 的 micromark 依赖）、`math/*`（`katex-bundle.ts`/`katex-loader.ts`）、`emoji/*`（含 `shortcodes.json` 拷贝）。`math/math-preview-plugin.ts` 的 `ui-motion`/`ui-placement` 指向 shim。
 
-- [ ] **Step 3: 运行 import 门禁**
+- [x] **Step 3: 运行 import 门禁**
 
 Run: `node scripts/check-textus-vendor.mjs`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/additional/milkdown/textus/editor/keys src/additional/milkdown/textus/editor/marks src/additional/milkdown/textus/editor/math src/additional/milkdown/textus/editor/emoji
