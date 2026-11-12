@@ -5,6 +5,7 @@ export interface RecentDoc {
   id: string
   title: string
   path: string
+  diskPath?: string
   savedAt: number
 }
 
@@ -33,7 +34,7 @@ export function getRecentDocs(limit = 6): RecentDoc[] {
     const meta = byId.get(id)
     if (meta?.system) continue
     const title = meta?.title || titleFromMarkdown(stored.md) || '未命名文档'
-    out.push({ id, title, path: meta?.path || '', savedAt: stored.savedAt })
+    out.push({ id, title, path: meta?.path || '', diskPath: meta?.diskPath, savedAt: stored.savedAt })
   }
   return out.sort((a, b) => b.savedAt - a.savedAt).slice(0, limit)
 }
@@ -45,7 +46,7 @@ export function openRecentDoc(doc: RecentDoc): void {
     store.switchDoc(doc.id)
     return
   }
-  openMarkdownDoc(doc.title, readStoredDoc(doc.id)?.md || '', doc.path)
+  openMarkdownDoc(doc.title, readStoredDoc(doc.id)?.md || '', doc.path, doc.diskPath)
 }
 
 /** 相对时间：刚刚 / x 分钟前 / x 小时前 / 昨天 / x 天前 / YYYY-MM-DD。 */

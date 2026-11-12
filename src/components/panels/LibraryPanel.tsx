@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { openMarkdownDoc } from '../../utils/docImport'
+import { getDiskPath } from '../../utils/filePath'
 import { fetchMarkdownFromUrl } from '../../utils/importUrl'
 import { UiModal, UDSection } from '../ui'
 import { LibraryTree, buildTree } from './LibraryTree'
@@ -81,7 +82,9 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         const reader = new FileReader()
         reader.onload = (ev) => {
           const text = ev.target?.result as string
-          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''))
+          const disk = getDiskPath(file)
+          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''), disk)
+          window.electronAPI?.gitAuthorize?.(disk)
         }
         reader.readAsText(file)
       })

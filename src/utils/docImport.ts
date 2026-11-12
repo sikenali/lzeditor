@@ -1,5 +1,6 @@
 import { mdToHtml } from './mdToHtml'
 import { silentError } from './silentError'
+import { getDiskPath } from './filePath'
 import { useEditorStore } from '../store/editorStore'
 import { getEditorFacade } from '../components/editor/facade/registry'
 
@@ -29,10 +30,10 @@ export function readStoredDoc(id: string): StoredDoc | null {
   }
 }
 
-/** 新建标签页并载入 markdown；path 用来标注文件所在的目录。 */
-export function openMarkdownDoc(title: string, md: string, path = ''): string {
+/** 新建标签页并载入 markdown；path 用来标注文件所在的目录，diskPath 是真实磁盘路径（git 历史用）。 */
+export function openMarkdownDoc(title: string, md: string, path = '', diskPath?: string): string {
   const store = useEditorStore.getState()
-  const id = store.createDoc(title, path)
+  const id = store.createDoc(title, path, undefined, diskPath)
   const html = mdToHtml(md)
   store.updateDoc({ md, html, docsMd: { [id]: md } })
   try {
@@ -87,7 +88,9 @@ export async function importFolderFiles(files: File[]): Promise<string[]> {
     if (!md) continue
     const rel = file.webkitRelativePath || file.name
     const dir = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : ''
-    opened.push(openMarkdownDoc(file.name, md, dir))
+    const disk = getDiskPath(file)
+    opened.push(openMarkdownDoc(file.name, md, dir, disk))
+    window.electronAPI?.gitAuthorize?.(disk)
   }
   return opened
 }
@@ -95,5 +98,7 @@ export async function importFolderFiles(files: File[]): Promise<string[]> {
 /** 读取单个文件并开成新文档。 */
 export async function importSingleFile(file: File): Promise<void> {
   const md = await file.text().catch(() => '')
-  openMarkdownDoc(file.name, md)
+  const disk = getDiskPath(file)
+  openMarkdownDoc(file.name, md, '', disk)
+  window.electronAPI?.gitAuthorize?.(disk)
 }

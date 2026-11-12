@@ -3,6 +3,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { UiModal, UiInput, UDSection } from '../ui'
 
 import { openMarkdownDoc, pickFile, pickFolderFiles, importFolderFiles } from '../../utils/docImport'
+import { getDiskPath } from '../../utils/filePath'
 
 const FILE_TEMPLATES = [
   { id: 'blank', name: '空白文档', desc: '从头开始', icon: 'ri-file-line' },
@@ -74,7 +75,9 @@ export const FilePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleOpen = async () => {
     const file = await pickFile()
     if (!file) return
-    openMarkdownDoc(file.name, await file.text().catch(() => ''))
+    const disk = getDiskPath(file)
+    openMarkdownDoc(file.name, await file.text().catch(() => ''), '', disk)
+    window.electronAPI?.gitAuthorize?.(disk)
     setOpenPanel('none')
     onClose()
   }

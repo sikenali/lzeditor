@@ -264,7 +264,7 @@ function App() {
         }
         const name = String(res.name || filePath.split(/[\\/]/).pop() || 'untitled.md')
         const es = useEditorStore.getState()
-        const id = es.createDoc(name)
+        const id = es.createDoc(name, '', undefined, filePath)
         const html = mdToHtml(res.text)
         es.updateDoc({ md: res.text, html, docsMd: { [id]: res.text } })
         try { localStorage.setItem(`lzeditor-doc-${id}`, JSON.stringify({ md: res.text, html, savedAt: Date.now() })) } catch {}
