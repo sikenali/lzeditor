@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react'
 import { mdToHtml } from './utils/mdToHtml'
+import { countLineDiff, formatTimeTs } from './utils/historyTimeline'
+import { nextVersionId } from './utils/versionId'
+import { isVersionSuppressed } from './utils/versionCapture'
 import { Toolbar } from './components/layout/Toolbar'
 import { LeftNav } from './components/layout/LeftNav'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
@@ -429,6 +432,13 @@ function App() {
         const st = useEditorStore.getState()
         if (st.activeDocId === docId) st.updateDoc({ html })
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
+        // 本地编辑快照：程序化载入（回滚/重播）期间抑制，避免产生重复快照。
+        if (!isVersionSuppressed()) {
+          const st2 = useEditorStore.getState()
+          const prev = st2.versionsByDoc?.[docId]?.at(-1)?.md ?? ''
+          const { date, time } = formatTimeTs(Date.now())
+          st2.addVersion(docId, { id: nextVersionId(), md, html, ts: Date.now(), date, time, desc: '本地编辑', changes: countLineDiff(prev, md), source: 'local' })
+        }
       } catch (e) { silentError('编辑器内容回写文档失败', e) }
     }, 180)
   }, [])
