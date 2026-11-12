@@ -228,7 +228,7 @@ git commit -m "feat(textus): vendor clipboard/images/code/tables/completion/hove
 - Consumes: Task 3–5 全部 `V/editor/*` 与 `V/shim/*`。
 - Produces: `withEditorCore(editor, options): Editor`，签名与 Textus 一致（`Editor` 为 `@milkdown/kit/core`），options 含 `{ settings, docPath, onImagePasteError, requestImageName } | { noDiskImages }`。
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```js
 // tests/textus-editor-extensions-trim.test.mjs
@@ -244,26 +244,26 @@ test('装配不含被剔特性且走 noDiskImages', () => {
 })
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [x] **Step 2: 运行确认失败**
 
 Run: `node --import tsx --test tests/textus-editor-extensions-trim.test.mjs`
 Expected: FAIL（`editor-extensions.ts` 尚未裁剪，含 `createTypewriterPlugin`）
 
-- [ ] **Step 3: 实现裁剪 + diagram-engine shim**
+- [x] **Step 3: 实现裁剪 + diagram-engine shim**
 
 在 `V/editor/editor-extensions.ts`：剔除 `createTypewriterPlugin`/`zenFocusPlugin`/`createNoteEmbedPlugin`/`createObsidianEmbedPreviewPlugin`/`lazyBlocksPlugin`/`withLazyBlockViews` 的 import 与 `.use(...)`；`task-list-plugin.ts` 的 `TYPEWRITER_HOLD` 引用改 shim no-op。`createMermaidPreviewPlugin` 保留。`withEditorCore` 的 options 联合类型保留 `noDiskImages` 分支；`disk` 分支的四个插件（undo-file/image/link-click/link-hover）保留在代码但运行时走 `[]`。创建 `V/shim/diagram-engine.ts`：`export const DIAGRAM_LANGUAGES=['mermaid']`、`appearanceIsDark=()=>false`、`diagramRenderer`、`mermaidTheme`、`type DrawnDiagram`（最小）。
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `node --import tsx --test tests/textus-editor-extensions-trim.test.mjs`
 Expected: PASS
 
-- [ ] **Step 5: 运行 import 门禁**
+- [x] **Step 5: 运行 import 门禁**
 
 Run: `node scripts/check-textus-vendor.mjs`
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/additional/milkdown/textus/editor/editor-extensions.ts src/additional/milkdown/textus/shim/diagram-engine.ts tests/textus-editor-extensions-trim.test.mjs
