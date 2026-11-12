@@ -378,26 +378,26 @@ git commit -m "feat(textus): vendor & scope editor CSS"
 **Interfaces:**
 - Consumes: Task 7 `MilkdownEditor`、Task 8 CSS。
 
-- [ ] **Step 1: 运行 typecheck**
+- [x] **Step 1: 运行 typecheck**
 
 Run: `npm run typecheck`
 Expected: PASS
 
-- [ ] **Step 2: 运行全量测试（含 cm6-core-boundary、vendor 门禁、roundtrip）**
+- [x] **Step 2: 运行全量测试（含 cm6-core-boundary、vendor 门禁、roundtrip）**
 
 Run: `npm test`
 Expected: PASS
 
-- [ ] **Step 3: 生产构建**
+- [x] **Step 3: 生产构建**
 
 Run: `npx vite build`
 Expected: 成功（`dist/index.html` 生成）
 
-- [ ] **Step 4: 手测清单（Review Focus）**
+- [x] **Step 4: 手测清单（Review Focus）**
 
 WYSIWYG 开关切换不破坏 CM6；中文/IME 输入不吞字；标题/列表/表格/代码块/math/emoji/引用/链接编辑与序列化保真；纯文本+HTML 粘贴；只读态；外部 `md` 写入（切文档/导入）后往返不失真。
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/additional tests package.json package-lock.json scripts
