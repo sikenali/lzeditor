@@ -1166,10 +1166,25 @@
   color: var(--accent-primary);
   flex-shrink: 0;
 }
+/* 时间线每根柱子上的来源图标（git 提交 / 本地编辑） */
+.history-bar-source  {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  opacity: 0.75;
+}
+.history-bar.active .history-bar-source  { color: var(--color-primary); opacity: 1; }
+/* git 历史异步 loading */
+.history-loading  { animation: history-spin 1s linear infinite; }
+.history-loading-bar  {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+@keyframes history-spin  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 /* 内置手册条目的「还原为出厂内容」按钮：默认收起，hover 才出现，
    避免 20 篇文章的树被一排小按钮撑满 */
-.tree-reset-btn  {
-  margin-left: auto;
+.tree-reset-btn  {  margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: center;
