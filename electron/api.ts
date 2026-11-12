@@ -13,6 +13,29 @@ export interface ReadLocalFileResult {
   error?: string
 }
 
+export interface GitCommitInfo {
+  oid: string
+  message: string
+  author: string
+  /** epoch ms */
+  ts: number
+  changes: number
+}
+
+export interface GitHistoryResult {
+  ok: boolean
+  repoRoot?: string
+  gitPath?: string
+  commits?: GitCommitInfo[]
+  error?: string
+}
+
+export interface GitShowResult {
+  ok: boolean
+  text?: string
+  error?: string
+}
+
 export interface ElectronAPI {
   // ── 无边框窗口的自绘标题栏用 ──
   minimize: () => void
@@ -30,6 +53,14 @@ export interface ElectronAPI {
   offMenuOpen: (callback: () => void) => void
   offMenuExport: (callback: () => void) => void
   readLocalFile: (filePath: string) => Promise<ReadLocalFileResult>
+
+  // ── Git 历史（isomorphic-git，跑主进程；授权复用 file:read 的 isAllowedPath）──
+  gitHistory: (filePath: string) => Promise<GitHistoryResult>
+  gitShow: (filePath: string, oid: string) => Promise<GitShowResult>
+  /** 文件选择器导入后登记磁盘路径进主进程授权集合。 */
+  gitAuthorize: (filePath: string) => Promise<{ ok: boolean }>
+  /** File 对象 → 真实磁盘路径（webUtils.getPathForFile，File.path 已弃用）。 */
+  getPathForFile: (file: File) => string
 
   // ── 把渲染侧的行为设置同步给主进程（托盘图标、关窗即退）──
   sendSettings: (settings: Record<string, unknown>) => void

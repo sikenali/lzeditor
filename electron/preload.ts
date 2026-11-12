@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { ElectronAPI } from './api'
 
 // 渲染侧靠这份 ElectronAPI 消掉 (window as any)；这里标注是为了保证暴露的名字
@@ -23,6 +23,10 @@ const api: ElectronAPI = {
     return () => ipcRenderer.removeListener('menu-open-file', wrapper)
   },
   readLocalFile: (filePath: string) => ipcRenderer.invoke('file:read', filePath),
+  gitHistory: (filePath: string) => ipcRenderer.invoke('git:history', filePath),
+  gitShow: (filePath: string, oid: string) => ipcRenderer.invoke('git:show', filePath, oid),
+  gitAuthorize: (filePath: string) => ipcRenderer.invoke('git:authorize', filePath),
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
   offMenuNew: (callback: () => void) => ipcRenderer.removeListener('menu-new', callback),
   offMenuOpen: (callback: () => void) => ipcRenderer.removeListener('menu-open', callback),
   offMenuExport: (callback: () => void) => ipcRenderer.removeListener('menu-export', callback),

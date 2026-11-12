@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, Tray, nativeImage, shell } f
 import * as fs from 'fs'
 import * as path from 'path'
 import * as url from 'url'
+import { getGitHistory, getGitShow } from './gitHistory'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -178,6 +179,34 @@ ipcMain.handle('file:read', async (_event, filePath: string) => {
   } catch (err: any) {
     return { ok: false, error: err.message || 'read failed', name }
   }
+})
+
+// 导入授权：文件选择器导入的本地 md 文件，其磁盘路径不在「操作系统文件关联」链路
+// （second-instance）发放的授权里。渲染进程拿到 File 真实路径后调这里登记进
+// allowedPaths，git:history/git:show 才能读它的仓库。扩展名白名单 + existsSync 双检，
+// 只登记 markdown 类且真实存在的文件，避免任意路径注入。
+ipcMain.handle('git:authorize', (_event, filePath: string) => {
+  const p = String(filePath || '')
+  if (!ALLOWED_FILE_EXT.includes(path.extname(p).toLowerCase())) return { ok: false }
+  if (!fs.existsSync(p)) return { ok: false }
+  allowedPaths.add(path.resolve(p))
+  return { ok: true }
+})
+
+// Git 提交历史：只放行授权过的文件（与 file:read 同闸门），堵「读任意仓库文件」漏洞。
+ipcMain.handle('git:history', async (_event, filePath: string) => {
+  if (!isAllowedPath(String(filePath || ''))) {
+    return { ok: false, error: 'path not allowed' }
+  }
+  return getGitHistory(String(filePath))
+})
+
+// Git 提交内容：只放行授权过的文件，只读 blob，不改仓库。
+ipcMain.handle('git:show', async (_event, filePath: string, oid: string) => {
+  if (!isAllowedPath(String(filePath || ''))) {
+    return { ok: false, error: 'path not allowed' }
+  }
+  return getGitShow(String(filePath), String(oid || ''))
 })
 
 // Menu
