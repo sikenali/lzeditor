@@ -133,19 +133,11 @@ import {
   obsidianEmbedSchema,
   remarkObsidianEmbedPlugin,
 } from "../shim/images-obsidian-embed";
-import { createObsidianEmbedPreviewPlugin } from "../shim/images-obsidian-embed-preview";
-import { createNoteEmbedPlugin } from "../shim/embeds-note-embed-plugin";
 import { createUndoFilePlugin } from "./undo-file";
 import { createMissingLinksPlugin } from "./markdown/missing-links";
-import { createTypewriterPlugin } from "../shim/modes-typewriter-plugin";
-import { zenFocusPlugin } from "../shim/modes-zen-focus-plugin";
 import { keyboardRevealPlugin } from "./keys/keyboard-reveal-plugin";
 import { createPlaceholderPlugin } from "./placeholder-plugin";
 import { findReplacePlugin } from "./find/find-replace-plugin";
-import {
-  lazyBlocksPlugin,
-  withLazyBlockViews,
-} from "../shim/lazy-blocks-lazy-blocks-editor";
 import { readOnlyPlugin, readOnlyStatePlugin } from "./read-only-plugin";
 import { resolveStrings } from "../i18n/strings";
 import type { Settings } from "../shim/settings-context";
@@ -167,14 +159,14 @@ export function configureEditorRoot(
   // Typora-compatible themes style their content under `#write`.
   ctx.set(
     editorViewOptionsCtx,
-    withLazyBlockViews(ctx, {
+    {
       attributes: () => ({
         id: "write",
         role: "textbox",
         "aria-multiline": "true",
         "aria-label": label(),
       }),
-    }),
+    },
   );
   // A list's start ("3. ") isn't in the DOM structure the CSS counter reads,
   // so it rides along as a custom property; minus one because counter-reset
@@ -286,13 +278,6 @@ export function withEditorCore(
       .use(wikilinkInputRule)
       .use(wikilinkRevealPlugin)
       .use(createMissingLinksPlugin(() => docPath.current))
-      .use(
-        createObsidianEmbedPreviewPlugin({
-          docPath: () => docPath.current,
-          settings: () => settings.current,
-        }),
-      )
-      .use(createNoteEmbedPlugin(() => docPath.current))
 
       .use(
         createGithubAlertPlugin((type) => {
@@ -434,16 +419,8 @@ export function withEditorCore(
       .use(blockJoinPlugin)
       .use(inlineSourcePlugin)
       .use(findReplacePlugin)
-      // A long document's blocks out of sight are placeholders.
-      .use(lazyBlocksPlugin)
       .use(readOnlyPlugin)
-      .use(zenFocusPlugin)
       .use(keyboardRevealPlugin)
-      .use(
-        createTypewriterPlugin({
-          enabled: () => settings.current.typewriterMode,
-        }),
-      )
       .use(
         createPlaceholderPlugin(
           () => resolveStrings(settings.current.language).emptyDocPlaceholder,
