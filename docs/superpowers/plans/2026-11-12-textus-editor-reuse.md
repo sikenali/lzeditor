@@ -128,20 +128,20 @@ git commit -m "feat(textus): vendor utils/lazy/clipboard/i18n/prefs + shims"
 **Interfaces:**
 - Produces: `V/editor/markdown/source-preserving.ts` 的 `readSourceBlocks`/`writePreservingSource`/`openedParseRecorder`；`V/editor/markdown/reduced-presets.ts` 的 `commonmarkWithoutMarks`/`gfmWithoutStrikethrough`；`V/editor/extension-points.ts` 的 `addCompletionSource` 等。供 Task 6 wrapper 用。
 
-- [ ] **Step 1: 拷贝 markdown/ + html/ 并改写 import**
+- [x] **Step 1: 拷贝 markdown/ + html/ 并改写 import**
 
 按规则 1–3。`V/editor/markdown/render-html.ts` **裁剪 `marked` 用法**（B7：只留非 marked 的 HTML 工具，或降级为 `(html)=>html` 的极简实现；如裁剪后无人引用再整体剔除并同步 `V/shim`）。`V/editor/markdown/reduced-presets.ts` 的 `isLinuxPlatform` 指向 `V/shim/platform-os`。
 
-- [ ] **Step 2: 拷贝顶层序列化/基础文件并改写 import**
+- [x] **Step 2: 拷贝顶层序列化/基础文件并改写 import**
 
 `change-source.ts`、`changed-ranges.ts`、`extension-points.ts`、`large-doc.ts`、`live-selection.ts`、`prosemirror-speedups.ts`、`read-only-plugin.ts`、`reveal-position.ts`（其 `drawAround` 指向 shim）、`reveal-state.ts`、`draw-when-visible.ts`（`drawAllBlocks` 指向 shim）、`pointer-hold.ts`、`placeholder-plugin.ts`。
 
-- [ ] **Step 3: 运行 import 门禁（STRICT_SHIMS=true）**
+- [x] **Step 3: 运行 import 门禁（STRICT_SHIMS=true）**
 
 Run: `node scripts/check-textus-vendor.mjs`
 Expected: PASS（shim 符号需覆盖本轮；缺失报 FAIL 则补齐 shim）
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/additional/milkdown/textus/editor scripts/check-textus-vendor.mjs
