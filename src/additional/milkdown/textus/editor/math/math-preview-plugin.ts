@@ -213,7 +213,7 @@ export function createMathPreviewPlugin(options: { enabled: () => boolean }) {
           const floatEl = document.createElement("div");
           floatEl.className = "math-float-preview";
           floatEl.style.display = "none";
-          document.body.appendChild(floatEl);
+          (document.querySelector(".textus-editor-shell") ?? document.body).appendChild(floatEl);
 
           // The preview shows on a short delay and hides at once: the selection can
           // pass through a math node for one update (WKWebView normalization, fast

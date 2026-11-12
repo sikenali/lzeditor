@@ -129,6 +129,7 @@ const FLOATING_LAYER_HOSTS = [
   'editor/completion/completion-panel.ts',
   'editor/hover/hover-card.ts',
   'editor/diagram-zoom.ts',
+  'editor/math/math-preview-plugin.ts',
 ]
 
 test('floating layers are hosted under .textus-editor-shell, not document.body', () => {
