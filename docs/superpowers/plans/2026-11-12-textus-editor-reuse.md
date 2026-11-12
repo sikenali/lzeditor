@@ -97,20 +97,20 @@ git commit -m "chore(textus): add editor-core deps + vendor import gate"
 - Consumes: Task 1（check 脚本、npm 允许表）
 - Produces: `V/shim/*` 的具名导出（no-op/最小实现），供 Task 3–5 改写 import 指向。
 
-- [ ] **Step 1: 拷贝并改写 import（按 Global Constraints 规则 1–3）**
+- [x] **Step 1: 拷贝并改写 import（按 Global Constraints 规则 1–3）**
 
 把上列文件从 `/tmp/opencode/textus` 拷到 `V` 对应路径；`V/utils/*` 内互相引用改相对路径；`V/i18n/langs.ts` 的 locale 引用保持。`V/prefs/settings-types.ts` 仅保留 `type Settings`、`type DiagramEngine`、`type ImageNamingMode`、`type UpdateChannel` 等类型形状（值/defaults 用 `settings-values.ts` 最小集），**不**引 storage/platform。
 
-- [ ] **Step 2: 实现 `V/shim/*`**
+- [x] **Step 2: 实现 `V/shim/*`**
 
 按探索报告 §5 的符号需求，为每个 shim 导出最小实现或 no-op（例：`platform-os.ts` → `export const modIsMeta=()=>false`、`export const isLinuxPlatform=false`、`isMacPlatform=false`；`ui-motion.ts` → `motionAllowed=true`、`duration=200`、`animate=()=>{}`、`glideScroll=()=>{}`；`plugin-records.ts` → `export function windowInfo(){return {strings:()=>({completionCommands:""})}}`；`settings-context.ts` → `export type Settings=…` + `export const useSettings=()=>({t:(k)=>k,settings:{}}) `）。签名以探索报告为准。
 
-- [ ] **Step 3: 运行 import 门禁**
+- [x] **Step 3: 运行 import 门禁**
 
 Run: `node scripts/check-textus-vendor.mjs`
 Expected: PASS（此任务不含 `V/editor/**`，脚本仅校验已存在文件）
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/additional/milkdown/textus scripts/check-textus-vendor.mjs
