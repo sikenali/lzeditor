@@ -284,7 +284,7 @@ git commit -m "feat(textus): trim editor-extensions assembly to A2 core"
 - Consumes: `withEditorCore`（Task 6）、`readSourceBlocks`/`writePreservingSource`（Task 3）、`@milkdown/react` `useEditor`。
 - Produces: `MilkdownEditor`（`{ md: string; onChange: (md: string)=>void; readonly?: boolean }`）。外部 `md` 变化：仅当 `writePreservingSource` 输出 ≠ `md` 时 `replaceAll(md)`，随后**重新** `readSourceBlocks` 派生 source。
 
-- [ ] **Step 1: 写失败测试（外部写后须重派生 source 以保真）**
+- [x] **Step 1: 写失败测试（外部写后须重派生 source 以保真）**
 
 ```js
 // tests/textus-source-control.test.mjs
@@ -297,21 +297,21 @@ test('外部 md 与当前保真输出不同才 replace，相同则 no-op', () =>
 })
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [x] **Step 2: 运行确认失败**
 
 Run: `node --import tsx --test tests/textus-source-control.test.mjs`
 Expected: FAIL（`source-control.ts` 未建 → 模块找不到）
 
-- [ ] **Step 3: 实现 `V/editor/source-control.ts` + `V/editor/editor-factory.ts` + 重写 wrapper**
+- [x] **Step 3: 实现 `V/editor/source-control.ts` + `V/editor/editor-factory.ts` + 重写 wrapper**
 
 `resolveExternalWrite(current, incoming)` 返回 `{ replace: current !== incoming }`（沿用现有"仅当不同才 replaceAll"语义）。`buildEditor(root, initialMd, opts)`：`Editor.make().config(ctx=>{ctx.set(rootCtx,root);ctx.set(defaultValueCtx,initialMd)}).use(withEditorCore(editor, { noDiskImages }))`，并挂 listener 仅用于 mounted（readonly 重设），**不用** markdownUpdated。wrapper 内：mount 时 `sourceRef = readSourceBlocks(ctx, initialMd, doc)`；`onChange` 经 `writePreservingSource(ctx, sourceRef.current, doc)` 上报；外部 `md` 变化时若 `resolveExternalWrite(...).replace` 为 true 则 `replaceAll(md)` 后 `sourceRef.current = readSourceBlocks(ctx, md, newDoc)`。`readonly` 经 `editable` 控制（沿用现有 `setProps`）。
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `node --import tsx --test tests/textus-source-control.test.mjs`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/additional/milkdown/MilkdownEditor.tsx src/additional/milkdown/textus/editor/editor-factory.ts src/additional/milkdown/textus/editor/source-control.ts tests/textus-source-control.test.mjs
