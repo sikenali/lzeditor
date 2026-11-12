@@ -90,11 +90,18 @@ test('裸 import 不在允许表 → 硬失败', () => {
   })
 })
 
-test('相对 import 指向 V/shim 尚未落盘的文件 → 警告不失败（STRICT_SHIMS=false）', () => {
+test('相对 import 指向 V/shim 尚未落盘的文件 → 硬失败（STRICT_SHIMS=true）', () => {
   withVTree({ 'a.ts': `import { x } from './shim/not-yet'\n` }, (root) => {
     const r = runGate(root)
+    assert.equal(r.ok, false, 'STRICT_SHIMS=true 下 shim 未落盘应硬失败')
+    assert.match(r.output, /FAIL/, '应报告硬失败')
+  })
+})
+
+test('类型专用裸 import（@types/<spec> 已在 package.json 声明）→ 通过', () => {
+  withVTree({ 'a.ts': `import type { Root } from 'mdast'\n` }, (root) => {
+    const r = runGate(root)
     assert.equal(r.ok, true, r.output)
-    assert.match(r.output, /WARN/, '应打印警告')
   })
 })
 
