@@ -75,7 +75,7 @@ export interface EditorStoreState {
   readFontSize: number
   tocItems: { id: string; text: string; level: number }[]
   activeTocId: string
-  versions: DocVersion[]
+  versionsByDoc: Record<string, DocVersion[]>
   setTitle: (title: string) => void
   setWordCount: (count: number) => void
   setCharCount: (count: number) => void
@@ -109,16 +109,18 @@ export interface EditorStoreState {
   setEditorContentRef: (ref: HTMLDivElement | null) => void
   editorRef: HTMLDivElement | null
   editorContentRef: HTMLDivElement | null
-  addVersion: (version: DocVersion) => void
+  addVersion: (docId: string, version: DocVersion) => void
+  /** 从 localStorage 播种某文档的本地快照（打开历史面板时调用）。 */
+  hydrateVersions: (docId: string) => void
   lastEditTime: number
   setLastEditTime: (time: number) => void
   // 首次启动的欢迎页（每次浏览器会话只显示一次）
   showWelcome: boolean
   setShowWelcome: (showWelcome: boolean) => void
   // multi-tab
-  docs: Array<{ id: string; title: string; path: string; libraryId?: string }>
+  docs: Array<{ id: string; title: string; path: string; libraryId?: string; diskPath?: string }>
   activeDocId: string | null
-  createDoc: (title?: string, path?: string, libraryId?: string) => string
+  createDoc: (title?: string, path?: string, libraryId?: string, diskPath?: string) => string
   switchDoc: (id: string) => void
   closeDoc: (id: string) => void
   // 把内置文档（使用手册）还原成出厂内容：清掉本地覆盖，重读内置 md

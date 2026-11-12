@@ -4,7 +4,7 @@ import { getEditorFacade } from '../editor/facade/registry'
 import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
-  const versions = useEditorStore((s) => s.versions)
+  const versions = useEditorStore((s) => s.activeDocId ? (s.versionsByDoc[s.activeDocId] ?? []) : [])
   const setDocHTML = useEditorStore((s) => s.setDocHTML)
   const setMdContent = useEditorStore((s) => s.setMdContent)
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null)

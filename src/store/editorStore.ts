@@ -4,6 +4,7 @@ import { DEFAULT_DOC_TITLE } from '../components/editor/constants'
 import { getDocMd } from '../utils/docSource'
 import { getEditorFacade } from '../components/editor/facade/registry'
 import { persistCatalog, restoreSession, type CatalogEntry } from '../utils/docCatalog'
+import { loadVersions, saveVersions } from '../utils/versionPersistence'
 
 const MAX_VERSIONS = 10
 
@@ -103,6 +104,7 @@ function saveCatalog(): void {
       title: d.title,
       path: d.path || '',
       libraryId: d.libraryId,
+      diskPath: d.diskPath,
       system: d.system,
       builtin: d.builtin,
     })),
@@ -146,12 +148,12 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   activeTocId: '' as string,
   editorRef: null,
   editorContentRef: null,
-  versions: [],
+  versionsByDoc: {} as Record<string, DocVersion[]>,
   lastEditTime: Date.now(),
   showWelcome: !welcomeSeen,
 
   // ── Multi-tab ──
-  docs: restored.docs as Array<{ id: string; title: string; path: string; libraryId?: string; system?: boolean; builtin?: boolean }>,
+  docs: restored.docs as Array<{ id: string; title: string; path: string; libraryId?: string; diskPath?: string; system?: boolean; builtin?: boolean }>,
   activeDocId: restored.activeDocId as string | null,
   docsMd: {} as Record<string, string>,
   nextUntitledIdx: restored.nextUntitledIdx,
@@ -237,22 +239,31 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     if (showWelcome) set({ showWelcome: true })
     else markWelcomeSeen(set)
   },
-  addVersion: (version: DocVersion) => {
-    const versions = get().versions
-    const last = versions[versions.length - 1]
+  addVersion: (docId: string, version: DocVersion) => {
+    const byDoc = get().versionsByDoc || {}
+    // 未播种时以磁盘为准：回滚/重播后第一次编辑不覆盖既有快照
+    const base = byDoc[docId] ?? loadVersions(docId)
+    const last = base[base.length - 1]
     // 以 markdown 正文比较：旧编辑器曾长期传 html:''，按 html 去重会丢掉所有后续快照
     if (last && last.md === version.md) return
-    set({ versions: [...versions, version].slice(-MAX_VERSIONS) })
+    const next = [...base, version].slice(-MAX_VERSIONS)
+    set({ versionsByDoc: { ...byDoc, [docId]: next } })
+    saveVersions(docId, next)
+  },
+  hydrateVersions: (docId: string) => {
+    const byDoc = get().versionsByDoc || {}
+    if (byDoc[docId]) return
+    set({ versionsByDoc: { ...byDoc, [docId]: loadVersions(docId) } })
   },
 
   // ── Tab actions ──
-  createDoc: (title?: string, path = '', libraryId?: string) => {
+  createDoc: (title?: string, path = '', libraryId?: string, diskPath?: string) => {
     const { docs, nextUntitledIdx: idx, activeLibraryId, docLibraries } = get()
     const targetLibraryId = libraryId || activeLibraryId || 'default'
     const library = docLibraries.find((lib: any) => lib.id === targetLibraryId) || docLibraries[0]
     const name = title || `Untitled-${idx}.md`
     const id = String(Date.now())
-    const newDoc = { id, title: name, path: path || library?.name || 'Default', libraryId: targetLibraryId }
+    const newDoc = { id, title: name, path: path || library?.name || 'Default', libraryId: targetLibraryId, diskPath }
     set({
       docs: [...docs, newDoc],
       activeDocId: id,
