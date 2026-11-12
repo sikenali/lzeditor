@@ -5,7 +5,7 @@
 
 /* Paper - warm, cream, serif-leaning */
 
-.textus-editor-shell [data-content-theme="paper"] {
+.textus-editor-shell[data-content-theme="paper"] {
   --doc-bg: #faf6ee;
   --doc-text: #2b2620;
   --doc-muted: #706758;
@@ -42,7 +42,7 @@
 
 /* Slate - cool, minimal, blue accent */
 
-.textus-editor-shell [data-content-theme="slate"] {
+.textus-editor-shell[data-content-theme="slate"] {
   --doc-bg: #f7f8fa;
   --doc-text: #1c2128;
   --doc-muted: #656d77;
@@ -79,7 +79,7 @@
 
 /* Forest - low-saturation green, easy on the eyes */
 
-.textus-editor-shell [data-content-theme="forest"] {
+.textus-editor-shell[data-content-theme="forest"] {
   --doc-bg: #f5f7f2;
   --doc-text: #22301f;
   --doc-muted: #616d5a;
