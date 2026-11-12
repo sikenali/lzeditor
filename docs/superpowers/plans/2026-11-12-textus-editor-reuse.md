@@ -330,7 +330,7 @@ git commit -m "feat(textus): source-preserving controlled MilkdownEditor"
 **Interfaces:**
 - Produces: `src/additional/milkdown/textus/theme/*.css`，import 进 `MilkdownEditor.tsx`（含 `@milkdown/kit/prose/view/style/prosemirror.css`）。
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```js
 // tests/textus-css-scoped.test.mjs
@@ -346,21 +346,21 @@ test('编辑器 CSS 全部作用域在 .textus-editor-shell 下', () => {
 })
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [x] **Step 2: 运行确认失败**
 
 Run: `node --import tsx --test tests/textus-css-scoped.test.mjs`
 Expected: FAIL（文件未建）
 
-- [ ] **Step 3: 拷贝 CSS + 作用域化**
+- [x] **Step 3: 拷贝 CSS + 作用域化**
 
 从 `/tmp/opencode/textus` 拷 `theme/content-base.css`、`editor/milkdown-theme.css`、`theme/content-themes.css`、`editor/completion/completion-panel.css`、`editor/diagram-zoom.css`、`editor/hover/hover-card.css` 到 `V` 对应路径；每个文件顶层选择器加 `.textus-editor-shell ` 前缀（排除 `@media`/`@keyframes`/`@font-face` 内部），把颜色/尺寸改用 `var(--t-*)` 兜底。`MilkdownEditor.tsx` import 这些 CSS + `@milkdown/kit/prose/view/style/prosemirror.css`；根 div 加 `.textus-editor-shell`。保留现有 `milkdown.css` 作壳级样式。
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `node --import tsx --test tests/textus-css-scoped.test.mjs`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/additional/milkdown tests/textus-css-scoped.test.mjs
