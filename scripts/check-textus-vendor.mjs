@@ -8,7 +8,9 @@
  *     文件），或命中 V/shim——shim 文件在 Task 3 前允许尚未落盘：仅警告
  *     不失败；STRICT_SHIMS 置 true 后改为硬失败。
  *   - 裸 import 必须是 package.json dependencies + devDependencies 的键，或是
- *     某个允许包名的子路径（如 @milkdown/kit/core）。
+ *     某个允许包名的子路径（如 @milkdown/kit/core）；类型专用裸 import
+ *     （`import type { … } from "mdast"`）在 `@types/<spec>` 显式声明为依赖时
+ *     亦允许。
  * 任一硬失败以非 0 退出码结束，并逐条打印「文件 — import — 原因」与摘要。
  *
  * 用法：node scripts/check-textus-vendor.mjs
@@ -16,7 +18,7 @@
  * 测试钩子：设 TEXTUS_VENDOR_ROOT 可把 V 指到别处（tests/ 用临时目录验证
  * 门禁行为），不设时用仓库内真实路径。
  */
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -222,15 +224,10 @@ function isAllowedBare(spec) {
   for (const k of ALLOWED) {
     if (spec === k || spec.startsWith(k + '/')) return true
   }
-  // 类型专用包：`import type { … } from "mdast"` 由已安装的 `@types/mdast`
-  // 提供（TS 的 typeRoots 解析）。这类裸 import 只有类型、运行期被擦除，故
-  // 只要对应 `@types/<spec>` 已安装即允许——避免把合法类型导入误判为失败。
-  if (
-    spec.indexOf('/') < 0 &&
-    existsSync(join(ROOT, 'node_modules', '@types', spec))
-  ) {
-    return true
-  }
+  // 类型专用包：`import type { … } from "mdast"` 由声明的 `@types/mdast` 提供
+  // （TS 的 typeRoots 解析），运行期被擦除。仅当 `@types/<spec>` 在 package.json
+  // 的依赖/开发依赖里显式声明时才允许——避免把未声明的运行期包误放行。
+  if (ALLOWED.has('@types/' + spec)) return true
   return false
 }
 
