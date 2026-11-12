@@ -20,7 +20,7 @@ import { stateWithLiveSelection } from "../live-selection";
 import { isImeKeyEvent } from "./ime";
 import { modIsMeta } from "../../shim/platform-os";
 import { paragraphToRule } from "../marks/md-span-blocks";
-import { leadingWhitespaceOfLastLine } from "../../shim/code-code-indent";
+import { leadingWhitespaceOfLastLine } from "../code/code-indent";
 import { LINK } from "../markdown/link-source";
 
 /**

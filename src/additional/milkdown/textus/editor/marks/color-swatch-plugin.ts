@@ -10,7 +10,7 @@ import {
   touchedBlocks,
 } from "../changed-ranges";
 import type { ColorSwatchMode } from "../../shim/settings-context";
-import { commentRanges } from "../../shim/code-code-comments";
+import { commentRanges } from "../code/code-comments";
 import { colorOfCode, findColorCodes, OPAQUE } from "./color-codes";
 import {
   COLOR_SWATCH_CLASS,
