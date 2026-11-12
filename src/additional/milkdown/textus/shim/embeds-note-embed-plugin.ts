@@ -4,5 +4,6 @@ import type { MilkdownPlugin } from "@milkdown/kit/ctx";
 export function createNoteEmbedPlugin(
   _docPath: () => string | null,
 ): MilkdownPlugin {
-  return () => {};
+  // A MilkdownPlugin must return a cleanup runner; no-op: nothing to clean.
+  return () => () => {};
 }

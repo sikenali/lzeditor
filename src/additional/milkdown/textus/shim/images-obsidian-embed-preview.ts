@@ -6,5 +6,6 @@ import type { Settings } from "../prefs/settings-types";
 export function createObsidianEmbedPreviewPlugin(
   _options: { docPath: () => string | null; settings: () => Settings },
 ): MilkdownPlugin {
-  return () => {};
+  // A MilkdownPlugin must return a cleanup runner; no-op: nothing to clean.
+  return () => () => {};
 }

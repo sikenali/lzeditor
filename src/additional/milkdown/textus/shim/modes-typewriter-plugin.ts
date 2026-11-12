@@ -8,5 +8,6 @@ export const TYPEWRITER_HOLD = "typewriterHold";
 export function createTypewriterPlugin(
   _options: { enabled: () => boolean },
 ): MilkdownPlugin {
-  return () => {};
+  // A MilkdownPlugin must return a cleanup runner; no-op: nothing to clean.
+  return () => () => {};
 }
