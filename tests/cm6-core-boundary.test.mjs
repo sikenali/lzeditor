@@ -83,9 +83,18 @@ assert.deepStrictEqual(
 // ── 并存模式：Milkdown 7 WYSIWYG 编辑器已接入，与 CM6 源码编辑器可切换 ──
 assert.match(app, /MilkdownEditor/, 'App 必须挂载 MilkdownEditor（并存模式）')
 const milkdown = read('src/additional/milkdown/MilkdownEditor.tsx')
-assert.match(milkdown, /@milkdown\/kit\/preset\/commonmark/, 'Milkdown 必须用 CommonMark 预设')
-assert.match(milkdown, /@milkdown\/kit\/preset\/gfm/, 'Milkdown 必须用 GFM 预设')
-assert.match(milkdown, /@milkdown\/kit\/plugin\/listener/, 'Milkdown 必须监听 markdown 变更')
+assert.match(milkdown, /buildEditor/, 'MilkdownEditor 必须经 buildEditor（Task 6 链）构建')
+// 预设与监听都在 vendored 链上（withEditorCore）；wrapper 只注册钩子，不再
+// 直接 .use(listener)——避免重复安装。
+const reducedPresets = read('src/additional/milkdown/textus/editor/markdown/reduced-presets.ts')
+assert.match(reducedPresets, /@milkdown\/kit\/preset\/commonmark/, 'Milkdown 必须用 CommonMark 预设')
+assert.match(reducedPresets, /@milkdown\/kit\/preset\/gfm/, 'Milkdown 必须用 GFM 预设')
+const editorChain = read('src/additional/milkdown/textus/editor/editor-extensions.ts')
+assert.match(editorChain, /\.use\(listener\)/, 'Milkdown 必须监听 markdown 变更（listener 装在链上）')
+const editorFactory = read('src/additional/milkdown/textus/editor/editor-factory.ts')
+assert.doesNotMatch(editorFactory, /^\s*\.use\(/m, 'buildEditor 不得自行安装插件（listener 由链装）')
+assert.match(editorFactory, /withEditorCore\(editor,/, 'buildEditor 必须委托 withEditorCore 安装插件链')
+assert.match(editorFactory, /\.updated\(/, 'buildEditor 必须经 updated 钩子上报（不用 markdownUpdated）')
 assert.match(app, /wysiwyg\s*\?/, 'App 必须按 wysiwyg 切换编辑器')
 const editorStore = read('src/store/editorStore.ts')
 assert.match(editorStore, /wysiwyg/, 'editorStore 必须保存 wysiwyg 开关')
