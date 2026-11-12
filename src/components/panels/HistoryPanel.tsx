@@ -27,21 +27,38 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     return (doc as any)?.diskPath || ''
   }, [activeDocId])
 
-  // 打开时：播种本地快照 + 若在 git 仓库则异步拉提交历史
+  // 打开时：播种本地快照 + 若在 git 仓库则异步拉提交历史。
+  // 切文档时先重置 git 提交（防上一文档的提交泄漏进合并时间线）；stale 异步响应用 cancelled 丢弃。
+  // 重启后主进程 allowedPaths 已清空，故打开时先重新授权持久化的 diskPath（git:authorize 双检 ext+existsSync）。
   useEffect(() => {
+    setGitCommits([])
+    setGitPath(undefined)
+    setGitPreviewHtml(null)
+    setGitPreviewLoading(false)
+    setSelectedVersion(null)
     if (activeDocId) hydrateVersions(activeDocId)
-    if (diskPath && window.electronAPI?.gitHistory) {
-      setGitLoading(true)
-      window.electronAPI.gitHistory(diskPath)
-        .then(res => {
-          if (res?.ok) {
-            setGitCommits(res.commits ?? [])
-            setGitPath(res.gitPath)
-          }
-        })
-        .catch(() => {})
-        .finally(() => setGitLoading(false))
+    const api = window.electronAPI
+    if (!diskPath || !api?.gitHistory) {
+      setGitLoading(false)
+      return
     }
+    let cancelled = false
+    setGitLoading(true)
+    const load = async () => {
+      try {
+        try { await api.gitAuthorize?.(diskPath) } catch {}
+        if (cancelled) return
+        const res = await api.gitHistory(diskPath)
+        if (cancelled) return
+        if (res?.ok) {
+          setGitCommits(res.commits ?? [])
+          setGitPath(res.gitPath)
+        }
+      } catch {}
+      finally { if (!cancelled) setGitLoading(false) }
+    }
+    void load()
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDocId, diskPath])
 
