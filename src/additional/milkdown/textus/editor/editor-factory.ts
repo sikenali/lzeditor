@@ -1,14 +1,12 @@
 import {
   Editor,
-  defaultValueCtx,
   editorViewCtx,
-  rootCtx,
   serializerCtx,
 } from "@milkdown/kit/core";
 import type { Ctx, MilkdownPlugin } from "@milkdown/kit/ctx";
 import type { Node as ProseNode } from "@milkdown/kit/prose/model";
 import { listenerCtx } from "@milkdown/kit/plugin/listener";
-import { withEditorCore } from "./editor-extensions";
+import { configureEditorRoot, withEditorCore } from "./editor-extensions";
 import {
   readSourceBlocks,
   writePreservingSource,
@@ -127,8 +125,13 @@ export function buildEditor(
 
   const editor = Editor.make();
   editor.config((ctx) => {
-    ctx.set(rootCtx, root);
-    ctx.set(defaultValueCtx, initialMd);
+    // Design B6: mount through the vendored `configureEditorRoot` so the
+    // canvas gets the Typora-compatible `#write` id, the ordered-list start
+    // custom property, and the document's own root/default value — not just
+    // the two slices inlined here. This is what makes the scoped Textus CSS
+    // (content-base/content-themes under `.textus-editor-shell[data-…]`) take
+    // effect, e.g. `--textus-ol-start` and `#write`-scoped selectors.
+    configureEditorRoot(ctx, root, initialMd, () => "");
     ctx
       .get(listenerCtx)
       .mounted((ctx) => {

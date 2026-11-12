@@ -55,8 +55,11 @@ const editorSettings = {
   codeLineNumbers: false,
   colorSwatches: "off",
   diagramEngine: "mermaid",
-  enableMath: false,
-  enableMermaid: false,
+  // Design B6: the mermaid and math preview plugins stay in the chain (Task 6
+  // trimmed them out) but are gated by these settings; true keeps the live
+  // previews on, not just parse/serialize.
+  enableMath: true,
+  enableMermaid: true,
 } as Settings;
 
 function MilkdownEditorInner({
@@ -68,6 +71,13 @@ function MilkdownEditorInner({
   onChangeRef.current = onChange;
   // The initial markdown captured at first mount; the editor factory runs once.
   const initialMd = useRef(md).current;
+
+  // The shell's `data-*` theme hooks (Fix: final review Important #1). The
+  // scoped Textus CSS (content-themes.css) defines the `--doc-*` tokens under
+  // `[data-content-theme=…]`; without them `color: var(--doc-text)` resolves
+  // to `inherit` and the canvas has no document background. `data-theme`
+  // mirrors the app's light/dark so the canvas follows the chosen theme.
+  const shellRef = useRef<HTMLDivElement | null>(null);
 
   const settingsRef = useRef(editorSettings);
   // This wrapper has no disk behind it: images paste as links, not files.
@@ -135,11 +145,36 @@ function MilkdownEditorInner({
     };
   }, []);
 
+  // The app's theme rides as `data-theme` on <html> (hooks/useTheme); mirror
+  // it onto the shell so the scoped Textus CSS picks the dark/light variant of
+  // the content theme. Without an explicit value, the CSS's own
+  // `prefers-color-scheme` media query still follows the OS.
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return;
+    const root = document.documentElement;
+    const apply = () => {
+      const theme = root.getAttribute("data-theme");
+      if (theme === "dark" || theme === "light")
+        shell.setAttribute("data-theme", theme);
+      else shell.removeAttribute("data-theme");
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
   // `.textus-editor-shell` is the outermost element of the editor and the
   // scope of the vendored Textus CSS: everything Milkdown renders — content,
   // the completion panel, the hover card, diagram zoom — sits under it.
+  // `data-content-theme` activates the `--doc-*` tokens in the scoped CSS.
   return (
-    <div className="textus-editor-shell">
+    <div
+      ref={shellRef}
+      className="textus-editor-shell"
+      data-content-theme="slate"
+    >
       <Milkdown />
     </div>
   );
