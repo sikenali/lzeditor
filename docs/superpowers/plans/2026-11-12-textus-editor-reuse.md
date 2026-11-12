@@ -191,24 +191,24 @@ git commit -m "feat(textus): vendor keys/marks/math/emoji"
 **Interfaces:**
 - Produces: `V/editor/completion/completion-plugin.ts` 的 `createCompletionPlugin`；`V/editor/code/syntax-highlight-plugin.ts`；`V/editor/tables/table-hover-view.ts`。
 
-- [ ] **Step 1: 拷贝 clipboard/ + images/ 并改写 import**
+- [x] **Step 1: 拷贝 clipboard/ + images/ 并改写 import**
 
 `clipboard/*`（`paste-plain.ts` 的 `clipboardIpc`/`modIsMeta`→shim）、`images/*`（`image-store.ts`/`missing-image.ts`/`picture-clipboard.ts`/`rooted-image.ts`/`image-plugin.ts` 的 `fs`/`webAssets`/`exportDoc`/`canPickImageFile`/`fileSrc`/`isScopedUrl`→shim）。
 
-- [ ] **Step 2: 拷贝 code/ + tables/ + completion/ + hover/ + 其余并改写 import**
+- [x] **Step 2: 拷贝 code/ + tables/ + completion/ + hover/ + 其余并改写 import**
 
 `code/code-language-picker.tsx`（`Select`/`SelectMenu`/`useFloatingList`/`useMergedRef`/`usePresence`/`isIOSApp`→shim）、`completion/*`（`ui-placement`/`clampLeft`/`opensBelow`→shim）、`hover/*`（`ui-chrome-scale`/`ui-zoomed-rects`/`ui-motion`/`windowFolder`/`fs`/`scaledPx`/`zoomedRectScale`→shim）、`tables/*`（`ui-icons`→shim）、`mermaid-plugin.ts`（`DIAGRAM_LANGUAGES`/`appearanceIsDark`/`diagramRenderer`/`mermaidTheme` 经 `V/shim/diagram-engine`）、`pending-diagram.ts`/`diagram-zoom.ts`（`ui-motion`→shim）、`undo-file.ts`（`undoFiles`→shim）、`embeds/embed-sources.ts`。
 
-- [ ] **Step 3: 拷贝 slash-commands 并改写 import**
+- [x] **Step 3: 拷贝 slash-commands 并改写 import**
 
 `V/plugins/contributions/slash-commands.ts`：`windowInfo()`→`V/shim/plugin-records`；其余相对 import 指向 `V/editor/extension-points`。
 
-- [ ] **Step 4: 运行 import 门禁**
+- [x] **Step 4: 运行 import 门禁**
 
 Run: `node scripts/check-textus-vendor.mjs`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/additional/milkdown/textus/editor src/additional/milkdown/textus/plugins
