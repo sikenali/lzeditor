@@ -7,8 +7,8 @@
  *   - 相对 import 用 path.resolve 解析后，必须落在 V 内（且解析到实际存在的
  *     文件），或命中 V/shim——shim 文件在 Task 3 前允许尚未落盘：仅警告
  *     不失败；STRICT_SHIMS 置 true 后改为硬失败。
- *   - 裸 import 必须是 package.json dependencies + devDependencies 的键（npm
- *     允许表）。
+ *   - 裸 import 必须是 package.json dependencies + devDependencies 的键，或是
+ *     某个允许包名的子路径（如 @milkdown/kit/core）。
  * 任一硬失败以非 0 退出码结束，并逐条打印「文件 — import — 原因」与摘要。
  *
  * 用法：node scripts/check-textus-vendor.mjs
@@ -217,6 +217,14 @@ function extractSpecs(source) {
   return specs
 }
 
+/** 裸 import 是否在允许表内：精确键，或某个允许包名的子路径（如 @milkdown/kit/core）。 */
+function isAllowedBare(spec) {
+  for (const k of ALLOWED) {
+    if (spec === k || spec.startsWith(k + '/')) return true
+  }
+  return false
+}
+
 function checkSpec(file, spec) {
   if (spec.startsWith('.')) {
     const resolved = resolve(dirname(file), spec)
@@ -235,7 +243,7 @@ function checkSpec(file, spec) {
     } else {
       problems.push({ kind: 'FAIL', file, spec, reason: '相对 import 逃逸出 V（既不在 V 内也不在 V/shim）' })
     }
-  } else if (!ALLOWED.has(spec)) {
+  } else if (!isAllowedBare(spec)) {
     problems.push({ kind: 'FAIL', file, spec, reason: '裸 import 不在 npm 允许表（package.json dependencies + devDependencies）' })
   }
 }

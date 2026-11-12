@@ -69,6 +69,20 @@ test('裸 import 命中 npm 允许表 → 通过', () => {
   })
 })
 
+test('裸 import 为允许包名的子路径（如 @milkdown/kit/core）→ 通过', () => {
+  withVTree({
+    'a.ts': [
+      `import { core } from '@milkdown/kit/core'\n`,
+      `import { state } from '@milkdown/kit/prose/state'\n`,
+      `import { utils } from '@milkdown/kit/utils'\n`,
+    ].join(''),
+  }, (root) => {
+    const r = runGate(root)
+    assert.equal(r.ok, true, r.output)
+    assert.match(r.output, /检查 1 个文件 \/ 3 条 import/, '应识别出 3 条子路径 import')
+  })
+})
+
 test('裸 import 不在允许表 → 硬失败', () => {
   withVTree({ 'a.ts': `import x from 'definitely-not-a-dependency'\n` }, (root) => {
     const r = runGate(root)
