@@ -24,7 +24,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const V = process.env.TEXTUS_VENDOR_ROOT || join(ROOT, 'src', 'additional', 'milkdown', 'textus')
 const SHIM = join(V, 'shim')
 /** Task 3 起由控制器改为 true：shim 尚未落盘即硬失败。 */
-const STRICT_SHIMS = false
+const STRICT_SHIMS = true
 
 // npm 允许表 = dependencies ∪ devDependencies 的键
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
