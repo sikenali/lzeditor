@@ -1,7 +1,11 @@
 import type { Settings } from "../prefs/settings-types";
-import type { DiagramEngine, ImageNamingMode } from "../prefs/settings-values";
+import type {
+  ColorSwatchMode,
+  DiagramEngine,
+  ImageNamingMode,
+} from "../prefs/settings-values";
 
-export type { Settings, DiagramEngine, ImageNamingMode };
+export type { Settings, ColorSwatchMode, DiagramEngine, ImageNamingMode };
 
 /** The settings React context, no-op shim: English strings, an empty
  *  settings object. A real provider replaces this when the editor core is
