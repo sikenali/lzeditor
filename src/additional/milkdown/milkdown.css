@@ -1,119 +1,63 @@
-/* Milkdown 7 WYSIWYG editor, scoped to .milkdown-editor-shell.
-   Reuses the app token system (--color-*) and the same document-width/gutter
-   vars as the CodeMirror shell, so both editors look and size the same. */
+/* Milkdown 7 WYSIWYG editor, scoped to .textus-editor-shell — the wrapper the
+   WYSIWYG actually renders (MilkdownEditor.tsx), which is also the scope the
+   vendored Textus editor CSS is scoped to.
 
-.milkdown-editor-shell {
+   This file supplies only the editor's *layout*: the shell sizing, the
+   document scroller, and the centered content column — the same
+   document-width/gutter vars as the CodeMirror shell in code-editor.css, so
+   both editor modes size the document the same. The document's own look
+   (fonts, colours, headings, code, links, tables) comes from the vendored
+   content-base.css / content-themes.css / milkdown-theme.css, which already
+   style .milkdown and its elements under this same scope; those live in a
+   cascade layer and stay authoritative, so nothing here re-colours the
+   document. */
+
+.textus-editor-shell {
   height: 100%;
   overflow: hidden;
-  --document-gutter: 96px;
-  --document-width: 690px;
-}
-
-/* The vendored Textus editor's scope: fills the editor area (it is a direct
-   flex child of .app-editor-area) so the Milkdown content sizes to it. */
-.textus-editor-shell {
   flex: 1 1 auto;
   min-height: 0;
+  --document-gutter: 96px;
+  --document-width: 690px;
+  /* The vendored content-base.css sizes .milkdown from --doc-font-size /
+     --doc-line-height, whose default is a cqi clamp that needs a container
+     Textus got from `.editor-content` — which lzeditor doesn't have, so it
+     would resolve against the viewport. Pin them to the app's editor type
+     scale instead, so the document is 14px/1.7 like the CodeMirror mode and
+     doesn't change with the window. The content theme's --doc-font (the face)
+     still applies: it's set on a more specific [data-content-theme] selector.
+   */
+  --doc-font-size: var(--cm-font-size, 14px);
+  --doc-line-height: var(--cm-line-height, 1.7);
 }
 
-.milkdown-editor-shell .milkdown {
+/* The Milkdown root (the document scroller): fills the shell and scrolls. */
+.textus-editor-shell .milkdown {
   height: 100%;
   overflow: auto;
   background: transparent;
-  color: var(--color-text-primary);
 }
 
-.milkdown-editor-shell .milkdown .ProseMirror {
+/* The content column: mirrors .cm-content in code-editor.css — the same
+   max-width, gutter and centering. Font, size and colour inherit from the
+   vendored .milkdown rule (via the --doc-* tokens above). */
+.textus-editor-shell .milkdown .ProseMirror {
   max-width: var(--document-width);
   margin: 0 auto;
   padding: 24px var(--document-gutter);
-  font-family: var(--cm-font-family, var(--font-sans, ui-sans-serif, sans-serif));
-  font-size: var(--cm-font-size, 14px);
-  line-height: var(--cm-line-height, 1.7);
   caret-color: var(--color-text-primary);
   outline: none;
   min-height: 100%;
 }
 
-.milkdown-editor-shell .milkdown .ProseMirror p {
-  text-indent: var(--cm-text-indent, 0);
-  text-align: var(--cm-text-justify, start);
-}
-
-/* Headings */
-.milkdown-editor-shell .milkdown .ProseMirror h1,
-.milkdown-editor-shell .milkdown .ProseMirror h2,
-.milkdown-editor-shell .milkdown .ProseMirror h3,
-.milkdown-editor-shell .milkdown .ProseMirror h4,
-.milkdown-editor-shell .milkdown .ProseMirror h5,
-.milkdown-editor-shell .milkdown .ProseMirror h6 {
-  color: var(--color-text-primary);
-  font-weight: 700;
-  line-height: 1.3;
-  margin: 1.2em 0 0.6em;
-}
-
-/* Code */
-.milkdown-editor-shell .milkdown .ProseMirror code {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  background: var(--color-bg-secondary, rgba(0, 0, 0, 0.05));
-  border-radius: 4px;
-  padding: 0.1em 0.3em;
-  font-size: 0.9em;
-}
-
-.milkdown-editor-shell .milkdown .ProseMirror pre {
-  background: var(--color-bg-secondary, rgba(0, 0, 0, 0.05));
-  border-radius: 8px;
-  padding: 12px 16px;
-  overflow-x: auto;
-}
-
-.milkdown-editor-shell .milkdown .ProseMirror pre code {
-  background: transparent;
-  padding: 0;
-}
-
-/* Links */
-.milkdown-editor-shell .milkdown .ProseMirror a {
-  color: var(--color-primary);
-  text-decoration: underline;
-}
-
-/* Blockquote */
-.milkdown-editor-shell .milkdown .ProseMirror blockquote {
-  border-left: 3px solid var(--color-border-soft, var(--color-border));
-  margin: 1em 0;
-  padding-left: 1em;
-  color: var(--color-text-muted);
-}
-
-/* Tables (GFM) */
-.milkdown-editor-shell .milkdown .ProseMirror table {
-  border-collapse: collapse;
-  margin: 1em 0;
-  width: 100%;
-}
-
-.milkdown-editor-shell .milkdown .ProseMirror th,
-.milkdown-editor-shell .milkdown .ProseMirror td {
-  border: 1px solid var(--color-border-soft, var(--color-border));
-  padding: 6px 10px;
-  text-align: left;
-}
-
-.milkdown-editor-shell .milkdown .ProseMirror th {
-  background: var(--color-bg-secondary, rgba(0, 0, 0, 0.05));
-}
-
-/* Selected text */
-.milkdown-editor-shell .milkdown .ProseMirror ::selection,
-.milkdown-editor-shell .milkdown .ProseMirror .selection {
+/* Selected text: the vendored CSS doesn't set one, so use the app accent. */
+.textus-editor-shell .milkdown .ProseMirror ::selection,
+.textus-editor-shell .milkdown .ProseMirror .selection {
   background: var(--color-primary-soft, var(--color-primary));
 }
 
 /* Placeholder (empty paragraph hint) */
-.milkdown-editor-shell .milkdown .ProseMirror p.is-empty:first-child::before {
+.textus-editor-shell .milkdown .ProseMirror p.is-empty:first-child::before {
   content: attr(data-placeholder);
   color: var(--color-text-muted);
   float: left;
