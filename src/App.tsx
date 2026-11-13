@@ -13,7 +13,7 @@ import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { StyleMainPanel } from './components/panels/StyleMainPanel'
 import { CodeEditor } from './components/editor/CodeEditor'
-import { MilkdownEditor } from './additional/milkdown/MilkdownEditor'
+import { TextusPreview } from './additional/milkdown/TextusPreview'
 import { getDocMd } from './utils/docSource'
 import { README_CONTENT } from './components/editor/constants'
 import { ReadMode } from './components/editor/ReadMode'
@@ -456,9 +456,9 @@ function App() {
     }
     // 编辑 / 代码 / 排版 三种模式都挂源码编辑器：
     // 预览模式与排版模式的右侧内容走右栏，代码模式不给右栏留位。
-    // 并存模式：wysiwyg 打开时用 Milkdown 7 WYSIWYG 编辑器，否则用 CodeMirror 源码编辑器。
+    // 并存模式：wysiwyg 打开时用 Textus 只读预览，否则用 CodeMirror 源码编辑器（可编辑）。
     return wysiwyg
-      ? <MilkdownEditor md={editorMd} onChange={handleEditorChange} />
+      ? <TextusPreview markdown={editorMd} />
       : <CodeEditor md={editorMd} onChange={handleEditorChange} />
   })()
 

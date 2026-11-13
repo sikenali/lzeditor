@@ -28,7 +28,8 @@ for (const p of DEAD) {
 }
 
 // ── 活文件必须保留 ──
-assert.ok(existsSync(f('milkdown/MilkdownEditor.tsx')), 'MilkdownEditor.tsx 必须保留（wysiwyg 模式在用）')
+assert.equal(existsSync(f('milkdown/MilkdownEditor.tsx')), false, 'MilkdownEditor.tsx 必须删除（已改只读预览）')
+assert.ok(existsSync(f('milkdown/TextusPreview.tsx')), 'TextusPreview.tsx 必须保留（只读预览外壳）')
 assert.ok(existsSync(f('milkdown/milkdown.css')), 'milkdown.css 必须保留')
 
 console.log('additional dead cluster removed ok')
