@@ -4,8 +4,9 @@
  * This module is runtime-pure: no React, no ctx, no Milkdown imports — the
  * node `--test` runner (CJS loader) cannot resolve `@milkdown/kit`'s ESM-only
  * subpath exports, so `resolveExternalWrite` must be importable without
- * loading the editor chain. `recomputeSource` (which needs `readSourceBlocks`)
- * lives in `editor-factory.ts`, the editor-wiring layer.
+ * loading the editor chain. The source-preserving read/write helpers
+ * (`readSourceBlocks`, `writePreservingSource`) live in
+ * `markdown/source-preserving.ts`, the editor-wiring layer.
  */
 
 /**

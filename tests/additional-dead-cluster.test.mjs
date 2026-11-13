@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 // src/additional/ 的插件子系统整簇死代码：additional/index.ts（桶文件）从未被任何
 // 代码 import，plugins/* 与 i18n/strings.ts、utils/match-words.ts、milkdown/index.ts
 // 只被该桶/内部互相引用，从 main.tsx 入口不可达（约 1560 行）。
-// 只有 MilkdownEditor.tsx + milkdown.css 是活的（App 在 wysiwyg 模式下渲染）。
+// 只有 TextusPreview.tsx + milkdown.css 是活的（App 在 wysiwyg 模式下渲染只读预览）。
 const f = (p) => new URL(`../src/additional/${p}`, import.meta.url)
 
 const DEAD = [

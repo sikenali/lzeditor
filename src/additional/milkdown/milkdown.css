@@ -1,5 +1,5 @@
 /* Milkdown 7 WYSIWYG editor, scoped to .textus-editor-shell — the wrapper the
-   WYSIWYG actually renders (MilkdownEditor.tsx), which is also the scope the
+   WYSIWYG actually renders (TextusPreview.tsx), which is also the scope the
    vendored Textus editor CSS is scoped to.
 
    This file supplies only the editor's *layout*: the shell sizing, the

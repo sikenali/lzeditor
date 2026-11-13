@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-// WYSIWYG 模式下工具栏命令整体失效的根因：MilkdownEditor 不注册 editor facade，
+// WYSIWYG 模式下工具栏命令整体失效的根因：TextusPreview（只读预览）不注册 editor facade，
 // getEditorFacade() 为 null → runMapped 静默 return false，粗体/斜体/删除线、
 // 格式菜单（标题/清除/列表）、插入引用、查找、大纲跳转全部点了没反应。
 // 修复：wysiwyg 下禁用需要 facade 的命令型入口（诚实表达不可用），

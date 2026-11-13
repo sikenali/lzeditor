@@ -18,6 +18,9 @@ export type PreviewExtras = (
 interface Props {
   markdown: string;
   filePath: string | null;
+  /** Unused extension point (vendored Textus fidelity): lets a caller draw
+   *  plugin blocks (chart/mind-map/database) beyond the editor itself.
+   *  lzeditor's read-only preview never passes it — kept for fidelity. */
   extras?: PreviewExtras;
 }
 
