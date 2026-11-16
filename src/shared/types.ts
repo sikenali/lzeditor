@@ -123,7 +123,7 @@ export interface EditorStoreState {
   createDoc: (title?: string, path?: string, libraryId?: string, diskPath?: string) => string
   switchDoc: (id: string) => void
   closeDoc: (id: string) => void
-  // 把内置文档（使用手册）还原成出厂内容：清掉本地覆盖，重读内置 md
+  // 把内置文档（readme）还原成出厂内容：清掉本地覆盖，重读内置 md
   resetDocContent: (id: string) => void
   docsMd: Record<string, string>
   setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void

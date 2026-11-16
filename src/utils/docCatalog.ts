@@ -15,7 +15,7 @@ export interface CatalogEntry {
   libraryId?: string
   /** 真实磁盘路径（Electron 文件选择器/文件关联），git 历史用。 */
   diskPath?: string
-  /** UI 语义：内置使用手册。readme 故意不标——LibraryTree 靠它给 readme 显示「还原出厂」。 */
+  /** UI 语义：内置文档。readme 故意不标——LibraryTree 靠它给 readme 显示「还原出厂」。 */
   system?: boolean
   /** 持久化语义：是否出厂文档。persistCatalog 用这个过滤，落盘时丢掉。 */
   builtin?: boolean

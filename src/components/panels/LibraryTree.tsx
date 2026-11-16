@@ -53,7 +53,7 @@ export const LibraryTree: React.FC<{
   const activeDocId = useEditorStore((s) => s.activeDocId)
 
   const renderNode = (node: DocNode, depth: number): React.ReactNode => {
-    // 不能只靠 id 前缀判断：内置手册的 id 是 a01-特色功能 这类，不是 doc- 开头，
+    // 不能只靠 id 前缀判断：内置文档（readme）的 id 不是 doc- 开头，
     // 会被误判成文件夹而点开就没了。
     const isFolder = !(node.isDoc || node.id.startsWith('doc-'))
     const hasChildren = isFolder && node.children && node.children.length > 0
@@ -91,8 +91,8 @@ export const LibraryTree: React.FC<{
         <span className={`remix ${node.isFromGit ? 'ri-git-repository-line' : 'ri-file-text-line'} tree-icon`}></span>
         <span className="tree-label">{node.title}</span>
         {node.isFromGit && <span className="tree-git-badge">git</span>}
-        {/* node.system 覆盖使用手册 20 篇；readme 不在 system 里（它要留在 Default 库、
-            也要出现在打开的文档标签上），但它同样是内置文档，改了也该能还原。 */}
+        {/* readme 不在 system 里（它要留在 Default 库、
+            也要出现在打开的文档标签上），但它是内置文档，改了也该能还原。 */}
         {(node.system || node.id === 'readme') && onResetDoc && (
           <button
             type="button"

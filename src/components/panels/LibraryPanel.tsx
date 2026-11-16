@@ -19,7 +19,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const [renameTargetId, setRenameTargetId] = useState<string | null>(null)
   const [category, setCategory] = useState('docs')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>(() => {
-    // 内置使用手册的分组默认展开，否则 20 篇文章藏在两层折叠里等于不存在
+    // 内置文档（readme）的分组默认展开，否则藏在两层折叠里等于不存在
     const init: Record<string, boolean> = {}
     for (const d of useEditorStore.getState().docs) {
       const path = (d as any).path || ''
@@ -55,7 +55,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   }
 
   const flatDocs = useMemo(() => {
-    // 注意：不要再过滤 d.system。内置使用手册 20 篇都标了 system，
+    // 注意：不要再过滤 d.system。内置文档都标了 system，
     // 之前在这里被整包藏掉，用户除了「关于」页的第一篇外一篇都打不开。
     const visible = docs
     if (searchText) {

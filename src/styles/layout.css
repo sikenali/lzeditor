@@ -1182,8 +1182,8 @@
 }
 @keyframes history-spin  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* 内置手册条目的「还原为出厂内容」按钮：默认收起，hover 才出现，
-   避免 20 篇文章的树被一排小按钮撑满 */
+/* 内置文档条目的「还原为出厂内容」按钮：默认收起，hover 才出现，
+   避免文档树的每一行都被一排小按钮撑满 */
 .tree-reset-btn  {  margin-left: auto;
   display: flex;
   align-items: center;
