@@ -211,9 +211,10 @@ const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
 const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须系统蓝浅底')
-const navRowFull = sdlg.match(/\.settings-nav-row\.active[\s\S]{0,400}?\}/)?.[0] || ''
-assert.match(navRowFull, /var\(--color-system-blue\)/, '激活态文字/图标必须系统蓝')
-assert.match(navRowFull, /::before/, '激活态必须 3px 左条（::before）')
+assert.match(navActive, /::before/, '激活态必须 3px 左条（::before）')
+// 激活态文字/图标颜色在各自子规则（.settings-nav-row.active .settings-nav-ico/.txt），单独断言
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须系统蓝')
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须系统蓝')
 ```
 
 - [ ] **Step 2: 运行测试，确认失败**
