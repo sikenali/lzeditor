@@ -125,3 +125,15 @@ assert.match(panels, /\.export-body-redesigned \.insert-nav-item[^{]*\{[^}]*var\
 // 持久激活态的内描高光同样必须主题感知（§5.5 扫除，active 非 hover 微反馈）
 assert.match(panels, /\.insert-nav-item\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, '.insert-nav-item.active 内描高光必须 var(--color-inset-highlight)')
 assert.match(panels, /\.export-body-redesigned \.insert-nav-item\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, '.export-body-redesigned .insert-nav-item.active 内描高光必须 var(--color-inset-highlight)')
+
+// ── DESIGN-1.md §2.1 毛玻璃顶栏/页脚 + --bg-rgb 主题 token（方案 A 严格合规）──
+assert.match(tokens, /--bg-rgb:\s*250,\s*247,\s*242/, '浅色 --bg-rgb 必须 = #FAF7F2（§1 羊皮纸基底）')
+assert.match(block('parchment'), /'--bg-rgb':\s*'250,\s*247,\s*242'/, 'parchment 主题必须含 --bg-rgb=#FAF7F2')
+assert.match(block('dark'), /'--bg-rgb':\s*'23,\s*23,\s*26'/, 'dark 主题必须含 --bg-rgb=#17171A')
+const toolbarRule = layout.match(/\.toolbar\s*\{[^}]*\}/)?.[0] || ''
+assert.match(toolbarRule, /rgba\(var\(--bg-rgb\),\s*0\.82\)/, '顶栏背景必须毛玻璃 rgba(var(--bg-rgb),0.82)（§2.1）')
+assert.match(toolbarRule, /backdrop-filter:\s*blur\(16px\)/, '顶栏必须 backdrop-filter blur(16px)（§2.1）')
+assert.match(toolbarRule, /app-region:\s*drag/, '顶栏 Electron 无边框窗口拖动区必须保留')
+assert.match(toolbarRule, /border-bottom:\s*0\.7px/, '顶栏底部必须 0.7px 分割线（§2.1）')
+const footerRule = layout.match(/\.app-footer\s*\{[^}]*height:\s*58px[^}]*\}/)?.[0] || ''
+assert.match(footerRule, /rgba\(var\(--bg-rgb\),\s*0\.75\)/, '页脚背景必须毛玻璃 rgba(var(--bg-rgb),0.75)（§2.1）')
