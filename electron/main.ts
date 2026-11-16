@@ -23,7 +23,7 @@ const APP_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1440,
+    width: 1280,
     height: 900,
     minWidth: 1024,
     minHeight: 640,

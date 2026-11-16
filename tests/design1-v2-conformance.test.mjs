@@ -144,3 +144,9 @@ const appRule = appCss.match(/\.app\s*\{[^}]*\}/)?.[0] || ''
 assert.match(appRule, /max-width:\s*1280px/, '.app 必须 max-width:1280px（窗口观感）')
 assert.match(appRule, /margin:\s*0 auto/, '.app 必须水平居中')
 assert.match(appRule, /height:\s*100vh/, '.app 高度仍铺满视口')
+
+// ── 方案 A：Electron 窗口 1280×900（min 保留）──
+const main = read('electron/main.ts')
+assert.match(main, /width:\s*1280/, 'Electron 窗口宽必须 1280')
+assert.match(main, /height:\s*900/, 'Electron 窗口高必须 900')
+assert.match(main, /minWidth:\s*1024/, 'minWidth 保留 1024')
