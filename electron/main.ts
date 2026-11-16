@@ -45,7 +45,8 @@ function createWindow() {
     mainWindow.webContents.openDevTools()
   } else {
     mainWindow.loadURL(
-      url.pathToFileURL(path.join(__dirname, '../../dist/index.html')).href,
+      // 打包态 __dirname = resources/app.asar/electron，dist 在 asar 根 → 上一级 ../dist
+      url.pathToFileURL(path.join(__dirname, '../dist/index.html')).href,
     )
   }
 
@@ -132,7 +133,7 @@ function getSetting<K extends string>(key: K, fallback: unknown): unknown {
 let tray: Tray | null = null
 
 function applyTray() {
-  const icon = nativeImage.createFromPath(path.join(__dirname, '../../public/icon.png'))
+  const icon = nativeImage.createFromPath(path.join(__dirname, '../public/icon.png'))
   if (getSetting('showTrayIcon', true) === false) {
     if (tray) { tray.destroy(); tray = null }
     return

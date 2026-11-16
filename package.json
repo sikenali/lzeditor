@@ -94,6 +94,7 @@
       "dist/**/*",
       "electron/**/*",
       "server/**/*",
+      "public/**/*",
       "package.json"
     ],
     "mac": {
