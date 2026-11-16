@@ -35,7 +35,7 @@
   cursor: pointer;
   text-align: left;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.10);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10), inset 0 1px 0 var(--color-inset-highlight);
   transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-base) var(--ease);
 }
 .insert-nav-item:hover  {
@@ -106,14 +106,14 @@
 .format-card.active  {
   border-color: var(--glass-border-hover);
   background: var(--glass-bg-hover);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 var(--color-inset-highlight);
 }
 .format-radio.checked  { border-color: var(--accent-primary); background: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-a10); }
 .format-chip.active  {
   border-color: var(--glass-border-hover);
   background: var(--glass-bg-hover);
   color: var(--accent-primary);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18), inset 0 1px 0 var(--color-inset-highlight);
 }
 .format-chip .remix  { font-size: 14px; }
 .image-mode-tab.active  { border-color: var(--accent-primary); background: var(--accent-a10); color: var(--accent-primary); box-shadow: 0 0 0 1px var(--accent-a20); }
@@ -200,7 +200,7 @@
 .library-cat-btn.active  {
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.22);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.20), inset 0 1px 0 var(--color-inset-highlight);
   color: var(--accent-primary);
 }
 .library-cat-btn.active .library-cat-icon  { color: var(--accent-primary); }
@@ -221,7 +221,7 @@
 .library-doc-item.active  {
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 var(--color-inset-highlight);
 }
 .library-doc-item.active .library-doc-name,
 .library-doc-item.active .library-doc-icon  { color: var(--accent-primary); }
@@ -869,7 +869,7 @@
   border: 0.7px solid rgba(216, 216, 216, 1);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
-  box-shadow: 0 -4px 22px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--color-popover-shadow);
   padding: 14px 18px 16px;
   display: flex;
   flex-direction: column;

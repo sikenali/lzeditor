@@ -309,7 +309,7 @@
   background: rgba(255, 255, 255, 0.45);
   border-color: rgba(204, 204, 204, 0.55);
   color: rgba(51, 51, 51, 0.95);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--color-popover-shadow);
 }
 .nav-float-btn:active  { transform: translateY(0) scale(0.96); }
 @keyframes main-version-in  {

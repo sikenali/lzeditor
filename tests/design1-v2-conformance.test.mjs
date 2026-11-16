@@ -86,3 +86,25 @@ assert.match(welcomeCss4, /\.welcome-recent-item:focus-visible\s*\{[^}]*outline:
 const selectFocus = globalsCss4.match(/select:focus-visible\s*\{[^}]*\}/)?.[0] || ''
 assert.match(selectFocus, /border-color:\s*var\(--accent-primary\)/, 'select focus 边框必须保持主色')
 assert.match(selectFocus, /box-shadow:\s*0 0 0 3px var\(--accent-a10\)/, 'select focus 外发光必须保持主色')
+
+// §5.5 悬浮表面：阴影/内描高光必须主题感知（Task 5）
+const layout = read('src/styles/layout.css')
+const panels = read('src/styles/panels.css')
+const floating = read('src/styles/floating.css')
+// 悬浮表面阴影走主题感知 token
+for (const [file, sel] of [[layout, /\.toolbar-submenu\s*\{/],[layout, /\.sidebar-outline\s*\{/],[layout, /\.sidebar-preview-wrapper\s*\{/],[panels, /\.search-panel-inner\s*\{/],[floating, /\.ai-panel\s*\{/],[floating, /\.slash-command\s*\{/]]) {
+  const block = file.match(new RegExp(sel.source + '[^}]*\\}'))?.[0] || ''
+  assert.match(block, /var\(--color-popover-shadow\)/, `${sel} 悬浮表面阴影必须 var(--color-popover-shadow)`)
+}
+// 历史面板是内联布局面板（.history-main-panel，flex:1），非弹框，不参与本规范 —— 断言它不被误改
+assert.match(panels, /\.history-main-panel\s*\{[\s\S]{0,200}?flex:\s*1/, '历史面板保持内联全高面板（非弹框）')
+// 内描高光走主题感知（代表性表面，spec §5.5 显式清单）
+// 用 [^{}]*\{[^}]*var(...) 匹配「该选择器（或其状态变体）的某块含高亮」——
+// 因为 .format-card.active 在 panels.css 出现两次（:9 是 1px accent 环、:109 才是 inset 高亮），
+// .outline-jump-btn 只有 :hover（:370）有 inset 高亮（base 无 shadow），不能用首匹配。
+for (const sel of [/\.insert-nav-item\s*\{/, /\.format-card\.active\s*\{/, /\.library-cat-btn\.active\s*\{/, /\.outline-jump-btn\s*\{/]) {
+  const src = (sel.source.includes('outline') ? layout : panels)
+  // sel.source 里的 \s*\{ 是字面字符，须按字面剥离，否则会残留孤立反斜杠把 [^{}]* 转义坏
+  const b = src.match(new RegExp(sel.source.replace(/\\s\*\\\{$/, '') + '[^{}]*\\{[^}]*var\\(--color-inset-highlight\\)'))?.[0] || ''
+  assert.ok(b.length > 0, `${sel} 必须有一个块含 var(--color-inset-highlight)`)
+}

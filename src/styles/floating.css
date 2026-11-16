@@ -11,7 +11,7 @@
   background: var(--color-bg-card);
   border: 0.7px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--color-popover-shadow);
   overflow: hidden;
 }
 
@@ -125,7 +125,7 @@
   background: var(--color-bg-card);
   border: 0.7px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--color-popover-shadow);
   font-family: var(--font-family);
   z-index: var(--z-popover);
 }
