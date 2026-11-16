@@ -137,3 +137,10 @@ assert.match(toolbarRule, /app-region:\s*drag/, '顶栏 Electron 无边框窗口
 assert.match(toolbarRule, /border-bottom:\s*0\.7px/, '顶栏底部必须 0.7px 分割线（§2.1）')
 const footerRule = layout.match(/\.app-footer\s*\{[^}]*height:\s*58px[^}]*\}/)?.[0] || ''
 assert.match(footerRule, /rgba\(var\(--bg-rgb\),\s*0\.75\)/, '页脚背景必须毛玻璃 rgba(var(--bg-rgb),0.75)（§2.1）')
+
+// ── 方案 A：Web 应用内容居中限宽 1280（窗口观感），高度仍铺满视口 ──
+const appCss = read('src/styles/app.css')
+const appRule = appCss.match(/\.app\s*\{[^}]*\}/)?.[0] || ''
+assert.match(appRule, /max-width:\s*1280px/, '.app 必须 max-width:1280px（窗口观感）')
+assert.match(appRule, /margin:\s*0 auto/, '.app 必须水平居中')
+assert.match(appRule, /height:\s*100vh/, '.app 高度仍铺满视口')
