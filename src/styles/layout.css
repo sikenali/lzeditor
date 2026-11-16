@@ -630,7 +630,7 @@
   background: var(--accent-a10);
   border-color: var(--accent-a30);
   color: var(--accent-primary);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15), inset 0 1px 0 var(--color-inset-highlight);
 }
 .sidebar-library .library-doc-item  {
   display: flex;

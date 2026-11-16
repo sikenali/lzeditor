@@ -281,7 +281,7 @@
   border-color: var(--glass-border);
   background: var(--glass-bg);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.10);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10), inset 0 1px 0 var(--color-inset-highlight);
   transition:
     border-color var(--t-base) var(--ease),
     background var(--t-base) var(--ease),

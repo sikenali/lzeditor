@@ -92,10 +92,14 @@ const layout = read('src/styles/layout.css')
 const panels = read('src/styles/panels.css')
 const floating = read('src/styles/floating.css')
 // 悬浮表面阴影走主题感知 token
-for (const [file, sel] of [[layout, /\.toolbar-submenu\s*\{/],[layout, /\.sidebar-outline\s*\{/],[layout, /\.sidebar-preview-wrapper\s*\{/],[panels, /\.search-panel-inner\s*\{/],[floating, /\.ai-panel\s*\{/],[floating, /\.slash-command\s*\{/]]) {
+for (const [file, sel] of [[layout, /\.toolbar-submenu\s*\{/],[layout, /\.sidebar-outline\s*\{/],[layout, /\.sidebar-preview-wrapper\s*\{/],[floating, /\.ai-panel\s*\{/],[floating, /\.slash-command\s*\{/]]) {
   const block = file.match(new RegExp(sel.source + '[^}]*\\}'))?.[0] || ''
   assert.match(block, /var\(--color-popover-shadow\)/, `${sel} 悬浮表面阴影必须 var(--color-popover-shadow)`)
 }
+// .search-panel-inner 生效阴影在 panels.css:1192（var(--t-sh-5)，主题感知迁移 token）；
+// panels.css:872 的 var(--color-popover-shadow) 声明被其覆盖，是故意保留的死声明。
+const searchInnerLive = panels.match(/\.search-panel-inner\s*\{[\s\S]{0,200}?box-shadow:\s*var\(--t-sh-5\)/)?.[0] || ''
+assert.ok(searchInnerLive.length > 0, '.search-panel-inner 生效阴影必须是 var(--t-sh-5)（主题感知迁移 token）')
 // 历史面板是内联布局面板（.history-main-panel，flex:1），非弹框，不参与本规范 —— 断言它不被误改
 assert.match(panels, /\.history-main-panel\s*\{[\s\S]{0,200}?flex:\s*1/, '历史面板保持内联全高面板（非弹框）')
 // 内描高光走主题感知（代表性表面，spec §5.5 显式清单）
@@ -108,3 +112,12 @@ for (const sel of [/\.insert-nav-item\s*\{/, /\.format-card\.active\s*\{/, /\.li
   const b = src.match(new RegExp(sel.source.replace(/\\s\*\\\{$/, '') + '[^{}]*\\{[^}]*var\\(--color-inset-highlight\\)'))?.[0] || ''
   assert.ok(b.length > 0, `${sel} 必须有一个块含 var(--color-inset-highlight)`)
 }
+
+// §5.5 深色主题内描高光：--t-sh-13/14/15 必须走 var(--color-inset-highlight)，不得残留白色 inset
+for (const k of ['--t-sh-13','--t-sh-14','--t-sh-15']) {
+  assert.match(block('dark'), new RegExp(`'${k}':\\s*'[^']*var\\(--color-inset-highlight\\)`), `${k} 深色内描高光必须 var(--color-inset-highlight)`)
+}
+assert.doesNotMatch(block('dark'), /'--t-sh-1[345]':\s*'[^']*rgba\(255,\s*255,\s*255/, '深色 --t-sh-13/14/15 不得残留白色内描高光')
+// 两条 live 规则（layout.css:633 / panels.css:284）的内描高光同样主题感知
+assert.match(layout, /\.sidebar-library \.library-cat-btn\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, 'library-cat-btn.active 内描高光必须 var(--color-inset-highlight)')
+assert.match(panels, /\.export-body-redesigned \.insert-nav-item[^{]*\{[^}]*var\(--color-inset-highlight\)/, 'export-body-redesigned .insert-nav-item 内描高光必须 var(--color-inset-highlight)')
