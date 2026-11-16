@@ -469,14 +469,13 @@ test('UiModal 打开锁 body 滚动，卸载后还原之前的值', async () => 
   assert.equal(document.body.style.overflow, 'scroll', '必须还原成打开前的值而不是清空')
 })
 
-test('UiModal §8.1 尺寸：设置中心 92vw/92vh + 1400px 上限、圆角 18、溢出收 hidden', async () => {
-  // 用 SettingsDialog 的真实取值，而不是自造参数
-  await render(el(UiModal, { open: true, onClose: () => {}, width: '92vw', height: '92vh', maxWidth: 1400, radius: 18 }, 'x'))
+test('UiModal §8.1 尺寸：92vw/92vh + 1280px 上限、圆角 12、溢出收 hidden', async () => {
+  await render(el(UiModal, { open: true, onClose: () => {}, width: '92vw', height: '92vh', maxWidth: 1280, radius: 12 }, 'x'))
   // 读 React 实际收到的 style prop：happy-dom 不认 min()/calc()，会把整条 style 丢掉
   const m = document.querySelector('.ui-modal')
   const style = reactProps(m).style
-  assert.equal(style.width, 'min(92vw, 1400px)', '必须是 min(宽度, 上限)，§8.1 设置中心 1400px')
-  assert.equal(style.borderRadius, 18, '圆角必须 18px')
+  assert.equal(style.width, 'min(92vw, 1280px)', '必须是 min(宽度, 上限)，§8.1 弹框 1280px 上限')
+  assert.equal(style.borderRadius, 12, '圆角必须 12px')
   assert.equal(style.height, 'min(92vh, calc(100vh - 40px))', '§8.1 高度 92vh 且带上限')
   assert.equal(style.maxHeight, 'none')
   assert.equal(style.overflow, 'hidden', '有固定高度必须收成 hidden，否则内容会撑破圆角')
@@ -641,8 +640,8 @@ test('§8.1 遮罩 rgba(0,0,0,0.4)；§10.2 要求深色下仍是 0.4 以上', (
   assert.match(uiCss, /\.ui-modal-overlay\s*\{[\s\S]{0,300}?background:\s*rgba\(0,\s*0,\s*0,\s*0\.4\)/)
 })
 
-test('§8.1 弹框阴影 0 12px 40px', () => {
-  assert.match(uiCss, /box-shadow: 0 12px 40px rgba\(0,\s*0,\s*0,\s*0\.2\)/)
+test('§8.1 弹框阴影主题感知 var(--color-modal-shadow)', () => {
+  assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,300}?box-shadow:\s*var\(--color-modal-shadow\)/)
 })
 
 // ════════════════════════ 设置持久化闭环 ════════════════════════

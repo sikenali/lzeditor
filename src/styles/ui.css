@@ -25,7 +25,7 @@
    flex-direction: column;
    background: var(--color-bg-secondary);
    border: 0.7px solid var(--color-border-soft);
-   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+   box-shadow: var(--color-modal-shadow);
    animation: ui-pop-in var(--t-slow) var(--ease) forwards;
  }
 @keyframes ui-pop-in  {

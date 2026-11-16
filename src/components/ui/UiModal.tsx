@@ -26,7 +26,7 @@ export interface UiModalProps {
 
 export const UiModal: React.FC<UiModalProps> = ({
   open, onClose, icon, title, subtitle, width = 600, height,
-  closeOnOverlay = true, bodyPadding = true, children, footer, radius = 18,
+  closeOnOverlay = true, bodyPadding = true, children, footer, radius = 12,
   maxWidth, shadow, className,
 }) => {
   useEffect(() => {

@@ -27,3 +27,9 @@ assert.match(block('parchment'), /'--color-modal-shadow':\s*'0 8px 40px rgba\(0,
 assert.match(block('dark'), /'--color-modal-shadow':\s*'0 8px 48px rgba\(0,\s*0,\s*0,\s*0\.55\),\s*inset 0 1px 0 rgba\(0,\s*212,\s*170,\s*0\.08\)'/, '深色弹框阴影必须深空底 + 青绿内发光（§8.1）')
 // system-blue 常量 #007AFF（§7）
 assert.match(tokens, /--color-system-blue:\s*#007AFF/)
+
+// §8.1 弹框：UiModal 默认圆角 12px，阴影必须走主题感知 token
+const modal = read('src/components/ui/UiModal.tsx')
+assert.match(modal, /radius = 12/, 'UiModal 默认圆角必须 12px（§8.1）')
+const uiCss = read('src/styles/ui.css')
+assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-modal-shadow\)/, '弹框阴影必须主题感知 var(--color-modal-shadow)（§8.1）')
