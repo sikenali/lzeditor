@@ -8,10 +8,12 @@ import { readFileSync } from 'node:fs'
 // 修复：右栏外层条件整体排除 appMode==='history'，history 由中心内容独占渲染。
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const app = read('src/App.tsx')
+const modeLayout = read('src/utils/modeLayout.ts')
 
 // ── 右栏外层条件必须整体排除 history（否则 showRightPanel 短路仍会渲染右栏）──
+// 排除逻辑现在集中在 modeLayout.shouldShowRightPanel
 assert.match(
-  app,
+  modeLayout,
   /appMode !== 'read'[\s\S]{0,40}appMode !== 'history'/,
   '右栏外层条件必须整体排除 appMode===\'history\'（history 由中心内容独占，右栏不渲染）',
 )

@@ -20,11 +20,13 @@ assert.doesNotMatch(codeEditor, /<textarea/, 'CM6 编辑器不套裸 textarea')
 assert.match(codeEditor, /createCM6EditorFacade/, 'CodeEditor 必须经 CM6 facade 构建')
 assert.match(codeEditor, /styles\/code-editor\.css/, 'code-editor.css 必须被引入')
 
-// ── 代码模式不占右栏：showRightPreview 显式排除 code/history/style/read ──
-assert.match(app, /showRightPreview = showPreview && appMode !== 'code'/, '代码模式自己的右栏不占 App 的右面板')
-assert.match(app, /appMode !== 'history'/, '历史模式不给右栏留位')
-assert.match(app, /appMode !== 'style'/, '排版模式不给右栏留位')
-assert.match(app, /appMode !== 'read'/, '阅读模式不给右栏留位')
+// ── 代码模式不占右栏：shouldShowRightPreview 显式排除 code/history/style/read（逻辑在 modeLayout.ts）──
+const modeLayout = read('src/utils/modeLayout.ts')
+assert.match(modeLayout, /appMode !== 'code'/, '代码模式自己的右栏不占 App 的右面板')
+assert.match(modeLayout, /appMode !== 'history'/, '历史模式不给右栏留位')
+assert.match(modeLayout, /appMode !== 'style'/, '排版模式不给右栏留位')
+assert.match(modeLayout, /appMode !== 'read'/, '阅读模式不给右栏留位')
+assert.match(app, /shouldShowRightPreview\(/, 'App 必须经 shouldShowRightPreview 派生预览可见性')
 
 // ── 预览排版共用 ──
 assert.match(sidebarPreview, /className="sidebar-preview preview-pane"/, '侧栏预览要挂 preview-pane')

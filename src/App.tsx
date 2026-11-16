@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react'
 import { mdToHtml } from './utils/mdToHtml'
+import { shouldShowRightPreview, shouldShowRightPanel } from './utils/modeLayout'
 import { countLineDiff, formatTimeTs } from './utils/historyTimeline'
 import { nextVersionId } from './utils/versionId'
 import { isVersionSuppressed } from './utils/versionCapture'
@@ -84,7 +85,6 @@ function App() {
   const showOutline = useEditorStore(s => s.showOutline)
   const showPreview = useEditorStore(s => s.showPreview)
   const showLibrary = useEditorStore(s => s.showLibrary)
-  const showRightPanel = useEditorStore(s => s.showRightPanel)
   const showWelcome = useEditorStore(s => s.showWelcome)
   const activeDocId = useEditorStore(s => s.activeDocId)
   const docsMd = useEditorStore(s => s.docsMd || {})
@@ -462,8 +462,8 @@ function App() {
   })()
 
   // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容
-  const showRightPreview = showPreview && appMode !== 'code' && appMode !== 'history'
-    && appMode !== 'style' && appMode !== 'read'
+  // WYSIWYG 模式本身就是整篇渲染视图，再显示预览会同一篇文档渲染两次，故一并排除（见 modeLayout）。
+  const showRightPreview = shouldShowRightPreview({ showPreview, appMode, wysiwyg })
 
   // ── 顶部布局 ──
   const topLayout = (
@@ -513,8 +513,10 @@ function App() {
 
       {/* 右面板：单面板互斥，样式 > 预览 > 文档库。阅读/历史模式由中心内容独占，不留右栏。
           历史模式下 LeftNav 会把 showRightPanel 置 true，若右栏条件不整体排除 history，
-          会与中心内容的 history 分支重复渲染同一份 HistoryPanel。 */}
-      {(appMode !== 'read' && appMode !== 'history') && (showRightPanel || showRightPreview || showLibrary || appMode === 'style') && (
+          会与中心内容的 history 分支重复渲染同一份 HistoryPanel。
+          showRightPanel 是只在 LeftNav 进入样式/历史时置 true 的冗余状态，其它入口退出
+          样式后残留 true 会渲染空面板，故不再参与条件（见 modeLayout.shouldShowRightPanel）。 */}
+      {shouldShowRightPanel({ appMode, showRightPreview, showLibrary }) && (
         <div className={`app-right-panel${appMode === 'style' ? ' app-right-panel--style' : ''}${appMode === 'style' && stylePanelAnimating ? ` ${stylePanelAnimating}` : ''}`}>
           {appMode === 'style' ? <div className="style-mode-stack"><StyleMainPanel /></div>
           : showRightPreview ? <SidebarPreview />

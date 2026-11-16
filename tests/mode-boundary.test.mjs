@@ -7,6 +7,7 @@ const actions = read('src/components/layout/editorActions.tsx')
 const app = read('src/App.tsx')
 const sidebarPreview = read('src/components/sidebar/SidebarPreview.tsx')
 const appCss = read('src/styles/app.css')
+const modeLayout = read('src/utils/modeLayout.ts')
 
 // ── 模式菜单四项：预览/代码/排版/阅读 ──
 assert.match(actions, /label: '预览模式', action: 'preview'/, '模式菜单必须有预览模式')
@@ -24,7 +25,8 @@ assert.match(sidebarPreview, /useScrollSync/, '分屏预览必须接滚动同步
 // ── 排版模式：左源码 + 右栏样式面板，样式面板不独占内容区 ──
 assert.match(app, /class="style-mode-stack">|className="style-mode-stack"/, '排版模式必须把样式面板装进右栏')
 assert.match(app, /app-right-panel--style/, '排版模式右栏必须有专属宽度')
-assert.match(app, /appMode !== 'code'/, '代码模式必须不给右栏留位')
+// 代码/历史/阅读不给右栏留位的排除逻辑集中在 modeLayout.shouldShowRightPreview/shouldShowRightPanel
+assert.match(modeLayout, /appMode !== 'code'/, '代码模式必须不给右栏留位')
 
 // 两种导航布局下点「样式」都得有面板承载：只把预览藏掉而面板不出现，用户看到的就是点了没反应
 const topLayout = app.match(/const topLayout = \([\s\S]*?<\/>\n  \)/)?.[0] ?? ''
@@ -44,7 +46,7 @@ assert.doesNotMatch(appCss, /cm6-editor-container|--lz-/, 'CM6 死 CSS 与 --lz-
 const readMode = read('src/components/editor/ReadMode.tsx')
 assert.match(modeBlock, /action === 'read'/, '模式动作必须能切进阅读模式')
 assert.match(app, /<ReadMode \/>/, '阅读模式必须整块替换编辑区')
-assert.match(app, /appMode !== 'read'/, '阅读模式不给右栏留位')
+assert.match(modeLayout, /appMode !== 'read'/, '阅读模式不给右栏留位')
 assert.match(readMode, /paginate\(/, '阅读模式必须接分页引擎')
 assert.match(readMode, /pageOfLine\(/, '目录跳转必须靠行号定位页码')
 assert.match(readMode, /OWN_ACTION/, '点击翻页必须放过链接和按钮')
