@@ -257,6 +257,7 @@ git commit -m "feat(design1-v2): settings nav 180px/44px system-blue active + 12
 **Files:**
 - Modify: `src/styles/ui.css:381-384`（Global focus-visible 环 4px `var(--accent-a60)`→`var(--color-focus-ring)`）
 - Modify: `src/styles/layout.css`（`.toolbar-submenu-item:focus-visible`、`.outline-jump-btn:focus-visible` 等外圈环色→`var(--color-focus-ring)`）
+- Modify: `src/styles/globals.css:34-37,3345-3347`、`src/styles/code-mode.css:104-107`、`src/styles/welcome-screen.css:84-87,220-223`（键盘导航环→`var(--color-focus-ring)`；**保持** `globals.css:67-71` `select:focus-visible` 主色边框+外发光为表单控件 focus）
 - Test: `tests/design1-v2-conformance.test.mjs`（追加焦点环断言）
 
 **Interfaces:**
