@@ -380,7 +380,7 @@
 /* ── Global focus-visible ring for all Ui* controls ── */
 .ui-btn:focus-visible, .ui-switch:focus-visible, .ui-modal-close:focus-visible, .ui-input-clear:focus-visible, .ui-check:focus-visible, .ui-select-card:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-bg-white), 0 0 0 4px var(--accent-a60);
+  box-shadow: 0 0 0 2px var(--color-bg-white), 0 0 0 4px var(--color-focus-ring);
 }
 
 /* DESIGN.md §10.2：focus 主色边框 + 外发光 */

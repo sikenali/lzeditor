@@ -51,3 +51,18 @@ assert.match(navBefore, /var\(--color-system-blue\)/, '左条必须系统蓝')
 // 激活态文字/图标颜色在各自子规则（.settings-nav-row.active .settings-nav-ico/.txt），单独断言
 assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须系统蓝')
 assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须系统蓝')
+
+// §8.2/§10.2 键盘焦点环统一系统蓝，但输入框 focus 边框与外发光保持主色
+const uiCss4 = read('src/styles/ui.css')
+const ring = uiCss4.match(/Global focus-visible[\s\S]*?\n\}/)?.[0] || ''
+assert.match(ring, /var\(--color-focus-ring\)/, '全局 focus-visible 环必须用 var(--color-focus-ring)（系统蓝）')
+assert.match(ring, /box-shadow:\s*0 0 0 2px[\s\S]{0,60}0 0 0 4px/, '环必须保留 2px 白内圈 + 4px 外圈结构')
+// 输入框 focus 外发光保持主色（§8.2/§10.2），不得被系统蓝带走
+assert.match(uiCss4, /\.ui-input:focus-within,\s*\.ui-select-trigger:focus[\s\S]{0,300}?box-shadow:\s*0 0 0 3px color-mix/, '输入框 focus 外发光必须保持主色 color-mix（§8.2）')
+
+// layout.css 其余键盘焦点环同样系统蓝（toolbar 子菜单 / 侧栏大纲跳转）
+const layoutCss4 = read('src/styles/layout.css')
+assert.match(layoutCss4, /\.toolbar-submenu-item:focus-visible[^{]*\{[^}]*box-shadow:\s*0 0 0 2px var\(--color-focus-ring\)/, 'toolbar 子菜单键盘焦点环必须系统蓝')
+const jumpRing = layoutCss4.match(/\.sidebar-outline \.outline-jump-btn:focus-visible\s*\{[^}]*\}/)?.[0] || ''
+assert.match(jumpRing, /box-shadow:\s*0 0 0 2px var\(--color-focus-ring\)/, '大纲跳转按钮键盘焦点环必须系统蓝')
+assert.match(jumpRing, /0 2px 8px rgba\(0,\s*0,\s*0,\s*0\.10\)/, '大纲跳转按钮环需保留 drop shadow（非环）')
