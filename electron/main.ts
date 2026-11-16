@@ -9,7 +9,7 @@ let mainWindow: BrowserWindow | null = null
 // 允许被 file:read 读取的路径。只在「操作系统文件关联」这条链路上发放授权——
 // 那是用户主动双击 .md 文件触发的，路径由 OS 给出。渲染进程拿不到别的路径读取能力：
 // 没有它，任何从预览里逃出的脚本都能读任意本地文件（readLocalFile('~/.ssh/id_rsa')）。
-// 注：UI 里没有自由输入路径的入口，FilePanel 只提供模板，所以不需要对话框发放授权。
+// 注：UI 里没有自由输入路径的入口（文件打开走系统选择器，路径由 OS 给出），所以不需要对话框发放授权。
 const allowedPaths = new Set<string>()
 
 const ALLOWED_FILE_EXT = ['.md', '.markdown', '.txt']

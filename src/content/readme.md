@@ -77,8 +77,6 @@ lzeditor/
 │   │   │   ├── ExportDialog.tsx     # 导出面板
 │   │   │   ├── HistoryPanel.tsx     # 历史版本面板
 │   │   │   ├── LibraryPanel.tsx     # 文档库面板
-│   │   │   ├── FilePanel.tsx        # 文件面板
-│   │   │   ├── PreviewPanel.tsx     # 预览面板
 │   │   │   └── ReadMode.tsx         # 阅读模式
 │   │   │
 │   │   └── sidebar/              # 侧边栏

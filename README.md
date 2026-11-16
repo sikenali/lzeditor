@@ -83,8 +83,6 @@ lzeditor/
 │   │   │   ├── HistoryPanel.tsx     # 历史版本面板
 │   │   │   ├── LibraryPanel.tsx     # 文档库面板
 │   │   │   ├── LibraryTree.tsx      # 文档库树
-│   │   │   ├── FilePanel.tsx        # 文件面板
-│   │   │   ├── PreviewPanel.tsx     # 预览面板
 │   │   │   ├── SearchPanel.tsx      # 搜索面板
 │   │   │   ├── StyleMainPanel.tsx   # 样式面板
 │   │   │   ├── ImageDialog.tsx      # 图片
