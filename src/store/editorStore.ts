@@ -70,26 +70,6 @@ function markWelcomeSeen(set: (partial: any) => void): void {
  */
 const DEFAULT_DOCS: Array<CatalogEntry> = ([
   { id: 'readme',                   title: 'README.md',            path: 'Default',         libraryId: 'default' },
-  { id: 'a01-特色功能',           title: 'A01 特色功能',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a02-文档库和文档',       title: 'A02 文档库和文档',     path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a03-基本格式',           title: 'A03 基本格式',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a04-自动完成',           title: 'A04 自动完成',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a05-快捷键',             title: 'A05 快捷键',           path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a06-大纲视图',           title: 'A06 大纲视图',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a07-即时预览和阅读模式', title: 'A07 即时预览与阅读模式', path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a08-预览视图',           title: 'A08 预览视图',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a09-历史记录',           title: 'A09 历史记录',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'a10-拼写检查',           title: 'A10 拼写检查',         path: '使用手册·基础篇', libraryId: 'manual', system: true },
-  { id: 'b01-链接',               title: 'B01 链接',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b02-图像',               title: 'B02 图像',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b03-脚注',               title: 'B03 脚注',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b04-任务列表',           title: 'B04 任务列表',         path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b05-表格',               title: 'B05 表格',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b06-图表',               title: 'B06 图表',             path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b07-代码块',             title: 'B07 代码块',           path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b08-html代码',           title: 'B08 HTML 代码',        path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b09-LaTeX数学公式',      title: 'B09 LaTeX 数学公式',   path: '使用手册·高级篇', libraryId: 'manual', system: true },
-  { id: 'b10-高级格式',           title: 'B10 高级格式',         path: '使用手册·高级篇', libraryId: 'manual', system: true },
 ] as Array<CatalogEntry>).map(d => ({ ...d, builtin: true }))
 
 /** 启动时从 localStorage 恢复文档库；没有存档就回落到出厂列表。 */

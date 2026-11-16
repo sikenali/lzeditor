@@ -1,7 +1,7 @@
 import React from 'react'
 import { useEditorStore } from '../../../store/editorStore'
 
-const MANUAL_DOC_ID = 'a01-特色功能'
+const MANUAL_DOC_ID = 'readme'
 import { APP_VERSION } from '../../../shared/version'
 
 const VERSION = APP_VERSION
@@ -9,7 +9,7 @@ const VERSION = APP_VERSION
 export const AboutSettingsTab: React.FC = () => {
   const year = new Date().getFullYear()
 
-  // 「文档」在编辑器内打开内置使用手册的第一篇
+  // 「文档」在编辑器内打开 README.md
   const handleOpenManual = () => {
     const s = useEditorStore.getState()
     if (s.docs.some((d: any) => d.id === MANUAL_DOC_ID)) s.switchDoc(MANUAL_DOC_ID)
