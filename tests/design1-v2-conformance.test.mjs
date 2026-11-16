@@ -33,3 +33,21 @@ const modal = read('src/components/ui/UiModal.tsx')
 assert.match(modal, /radius = 12/, 'UiModal 默认圆角必须 12px（§8.1）')
 const uiCss = read('src/styles/ui.css')
 assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-modal-shadow\)/, '弹框阴影必须主题感知 var(--color-modal-shadow)（§8.1）')
+
+// §5.1/§5.3 设置中心：1280px 上限，导航 180px/44px，系统蓝激活
+const settings = read('src/components/panels/SettingsDialog.tsx')
+assert.match(settings, /PANEL_MAX_WIDTH = 1280/, '设置弹框最大宽必须 1280px（§5.1）')
+const sdlg = read('src/styles/settings-dialog.css')
+const navList = sdlg.match(/\.settings-nav-list\s*\{[^}]*\}/)?.[0] || ''
+assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3）')
+const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
+assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
+const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
+assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须系统蓝浅底')
+// 3px 左条是独立伪元素规则（.settings-nav-row.active::before），不能嵌在 .active 块里，单独断言
+const navBefore = sdlg.match(/\.settings-nav-row\.active::before\s*\{[^}]*\}/)?.[0] || ''
+assert.match(navBefore, /width:\s*3px/, '激活态必须 3px 左条（::before）')
+assert.match(navBefore, /var\(--color-system-blue\)/, '左条必须系统蓝')
+// 激活态文字/图标颜色在各自子规则（.settings-nav-row.active .settings-nav-ico/.txt），单独断言
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须系统蓝')
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须系统蓝')

@@ -17,7 +17,7 @@ export interface UiModalProps {
   children: React.ReactNode
   footer?: React.ReactNode
   radius?: number
-  /** 宽度上限（px）。设置中心用 min(92vw, 1400px) */
+  /** 宽度上限（px）。设置中心用 min(92vw, 1280px) */
   maxWidth?: number
   /** 覆盖默认阴影，例如设置中心用更浅的 0 8px 40px */
   shadow?: string

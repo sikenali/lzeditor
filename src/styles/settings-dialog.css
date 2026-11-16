@@ -596,7 +596,7 @@
 
 /* ═══════════════════════════════════════════
    Settings panel shell — DESIGN.md §3 / bid-maker SettingsModal.vue
-   固定长宽：1320 × 86vh（上限 900px）。左导航 240px 独立滚动，
+   固定长宽：92vw × 92vh（宽上限 1280px）。左导航 180px 独立滚动，
    右侧内容区 flex:1 独立滚动 —— 切标签时窗口尺寸恒定。
 ══════════════════════════════════════════════ */
 .settings-panel-shell  {
@@ -605,47 +605,59 @@
   display: flex;
   gap: 20px;
   align-items: stretch;
-  padding: 8px 28px 24px;
+  padding: 8px 32px 24px;
 }
 
 /* 导航侧栏 */
 .settings-nav-list  {
-  width: 240px;
+  width: 180px;
   flex-shrink: 0;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--color-bg-white);
   border: 0.7px solid var(--color-border-soft);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .settings-nav-row  {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
-  height: 52px;
-  padding: 0 20px;
+  height: 44px;
+  padding: 0 12px;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
   text-align: left;
   font-family: inherit;
   flex-shrink: 0;
+  position: relative;
   transition: background-color var(--t-base);
 }
 .settings-nav-row:hover  { background: var(--color-bg-secondary); }
-.settings-nav-row.active  { background: var(--color-primary-soft); }
+.settings-nav-row.active  { background: var(--color-system-blue-soft); }
+.settings-nav-row.active::before  {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--color-system-blue);
+}
 
 .settings-nav-ico  {
-  width: 22px;
-  font-size: 20px;
+  width: 20px;
+  font-size: 18px;
   color: var(--color-text-body);
   display: flex;
   align-items: center;
@@ -653,18 +665,18 @@
   flex-shrink: 0;
   transition: color var(--t-base) var(--ease);
 }
-.settings-nav-row.active .settings-nav-ico  { color: var(--color-primary); }
+.settings-nav-row.active .settings-nav-ico  { color: var(--color-system-blue); }
 
 .settings-nav-txt  {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--color-text-body);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .settings-nav-row.active .settings-nav-txt  {
-  color: var(--color-primary);
-  font-weight: 500;
+  color: var(--color-system-blue);
+  font-weight: 600;
 }
 
 /* 内容区：占满剩余宽度并独立滚动 */

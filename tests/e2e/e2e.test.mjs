@@ -134,8 +134,8 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
       mask: ov ? getComputedStyle(ov).backgroundColor : '',
     }
   })
-  check('§8.1 尺寸 = min(92vw,1400px) × min(92vh,calc(100vh-40px))',
-    Math.abs(ms.w - Math.min(1440 * 0.92, 1400)) < 2 && Math.abs(ms.h - Math.min(900 * 0.92, 860)) < 2,
+  check('§8.1 尺寸 = min(92vw,1280px) × min(92vh,calc(100vh-40px))',
+    Math.abs(ms.w - Math.min(1440 * 0.92, 1280)) < 2 && Math.abs(ms.h - Math.min(900 * 0.92, 860)) < 2,
     `${ms.w}px × ${ms.h}px`)
   check('§8.1 圆角 12px', ms.r === 12, `实测 ${ms.r}px`)
   check('§8.1 遮罩 rgba(0,0,0,0.4)', /rgba\(0,\s*0,\s*0,\s*0\.4\)/.test(ms.mask), ms.mask)
