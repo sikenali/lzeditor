@@ -17,7 +17,6 @@ type FormatCommand = string
 
 export const NEW_ITEMS: MenuItem[] = [
   { icon: 'ri-file-add-line', label: '新建文档', action: 'new' },
-  { icon: 'ri-folder-open-line', label: '打开文件 / 模板…', action: 'open' },
   { icon: 'ri-folder-line', label: '打开文件夹…', action: 'openFolder' },
 ]
 
@@ -303,8 +302,6 @@ export function useEditorActions() {
     useEditorStore.getState().setLastEditTime(Date.now())
   }, [createDoc])
 
-  const openFileDialog = useCallback(() => useEditorStore.getState().setOpenPanel('file'), [])
-
   /** 打开文件夹并批量导入其中的 Markdown 文件（快捷键 Ctrl/⌘+Shift+O）。 */
   const openFolderDialog = useCallback(async () => {
     const files = await pickFolderFiles()
@@ -314,7 +311,7 @@ export function useEditorActions() {
   // WYSIWYG 模式状态：Toolbar/LeftNav 据此禁用需要 facade 的命令型入口
   const wysiwyg = useEditorStore((s: any) => s.wysiwyg)
 
-  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog, wysiwyg }
+  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog, wysiwyg }
 }
 
 /** 飞出菜单。align='right' 贴触发器右侧（左侧 rail 用），'below' 贴下方（顶栏用）。 */

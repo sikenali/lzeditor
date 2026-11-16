@@ -19,7 +19,7 @@ for (const d of insertDialogs) {
   assert.match(src, /from '\.\.\/ui'/, `${d} must import from the ui barrel`)
 }
 
-const panelDialogs = ['ExportDialog','HistoryPanel','LibraryPanel','FilePanel','SearchPanel']
+const panelDialogs = ['ExportDialog','HistoryPanel','LibraryPanel','SearchPanel']
 for (const d of panelDialogs) {
   const src = read(`src/components/panels/${d}.tsx`)
   assert.doesNotMatch(src, /UnifiedDialog|PanelContainer|@heroui\/react/, `${d} must not use legacy dialog/HeroUI`)
@@ -31,7 +31,7 @@ for (const f of ['src/components/editor/AIPanel.tsx','src/components/layout/Tool
 }
 
 // ── §8.1 统一弹框：每个弹框都必须渲染 <UiModal>，不许再冒出别的遮罩弹层 ──
-const MODALS = ['SettingsDialog','ExportDialog','ImageDialog','LinkDialog','CodeDialog','FormulaDialog','ChartDialog','EmojiDialog','FilePanel','LibraryPanel','TableDropdown']
+const MODALS = ['SettingsDialog','ExportDialog','ImageDialog','LinkDialog','CodeDialog','FormulaDialog','ChartDialog','EmojiDialog','LibraryPanel','TableDropdown']
 for (const d of MODALS) {
   const src = read(`src/components/panels/${d}.tsx`)
   assert.match(src, /<UiModal/, `${d} 必须渲染 <UiModal>（§8.1 统一弹框）`)

@@ -23,7 +23,7 @@ export const LeftNav: React.FC = () => {
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
   const flyout = useFlyout()
-  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFileDialog, openFolderDialog, wysiwyg } = useEditorActions()
+  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog, wysiwyg } = useEditorActions()
   const tableActive = useTableActive()
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
@@ -69,7 +69,6 @@ export const LeftNav: React.FC = () => {
     if (key === 'new') {
       if (action === 'new') newDocument()
       else if (action === 'openFolder') void openFolderDialog()
-      else openFileDialog()
     }
     else if (key === 'format') formatAction(action)
     else if (key === 'table') tableAction(action)

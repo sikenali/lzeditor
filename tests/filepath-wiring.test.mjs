@@ -4,7 +4,6 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const fp = read('src/utils/filePath.ts')
 const di = read('src/utils/docImport.ts')
 const panel = read('src/components/panels/LibraryPanel.tsx')
-const fpFile = read('src/components/panels/FilePanel.tsx')
 
 assert.match(fp, /getDiskPath/)
 assert.match(fp, /getPathForFile/)     // webUtils 桥优先
@@ -15,6 +14,5 @@ assert.match(di, /gitAuthorize/)
 assert.match(panel, /getDiskPath\(/)
 assert.match(panel, /openMarkdownDoc\(file\.name, text, file\.name\.replace\([^)]*\), disk\)/)
 assert.match(panel, /gitAuthorize/)
-assert.match(fpFile, /getDiskPath\(/)
 
 console.log('filepath wiring ok')

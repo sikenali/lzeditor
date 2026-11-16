@@ -51,7 +51,7 @@ export interface EditorStoreState {
   cursorPosition: { line: number; column: number }
   isPreview: boolean
   syncStatus: 'synced' | 'saving' | 'error'
-  openPanel: 'none' | 'library' | 'file' | 'history' | 'settings' | 'export'
+  openPanel: 'none' | 'library' | 'history' | 'settings' | 'export'
   insertPanel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart'
   panelOpen: boolean
    showOutline: boolean
@@ -83,7 +83,7 @@ export interface EditorStoreState {
   setDocHTML: (html: string) => void
   setPreview: (isPreview: boolean) => void
   setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
-  setOpenPanel: (panel: 'none' | 'library' | 'file' | 'history' | 'settings' | 'export') => void
+  setOpenPanel: (panel: 'none' | 'library' | 'history' | 'settings' | 'export') => void
   setInsertPanel: (panel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart') => void
    setShowOutline: (showOutline: boolean) => void
    setShowPreview: (showPreview: boolean) => void

@@ -9,7 +9,10 @@ const actions = read('src/components/layout/editorActions.tsx')
 // ── 不得再有「新建文件-模板」误导文案 ──
 assert.ok(!actions.includes('新建文件-模板'), '不得用「新建文件-模板」误导（点击实际打开文件对话框）')
 
-// ── 第 2 项 label 必须反映真实行为（打开文件/模板）──
-assert.match(actions, /label:\s*'打开文件\s*\/\s*模板…'|label:\s*'打开文件…'/, 'NEW_ITEMS 第 2 项 label 必须改为打开文件语义')
+// ── NEW_ITEMS 不再有「打开文件 / 模板…」，只剩 新建文档 / 打开文件夹 ──
+assert.ok(!actions.includes('打开文件 / 模板…'), '不得再有「打开文件 / 模板…」菜单项')
+assert.ok(!actions.includes("action: 'open'"), 'NEW_ITEMS 不得再有 open 动作（FilePanel 已删）')
+assert.match(actions, /label: '新建文档'/, 'NEW_ITEMS 仍保留「新建文档」')
+assert.match(actions, /label: '打开文件夹…'/, 'NEW_ITEMS 仍保留「打开文件夹…」')
 
 console.log('new menu label ok')

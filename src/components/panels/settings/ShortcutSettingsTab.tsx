@@ -18,7 +18,7 @@ function renderShortcutContent(tab: string) {
       <div className="settings-section-title"><span className="remix ri-file-list-line shortcut-section-icon"></span><span>文档操作</span></div>
       <div className="shortcut-list">
         {row('新建文档', `${mod}+N`)}
-        {row('打开文档', `${mod}+O`)}
+        {row('打开文件', `${mod}+O`)}
         {row('打开文件夹批量导入', `${mod}+${shift}+O`)}
         {row('自动保存（无需手动）', `${mod}+S`, '仅提示')}
         {row('导出文件', `${mod}+E`)}

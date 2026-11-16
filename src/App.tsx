@@ -19,7 +19,6 @@ import { README_CONTENT } from './components/editor/constants'
 import { ReadMode } from './components/editor/ReadMode'
 import { SearchPanel } from './components/panels/SearchPanel'
 import { LibraryPanel } from './components/panels/LibraryPanel'
-import { FilePanel } from './components/panels/FilePanel'
 import { SidebarOutline } from './components/sidebar/SidebarOutline'
 import { SidebarPreview } from './components/sidebar/SidebarPreview'
 import { ImageDialog } from './components/panels/ImageDialog'
@@ -39,7 +38,7 @@ import { useAIStore } from './store/aiStore'
 import { useTheme } from './hooks/useTheme'
 import { useTypographyOverrides } from './hooks/useTypographyOverrides'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
-import { pickFolderFiles, importFolderFiles } from './utils/docImport'
+import { pickFolderFiles, importFolderFiles, pickFile, importSingleFile } from './utils/docImport'
 import { buildTableMd } from './utils/tableMd'
 import { silentError } from './utils/silentError'
 import { toast } from './utils/toast'
@@ -191,7 +190,7 @@ function App() {
       } else if (key === 'o' && e.shiftKey) {
         e.preventDefault(); dismissWelcome(); void openFolderAndImport()
       } else if (key === 'o') {
-        e.preventDefault(); dismissWelcome(); es.setOpenPanel('file')
+        e.preventDefault(); dismissWelcome(); void pickFile().then(file => { if (file) importSingleFile(file) })
       } else if (key === 's') {
         e.preventDefault(); es.setLastEditTime(Date.now())
       } else if (key === 'e' && !e.altKey) {
@@ -230,7 +229,7 @@ function App() {
     const api = window.electronAPI
     // onMenu* 是 ipcRenderer.on 的包装，必须成对解绑，否则 StrictMode 重挂会叠出重复监听
     const onNew = () => { dismissWelcome(); useEditorStore.getState().createDoc('untitled.md') }
-    const onOpen = () => { dismissWelcome(); useEditorStore.getState().setOpenPanel('file') }
+    const onOpen = () => { dismissWelcome(); void pickFile().then(file => { if (file) importSingleFile(file) }) }
     const onExport = () => { dismissWelcome(); useEditorStore.getState().setOpenPanel('export') }
     api?.onMenuNew?.(onNew)
     api?.onMenuOpen?.(onOpen)
@@ -542,7 +541,6 @@ function App() {
       {openPanel === 'export' && <ExportDialog onClose={closePanel} />}
       {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
-      {openPanel === 'file' && <FilePanel onClose={closePanel} />}
       <AIPanel />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}

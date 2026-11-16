@@ -155,7 +155,7 @@ assert.match(editorStore, /showPreview: initialLayout\.showPreview/, '上次关�
 
 const types = read('src/shared/types.ts')
 assert.doesNotMatch(types, /statusbarCollapsed\?/, 'SettingsState 里的 statusbarCollapsed 是幽灵副本，真身在 editorStore')
-assert.match(types, /openPanel: 'none' \| 'library' \| 'file' \| 'history' \| 'settings' \| 'export'/, 'openPanel 类型必须收窄到真实可达的值')
+assert.match(types, /openPanel: 'none' \| 'library' \| 'history' \| 'settings' \| 'export'/, 'openPanel 类型必须收窄到真实可达的值')
 assert.doesNotMatch(app, /PreviewPanel/, 'PreviewPanel 已无任何入口，必须移除')
 
 // 主进程只需要四个开关，不能把含明文密钥的全量设置发过去
