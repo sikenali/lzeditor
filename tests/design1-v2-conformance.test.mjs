@@ -134,9 +134,16 @@ const toolbarRule = layout.match(/\.toolbar\s*\{[^}]*\}/)?.[0] || ''
 assert.match(toolbarRule, /rgba\(var\(--bg-rgb\),\s*0\.82\)/, '顶栏背景必须毛玻璃 rgba(var(--bg-rgb),0.82)（§2.1）')
 assert.match(toolbarRule, /backdrop-filter:\s*blur\(16px\)/, '顶栏必须 backdrop-filter blur(16px)（§2.1）')
 assert.match(toolbarRule, /app-region:\s*drag/, '顶栏 Electron 无边框窗口拖动区必须保留')
-assert.match(toolbarRule, /border-bottom:\s*0\.7px/, '顶栏底部必须 0.7px 分割线（§2.1）')
+// §2.1 微光分割线（0.7px 渐变），顶栏底部用 .toolbar::after
+const toolbarGlow = layout.match(/\.toolbar::after\s*\{[^}]*\}/)?.[0] || ''
+assert.match(toolbarGlow, /linear-gradient\(90deg,\s*transparent,[^}]*color-mix\(in srgb,\s*var\(--color-primary\)\s*25%,\s*transparent\)\s*50%,\s*transparent\)/, '顶栏底部必须微光分割线渐变（§2.1）')
+assert.match(toolbarGlow, /height:\s*0\.7px/, '顶栏微光分割线必须 0.7px')
 const footerRule = layout.match(/\.app-footer\s*\{[^}]*height:\s*58px[^}]*\}/)?.[0] || ''
 assert.match(footerRule, /rgba\(var\(--bg-rgb\),\s*0\.75\)/, '页脚背景必须毛玻璃 rgba(var(--bg-rgb),0.75)（§2.1）')
+// §2.1 页脚顶部微光分割线（0.7px 渐变）用 .app-footer::before
+const footerGlow = layout.match(/\.app-footer::before\s*\{[^}]*\}/)?.[0] || ''
+assert.match(footerGlow, /linear-gradient\(90deg,\s*transparent,[^}]*color-mix\(in srgb,\s*var\(--color-primary\)\s*25%,\s*transparent\)\s*50%,\s*transparent\)/, '页脚顶部必须微光分割线渐变（§2.1）')
+assert.match(footerGlow, /height:\s*0\.7px/, '页脚微光分割线必须 0.7px')
 
 // ── 方案 A：Web 应用内容居中限宽 1280（窗口观感），高度仍铺满视口 ──
 const appCss = read('src/styles/app.css')

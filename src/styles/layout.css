@@ -4,17 +4,25 @@
 .toolbar  {
   display: flex; align-items: center; justify-content: space-between;
   height: 72px; padding: 0 24px;
-  /* DESIGN-1.md §2.1 毛玻璃顶栏：半透明 + 背景模糊 + 底部微光分割线 */
+  /* DESIGN-1.md §2.1 毛玻璃顶栏：半透明 + 背景模糊 */
   background: rgba(var(--bg-rgb), 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 0.7px solid var(--color-border-soft);
   gap: 0; flex-shrink: 0;
   position: sticky; top: 0; z-index: 100;
   /* Electron 是无边框窗口（frame: false），整条工具栏兼作标题栏拖动区。
      浏览器里这个属性被忽略，纯视觉无影响。 */
   -webkit-app-region: drag;
   app-region: drag;
+}
+/* §2.1 顶栏底部 0.7px 微光分割线（渐变，中央微光、两侧透明） */
+.toolbar::after  {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 0.7px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 25%, transparent) 50%, transparent);
 }
 /* 拖动区里的可交互元素必须显式排除，否则点按钮会变成拖窗口 */
 .toolbar-btn, .toolbar-menu-btn, .win-controls, .toolbar-group select, .toolbar-group button  {
@@ -1348,9 +1356,18 @@
   justify-content: space-between;
   /* DESIGN-1.md §2.1 毛玻璃页脚 */
   background: rgba(var(--bg-rgb), 0.75);
-  border-top: 0.7px solid var(--color-border-soft);
+  position: relative;
   flex-shrink: 0;
   gap: 24px;
+}
+/* §2.1 页脚顶部 0.7px 微光分割线（渐变） */
+.app-footer::before  {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 0.7px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 25%, transparent) 50%, transparent);
 }
 .app-footer-left  {
   display: flex;
