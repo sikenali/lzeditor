@@ -8,13 +8,15 @@ const themes = read('src/styles/themes.ts')
 for (const [t, v] of [['--radius-xs','4px'],['--radius-sm','8px'],['--radius-md','12px'],['--radius-lg','16px'],['--radius-xl','20px']]) {
   assert.match(tokens, new RegExp(`${t}:\\s*${v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}`), `Missing ${t}=${v}`)
 }
+// 取一个主题对象的字面量文本（到对象结束的第一个 }）
+const block = (name) => themes.slice(themes.indexOf(`${name}: {`), themes.indexOf('}', themes.indexOf(`${name}: {`)))
 // 主题不变 token（system-blue / glow / focus-ring）在 tokens.css 与两个主题对象
 for (const t of ['--color-system-blue','--color-system-blue-soft','--color-glow','--color-focus-ring']) {
   assert.match(tokens, new RegExp(t + ':'), `Missing ${t} in tokens.css`)
-  assert.match(themes, /parchment/, 'themes.ts must define parchment')
+  assert.match(block('parchment'), new RegExp(`'${t}':`), `Missing ${t} in parchment theme`)
+  assert.match(block('dark'), new RegExp(`'${t}':`), `Missing ${t} in dark theme`)
 }
 // 主题感知阴影：必须存在于两个主题对象，且 dark 与 parchment 值不同
-const block = (name) => themes.slice(themes.indexOf(`${name}: {`), themes.indexOf('}', themes.indexOf(`${name}: {`)))
 for (const t of ['--color-modal-shadow','--color-popover-shadow','--color-inset-highlight']) {
   assert.match(block('parchment'), new RegExp(`'${t}':`), `Missing ${t} in parchment`)
   assert.match(block('dark'), new RegExp(`'${t}':`), `Missing ${t} in dark`)
