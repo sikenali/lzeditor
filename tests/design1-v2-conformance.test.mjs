@@ -121,3 +121,7 @@ assert.doesNotMatch(block('dark'), /'--t-sh-1[345]':\s*'[^']*rgba\(255,\s*255,\s
 // 两条 live 规则（layout.css:633 / panels.css:284）的内描高光同样主题感知
 assert.match(layout, /\.sidebar-library \.library-cat-btn\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, 'library-cat-btn.active 内描高光必须 var(--color-inset-highlight)')
 assert.match(panels, /\.export-body-redesigned \.insert-nav-item[^{]*\{[^}]*var\(--color-inset-highlight\)/, 'export-body-redesigned .insert-nav-item 内描高光必须 var(--color-inset-highlight)')
+
+// 持久激活态的内描高光同样必须主题感知（§5.5 扫除，active 非 hover 微反馈）
+assert.match(panels, /\.insert-nav-item\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, '.insert-nav-item.active 内描高光必须 var(--color-inset-highlight)')
+assert.match(panels, /\.export-body-redesigned \.insert-nav-item\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, '.export-body-redesigned .insert-nav-item.active 内描高光必须 var(--color-inset-highlight)')
