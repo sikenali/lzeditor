@@ -329,10 +329,13 @@ for (const [file, sel] of [[layout, /\.toolbar-submenu\s*\{/],[layout, /\.sideba
 // 历史面板是内联布局面板（.history-main-panel，flex:1），非弹框，不参与本规范 —— 断言它不被误改
 assert.match(panels, /\.history-main-panel\s*\{[\s\S]{0,200}?flex:\s*1/, '历史面板保持内联全高面板（非弹框）')
 // 内描高光走主题感知（代表性表面，spec §5.5 显式清单）
+// 用 [^{}]*\{[^}]*var(...) 匹配「该选择器（或其状态变体）的某块含高亮」——
+// 因为 .format-card.active 在 panels.css 出现两次（:9 是 1px accent 环、:109 才是 inset 高亮），
+// .outline-jump-btn 只有 :hover（:370）有 inset 高亮（base 无 shadow），不能用首匹配。
 for (const sel of [/\.insert-nav-item\s*\{/, /\.format-card\.active\s*\{/, /\.library-cat-btn\.active\s*\{/, /\.outline-jump-btn\s*\{/]) {
   const src = (sel.source.includes('outline') ? layout : panels)
-  const b = src.match(new RegExp(sel.source + '[^}]*\\}'))?.[0] || ''
-  assert.match(b, /var\(--color-inset-highlight\)/, `${sel} 内描高光必须 var(--color-inset-highlight)`)
+  const b = src.match(new RegExp(sel.source.replace(/\s*\{$/, '') + '[^{}]*\\{[^}]*var\\(--color-inset-highlight\\)'))?.[0] || ''
+  assert.ok(b.length > 0, `${sel} 必须有一个块含 var(--color-inset-highlight)`)
 }
 ```
 
