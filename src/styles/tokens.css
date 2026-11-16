@@ -25,6 +25,17 @@
   --color-error: #E74C3C;
   --color-error-soft: #FADCDA;
 
+  /* Colors — DESIGN-1.md v2 additions.
+     system-blue 恒为 #007AFF（设置中心导航激活态 / 焦点环），不随强调色变色。
+     阴影与内高光随主题切换（themes.ts 的 parchment / dark 会覆盖这几个值）。 */
+  --color-system-blue: #007AFF;
+  --color-system-blue-soft: rgba(0,122,255,0.10);
+  --color-glow: #00D4AA;
+  --color-focus-ring: #007AFF;
+  --color-modal-shadow: 0 8px 40px rgba(0,0,0,0.1);
+  --color-popover-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  --color-inset-highlight: rgba(255,255,255,0.55);
+
   /* 自托管：Inter 负责拉丁，思源黑体负责中文（盒子零系统字体，不能靠系统栈） */
   --font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --font-family-cn: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -38,7 +49,7 @@
   --spacing-5: 20px; --spacing-6: 24px; --spacing-8: 32px; --spacing-10: 40px;
   --spacing-12: 48px; --spacing-16: 64px;
 
-  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 18px;
+  --radius-xs: 4px; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
   --radius-2xl: 24px; --radius-full: 9999px;
   --radius: var(--radius-md);
 

@@ -203,7 +203,7 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
   check('§8.2 UiInput 高 42px', parseFloat(inpStyle.h) === 42, `实测 ${inpStyle.h}`)
   check('§8.2 UiInput 边框 0.7px solid（1x 屏被 Chrome 进位成 1px）',
     inpStyle.borderS === 'solid' && [0.7, 1].includes(parseFloat(inpStyle.borderW)), `${inpStyle.borderW} ${inpStyle.borderS}`)
-  check('§8.2 UiInput 圆角 10px', parseFloat(inpStyle.radius) === 10, `实测 ${inpStyle.radius}`)
+  check('§8.2 UiInput 圆角 12px', parseFloat(inpStyle.radius) === 12, `实测 ${inpStyle.radius}`)
   const apiKeyInput = page.locator('.settings-panel-shell input[type="password"]').first()
   await apiKeyInput.fill('sk-test-e2e-123')
   await sleep(450)

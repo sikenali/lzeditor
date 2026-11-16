@@ -59,6 +59,15 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--color-error': '#E74C3C',
     '--color-error-soft': '#FADCDA',
 
+    // ── DESIGN-1.md v2: system blue / glow / 主题感知阴影（浅色：柔和无深空晕）──
+    '--color-system-blue': '#007AFF',
+    '--color-system-blue-soft': 'rgba(0,122,255,0.10)',
+    '--color-glow': '#00D4AA',
+    '--color-focus-ring': '#007AFF',
+    '--color-modal-shadow': '0 8px 40px rgba(0,0,0,0.1)',
+    '--color-popover-shadow': '0 4px 24px rgba(0,0,0,0.10)',
+    '--color-inset-highlight': 'rgba(255,255,255,0.55)',
+
     // ── Component-level variants. These replace the old `[data-theme]` CSS
     //    blocks in layout.css / panels.css / read-mode.css / settings-dialog.css
     //    / globals.css. A raw rgba() is not theme-aware by itself, so each one
@@ -267,6 +276,15 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--color-warning-soft': '#3A2A1A',
     '--color-error': '#E86A5A',
     '--color-error-soft': '#3A1A1A',
+
+    // ── DESIGN-1.md v2: system blue / glow / 主题感知阴影（深色：深空底 + 青绿内发光）──
+    '--color-system-blue': '#007AFF',
+    '--color-system-blue-soft': 'rgba(0,122,255,0.10)',
+    '--color-glow': '#00D4AA',
+    '--color-focus-ring': '#007AFF',
+    '--color-modal-shadow': '0 8px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(0,212,170,0.08)',
+    '--color-popover-shadow': '0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(0,212,170,0.05)',
+    '--color-inset-highlight': 'rgba(255,255,255,0.05)',
 
     // ── Component-level variants — dark counterparts of the parchment set above. ──
     '--t-veil-2':  'rgba(255,255,255,0.02)',

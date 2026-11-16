@@ -587,11 +587,11 @@ test('toast 重复点关闭不会重复执行', async () => {
 const uiCss = read('src/styles/ui.css')
 const tokensCss = read('src/styles/tokens.css')
 
-test('§8.2 UiInput：高度 42px、0.7px 边框、10px 圆角、focus 变白+主色边框', () => {
+test('§8.2 UiInput：高度 42px、0.7px 边框、12px 圆角、focus 变白+主色边框', () => {
   assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?height: 42px/)
   assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?border: 0\.7px solid var\(--color-border\)/)
   assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?background: var\(--color-bg-secondary\)/)
-  assert.match(tokensCss, /--radius-md:\s*10px/, '§8.2 的圆角 10px 由 --radius-md 提供')
+  assert.match(tokensCss, /--radius-md:\s*12px/, '§8.2 的圆角 12px 由 --radius-md 提供')
   assert.match(uiCss, /\.ui-input:focus-within\s*\{[\s\S]{0,200}?background: var\(--color-bg-white\)/)
   assert.match(uiCss, /\.ui-input:focus-within\s*\{[\s\S]{0,200}?border-color: var\(--color-primary\)/)
 })

@@ -29,7 +29,7 @@ const block = (css, sel) => {
 }
 
 test('§8.2 依赖的 token 值本身是对的', () => {
-  assert.match(tokensCss, /--radius-md:\s*10px/, '圆角 10px 由 --radius-md 提供')
+  assert.match(tokensCss, /--radius-md:\s*12px/, '圆角 12px 由 --radius-md 提供')
   assert.match(tokensCss, /--color-border:\s*#E5DFD3/, '§8.2 的边框色')
   assert.match(tokensCss, /--color-bg-secondary:\s*#F7F3EA/, '§8.2 的底色')
   assert.match(tokensCss, /--color-bg-white:\s*#FFFFFF/, '§8.2 的 focus 底色')
@@ -51,7 +51,7 @@ for (const c of CHECKS) {
     assert.notEqual(body, '', `${c.sel} 必须存在`)
     assert.match(body, new RegExp(`height:\\s*${c.height}px`), `${c.name} 高度应为 ${c.height}px`)
     assert.match(body, /border:\s*0\.7px solid var\(--color-border\)/, `${c.name} 边框必须是 0.7px var(--color-border)`)
-    assert.match(body, /border-radius:\s*var\(--radius-md\)/, `${c.name} 圆角必须是 --radius-md(10px)`)
+    assert.match(body, /border-radius:\s*var\(--radius-md\)/, `${c.name} 圆角必须是 --radius-md(12px)`)
     assert.match(body, /background:\s*var\(--color-bg-secondary\)/, `${c.name} 背景必须是 --color-bg-secondary`)
   })
 
