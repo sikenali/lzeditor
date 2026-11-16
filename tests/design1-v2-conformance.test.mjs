@@ -58,7 +58,7 @@ const ring = uiCss4.match(/Global focus-visible[\s\S]*?\n\}/)?.[0] || ''
 assert.match(ring, /var\(--color-focus-ring\)/, '全局 focus-visible 环必须用 var(--color-focus-ring)（系统蓝）')
 assert.match(ring, /box-shadow:\s*0 0 0 2px[\s\S]{0,60}0 0 0 4px/, '环必须保留 2px 白内圈 + 4px 外圈结构')
 // 输入框 focus 外发光保持主色（§8.2/§10.2），不得被系统蓝带走
-assert.match(uiCss4, /\.ui-input:focus-within,\s*\.ui-select-trigger:focus[\s\S]{0,300}?box-shadow:\s*0 0 0 3px color-mix/, '输入框 focus 外发光必须保持主色 color-mix（§8.2）')
+assert.match(uiCss4, /\.ui-input:focus-within,\s*\.ui-select-trigger:focus[\s\S]{0,300}?box-shadow:\s*0 0 0 3px color-mix\(in srgb, var\(--color-primary\)/, '输入框 focus 外发光必须保持主色 color-mix(in srgb, var(--color-primary)…)（§8.2）')
 
 // layout.css 其余键盘焦点环同样系统蓝（toolbar 子菜单 / 侧栏大纲跳转）
 const layoutCss4 = read('src/styles/layout.css')
@@ -66,3 +66,19 @@ assert.match(layoutCss4, /\.toolbar-submenu-item:focus-visible[^{]*\{[^}]*box-sh
 const jumpRing = layoutCss4.match(/\.sidebar-outline \.outline-jump-btn:focus-visible\s*\{[^}]*\}/)?.[0] || ''
 assert.match(jumpRing, /box-shadow:\s*0 0 0 2px var\(--color-focus-ring\)/, '大纲跳转按钮键盘焦点环必须系统蓝')
 assert.match(jumpRing, /0 2px 8px rgba\(0,\s*0,\s*0,\s*0\.10\)/, '大纲跳转按钮环需保留 drop shadow（非环）')
+
+// §8.2 "全局" 键盘焦点环：globals / code-mode / welcome 其余环同样系统蓝
+const globalsCss4 = read('src/styles/globals.css')
+const btnRing = globalsCss4.match(/button:focus-visible, input:focus-visible\s*\{[^}]*\}/)?.[0] || ''
+assert.match(btnRing, /box-shadow:\s*0 0 0 3px var\(--color-focus-ring\)/, 'button/input 键盘焦点环必须系统蓝')
+const globalRing = globalsCss4.match(/\n:focus-visible\s*\{[^}]*\}/)?.[0] || ''
+assert.match(globalRing, /outline:\s*2px solid var\(--color-focus-ring\)/, '全局 :focus-visible outline 必须系统蓝')
+const codeCss4 = read('src/styles/code-mode.css')
+assert.match(codeCss4, /\.code-splitter:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus-ring\)/, 'code splitter 键盘焦点环必须系统蓝')
+const welcomeCss4 = read('src/styles/welcome-screen.css')
+assert.match(welcomeCss4, /\.welcome-btn:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus-ring\)/, '欢迎页按钮键盘焦点环必须系统蓝')
+assert.match(welcomeCss4, /\.welcome-recent-item:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus-ring\)/, '欢迎页最近项键盘焦点环必须系统蓝')
+// 表单控件 select 的 focus 是边框+外发光（非键盘导航环），必须保持主色
+const selectFocus = globalsCss4.match(/select:focus-visible\s*\{[^}]*\}/)?.[0] || ''
+assert.match(selectFocus, /border-color:\s*var\(--accent-primary\)/, 'select focus 边框必须保持主色')
+assert.match(selectFocus, /box-shadow:\s*0 0 0 3px var\(--accent-a10\)/, 'select focus 外发光必须保持主色')

@@ -33,7 +33,7 @@ button:active, .preview-mode-btn:active, .toggle-btn:active {
 
 button:focus-visible, input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent-a20);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 /* ── Refined scrollbar (Material depth §12) ── */
@@ -3343,7 +3343,7 @@ select:where(:not([size])) {
 }
 
 :focus-visible  {
-  outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px;
+  outline: 2px solid var(--color-focus-ring); outline-offset: 2px; border-radius: 4px;
 }
 
 .lz-editor-content:focus-visible, .sidebar-preview-wrapper:focus-visible  {
