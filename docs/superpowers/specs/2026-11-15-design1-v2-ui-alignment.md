@@ -110,9 +110,9 @@ lzeditor 已有一套从 bid-platform 继承的 `--color-*` token 系统（parch
 ### 5.4 其余对话框（自动继承 UiModal 变更）
 
 图片/链接/代码/公式/图表/表情/导出/文档库/文件 均使用 `UiModal`，radius + shadow 自动对齐，
-无需逐文件改。**历史面板例外**：`HistoryPanel` 不挂 UiModal，是独立浮层（`App.tsx` 直接渲染，
-`panels.css` 容器 radius 16px / shadow `0 24px 80px rgba(0,0,0,0.12)`）—— 把它归入 §5.5 表面改造，
-radius 16 → 12px，shadow → `var(--color-modal-shadow)`（作为弹框类表面，圆角与阴影随 v2）。
+无需逐文件改。**历史面板不在此列**：`HistoryPanel` 不挂 UiModal，根节点是 `.history-main-panel`
+（`panels.css:993`，`flex:1` 全高布局面板，无圆角/阴影/背景），是**内联面板**而非弹框 —— 无需
+弹框类圆角/阴影改造，排除出本规范（`.history-main-panel` 保持原样）。
 `ud-*` 内容类不涉及弹框外壳尺寸/阴影，不动。
 
 ### 5.5 Chrome 主题感知阴影/高光（`layout.css` / `panels.css` / `floating.css` / `read-mode.css`）
@@ -127,7 +127,6 @@ radius 16 → 12px，shadow → `var(--color-modal-shadow)`（作为弹框类表
 | `.sidebar-outline`（大纲面板） | `0 2px 12px rgba(0,0,0,0.12)` | `var(--color-popover-shadow)` |
 | `.sidebar-preview-wrapper`（预览面板） | `0 2px 12px rgba(0,0,0,0.12)` | `var(--color-popover-shadow)` |
 | `.search-panel-inner` | `0 -4px 22px rgba(0,0,0,0.12)` | 保留方向，改 `var(--color-popover-shadow)` |
-| 历史面板容器 | `0 24px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)` | `var(--color-modal-shadow)` |
 | bottom dock 面板 | `0 -2px 16px rgba(0,0,0,0.08)` | 保留方向，改 `var(--color-popover-shadow)` |
 | `.ai-panel` / `.slash-command` | `var(--shadow-lg)` | `var(--color-popover-shadow)` |
 
@@ -181,8 +180,7 @@ floating.css / read-mode.css / settings-dialog.css）里 `grep` 两类模式 —
 - [ ] 全局键盘焦点环为系统蓝 `#007AFF`。
 - [ ] 浅色下弹框阴影柔和 `0 8px 40px rgba(0,0,0,0.1)`，无深空割裂感。
 - [ ] 深色下弹框阴影深空 + 青绿内发光，边框对比度 ≥ 3:1。
-- [ ] 全部弹框（图片/链接/代码/公式/图表/表情/导出/历史/文档库/文件）圆角/阴影随 UiModal 对齐；
-      历史面板（非 UiModal）radius 12px + 主题感知阴影。
+- [ ] 全部 UiModal 弹框（图片/链接/代码/公式/图表/表情/导出/文档库/文件）圆角/阴影随 UiModal 对齐。
 - [ ] 主题切换（parchment/dark）不破版：弹框、面板、tooltip 层次清晰。
 - [ ] 新增 token 在 `tokens.css` 与 `themes.ts` 两处同步，无 `[data-theme]` 覆写块。
 - [ ] `npm run check`（typecheck + test）通过。
