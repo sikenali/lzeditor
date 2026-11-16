@@ -31,9 +31,14 @@ button:active, .preview-mode-btn:active, .toggle-btn:active {
   transition: transform 80ms ease-out;
 }
 
-button:focus-visible, input:focus-visible {
+button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+/* 表单控件 focus 是边框+外发光的一部分（§8.2/§10.2），保持主色，不做系统蓝键盘环 */
+input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-a20);
 }
 
 /* ── Refined scrollbar (Material depth §12) ── */

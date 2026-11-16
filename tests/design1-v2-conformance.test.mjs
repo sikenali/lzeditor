@@ -69,8 +69,12 @@ assert.match(jumpRing, /0 2px 8px rgba\(0,\s*0,\s*0,\s*0\.10\)/, '大纲跳转�
 
 // §8.2 "全局" 键盘焦点环：globals / code-mode / welcome 其余环同样系统蓝
 const globalsCss4 = read('src/styles/globals.css')
-const btnRing = globalsCss4.match(/button:focus-visible, input:focus-visible\s*\{[^}]*\}/)?.[0] || ''
-assert.match(btnRing, /box-shadow:\s*0 0 0 3px var\(--color-focus-ring\)/, 'button/input 键盘焦点环必须系统蓝')
+const btnRing = globalsCss4.match(/(?:^|\n)button:focus-visible\s*\{[^}]*\}/)?.[0] || ''
+assert.match(btnRing, /box-shadow:\s*0 0 0 3px var\(--color-focus-ring\)/, 'button 键盘焦点环必须系统蓝')
+// 文本输入框 focus 属于表单焦点处理（边框+外发光），必须保持主色，不能套系统蓝环
+const inputRing = globalsCss4.match(/(?:^|\n)input:focus-visible\s*\{[^}]*\}/)?.[0] || ''
+assert.match(inputRing, /box-shadow:\s*0 0 0 3px var\(--accent-a20\)/, 'input:focus-visible 必须保持主色调焦点环（§8.2 表单焦点）')
+assert.doesNotMatch(inputRing, /--color-focus-ring/, 'input:focus-visible 不得使用系统蓝键盘环')
 const globalRing = globalsCss4.match(/\n:focus-visible\s*\{[^}]*\}/)?.[0] || ''
 assert.match(globalRing, /outline:\s*2px solid var\(--color-focus-ring\)/, '全局 :focus-visible outline 必须系统蓝')
 const codeCss4 = read('src/styles/code-mode.css')
