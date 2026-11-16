@@ -211,7 +211,10 @@ const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
 const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须系统蓝浅底')
-assert.match(navActive, /::before/, '激活态必须 3px 左条（::before）')
+// 3px 左条是独立伪元素规则（.settings-nav-row.active::before），不能嵌在 .active 块里，单独断言
+const navBefore = sdlg.match(/\.settings-nav-row\.active::before\s*\{[^}]*\}/)?.[0] || ''
+assert.match(navBefore, /width:\s*3px/, '激活态必须 3px 左条（::before）')
+assert.match(navBefore, /var\(--color-system-blue\)/, '左条必须系统蓝')
 // 激活态文字/图标颜色在各自子规则（.settings-nav-row.active .settings-nav-ico/.txt），单独断言
 assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须系统蓝')
 assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须系统蓝')
