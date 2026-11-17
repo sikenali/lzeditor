@@ -1,5 +1,10 @@
 import type { DocVersion } from '../shared/types'
 
+/** 历史页展示上限：合并时间线只保留最近 MAX_TIMELINE 条。
+ * 本地版本记录已在 MAX_VERSIONS=10 截断，git 提交（MAX_GIT_COMMITS=50）合并进来后
+ * 仍只展示最近 10 条，避免历史页列出远超 10 根的时间线柱。 */
+export const MAX_TIMELINE = 10
+
 /** git 提交信息（来自 electron git:history IPC 的 commits）。 */
 export interface GitVersionLike {
   oid: string
@@ -11,10 +16,11 @@ export interface GitVersionLike {
 }
 
 /**
- * 合并时间线：本地快照 + git 提交按 `ts` 倒序。
+ * 合并时间线：本地快照 + git 提交按 `ts` 倒序，只保留最近 MAX_TIMELINE 条。
  *
  * git 项转成 DocVersion（id=oid、source:'git'、isFromGit=true、desc=message、
  * md/html 置空——内容由 HistoryPanel 选中时经 git:show 惰性拉取）。
+ * 截断在展示层：历史页只画最近 10 根柱，超出部分不展示（硬截断，无展开入口）。
  */
 export function mergeTimeline(local: DocVersion[], git: GitVersionLike[], gitPath?: string): DocVersion[] {
   const gitVersions: DocVersion[] = git.map(g => {
@@ -33,7 +39,7 @@ export function mergeTimeline(local: DocVersion[], git: GitVersionLike[], gitPat
       date: t.date,
     }
   })
-  return [...local, ...gitVersions].sort((a, b) => b.ts - a.ts)
+  return [...local, ...gitVersions].sort((a, b) => b.ts - a.ts).slice(0, MAX_TIMELINE)
 }
 
 /** 短哈希：git SHA 取前 6 位；本地纯数字 id 走现有的 parseInt→toString(16)。 */
