@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { mdToHtml } from '../../utils/mdToHtml'
+import { parseMdOutline } from '../../utils/mdOutline'
+import { registerOutlineJumper, clearOutlineJumper } from '../../utils/outlineJump'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme, TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
@@ -19,12 +21,10 @@ export const StyleMainPanel: React.FC = () => {
   const fontSize = useEditorStore((s) => s.readFontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore(s => s.updateSetting)
-  const readTocOpen = useEditorStore((s) => s.readTocOpen)
-  const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
-  const storeTocItems = useEditorStore((s) => s.tocItems)
+  const showOutline = useEditorStore((s) => s.showOutline)
+  const setShowOutline = useEditorStore((s) => s.setShowOutline)
   const activeTocId = useEditorStore((s) => s.activeTocId)
   const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
-  const setTocItems = useEditorStore((s) => s.setTocItems)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
@@ -52,31 +52,30 @@ export const StyleMainPanel: React.FC = () => {
   const [chapters, setChapters] = useState<Chapter[]>([])
   const chaptersRef = useRef<Chapter[]>([])
   chaptersRef.current = chapters
-  const [activeChapterId, setActiveChapterId] = useState<string>('')
   const chapterItems = useMemo(
     () => chapters.map(c => ({ id: c.id, text: c.text, el: document.getElementById(c.id) })),
     [chapters]
   )
   const { scrollTo: scrollToChapter } = useScrollSpy({
     items: chapterItems,
-    activeId: activeChapterId,
-    setActiveId: setActiveChapterId,
+    activeId: activeTocId,
+    setActiveId: setActiveTocId,
     container: bodyRef.current,
   })
 
   const handlePrevChapter = useCallback(() => {
     const items = chaptersRef.current
-    const active = items.find(c => c.id === activeChapterId)
+    const active = items.find(c => c.id === activeTocId)
     const idx = active ? items.indexOf(active) : -1
     if (idx > 0) scrollToChapter(items[idx - 1].id)
-  }, [activeChapterId, scrollToChapter])
+  }, [activeTocId, scrollToChapter])
 
   const handleNextChapter = useCallback(() => {
     const items = chaptersRef.current
-    const active = items.find(c => c.id === activeChapterId)
+    const active = items.find(c => c.id === activeTocId)
     const idx = active ? items.indexOf(active) : -1
     if (idx >= 0 && idx < items.length - 1) scrollToChapter(items[idx + 1].id)
-  }, [activeChapterId, scrollToChapter])
+  }, [activeTocId, scrollToChapter])
 
   const effectiveMd = useMemo(() => {
     if (mdContent) return mdContent
@@ -107,22 +106,24 @@ export const StyleMainPanel: React.FC = () => {
     setEffectiveHtml(docHTML || initialHtml || defaultHtml)
   }, [docHTML, initialHtml, defaultHtml])
 
-  // ── Extract chapters from rendered headings ──
+  // ── Extract chapters from markdown outline ──
+  // parseMdOutline 的 id 与 mdToHtml 渲染锚点一致（同一 headingId），滚动同步直接可用。
+  const outlineItems = useMemo(() => parseMdOutline(effectiveMd), [effectiveMd])
   useEffect(() => {
-    const el = bodyRef.current
-    if (!el) return
-    const headings = el.querySelectorAll('h1,h2,h3,h4,h5,h6')
-    const items: Chapter[] = []
-    headings.forEach((h, i) => {
-      const id = `style-h-${i}`
-      h.setAttribute('id', id)
-      items.push({ id, text: h.textContent?.trim() || '', level: parseInt(h.tagName[1]) })
-    })
-    setChapters(items)
-    // 同步到 editorStore，样式面板的目录侧栏（read-toc-sidebar）读 storeTocItems。
-    // 之前 setTocItems 从未被调用，tocItems 恒为 []，侧栏永不渲染。
-    setTocItems(items)
-  }, [renderedHtml, effectiveHtml])
+    setChapters(outlineItems.map(item => ({ id: item.id, text: item.text, level: item.level })))
+  }, [outlineItems])
+
+  // 统一大纲面板的跳转回调：ref 持有最新 scrollToChapter，挂载注册一次、卸载清理
+  const jumperRef = useRef<(id: string) => void>(() => {})
+  jumperRef.current = (id) => {
+    scrollToChapter(id)
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+  useEffect(() => {
+    registerOutlineJumper((id) => jumperRef.current(id))
+    return () => clearOutlineJumper()
+  }, [])
 
   useEffect(() => {
     const el = bodyRef.current
@@ -157,35 +158,7 @@ export const StyleMainPanel: React.FC = () => {
   return (
     <>
       <div className="style-main-panel">
-        <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column', flex: 1, minHeight: 0, display: 'flex' }}>
-          {readTocOpen && storeTocItems.length > 0 && (
-            <div className="read-toc-sidebar">
-              <div className="read-toc-header">
-                <span className="remix ri-menu-fill"></span>
-                <span>目录</span>
-                <button className="read-toc-close" onClick={() => setReadTocOpen(false)}>
-                  <span className="remix ri-close-line"></span>
-                </button>
-              </div>
-              <div className="read-toc-list">
-                {storeTocItems.map(item => (
-                  <button
-                    key={item.id}
-                    className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
-                    style={{ paddingLeft: `${(item.level - 1) * 14 + 12}px` }}
-                    onClick={() => {
-                      setActiveTocId(item.id)
-                      const el = document.getElementById(item.id)
-                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    }}
-                  >
-                    <span className="read-toc-dot" />
-                    <span className="read-toc-text">{item.text}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         {/* ── Read content area ── */}
         <div ref={bodyRef} className="style-read-scroll">
           <div className="style-read-article" style={{ maxWidth: 760 }}>
@@ -251,8 +224,8 @@ export const StyleMainPanel: React.FC = () => {
                   )}
                 </div>
               </div>
-              <button className="style-action-btn" title={readTocOpen ? '隐藏目录' : '显示目录'} onClick={() => setReadTocOpen(!readTocOpen)}>
-                <span className={`remix ${readTocOpen ? 'ri-list-unordered' : 'ri-list-check'}`}></span>
+              <button className="style-action-btn" title={showOutline ? '隐藏目录' : '显示目录'} onClick={() => setShowOutline(!showOutline)}>
+                <span className={`remix ${showOutline ? 'ri-list-unordered' : 'ri-list-check'}`}></span>
                 <span>目录</span>
               </button>
               <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
