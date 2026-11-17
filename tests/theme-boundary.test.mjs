@@ -32,7 +32,7 @@ assert.doesNotMatch(settingsStore, /ACCEPT_PRESETS|id: 'red'/, 'legacy accent id
 assert.match(settingsStore, /vermilion/, 'new accent presets must be used')
 
 const layout1 = read('src/styles/layout.css')
-assert.match(layout1, /\.toolbar\s*\{[\s\S]*height:\s*72px/, 'toolbar must be 72px tall')
+assert.match(layout1, /\.toolbar\s*\{[\s\S]*height:\s*56px/, 'toolbar must be 56px tall (2026-11-17 收窄，小圆点不被遮挡)')
 assert.match(read('src/components/layout/Toolbar.tsx'), /navtop/, 'Toolbar must render navtop class')
 
 // LeftNav 重构为 rail 图标条：hover 文案改用原生 aria-label，不再用独立 hover-label DOM

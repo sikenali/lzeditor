@@ -1,9 +1,9 @@
 /* Layout Styles — LZMail warm Oriental design × Apple material depth */
 
-/* ── Toolbar — DESIGN.md §2.1 TopNav: 72px, padding 24, 0.7px border ── */
+/* ── Toolbar — DESIGN.md §2.1 TopNav: 56px（2026-11-17 收窄，小圆点不被遮挡）, padding 24, 0.7px border ── */
 .toolbar  {
   display: flex; align-items: center; justify-content: space-between;
-  height: 72px; padding: 0 24px;
+  height: 56px; padding: 0 24px;
   /* DESIGN-1.md §2.1 毛玻璃顶栏：半透明 + 背景模糊 */
   background: rgba(var(--bg-rgb), 0.82);
   backdrop-filter: blur(16px);
