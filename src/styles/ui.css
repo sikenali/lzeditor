@@ -373,8 +373,10 @@
 .ui-btn:active:not(.disabled)  { transform: translateY(1px); }
 .ui-btn--primary  { background: var(--accent-primary); border-color: var(--accent-primary); color: var(--accent-foreground); }
 .ui-btn--primary:hover:not(.disabled)  { background: color-mix(in srgb, var(--accent-primary) 88%, #000); }
-.ui-btn--outline:hover:not(.disabled)  { border-color: var(--color-primary); color: var(--color-primary); }
-.ui-btn--ghost:hover:not(.disabled)  { background: var(--color-bg-secondary); color: var(--color-text-primary); }
+.ui-btn--outline  { border: 0.7px solid var(--border-subtle); color: var(--text-secondary); }
+.ui-btn--ghost  { border-color: transparent; color: var(--text-secondary); }
+.ui-btn--outline:hover:not(.disabled)  { border-color: var(--accent-primary); color: var(--accent-primary); }
+.ui-btn--ghost:hover:not(.disabled)  { background: var(--bg-hover); color: var(--text-primary); }
 .ui-btn.disabled  { opacity: 0.55; cursor: not-allowed; }
 .ui-btn--primary.disabled  { color: var(--accent-foreground); }
 

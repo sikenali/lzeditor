@@ -113,6 +113,7 @@
 
 .welcome-btn--ghost:hover  {
   background: var(--t-wl-btn-hov);
+  border-color: var(--accent-primary);
 }
 
 .welcome-btn--ghost .remix  {

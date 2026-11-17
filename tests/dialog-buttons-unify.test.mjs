@@ -20,4 +20,11 @@ assert.match(uiCss, /\.ui-btn--primary\s*\{[^}]*color:\s*var\(--accent-foregroun
 
 assert.match(welcomeCss, /\.welcome-btn--primary\s*\{[^}]*color:\s*var\(--accent-foreground\)/, '.welcome-btn--primary 文字必须走 accent-foreground')
 
+// 次/幽灵按钮：统一线框 + 文字 + hover 走 accent，不得绕过 token
+assert.match(uiCss, /\.ui-btn--outline\s*\{[^}]*border:\s*0\.7px solid var\(--border-subtle\)/, '.ui-btn--outline 必须有统一线框')
+assert.match(uiCss, /\.ui-btn--outline\s*\{[^}]*color:\s*var\(--text-secondary\)/, '.ui-btn--outline 文字必须走 text-secondary')
+assert.match(uiCss, /\.ui-btn--outline:hover[^{]*\{[^}]*border-color:\s*var\(--accent-primary\)/, '.ui-btn--outline hover 边框必须走 accent-primary')
+assert.match(uiCss, /\.ui-btn--ghost:hover[^{]*\{[^}]*background:\s*var\(--bg-hover\)/, '.ui-btn--ghost hover 背景必须走 bg-hover')
+assert.doesNotMatch(welcomeCss, /\.welcome-btn--ghost\s*\{[^}]*color:\s*(white|#fff)\b/, '.welcome-btn--ghost 不得硬编码白字')
+
 console.log('dialog buttons unify (primary) checks passed')
