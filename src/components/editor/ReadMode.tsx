@@ -3,6 +3,8 @@ import { useEditorStore } from '../../store/editorStore'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { getDocMd } from '../../utils/docSource'
 import { parseMdOutline } from '../../utils/mdOutline'
+import { currentSectionIndex } from '../../utils/outline'
+import { registerOutlineJumper, clearOutlineJumper } from '../../utils/outlineJump'
 import { tagToKind, type BlockKind } from '../../utils/blockKind'
 import { paginate, pageOfLine, spreadCount, type Page } from '../../utils/pagination'
 import { OWN_ACTION } from '../../utils/markdown/lines'
@@ -44,8 +46,9 @@ export const ReadMode: React.FC = () => {
   const readLayout = useEditorStore((s) => s.readLayout)
   const appTheme = useSettingsStore((s) => s.theme)
   const setReadLayout = useEditorStore((s) => s.setReadLayout)
-  const readTocOpen = useEditorStore((s) => s.readTocOpen)
-  const setReadTocOpen = useEditorStore((s) => s.setReadTocOpen)
+  const showOutline = useEditorStore((s) => s.showOutline)
+  const setShowOutline = useEditorStore((s) => s.setShowOutline)
+  const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
   const setAppMode = useEditorStore((s) => s.setAppMode)
 
   const md = useMemo(() => {
@@ -230,15 +233,30 @@ export const ReadMode: React.FC = () => {
     else go(-1)
   }
 
-  const onTocClick = useCallback((line: number, id: string) => {
-    const p = pageOfLine(pages, line - 1)
-    if (p === null) {
-      jumpTo(0)
-    } else {
-      jumpTo(Math.floor(p / 2))
+  // 翻页同步：当前页对首块所在章节写进 store，统一大纲面板据此高亮
+  // （block.line 是 0-based、toc.line 是 1-based，+1 对齐）
+  useEffect(() => {
+    const startLine = pages[spread * 2]?.blocks[0]?.line ?? pages[spread * 2 + 1]?.blocks[0]?.line
+    if (startLine === undefined) {
+      setActiveTocId('')
+      return
     }
-    useEditorStore.getState().setActiveTocId(id)
-  }, [pages, jumpTo])
+    const idx = currentSectionIndex(toc, startLine + 1)
+    setActiveTocId(idx < 0 ? '' : toc[idx].id)
+  }, [spread, pages, toc, setActiveTocId])
+
+  // 统一大纲面板的跳转回调：ref 持有最新 toc/pages/jumpTo，挂载注册一次、卸载清理
+  const jumperRef = useRef<(id: string) => void>(() => {})
+  jumperRef.current = (id) => {
+    const it = toc.find(i => i.id === id)
+    if (!it) return
+    const p = pageOfLine(pages, it.line - 1)
+    jumpTo(p === null ? 0 : Math.floor(p / 2))
+  }
+  useEffect(() => {
+    registerOutlineJumper((id) => jumperRef.current(id))
+    return () => clearOutlineJumper()
+  }, [])
 
   const spreadHtml = useCallback((i: number): { left: string; right: string } => {
     const of = (p: Page<MeasuredBlock> | undefined): string =>
@@ -275,8 +293,6 @@ export const ReadMode: React.FC = () => {
     )
   }
 
-  const activeTocId = useEditorStore((s) => s.activeTocId)
-
   return (
     <div className="read-mode-inline read-mode-book">
       <div className="read-mode-toolbar">
@@ -299,8 +315,8 @@ export const ReadMode: React.FC = () => {
             onClick={() => setReadFontSize(Math.min(MAX_FONT, readFontSize + 1))}>
             <span className="remix ri-add-line"></span>
           </button>
-          <button className={`read-tool-btn ${readTocOpen ? 'active' : ''}`} title="目录"
-            onClick={() => setReadTocOpen(!readTocOpen)}>
+          <button className={`read-tool-btn ${showOutline ? 'active' : ''}`} title="目录"
+            onClick={() => setShowOutline(!showOutline)}>
             <span className="remix ri-menu-fill"></span>
             <span>目录</span>
           </button>
@@ -311,29 +327,7 @@ export const ReadMode: React.FC = () => {
         </button>
       </div>
 
-      <div className="read-mode-body" style={{ flexDirection: readTocOpen ? 'row' : 'column' }}>
-        {readTocOpen && toc.length > 0 && (
-          <div className="read-toc-sidebar">
-            <div className="read-toc-header">
-              <span className="remix ri-menu-fill"></span>
-              <span>目录</span>
-              <button className="read-toc-close" onClick={() => setReadTocOpen(false)} aria-label="关闭目录">
-                <span className="remix ri-close-line"></span>
-              </button>
-            </div>
-            <div className="read-toc-list">
-              {toc.map(item => (
-                <button key={item.id} className={`read-toc-item${item.id === activeTocId ? ' active' : ''}`}
-                  style={{ paddingLeft: `${(item.level - 1) * 12 + 14}px` }}
-                  onClick={() => onTocClick(item.line, item.id)}>
-                  <span className="read-toc-dot" />
-                  <span className="read-toc-text">{item.text}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
+      <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <div className="read-book" ref={bookRef} onClick={onBookClick}
           /* 写 --read-font-size 而不是 fontSize：正文和测量探针都用 var() 取值，
              两个地方才不会各走各的字号；页宽另有一个独立滑块控制。 */
