@@ -37,7 +37,8 @@ assert.doesNotMatch(layoutCss, /\.sidebar-preview \.preview-doc/, '排版规则�
 assert.match(readModeCss, /\.read-mode-inline/, '阅读模式的容器样式必须还在')
 assert.match(readModeCss, /\.read-tag\b/, 'read-tag 基类被 StyleMainPanel 用，不能删')
 assert.match(globalsCss, /\.read-mode-toolbar/, '阅读模式的工具栏样式必须还在')
-assert.match(globalsCss, /\.read-toc-sidebar/, '目录侧栏样式必须还在')
+assert.doesNotMatch(globalsCss, /read-toc/, 'read-toc 死 CSS 已清理（组件已移除）')
+assert.doesNotMatch(readModeCss, /read-toc/, 'read-mode 的 read-toc 死 CSS 已清理')
 assert.match(globalsCss, /\.read-article-body/, '文章正文样式被阅读模式与排版面板共用')
 assert.doesNotMatch(readModeCss, /read-article-code/, '旧代码模式 textarea 样式应已删除')
 
