@@ -19,6 +19,6 @@ assert.doesNotMatch(panel, /style-h-\$\{i\}/, '不再给标题造 style-h-N 假 
 assert.match(panel, /setActiveTocId/, '滚动同步必须更新 store activeTocId')
 assert.match(panel, /registerOutlineJumper\(/, '挂载时注册大纲跳转')
 assert.match(panel, /clearOutlineJumper/, '卸载时清理大纲跳转')
-assert.match(panel, /scrollIntoView/, '跳转必须 scrollIntoView 到章节')
+assert.match(panel, /scrollToChapter\(id\)/, '跳转经 scrollToChapter（内部 scrollIntoView）')
 
 console.log('style-panel outline checks passed')

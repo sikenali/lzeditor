@@ -111,14 +111,11 @@ export const StyleMainPanel: React.FC = () => {
     setChapters(outlineItems.map(item => ({ id: item.id, text: item.text, level: item.level })))
   }, [outlineItems])
 
-  // 统一大纲面板的跳转回调：ref 持有最新 scrollToChapter，挂载注册一次、卸载清理
+  // 统一大纲面板的跳转回调：ref 持有最新 scrollToChapter，挂载注册一次、卸载清理。
+  // scrollToChapter 内部按 id 直取 DOM、直接置 activeTocId 并抑制滚动期间覆盖，落点不再影响高亮。
   const jumperRef = useRef<(id: string) => void>(() => {})
   jumperRef.current = (id) => {
     scrollToChapter(id)
-    // scrollToChapter 用 memoized 的 chapterItems[].el，主题切换重渲染后可能过期；
-    // 这里按 id 直取最新 DOM 节点兜底（双滚动同目标，无害）。
-    const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
   useEffect(() => {
     registerOutlineJumper((id) => jumperRef.current(id))

@@ -373,7 +373,7 @@
   align-items: flex-start;
   gap: 7px;
   width: 100%;
-  padding: 6px 8px 6px 0;
+  padding: 6px 8px 6px 8px;
   border: 0.7px solid transparent;
   border-left: 2px solid transparent;
   border-radius: 7px;

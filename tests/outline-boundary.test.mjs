@@ -120,7 +120,7 @@ test('缩进查表与几何量对齐 backtickle，徽标对齐第一行', () => 
   const block = (sel) => outlineCss.match(new RegExp(`\\.sidebar-outline\\s+${sel}\\s*\\{[^}]*\\}`))?.[0] ?? ''
   const indentOf = (n) => Number(outlineCss.match(new RegExp(`outline-indent-${n}\\s*\\{\\s*padding-left: (\\d+)px`))?.[1])
   assert.deepEqual([1, 2, 3, 4, 5, 6].map(indentOf), [8, 16, 24, 32, 40, 48], '六级缩进同值同步长')
-  assert.match(block('.outline-jump-btn'), /padding: 6px 8px 6px 0/, '左边交给缩进类，右边给滚动条留位')
+  assert.match(block('.outline-jump-btn'), /padding: 6px 8px 6px 8px/, '左侧 8px 让徽标与强调左边框留呼吸，右侧给滚动条留位')
   assert.match(block('.outline-jump-btn'), /align-items: flex-start/, '标题折行时徽标留在第一行')
   assert.match(block('.outline-badge'), /padding: 2px 4px/, '徽标内边距')
   assert.match(block('.outline-depth-btn'), /min-height: 24px/, '层级按钮有最小点击高度')
