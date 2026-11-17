@@ -463,7 +463,7 @@ function App() {
 
   // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容
   // WYSIWYG 模式本身就是整篇渲染视图，再显示预览会同一篇文档渲染两次，故一并排除（见 modeLayout）。
-  const showRightPreview = shouldShowRightPreview({ showPreview, appMode, wysiwyg })
+  const showRightPreview = shouldShowRightPreview({ showPreview, appMode })
 
   // ── 顶部布局 ──
   const topLayout = (

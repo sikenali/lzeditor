@@ -9,19 +9,17 @@
  *      0 子元素的空面板（样式内容没了、编辑器被压窄）。
  */
 
-/** 是否显示右侧预览面板（SidebarPreview）。wysiwyg 开启时强制隐藏。 */
+/** 是否显示右侧预览面板（SidebarPreview）。仅编辑模式 + 预览开启时显示。 */
 export function shouldShowRightPreview(opts: {
   showPreview: boolean
   appMode: string
-  wysiwyg: boolean
 }): boolean {
-  const { showPreview, appMode, wysiwyg } = opts
+  const { showPreview, appMode } = opts
   return showPreview
     && appMode !== 'code'
     && appMode !== 'history'
     && appMode !== 'style'
     && appMode !== 'read'
-    && !wysiwyg
 }
 
 /**

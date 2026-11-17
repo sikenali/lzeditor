@@ -5,28 +5,23 @@ import { shouldShowRightPreview, shouldShowRightPanel } from '../src/utils/modeL
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const app = read('src/App.tsx')
 
-// ── 行为：WYSIWYG 与预览冲突修复 ──
-// WYSIWYG 模式本身就是整篇渲染视图，再显示右侧预览会同一篇文档渲染两次（冲突/冗余）。
+// ── 行为：右侧预览显示条件（WYSIWYG 参数已随模式移除）──
+// 编辑模式 + 预览开启 → 显示预览（正常分屏）。
 assert.equal(
-  shouldShowRightPreview({ showPreview: true, appMode: 'edit', wysiwyg: true }),
-  false,
-  'WYSIWYG 开启时必须隐藏右侧预览面板（消除双份渲染冲突）'
-)
-assert.equal(
-  shouldShowRightPreview({ showPreview: true, appMode: 'edit', wysiwyg: false }),
+  shouldShowRightPreview({ showPreview: true, appMode: 'edit' }),
   true,
-  'WYSIWYG 关闭 + 编辑模式 + 预览开启 → 显示预览（正常分屏）'
+  '编辑模式 + 预览开启 → 显示预览（正常分屏）'
 )
 // 各 appMode 都不得显示预览
 for (const m of ['code', 'history', 'style', 'read']) {
   assert.equal(
-    shouldShowRightPreview({ showPreview: true, appMode: m, wysiwyg: false }),
+    shouldShowRightPreview({ showPreview: true, appMode: m }),
     false,
     `appMode=${m} 不显示预览`
   )
 }
 assert.equal(
-  shouldShowRightPreview({ showPreview: false, appMode: 'edit', wysiwyg: false }),
+  shouldShowRightPreview({ showPreview: false, appMode: 'edit' }),
   false,
   '预览关闭 → 不显示预览'
 )
@@ -72,3 +67,9 @@ for (const m of ['read', 'history']) {
 assert.match(app, /shouldShowRightPreview\(/, 'App.tsx 必须用 shouldShowRightPreview')
 assert.match(app, /shouldShowRightPanel\(/, 'App.tsx 必须用 shouldShowRightPanel')
 assert.doesNotMatch(app, /showRightPanel\s*\|\|/, 'App.tsx 渲染条件不得再出现 showRightPanel ||（会渲染空面板）')
+
+// ── 静态：WYSIWYG 参数已从签名移除（tsx 不校验类型，行为断言在旧/新代码都过，
+//    故用源码断言真正区分）──
+const modeLayout = read('src/utils/modeLayout.ts')
+assert.doesNotMatch(modeLayout, /wysiwyg/, 'modeLayout.ts 不得再引用 wysiwyg（签名已移除）')
+assert.doesNotMatch(app, /shouldShowRightPreview\(\{[^}]*wysiwyg/, 'App.tsx 调用不得再传 wysiwyg')
