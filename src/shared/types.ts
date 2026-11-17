@@ -63,8 +63,6 @@ export interface EditorStoreState {
   codeMode: boolean
   appMode: 'edit' | 'code' | 'style' | 'history' | 'read'
   codeModeCursor: number
-  /** 并存模式：WYSIWYG（Milkdown 7）编辑器开关，与 CodeMirror 源码编辑器可切换。 */
-  wysiwyg: boolean
   docLibraries: Array<{ id: string; name: string }>
   activeLibraryId: string
   previewWidth: number
@@ -93,7 +91,6 @@ export interface EditorStoreState {
   setStatusbarCollapsed: (statusbarCollapsed: boolean) => void
   setCodeMode: (codeMode: boolean) => void
   setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void
-  setWysiwyg: (on: boolean) => void
   createLibrary: (name: string) => string
   setActiveLibrary: (id: string) => void
   setPreviewWidth: (width: number) => void

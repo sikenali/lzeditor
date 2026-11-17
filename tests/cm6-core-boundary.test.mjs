@@ -80,9 +80,10 @@ assert.deepStrictEqual(
   '主 src 不应再依赖 TipTap / ProseMirror / yeli vendor（Milkdown 仅限 src/additional）',
 )
 
-// ── 并存模式：只读预览（SplitPreview）与 CM6 源码编辑器可切换 ──
-assert.match(app, /TextusPreview|SplitPreview/, 'App 必须挂载只读预览（并存模式）')
-assert.match(app, /wysiwyg\s*\?/, 'App 必须按 wysiwyg 切换编辑器')
+// ── 并存模式：WYSIWYG 已移除，App 恒挂 CM6 源码编辑器 ──
+assert.match(app, /<CodeEditor\s/, 'App 必须恒挂源码编辑器（不再按 wysiwyg 切换）')
+assert.doesNotMatch(app, /TextusPreview/, 'App 不再挂 TextusPreview（WYSIWYG 已移除）')
+assert.doesNotMatch(app, /wysiwyg/, 'App 无 wysiwyg 引用')
 const previewShell = read('src/additional/milkdown/TextusPreview.tsx')
 assert.match(previewShell, /SplitPreview/, 'TextusPreview 必须渲染 SplitPreview')
 assert.match(previewShell, /filePath=\{null\}/, '预览无磁盘（filePath=null）')
@@ -98,7 +99,7 @@ assert.match(reducedPresets, /@milkdown\/kit\/preset\/gfm/, 'Milkdown 必须用 
 const editorChain = read('src/additional/milkdown/textus/editor/editor-extensions.ts')
 assert.match(editorChain, /\.use\(listener\)/, 'Milkdown 必须监听 markdown 变更（listener 装在链上）')
 const editorStore = read('src/store/editorStore.ts')
-assert.match(editorStore, /wysiwyg/, 'editorStore 必须保存 wysiwyg 开关')
+assert.doesNotMatch(editorStore, /wysiwyg/, 'editorStore 不得再保存 wysiwyg 开关（已移除）')
 
 // ── CM6 依赖已在 package.json ──
 const pkg = JSON.parse(read('package.json'))
