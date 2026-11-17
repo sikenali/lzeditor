@@ -390,15 +390,16 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 var(--color-inset-highlight);
 }
 .sidebar-outline .outline-jump-btn.current  {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background: var(--accent-a5);
+  border-color: transparent;
   border-left-color: var(--accent-primary);
-  color: var(--color-on-primary);
+  color: var(--accent-primary);
   font-weight: 600;
 }
 .sidebar-outline .outline-jump-btn.current:hover  {
-  background: color-mix(in srgb, var(--accent-primary) 88%, #000);
-  border-color: color-mix(in srgb, var(--accent-primary) 88%, #000);
+  background: var(--accent-a10);
+  border-color: transparent;
+  border-left-color: var(--accent-primary);
 }
 .sidebar-outline .outline-jump-btn:focus-visible  {
   outline: none;
@@ -420,11 +421,6 @@
 .sidebar-outline .outline-badge.l1  { background: var(--accent-primary); color: var(--color-on-primary); }
 .sidebar-outline .outline-badge.l2  { background: #55524C; color: var(--color-on-primary); }
 .sidebar-outline .outline-badge.l3  { background: #6E6A60; color: var(--color-on-primary); }
-.sidebar-outline .outline-jump-btn.current .outline-badge  {
-  background: var(--color-on-primary);
-  color: var(--accent-primary);
-  font-weight: 700;
-}
 /* 长标题折行而不是截断：截断之后两条近名的长标题没法区分。 */
 .sidebar-outline .outline-text  {
   flex: 1;
