@@ -4,7 +4,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
 import { UiTip } from '../ui/UiTip'
 import {
-  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems, applyWysiwygItems,
+  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
 } from './editorActions'
 
@@ -23,7 +23,7 @@ export const LeftNav: React.FC = () => {
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
   const flyout = useFlyout()
-  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog, wysiwyg } = useEditorActions()
+  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
   const tableActive = useTableActive()
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
@@ -114,8 +114,8 @@ export const LeftNav: React.FC = () => {
         <div className="rail-group">
           {btn('ri-archive-2-line', '文档库', () => togglePanel('library'), showLibrary)}
           {menu('new', newBtnRef, 'ri-file-add-line', '新建')}
-          {btn('ri-list-unordered', '大纲', () => togglePanel('outline'), showOutline, wysiwyg, wysiwyg ? 'WYSIWYG 模式请在编辑器内使用 Markdown 语法' : '大纲')}
-          {btn('ri-search-line', '查找', () => togglePanel('search'), showSearch, wysiwyg, wysiwyg ? 'WYSIWYG 模式不支持源码查找' : '查找')}
+          {btn('ri-list-unordered', '大纲', () => togglePanel('outline'), showOutline)}
+          {btn('ri-search-line', '查找', () => togglePanel('search'), showSearch)}
         </div>
 
         {/* 组 2：编辑 */}
@@ -154,9 +154,9 @@ export const LeftNav: React.FC = () => {
           align="right"
           items={
             flyout.key === 'new' ? NEW_ITEMS
-            : flyout.key === 'format' ? applyWysiwygItems(FORMAT_ITEMS, wysiwyg)
+            : flyout.key === 'format' ? FORMAT_ITEMS
             : flyout.key === 'table' ? applyTableItems(tableActive)
-            : flyout.key === 'insert' ? applyWysiwygItems(INSERT_ITEMS, wysiwyg)
+            : flyout.key === 'insert' ? INSERT_ITEMS
             : MODE_ITEMS
           }
           onAction={onMenuAction}

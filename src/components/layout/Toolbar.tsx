@@ -4,7 +4,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
 import { getEditorFacade } from '../editor/facade/registry'
 import {
-  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems, applyWysiwygItems,
+  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
 } from './editorActions'
 
@@ -59,7 +59,7 @@ export const Toolbar: React.FC = () => {
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
 
   const flyout = useFlyout()
-  const { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog, wysiwyg } = useEditorActions()
+  const { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
   const tableActive = useTableActive()
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
@@ -110,11 +110,11 @@ export const Toolbar: React.FC = () => {
               <span className="toolbar-menu-dot"></span>
             </button>
           </div>
-          <button className="toolbar-btn" disabled={wysiwyg} title={wysiwyg ? 'WYSIWYG 模式请在编辑器内使用 Markdown 语法' : undefined} onClick={() => setShowOutline(!showOutline)}>
+          <button className="toolbar-btn" onClick={() => setShowOutline(!showOutline)}>
             <span className="remix toolbar-icon ri-list-unordered"></span>
             <span className="toolbar-label">大纲</span>
           </button>
-          <button className="toolbar-btn" disabled={wysiwyg} title={wysiwyg ? 'WYSIWYG 模式不支持源码查找' : '查找与替换'} onClick={() => setShowSearch(!showSearch)}>
+          <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)}>
             <span className="remix toolbar-icon ri-search-line"></span>
             <span className="toolbar-label">查找</span>
           </button>
@@ -123,9 +123,9 @@ export const Toolbar: React.FC = () => {
         {/* ── Middle ── */}
         <div className="toolbar-group toolbar-group--middle">
           {quickFormatButtons && <>
-            <button className="toolbar-btn" disabled={wysiwyg} title={wysiwyg ? 'WYSIWYG 模式请在编辑器内使用 Markdown 语法' : undefined} onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className="toolbar-label">粗体</span></button>
-            <button className="toolbar-btn" disabled={wysiwyg} title={wysiwyg ? 'WYSIWYG 模式请在编辑器内使用 Markdown 语法' : undefined} onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
-            <button className="toolbar-btn" disabled={wysiwyg} title={wysiwyg ? 'WYSIWYG 模式请在编辑器内使用 Markdown 语法' : undefined} onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className="toolbar-label">删除线</span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className="toolbar-label">粗体</span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
+            <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className="toolbar-label">删除线</span></button>
             {/* 下划线/高亮 markdown 无法在 yeli 表达，按钮已移除（见 B3）。 */}
           </>}
 
@@ -211,9 +211,9 @@ export const Toolbar: React.FC = () => {
           align="below"
           items={
             flyout.key === 'new' ? NEW_ITEMS
-            : flyout.key === 'format' ? applyWysiwygItems(FORMAT_ITEMS, wysiwyg)
+            : flyout.key === 'format' ? FORMAT_ITEMS
             : flyout.key === 'table' ? applyTableItems(tableActive)
-            : flyout.key === 'insert' ? applyWysiwygItems(INSERT_ITEMS, wysiwyg)
+            : flyout.key === 'insert' ? INSERT_ITEMS
             : MODE_ITEMS
           }
           onAction={onMenuAction}
