@@ -44,7 +44,7 @@
   /* Accent */
   --accent:               var(--color-primary);
   --accent-foreground:    var(--color-on-primary);
-  --accent-hover:         var(--accent-a20);
+  --accent-hover:         color-mix(in srgb, var(--accent-primary) 88%, #000);
   --accent-primary:       var(--color-primary);
 
   /* Accent alpha variants (overwritten dynamically by useTheme for the active accent) */

@@ -89,7 +89,8 @@
 .welcome-btn--primary  {
   padding: 0 14px 0 18px;
   background: var(--accent-primary);
-  color: var(--color-on-primary);
+  border: 0.7px solid var(--accent-primary);
+  color: var(--accent-foreground);
   font-weight: 600;
   box-shadow: 0 3px 10px var(--accent-a20);
 }

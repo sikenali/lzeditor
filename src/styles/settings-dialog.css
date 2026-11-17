@@ -25,13 +25,13 @@
 .settings-save-btn  {
   padding: 9px 24px; border-radius: 8px;
   font-size: 14px; font-weight: 600; color: var(--text-on-accent);
-  border: none; cursor: pointer;
+  border: 0.7px solid var(--accent-primary); cursor: pointer;
   background: var(--accent-primary);
   box-shadow: 0 4px 12px var(--accent-a40);
   transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-base) var(--ease);
   letter-spacing: -0.01em;
 }
-.settings-save-btn:hover  { transform: translateY(-1px); box-shadow: 0 6px 16px var(--accent-a60); }
+.settings-save-btn:hover  { transform: translateY(-1px); border-color: var(--accent-hover); box-shadow: 0 6px 16px var(--accent-a60); }
 .settings-save-btn:active  { transform: scale(0.97); }
 .setting-divider  { height: 1px; background: var(--bg-hover); }
 
@@ -496,12 +496,12 @@
 .ud-btn--primary  {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: white;
+  color: var(--accent-foreground);
 }
 .ud-btn--primary:hover  {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
-  color: white;
+  color: var(--accent-foreground);
   box-shadow: 0 2px 12px var(--accent-a30);
 }
 .ud-format-chip.active  {
