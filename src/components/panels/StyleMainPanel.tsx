@@ -117,6 +117,8 @@ export const StyleMainPanel: React.FC = () => {
   const jumperRef = useRef<(id: string) => void>(() => {})
   jumperRef.current = (id) => {
     scrollToChapter(id)
+    // scrollToChapter 用 memoized 的 chapterItems[].el，主题切换重渲染后可能过期；
+    // 这里按 id 直取最新 DOM 节点兜底（双滚动同目标，无害）。
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
