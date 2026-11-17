@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { getEditorFacade } from '../editor/facade/registry'
+import { getOutlineJumper } from '../../utils/outlineJump'
 import { parseMdOutline, resolveOutlineMd, type MdOutlineItem } from '../../utils/mdOutline'
 import { getDocMd } from '../../utils/docSource'
 import {
@@ -23,6 +24,9 @@ export const SidebarOutline: React.FC = () => {
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const cursorPosition = useEditorStore((s: any) => s.cursorPosition)
+  const appMode = useEditorStore((s: any) => s.appMode)
+  const activeTocId = useEditorStore((s: any) => s.activeTocId)
+  const isContentMode = appMode === 'read' || appMode === 'style'
   const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
 
   const [depth, setDepth] = useState<OutlineDepth>(0)
@@ -38,8 +42,15 @@ export const SidebarOutline: React.FC = () => {
   const items = useMemo(() => parseMdOutline(md), [md])
   const entries = useMemo(() => filterByDepth(items, depth), [items, depth])
 
-  // 当前节 = 最后一个不晚于光标行的标题；深度过滤只显示上级可见项
-  const current = useMemo(() => currentSectionIndex(items, cursorPosition?.line ?? 1), [items, cursorPosition])
+  // 当前节：内容模式（阅读/样式）从 store activeTocId 反查；编辑模式 = 最后一个不晚于光标行的标题。
+  // 深度过滤只显示上级可见项
+  const current = useMemo(() => {
+    if (isContentMode) {
+      if (!activeTocId) return -1
+      return items.findIndex(i => i.id === activeTocId)
+    }
+    return currentSectionIndex(items, cursorPosition?.line ?? 1)
+  }, [isContentMode, activeTocId, items, cursorPosition])
   const shownIndex = useMemo(() => shownCurrent(entries, current), [entries, current])
   /** 唯一的 tab 停点：上次焦点，否则当前项。 */
   const stop = Math.min(focused ?? shownIndex ?? 0, entries.length - 1)
@@ -52,6 +63,8 @@ export const SidebarOutline: React.FC = () => {
   }, [shownIndex])
 
   const handleJump = useCallback((item: MdOutlineItem, position: number) => {
+    // 内容模式（阅读/样式）：经注册表跳转，由阅读/样式面板注册的 jumper 负责滚动与高亮
+    if (isContentMode) { getOutlineJumper()?.(item.id); return }
     // yeli 无 goto：选中目标标题源码区间并聚焦；facade.focus() 会定位到该块
     // 并 scrollIntoView（A2 大纲跳转滚动跟随），不再依赖编辑层随选区跟随。
     const facade = getEditorFacade()
@@ -62,7 +75,7 @@ export const SidebarOutline: React.FC = () => {
     // 上面的 shownIndex effect 不触发），点击的项也要留在大纲视口内。
     const btns = listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn')
     btns?.[position]?.scrollIntoView({ block: 'nearest' })
-  }, [])
+  }, [isContentMode])
 
   /** 方向键在列表里走焦点，Home/End 跳首尾，Return/Space 打开（原生 button 自带）。 */
   const onListKeyDown = useCallback((e: React.KeyboardEvent<HTMLUListElement>) => {
