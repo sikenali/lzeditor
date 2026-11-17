@@ -93,6 +93,13 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
       handleRef.current = { facade, view, destroy };
       facade.setText(mdRef.current);
       const unsubscribe = facade.onChange((markdown) => onChangeRef.current(markdown));
+      // 光标位置跟踪 → cursorPosition：大纲当前节 / 状态栏行列跟随真实光标。
+      // handleJump 的 setSelection 同样触发（update.selectionSet），故大纲点击切换会跟随。
+      const unsubscribeCursor = facade.onSelectionChange((sel) => {
+        if (!sel) return;
+        const line = view.state.doc.lineAt(sel.from);
+        useEditorStore.getState().setCursorPosition({ line: line.number, column: sel.from - line.from + 1 });
+      });
       const uninstallAssist = installAssist(
         view,
         facade,
@@ -103,6 +110,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
 
       return () => {
         unsubscribe();
+        unsubscribeCursor();
         uninstallAssist();
         if (getEditorFacade() === facade) registerEditorFacade(null);
         useEditorStore.getState().setEditorContentRef(null);
