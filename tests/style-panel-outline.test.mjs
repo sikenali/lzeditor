@@ -7,8 +7,9 @@ assert.doesNotMatch(panel, /read-toc-sidebar/, 'StyleMainPanel 不再内嵌目�
 assert.doesNotMatch(panel, /readTocOpen/, 'StyleMainPanel 不再用 readTocOpen')
 assert.doesNotMatch(panel, /tocItems|setTocItems/, 'StyleMainPanel 不再用 store tocItems')
 
-// 目录按钮改造成切换 showOutline
-assert.match(panel, /setShowOutline\(!showOutline\)/, '目录按钮切换 showOutline')
+// 目录按钮已删除：大纲由顶栏工具栏「大纲」按钮统一开关
+assert.doesNotMatch(panel, /setShowOutline\(!showOutline\)/, '「目录」按钮已删除（大纲由顶栏工具栏统一开关）')
+assert.doesNotMatch(panel, /showOutline/, 'StyleMainPanel 不再用 showOutline')
 
 // 滚动同步 id 来自 parseMdOutline（不再 style-h-${i}）
 assert.match(panel, /parseMdOutline/, '滚动同步必须用 parseMdOutline 的 id')

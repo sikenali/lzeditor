@@ -21,8 +21,6 @@ export const StyleMainPanel: React.FC = () => {
   const fontSize = useEditorStore((s) => s.readFontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore(s => s.updateSetting)
-  const showOutline = useEditorStore((s) => s.showOutline)
-  const setShowOutline = useEditorStore((s) => s.setShowOutline)
   const activeTocId = useEditorStore((s) => s.activeTocId)
   const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
 
@@ -226,10 +224,6 @@ export const StyleMainPanel: React.FC = () => {
                   )}
                 </div>
               </div>
-              <button className="style-action-btn" title={showOutline ? '隐藏目录' : '显示目录'} onClick={() => setShowOutline(!showOutline)}>
-                <span className={`remix ${showOutline ? 'ri-list-unordered' : 'ri-list-check'}`}></span>
-                <span>目录</span>
-              </button>
               <button className="style-action-btn" title={previewVisible ? '隐藏预览' : '显示预览'} onClick={() => setPreviewVisible(v => !v)}>
                 <span className={`remix ${previewVisible ? 'ri-eye-off-line' : 'ri-eye-line'}`}></span>
                 <span>{previewVisible ? '隐藏' : '显示'}</span>
