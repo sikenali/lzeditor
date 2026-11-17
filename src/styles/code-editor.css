@@ -5,6 +5,11 @@
 
 .code-editor-shell {
   height: 100%;
+  /* 作为 .app-main（display:flex）的子项必须撑满剩余宽度，否则按内容（--document-width）
+     收缩，滚动条停在 1024px 边界、右侧留白，看起来像多了一个「滚动区域」。
+     min-width:0 让分屏（编辑器+预览）时编辑器能收缩到 1024px 以内。 */
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   --document-gutter: 96px;
   --document-width: 690px;
