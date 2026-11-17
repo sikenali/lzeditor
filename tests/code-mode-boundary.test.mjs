@@ -36,6 +36,7 @@ assert.doesNotMatch(layoutCss, /\.sidebar-preview \.preview-doc/, '排版规则�
 // ── 共用样式没被误删 ──
 assert.match(readModeCss, /\.read-mode-inline/, '阅读模式的容器样式必须还在')
 assert.match(readModeCss, /\.read-tag\b/, 'read-tag 基类被 StyleMainPanel 用，不能删')
+assert.doesNotMatch(readModeCss, /nav-hidden:hover/, '浮导航不靠 hover 显示（点内容区才显示）')
 assert.match(globalsCss, /\.read-mode-toolbar/, '阅读模式的工具栏样式必须还在')
 assert.doesNotMatch(globalsCss, /read-toc/, 'read-toc 死 CSS 已清理（组件已移除）')
 assert.doesNotMatch(readModeCss, /read-toc/, 'read-mode 的 read-toc 死 CSS 已清理')

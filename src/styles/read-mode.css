@@ -236,10 +236,6 @@
      又彻底停掉 nav-float-btn 的 backdrop-filter 白雾泄漏（opacity 压不住它）。 */
   transition: opacity var(--t-base) var(--ease), visibility 0s linear var(--t-base);
 }
-.main-nav-float.nav-hidden:hover  {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 .nav-float-btn  {
   width: 44px;

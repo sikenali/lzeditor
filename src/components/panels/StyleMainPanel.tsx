@@ -27,6 +27,8 @@ export const StyleMainPanel: React.FC = () => {
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
   const [previewVisible, setPreviewVisible] = useState(true)
+  // 浮导航（上一章/下一章/回到顶部/全屏）默认隐藏，点内容区才显示
+  const [navVisible, setNavVisible] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [styleMenuOpen, setStyleMenuOpen] = useState(false)
@@ -157,7 +159,7 @@ export const StyleMainPanel: React.FC = () => {
       <div className="style-main-panel">
         <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         {/* ── Read content area ── */}
-        <div ref={bodyRef} className="style-read-scroll">
+        <div ref={bodyRef} className="style-read-scroll" onClick={() => setNavVisible(true)}>
           <div className="style-read-article" style={{ maxWidth: 760 }}>
             <div className="main-read-header">
               <div className="main-read-tags">
@@ -176,7 +178,7 @@ export const StyleMainPanel: React.FC = () => {
           </div>
         </div>
         </div>
-        <div className={`main-nav-float${previewVisible ? '' : ' nav-hidden'}`}>
+        <div className={`main-nav-float${navVisible ? '' : ' nav-hidden'}`}>
           <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
             <span className="remix ri-arrow-left-s-line"></span>
           </button>
