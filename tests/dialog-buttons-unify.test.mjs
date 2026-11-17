@@ -27,4 +27,14 @@ assert.match(uiCss, /\.ui-btn--outline:hover[^{]*\{[^}]*border-color:\s*var\(--a
 assert.match(uiCss, /\.ui-btn--ghost:hover[^{]*\{[^}]*background:\s*var\(--bg-hover\)/, '.ui-btn--ghost hover 背景必须走 bg-hover')
 assert.doesNotMatch(welcomeCss, /\.welcome-btn--ghost\s*\{[^}]*color:\s*(white|#fff)\b/, '.welcome-btn--ghost 不得硬编码白字')
 
+// 最终审查补漏：.btn-save（ModelSettingsTab 保存）必须走 accent token，不得硬编码白字/绕过 accent
+assert.match(settingsDialog, /\.btn-save\s*\{[^}]*background:\s*var\(--accent-primary\)/, '.btn-save 背景必须走 accent-primary')
+assert.match(settingsDialog, /\.btn-save\s*\{[^}]*color:\s*var\(--accent-foreground\)/, '.btn-save 文字必须走 accent-foreground')
+assert.match(settingsDialog, /\.btn-save\s*\{[^}]*border:\s*0\.7px solid var\(--accent-primary\)/, '.btn-save 必须有统一线框')
+assert.doesNotMatch(settingsDialog, /\.btn-save\s*\{[^}]*color:\s*(white|#fff)\b/, '.btn-save 不得硬编码白字')
+// .search-btn--primary 静止态文字也必须走 accent-foreground（panels.css 两处定义）
+const panelsCss = read('src/styles/panels.css')
+assert.doesNotMatch(panelsCss, /\.search-btn--primary\s*\{[^}]*color:\s*(white|#fff)\b/, '.search-btn--primary 不得硬编码白字')
+assert.match(panelsCss, /\.search-btn--primary\s*\{[^}]*color:\s*var\(--accent-foreground\)/, '.search-btn--primary 文字必须走 accent-foreground')
+
 console.log('dialog buttons unify (primary) checks passed')

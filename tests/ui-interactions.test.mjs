@@ -619,8 +619,9 @@ test('§8.3 UiCheck：默认 18px 圆徽标，选中主色边框 + 主题主色�
 })
 
 test('§10.2 按钮 hover 用 color-mix 生成层次；§10.3 禁用 filter:brightness', () => {
-  // 按钮 hover 统一走 accent token（见 2026-11-17-dialog-buttons-unify plan §89）
-  assert.match(uiCss, /color-mix\(in srgb, var\(--accent-primary\) 88%, #000\)/)
+  // 按钮 hover 统一走 --accent-hover token（见 2026-11-17-dialog-buttons-unify 最终审查；
+  // 88% 加深公式只存在于 color-tokens.css 的 --accent-hover 定义，ui.css 不再重复）
+  assert.match(uiCss, /\.ui-btn--primary:hover:not\(\.disabled\)\s*\{[^}]*background:\s*var\(--accent-hover\)/)
   assert.doesNotMatch(uiCss, /filter:\s*brightness/)
 })
 

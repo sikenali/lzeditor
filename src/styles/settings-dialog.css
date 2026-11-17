@@ -1362,12 +1362,12 @@
   justify-content: flex-end;
 }
 .btn-save  {
-  height: 44px; padding: 0 28px; border: none; border-radius: 10px;
-  background: var(--color-primary); color: #fff; font-size: 15px; font-weight: 500;
+  height: 44px; padding: 0 28px; border: 0.7px solid var(--accent-primary); border-radius: 10px;
+  background: var(--accent-primary); color: var(--accent-foreground); font-size: 15px; font-weight: 500;
   cursor: pointer;
   transition: background var(--t-base), transform var(--t-fast); white-space: nowrap;
 }
-.btn-save:hover  { background: color-mix(in srgb, var(--color-primary) 88%, black); }
+.btn-save:hover  { background: var(--accent-hover); }
 .btn-save:active  { transform: scale(0.97); }
 
 /* 已保存密钥 */
