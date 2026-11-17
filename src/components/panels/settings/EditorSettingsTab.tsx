@@ -183,7 +183,7 @@ function renderEditModeSection(s: any, u: any) {
       </UDSettingRow>
          <div className="setting-divider" />
           <UDSettingRow icon="ri-eye-line" label="预览模式" desc="编辑模式与代码模式下默认显示右侧预览">
-            <UiSwitch size="sm" checked={s.previewModeEnabled !== false} onChange={v => {
+            <UiSwitch size="sm" checked={s.previewModeEnabled === true} onChange={v => {
               u('previewModeEnabled', v)
               useEditorStore.getState().setShowPreview(v)
             }} />

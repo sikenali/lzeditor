@@ -41,6 +41,15 @@ export function migrateApiKey(entry: ApiKeyEntry): ApiKeyEntry {
   return base ? { ...base, ...entry } : entry
 }
 
+/**
+ * 设置存档版本。
+ * - v1：previewModeEnabled 默认 true（分屏源码+预览）。老存档里的 true 是旧默认值
+ *   被 saveSettingsToStorage 全量落盘写入，并非用户显式开启。
+ * - v2：默认改为 false（仅源码编辑器）。升级时把老存档的 true 迁移为 false，
+ *   否则老用户升级后右侧预览仍然显示。
+ */
+export const SETTINGS_VERSION = 2
+
 export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
   maxTokens: 1024,
@@ -66,7 +75,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   contentWidth: '1024',
   typewriterMode: false,
   focusMode: false,
-  previewModeEnabled: true,
+  previewModeEnabled: false,
   navMode: 'top' as 'top' | 'left',
   codeSplitRatio: 0.5,
   // ── Toolbar defaults ──
@@ -176,7 +185,7 @@ export function getAccentColor(presetId: string): string {
 export function saveSettingsToStorage(settings: Partial<SettingsState>) {
   try {
     const { apiKeys, ...rest } = settings
-    localStorage.setItem('lzeditor-settings', JSON.stringify(rest))
+    localStorage.setItem('lzeditor-settings', JSON.stringify({ ...rest, settingsVersion: SETTINGS_VERSION }))
     if (settings.theme) localStorage.setItem('lzeditor-theme', settings.theme)
     if (settings.accentColor) localStorage.setItem('lzeditor-accent', getAccentColor(settings.accentColor))
     if (apiKeys) {
@@ -191,7 +200,16 @@ export function loadSettingsFromStorage(): Partial<SettingsState> {
   const parsed: Partial<SettingsState> = {}
   try {
     const saved = localStorage.getItem('lzeditor-settings')
-    if (saved) Object.assign(parsed, JSON.parse(saved) as Partial<SettingsState>)
+    if (saved) {
+      const raw = JSON.parse(saved) as Partial<SettingsState> & { settingsVersion?: number }
+      // 迁移：v1 默认 previewModeEnabled=true（分屏），v2 起默认 false。
+      // 老存档里的 true 是旧默认值全量落盘，并非用户显式开启，按新默认迁移为 false。
+      const version = (raw && typeof raw.settingsVersion === 'number') ? raw.settingsVersion : 1
+      if (version < SETTINGS_VERSION && raw?.previewModeEnabled === true) {
+        raw.previewModeEnabled = false
+      }
+      Object.assign(parsed, raw)
+    }
   } catch {
     // 存档损坏时忽略，退回默认值
   }

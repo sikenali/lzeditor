@@ -5,6 +5,7 @@ import { getDocMd } from '../utils/docSource'
 import { getEditorFacade } from '../components/editor/facade/registry'
 import { persistCatalog, restoreSession, type CatalogEntry } from '../utils/docCatalog'
 import { loadVersions, saveVersions } from '../utils/versionPersistence'
+import { SETTINGS_VERSION } from './settingsStore'
 
 const MAX_VERSIONS = 10
 
@@ -16,8 +17,8 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
       const parsed = JSON.parse(raw)
       return {
         showOutline: typeof parsed.showOutline === 'boolean' ? parsed.showOutline : false,
-        // 未显式保存过预览开关时，按默认「分屏源码+预览」处理（与下方设置回落一致）
-        showPreview: typeof parsed.showPreview === 'boolean' ? parsed.showPreview : true,
+        // 未显式保存过预览开关时，按默认「仅源码编辑器」处理（与下方设置回落一致）
+        showPreview: typeof parsed.showPreview === 'boolean' ? parsed.showPreview : false,
         showLibrary: typeof parsed.showLibrary === 'boolean' ? parsed.showLibrary : false,
         statusbarCollapsed: typeof parsed.statusbarCollapsed === 'boolean' ? parsed.statusbarCollapsed : false,
       }
@@ -26,13 +27,17 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
   // 首次运行没有布局记录：预览开关回落到设置页的「记住预览状态」，
   // 否则 previewModeEnabled 永远只写不读。
   // lzeditor-settings 在从未改过设置时尚未写入 localStorage，JSON.parse('') 会抛错；
-  // 必须按设置默认值 previewModeEnabled=true（=分屏源码+预览）处理，不能误判为 false。
-  let preview = true
+  // 必须按设置默认值 previewModeEnabled=false（=仅源码编辑器）处理，不能误判为 true。
+  let preview = false
   try {
     const raw = localStorage.getItem('lzeditor-settings')
     if (raw) {
       const s = JSON.parse(raw)
-      preview = s?.previewModeEnabled !== false
+      // 迁移：v1 默认 previewModeEnabled=true（分屏），v2 起默认 false。
+      // 老存档里的 true 是旧默认值全量落盘，并非用户显式开启；按新默认迁移为 false，
+      // 否则老用户升级后右侧预览仍然显示。与 settingsStore.loadSettingsFromStorage 保持一致。
+      const version = (s && typeof s.settingsVersion === 'number') ? s.settingsVersion : 1
+      preview = s?.previewModeEnabled === true && version >= SETTINGS_VERSION
     }
   } catch {}
   return { showOutline: false, showPreview: preview, showLibrary: false, statusbarCollapsed: false }
