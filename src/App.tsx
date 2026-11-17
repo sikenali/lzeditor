@@ -470,8 +470,9 @@ function App() {
       <Toolbar />
       <DocumentMetaBar />
       <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
-        {showOutline && <SidebarOutline />}
+        {/* 文档库最左侧：大纲与文档库同时显示时，文档库在左、大纲在右。 */}
         {showLibrary && <LibraryPanel sidebar className={libraryClosing ? 'closing' : ''} />}
+        {showOutline && <SidebarOutline />}
         {/* 排版模式：centerContent 返回 null（源码编辑器不渲染），样式面板独占全宽 */}
         {centerContent}
         {/* 顶部布局同样要给排版面板留右栏：showRightPreview 已排除 style，

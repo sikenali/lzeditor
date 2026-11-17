@@ -51,13 +51,17 @@ export const SidebarOutline: React.FC = () => {
     btns?.[shownIndex]?.scrollIntoView({ block: 'nearest' })
   }, [shownIndex])
 
-  const handleJump = useCallback((item: MdOutlineItem) => {
+  const handleJump = useCallback((item: MdOutlineItem, position: number) => {
     // yeli 无 goto：选中目标标题源码区间并聚焦；facade.focus() 会定位到该块
     // 并 scrollIntoView（A2 大纲跳转滚动跟随），不再依赖编辑层随选区跟随。
     const facade = getEditorFacade()
     if (!facade) return
     facade.setSelection(item.pos, item.pos + item.text.length)
     facade.focus()
+    // 点击后让该项滚入视口并保持 current 高亮：即使光标未跨节（shownIndex 不变，
+    // 上面的 shownIndex effect 不触发），点击的项也要留在大纲视口内。
+    const btns = listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn')
+    btns?.[position]?.scrollIntoView({ block: 'nearest' })
   }, [])
 
   /** 方向键在列表里走焦点，Home/End 跳首尾，Return/Space 打开（原生 button 自带）。 */
@@ -113,7 +117,7 @@ export const SidebarOutline: React.FC = () => {
                     aria-current={isCurrent ? 'location' : undefined}
                     tabIndex={position === stop ? 0 : -1}
                     onFocus={() => setFocused(position)}
-                    onClick={() => handleJump(entry.heading)}
+                    onClick={() => handleJump(entry.heading, position)}
                     title={entry.heading.text}
                   >
                     <span className={badgeClass(entry.heading.level)}>H{entry.heading.level}</span>
