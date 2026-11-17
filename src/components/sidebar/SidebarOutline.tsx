@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { getEditorFacade } from '../editor/facade/registry'
-import { parseMdOutline, type MdOutlineItem } from '../../utils/mdOutline'
+import { parseMdOutline, resolveOutlineMd, type MdOutlineItem } from '../../utils/mdOutline'
+import { getDocMd } from '../../utils/docSource'
 import {
   OUTLINE_DEPTHS, currentSectionIndex, depthLabel, filterByDepth,
   rovingIndex, sectionCountLabel, shownCurrent, type OutlineDepth,
@@ -30,8 +31,10 @@ export const SidebarOutline: React.FC = () => {
   const listRef = useRef<HTMLUListElement>(null)
   const depthGroupRef = useRef<HTMLDivElement>(null)
 
-  // 大纲从 markdown 源文本解析：CM6 没有文档树，标题只能从 `#` 号推
-  const md = docsMd[activeDocId || 'readme'] || mdContent || ''
+  // 大纲从 markdown 源文本解析：CM6 没有文档树，标题只能从 `#` 号推。
+  // md 源走 resolveOutlineMd 兜底链（docsMd → mdContent → getDocMd 源码），
+  // 避免首开 docsMd/mdContent 均空时大纲显示「暂无标题」（编辑器已借 getDocMd 显示内容）。
+  const md = resolveOutlineMd(activeDocId || 'readme', docsMd, mdContent, getDocMd)
   const items = useMemo(() => parseMdOutline(md), [md])
   const entries = useMemo(() => filterByDepth(items, depth), [items, depth])
 

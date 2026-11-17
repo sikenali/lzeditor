@@ -7,7 +7,7 @@ const {
   OUTLINE_DEPTHS, currentSectionIndex, depthLabel, filterByDepth,
   rovingIndex, sectionCountLabel, shownCurrent,
 } = await import('../src/utils/outline.ts')
-const { parseMdOutline } = await import('../src/utils/mdOutline.ts')
+const { parseMdOutline, resolveOutlineMd } = await import('../src/utils/mdOutline.ts')
 const sidebar = read('src/components/sidebar/SidebarOutline.tsx')
 const outlineCss = read('src/styles/layout.css')
 
@@ -126,4 +126,25 @@ test('缩进查表与几何量对齐 backtickle，徽标对齐第一行', () => 
   assert.doesNotMatch(textBlock, /text-overflow: ellipsis/, '不该再截断标题')
   assert.doesNotMatch(textBlock, /white-space: nowrap/, '不该再强制单行')
   assert.doesNotMatch(sidebar, /paddingLeft/, '内联 padding 缩进已被缩进类取代')
+})
+
+// ── 大纲 md 源兜底：首开 docsMd/mdContent 均空时，必须回落源码兜底 ──
+test('resolveOutlineMd：首开 docsMd/mdContent 均空时回落源码兜底（源含标题）', () => {
+  const source = () => '# README source'
+  const md = resolveOutlineMd('readme', {}, '', source)
+  assert.notEqual(md, '', '首开大纲不能是空串，必须取到源码兜底')
+  assert.ok(md.includes('#'), '源码兜底必须含 # 标题行')
+  assert.ok(parseMdOutline(md).length > 0, '源码兜底必须能解析出大纲标题')
+})
+
+test('resolveOutlineMd：docsMd 优先（与输入同步），mdContent 次之，源码最后', () => {
+  const source = () => '# source'
+  assert.equal(resolveOutlineMd('readme', { readme: '# Custom' }, '# Live', source), '# Custom')
+  assert.equal(resolveOutlineMd('x', {}, '# live', source), '# live')
+  assert.equal(resolveOutlineMd('x', {}, '', source), '# source')
+})
+
+test('大纲 md 源走 resolveOutlineMd 兜底链，getDocMd 作为源码兜底注入', () => {
+  assert.match(sidebar, /resolveOutlineMd\(/, '组件必须经 resolveOutlineMd 取 md，带源码兜底')
+  assert.match(sidebar, /resolveOutlineMd\([^)]*getDocMd/, '组件必须把 getDocMd 作为源码兜底注入')
 })

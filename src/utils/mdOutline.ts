@@ -14,6 +14,28 @@ export interface MdOutlineItem {
 }
 
 /**
+ * 大纲 markdown 源解析（带兜底链）。
+ *
+ * 与 App.tsx `editorMd` 的兜底链一致，防止首开空白：
+ * 优先 store 的 `docsMd[docId]`（与输入同步，输入时 onChange 同帧写回），
+ * 其次当前编辑缓冲 `mdContent`，最后回落文档源码兜底 `source(docId)`
+ * （组件传 getDocMd：builtin/本地存储）。不回落 source 的话，首开
+ * docsMd/mdContent 均空时大纲会显示「暂无标题」，而编辑器已借 getDocMd
+ * 显示内容——两边不一致。
+ *
+ * `source` 由调用方注入（getDocMd 经 docSource 会拖入 .md 资源，node:test
+ * 无法加载，故不作为静态依赖，改注入以便行为化测试）。
+ */
+export function resolveOutlineMd(
+  docId: string,
+  docsMd: Record<string, string>,
+  mdContent: string,
+  source: (id: string) => string,
+): string {
+  return docsMd?.[docId] || mdContent || source(docId) || ''
+}
+
+/**
  * 从 markdown 源文本收集标题。CM6 没有文档树，大纲只能从源码解析；
  * 代码块围栏内的 `#` 不算标题。
  */
