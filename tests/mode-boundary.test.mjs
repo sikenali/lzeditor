@@ -9,9 +9,9 @@ const sidebarPreview = read('src/components/sidebar/SidebarPreview.tsx')
 const appCss = read('src/styles/app.css')
 const modeLayout = read('src/utils/modeLayout.ts')
 
-// ── 模式菜单四项：预览/代码/排版/阅读 ──
+// ── 模式菜单三项：预览/排版/阅读（代码模式已去掉，默认即代码模式）──
 assert.match(actions, /label: '预览模式', action: 'preview'/, '模式菜单必须有预览模式')
-assert.match(actions, /label: '代码模式', action: 'code'/, '模式菜单必须有代码模式')
+assert.doesNotMatch(actions, /label: '代码模式', action: 'code'/, '代码模式入口已去掉（默认即代码模式）')
 assert.match(actions, /label: '排版模式', action: 'style'/, '模式菜单必须有排版模式')
 assert.match(actions, /label: '阅读模式', action: 'read'/, '阅读模式必须在模式菜单里')
 

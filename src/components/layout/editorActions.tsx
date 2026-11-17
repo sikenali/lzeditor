@@ -64,7 +64,6 @@ export const TABLE_ITEMS: MenuItem[] = [
 
 export const MODE_ITEMS: MenuItem[] = [
   { icon: 'ri-eye-2-line', label: '预览模式', action: 'preview' },
-  { icon: 'ri-code-s-line', label: '代码模式', action: 'code' },
   { icon: 'ri-palette-line', label: '排版模式', action: 'style' },
   { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
 ]
