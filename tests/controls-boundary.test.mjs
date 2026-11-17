@@ -143,6 +143,14 @@ const readModeCss = read('src/styles/read-mode.css')
 assert.match(readModeCss, /text-indent: var\(--read-text-indent/, '首行缩进必须被真正消费')
 assert.match(readModeCss, /text-align: var\(--read-text-align/, '两端对齐必须被真正消费')
 
+// 浮导航隐藏态必须彻底隐藏：nav-float-btn 带 backdrop-filter，Chromium 里 opacity:0
+// 压不住 backdrop-filter 的白雾泄漏（隐藏态仍现白雾区）。必须加 visibility:hidden 彻底不渲染。
+assert.match(
+  readModeCss,
+  /\.main-nav-float\.nav-hidden\s*\{[^}]*visibility:\s*hidden/,
+  'nav-hidden 必须加 visibility:hidden，彻底隐藏浮导航（防 backdrop-filter 白雾泄漏）',
+)
+
 // 完全没有 UI 能写的设置项，留着只是误导
 assert.doesNotMatch(settingsStore, /^\s*headingStyles:/m, 'headingStyles 没有任何界面能写入，必须清掉')
 assert.doesNotMatch(settingsStore, /^\s*linkColor:/m, 'linkColor 没有任何界面能写入，必须清掉')
