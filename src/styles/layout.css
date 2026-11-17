@@ -416,11 +416,13 @@
   line-height: 1.4;
   letter-spacing: 0.02em;
 }
-/* 层级徽标：反色（实色底 + 浅色字）提高对比，H1 用强调红、H2/H3 用深中性灰，
+/* 层级徽标：非活动项统一中性灰（实色底 + 白字），活动项徽标强调色随 active（红色焦点跟随）。
    两套主题下白字均可读（text-secondary/muted 在暗色是浅色，不能当底，故用固定深灰）。 */
-.sidebar-outline .outline-badge.l1  { background: var(--accent-primary); color: var(--color-on-primary); }
+.sidebar-outline .outline-badge.l1  { background: #55524C; color: var(--color-on-primary); }
 .sidebar-outline .outline-badge.l2  { background: #55524C; color: var(--color-on-primary); }
-.sidebar-outline .outline-badge.l3  { background: #6E6A60; color: var(--color-on-primary); }
+.sidebar-outline .outline-badge.l3  { background: #55524C; color: var(--color-on-primary); }
+/* 活动项徽标强调色：红色焦点随 active（H1 非 active 时也回中性灰） */
+.sidebar-outline .outline-jump-btn.current .outline-badge  { background: var(--accent-primary); color: var(--color-on-primary); }
 /* 长标题折行而不是截断：截断之后两条近名的长标题没法区分。 */
 .sidebar-outline .outline-text  {
   flex: 1;
