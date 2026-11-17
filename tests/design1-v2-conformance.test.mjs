@@ -145,11 +145,13 @@ const footerGlow = layout.match(/\.app-footer::before\s*\{[^}]*\}/)?.[0] || ''
 assert.match(footerGlow, /linear-gradient\(90deg,\s*transparent,[^}]*color-mix\(in srgb,\s*var\(--color-primary\)\s*25%,\s*transparent\)\s*50%,\s*transparent\)/, '页脚顶部必须微光分割线渐变（§2.1）')
 assert.match(footerGlow, /height:\s*0\.7px/, '页脚微光分割线必须 0.7px')
 
-// ── 方案 A：Web 应用内容居中限宽 1280（窗口观感），高度仍铺满视口 ──
+// ── 应用全屏铺满：去掉 1280px 限宽与居中，chrome 铺满视口，文档正文仍由 --document-width 居中限宽 ──
 const appCss = read('src/styles/app.css')
 const appRule = appCss.match(/\.app\s*\{[^}]*\}/)?.[0] || ''
-assert.match(appRule, /max-width:\s*1280px/, '.app 必须 max-width:1280px（窗口观感）')
-assert.match(appRule, /margin:\s*0 auto/, '.app 必须水平居中')
+// 2026-11-17 全屏修复：去掉 1280px 限宽与居中，应用铺满视口（文档内容仍由 --document-width 居中限宽）
+assert.doesNotMatch(appRule, /max-width:\s*1280px/, '.app 不得再限宽 1280px（全屏铺满）')
+assert.doesNotMatch(appRule, /margin:\s*0\s*auto/, '.app 不得再水平居中（全屏铺满）')
+assert.match(appRule, /width:\s*100%/, '.app 宽度必须铺满视口')
 assert.match(appRule, /height:\s*100vh/, '.app 高度仍铺满视口')
 
 // ── 方案 A：Electron 窗口 1280×900（min 保留）──

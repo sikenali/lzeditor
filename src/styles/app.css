@@ -2,10 +2,9 @@
 .app  {
   display: flex;
   height: 100vh;
-  /* 方案 A：窗口观感 —— 内容居中限宽 1280px（DESIGN-1.md 弹窗上限），高度仍铺满视口 */
+  /* 全屏铺满（2026-11-17）：去掉 1280px 限宽与水平居中，chrome（顶栏/侧栏/背景）铺满视口。
+     文档正文仍由 .cm-content 依据 --document-width 居中限宽（1280px），不受本规则影响。 */
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
   overflow: hidden;
   background: var(--bg-primary);
   font-family: var(--font-sans);
