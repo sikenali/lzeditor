@@ -5,7 +5,7 @@ import { getDocMd } from '../utils/docSource'
 import { getEditorFacade } from '../components/editor/facade/registry'
 import { persistCatalog, restoreSession, type CatalogEntry } from '../utils/docCatalog'
 import { loadVersions, saveVersions } from '../utils/versionPersistence'
-import { SETTINGS_VERSION } from './settingsStore'
+import { PREVIEW_MODE_OFF_VERSION } from './settingsStore'
 
 const MAX_VERSIONS = 10
 
@@ -36,8 +36,9 @@ function loadLayoutState(): { showOutline: boolean; showPreview: boolean; showLi
       // 迁移：v1 默认 previewModeEnabled=true（分屏），v2 起默认 false。
       // 老存档里的 true 是旧默认值全量落盘，并非用户显式开启；按新默认迁移为 false，
       // 否则老用户升级后右侧预览仍然显示。与 settingsStore.loadSettingsFromStorage 保持一致。
+      // 用 PREVIEW_MODE_OFF_VERSION（v2）判断，不随 SETTINGS_VERSION 升到 v3 而变化。
       const version = (s && typeof s.settingsVersion === 'number') ? s.settingsVersion : 1
-      preview = s?.previewModeEnabled === true && version >= SETTINGS_VERSION
+      preview = s?.previewModeEnabled === true && version >= PREVIEW_MODE_OFF_VERSION
     }
   } catch {}
   return { showOutline: false, showPreview: preview, showLibrary: false, statusbarCollapsed: false }

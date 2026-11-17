@@ -43,12 +43,18 @@ export function migrateApiKey(entry: ApiKeyEntry): ApiKeyEntry {
 
 /**
  * 设置存档版本。
- * - v1：previewModeEnabled 默认 true（分屏源码+预览）。老存档里的 true 是旧默认值
- *   被 saveSettingsToStorage 全量落盘写入，并非用户显式开启。
- * - v2：默认改为 false（仅源码编辑器）。升级时把老存档的 true 迁移为 false，
+ * - v1：previewModeEnabled 默认 true（分屏源码+预览）、contentWidth 默认 '1024'。
+ *   老存档里的这些值是旧默认值被 saveSettingsToStorage 全量落盘写入，并非用户显式开启。
+ * - v2：previewModeEnabled 默认改为 false（仅源码编辑器）。升级时把老存档的 true 迁移为 false，
  *   否则老用户升级后右侧预览仍然显示。
+ * - v3：contentWidth 默认改为 '1280'（铺满编辑区，.app 限宽 1280px）。升级时把老存档的
+ *   '1024'（旧默认值）迁移为 '1280'，否则老用户升级后文本仍不铺满。
  */
-export const SETTINGS_VERSION = 2
+export const SETTINGS_VERSION = 3
+/** v1→v2：previewModeEnabled 默认 true（分屏）→ false（仅源码编辑器）。 */
+export const PREVIEW_MODE_OFF_VERSION = 2
+/** v2→v3：contentWidth 默认 '1024' → '1280'（铺满编辑区）。 */
+export const CONTENT_WIDTH_FULL_VERSION = 3
 
 export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
@@ -72,7 +78,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   editorFont: 'sans-serif',
   defaultFontSize: 16,
   lineHeight: '1.7',
-  contentWidth: '1024',
+  contentWidth: '1280',
   typewriterMode: false,
   focusMode: false,
   previewModeEnabled: false,
@@ -202,11 +208,16 @@ export function loadSettingsFromStorage(): Partial<SettingsState> {
     const saved = localStorage.getItem('lzeditor-settings')
     if (saved) {
       const raw = JSON.parse(saved) as Partial<SettingsState> & { settingsVersion?: number }
-      // 迁移：v1 默认 previewModeEnabled=true（分屏），v2 起默认 false。
-      // 老存档里的 true 是旧默认值全量落盘，并非用户显式开启，按新默认迁移为 false。
       const version = (raw && typeof raw.settingsVersion === 'number') ? raw.settingsVersion : 1
-      if (version < SETTINGS_VERSION && raw?.previewModeEnabled === true) {
+      // 迁移 v1→v2：previewModeEnabled 默认 true（分屏）→ false（仅源码编辑器）。
+      // 老存档里的 true 是旧默认值全量落盘，并非用户显式开启，按新默认迁移为 false。
+      if (version < PREVIEW_MODE_OFF_VERSION && raw?.previewModeEnabled === true) {
         raw.previewModeEnabled = false
+      }
+      // 迁移 v2→v3：contentWidth 默认 '1024' → '1280'（铺满编辑区，.app 限宽 1280px）。
+      // 老存档里的 '1024' 是旧默认值全量落盘，并非用户显式开启，按新默认迁移为 '1280'。
+      if (version < CONTENT_WIDTH_FULL_VERSION && raw?.contentWidth === '1024') {
+        raw.contentWidth = '1280'
       }
       Object.assign(parsed, raw)
     }
