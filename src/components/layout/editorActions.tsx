@@ -253,7 +253,7 @@ export function useEditorActions() {
     facade.execCommand(yeliId)
   }, [setInsertPanel])
 
-  // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（左源码 + 右样式预览）
+  // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（样式面板独占全宽，左侧源码隐藏）
   const modeAction = useCallback((action: string) => {
     const st = useEditorStore.getState()
     if (action === 'preview') {

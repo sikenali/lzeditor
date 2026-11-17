@@ -23,6 +23,15 @@ export function shouldShowRightPreview(opts: {
 }
 
 /**
+ * 是否渲染中编辑区列（.app-center）。排版模式不渲染：样式面板独占全宽，
+ * 左侧源码编辑器应隐藏（见截图：排版模式只显示样式面板、左侧不显示）。
+ * 阅读/历史模式仍走中列（ReadMode / HistoryPanel 替换编辑区），故仅排除 style。
+ */
+export function shouldShowCenterColumn(appMode: string): boolean {
+  return appMode !== 'style'
+}
+
+/**
  * 左导航布局是否渲染右侧面板容器（.app-right-panel）。
  *
  * 不再读取残留的 showRightPanel：样式面板由 `appMode === 'style'` 决定（历史/阅读模式

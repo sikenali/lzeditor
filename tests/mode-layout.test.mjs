@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { shouldShowRightPreview, shouldShowRightPanel } from '../src/utils/modeLayout.ts'
+import { shouldShowRightPreview, shouldShowRightPanel, shouldShowCenterColumn } from '../src/utils/modeLayout.ts'
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const app = read('src/App.tsx')
@@ -63,9 +63,38 @@ for (const m of ['read', 'history']) {
   )
 }
 
+// ── 行为：中编辑区列渲染条件（排版模式隐藏左侧源码、样式面板独占全宽）──
+// 编辑/代码/阅读/历史模式仍走中列（编辑器或 ReadMode/HistoryPanel），仅排版模式排除。
+assert.equal(
+  shouldShowCenterColumn('edit'),
+  true,
+  '编辑模式 → 渲染中列（源码编辑器）'
+)
+assert.equal(
+  shouldShowCenterColumn('code'),
+  true,
+  '代码模式 → 渲染中列（全宽源码）'
+)
+assert.equal(
+  shouldShowCenterColumn('read'),
+  true,
+  '阅读模式 → 渲染中列（ReadMode 替换编辑区）'
+)
+assert.equal(
+  shouldShowCenterColumn('history'),
+  true,
+  '历史模式 → 渲染中列（HistoryPanel 替换编辑区）'
+)
+assert.equal(
+  shouldShowCenterColumn('style'),
+  false,
+  '排版模式 → 不渲染中列（样式面板独占全宽、左侧源码隐藏）'
+)
+
 // ── 静态：App.tsx 必须走纯函数，渲染条件不得再出现残留 showRightPanel ──
 assert.match(app, /shouldShowRightPreview\(/, 'App.tsx 必须用 shouldShowRightPreview')
 assert.match(app, /shouldShowRightPanel\(/, 'App.tsx 必须用 shouldShowRightPanel')
+assert.match(app, /shouldShowCenterColumn\(/, 'App.tsx 必须用 shouldShowCenterColumn（排版模式隐藏左侧源码）')
 assert.doesNotMatch(app, /showRightPanel\s*\|\|/, 'App.tsx 渲染条件不得再出现 showRightPanel ||（会渲染空面板）')
 
 // ── 静态：WYSIWYG 参数已从签名移除（tsx 不校验类型，行为断言在旧/新代码都过，

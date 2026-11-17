@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react'
 import { mdToHtml } from './utils/mdToHtml'
-import { shouldShowRightPreview, shouldShowRightPanel } from './utils/modeLayout'
+import { shouldShowRightPreview, shouldShowRightPanel, shouldShowCenterColumn } from './utils/modeLayout'
 import { countLineDiff, formatTimeTs } from './utils/historyTimeline'
 import { nextVersionId } from './utils/versionId'
 import { isVersionSuppressed } from './utils/versionCapture'
@@ -451,8 +451,11 @@ function App() {
     if (appMode === 'read') {
       return <ReadMode />
     }
-    // 编辑 / 代码 / 排版 三种模式都挂源码编辑器：
-    // 预览模式与排版模式的右侧内容走右栏，代码模式不给右栏留位。
+    // 排版模式不挂源码编辑器：样式面板独占全宽，左侧源码应隐藏（见 modeLayout）。
+    if (appMode === 'style') {
+      return null
+    }
+    // 编辑 / 代码 两种模式挂源码编辑器：预览模式右侧内容走右栏，代码模式不给右栏留位。
     // WYSIWYG 已移除，恒挂 CodeMirror 源码编辑器（可编辑）。
     return <CodeEditor md={editorMd} onChange={handleEditorChange} />
   })()
@@ -469,6 +472,7 @@ function App() {
       <div className="app-main" style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
         {showOutline && <SidebarOutline />}
         {showLibrary && <LibraryPanel sidebar className={libraryClosing ? 'closing' : ''} />}
+        {/* 排版模式：centerContent 返回 null（源码编辑器不渲染），样式面板独占全宽 */}
         {centerContent}
         {/* 顶部布局同样要给排版面板留右栏：showRightPreview 已排除 style，
             没有这一段的话点「样式」只会把预览藏掉，面板不出现，看起来像没反应 */}
@@ -499,13 +503,15 @@ function App() {
         <LeftNav />
       </div>
 
-      {/* 中编辑区 */}
-      <div className="app-center">
-        <DocumentMetaBar />
-        <div className="app-editor-area">
-          {centerContent}
+      {/* 中编辑区：排版模式不渲染（样式面板独占全宽，左侧源码隐藏） */}
+      {shouldShowCenterColumn(appMode) && (
+        <div className="app-center">
+          <DocumentMetaBar />
+          <div className="app-editor-area">
+            {centerContent}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 右面板：单面板互斥，样式 > 预览 > 文档库。阅读/历史模式由中心内容独占，不留右栏。
           历史模式下 LeftNav 会把 showRightPanel 置 true，若右栏条件不整体排除 history，
