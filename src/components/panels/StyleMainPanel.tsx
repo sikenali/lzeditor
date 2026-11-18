@@ -157,7 +157,7 @@ export const StyleMainPanel: React.FC = () => {
   return (
     <>
       <div className="style-main-panel">
-        <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex', position: 'relative' }}>
         {/* ── Read content area ── */}
         <div ref={bodyRef} className="style-read-scroll" onClick={() => setNavVisible(true)}>
           <div className="style-read-article" style={{ maxWidth: 760 }}>
@@ -177,7 +177,7 @@ export const StyleMainPanel: React.FC = () => {
             />
           </div>
         </div>
-        </div>
+        {/* 浮导航：锚在阅读区底部（工具栏「显示/隐藏」按钮正上方），悬浮于内容之上 */}
         <div className={`main-nav-float${navVisible ? '' : ' nav-hidden'}`}>
           <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
             <span className="remix ri-arrow-left-s-line"></span>
@@ -191,6 +191,7 @@ export const StyleMainPanel: React.FC = () => {
           <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
             <span className="remix ri-fullscreen-line"></span>
           </button>
+        </div>
         </div>
         <div className="style-panel">
           <div className="style-panel-inner">

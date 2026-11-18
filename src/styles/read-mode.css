@@ -217,10 +217,10 @@
 
 /* ── Floating Nav Buttons ── */
 .main-nav-float  {
-  /* 浮导航：绝对定位于样式面板顶部、水平居中，悬浮在阅读内容之上（不占 flex 流，
-     隐藏时无空隙；sticky 在「兄弟节点」上不生效，会渲染成内容与面板之间的整宽条）。 */
+  /* 浮导航：绝对悬浮于阅读区底部（工具栏「显示/隐藏」按钮正上方）、水平居中，
+     悬浮在阅读内容之上（不占 flex 流，隐藏时无空隙）。read-mode-body 是定位上下文。 */
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   width: fit-content;
@@ -253,16 +253,14 @@
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  background: rgba(255, 255, 255, 0.25);
+  background: transparent;
   color: rgba(51, 51, 51, 0.72);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast) var(--ease);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 .nav-float-btn:hover  {
   transform: translateY(-2px) scale(1.08);
-  background: rgba(255, 255, 255, 0.45);
+  background: transparent;
   border-color: rgba(204, 204, 204, 0.55);
   color: rgba(51, 51, 51, 0.95);
   box-shadow: var(--color-popover-shadow);
@@ -316,11 +314,11 @@
 }
 
 .nav-float-btn  {
-  background: var(--t-bg-30); border-color: var(--t-bd-13); color: var(--t-fg-20); box-shadow: var(--t-sh-8);
+  border-color: var(--t-bd-13); color: var(--t-fg-20); box-shadow: none;
 }
 
 .nav-float-btn:hover  {
-  background: var(--t-bg-31); border-color: var(--t-bd-14); color: var(--t-fg-21); box-shadow: var(--t-sh-9);
+  border-color: var(--t-bd-14); color: var(--t-fg-21); box-shadow: var(--t-sh-9);
 }
 
 /* ── 双联页阅读模式 ──────────────────────────────────────────── */
