@@ -20,3 +20,10 @@ assert.match(typo, /getAcksTheme\(id\) \?\? getAcksTheme\(DEFAULT_TYPOGRAPHY_THE
 assert.match(typo, /buildTypographyTheme/, 'getTypographyTheme 走 buildTypographyTheme')
 assert.match(typo, /ACKS_THEME_IDS\.map/, 'TYPOGRAPHY_THEMES 由 43 款 ACKS id 生成')
 assert.doesNotMatch(typo, /wechatGreen|techBlue|lanying|orangeHeart|minimalGray/, '旧主题名不再出现')
+
+// --- Task 6: exportService 改走 ACKS token ---
+const exp = read('src/services/exportService.ts')
+assert.doesNotMatch(exp, /TYPOGRAPHY_THEME_VARS|DEFAULT_THEME_VARS/, '旧 13 款主题变量已删除')
+assert.match(exp, /acksThemeToLzTokens/, '导出走 ACKS 结构化 token')
+assert.doesNotMatch(exp, /'classic'/, '导出不再回退 classic')
+assert.match(exp, /DEFAULT_TYPOGRAPHY_THEME/, '导出默认走常量')
