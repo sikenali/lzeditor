@@ -37,7 +37,7 @@ test('§8.2 依赖的 token 值本身是对的', () => {
 
 // 四处输入框的声明块 + focus 块 + 高度（唯一例外是 rename 的 34px）
 const CHECKS = [
-  { name: '.ui-input（UiInput 组件，md 基线）', css: uiCss, sel: '.ui-input  {', focus: '.ui-input:focus-within  {', height: 42, placeholder: '.ui-input-control::placeholder  {' },
+  { name: '.ui-input（UiInput 组件，md 基线）', css: uiCss, sel: '.ui-input  {', focus: '.ui-input:focus-within  {', height: 42, placeholder: '.ui-input input::placeholder  {' },
   { name: '.search-input-group（查找/替换）', css: panelsCss, sel: '.search-input-group  {', focus: '.search-input-group:focus-within  {', height: 42, placeholder: '.search-input::placeholder  {' },
   { name: '.library-search-input（文库搜索）', css: layoutCss, sel: '.library-search-input  {', focus: '.library-search-input:focus  {', height: 42, placeholder: '.library-search-input::placeholder  {' },
   { name: '.library-folder-rename-input（树内重命名）', css: layoutCss, sel: '.library-folder-rename-input  {', focus: '.library-folder-rename-input:focus  {', height: 34, placeholder: null },

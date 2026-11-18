@@ -50,7 +50,6 @@ export const UiInput: React.FC<UiInputProps> = ({
         min={min}
         max={max}
         step={step}
-        className="ui-input-control"
         onChange={e => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
