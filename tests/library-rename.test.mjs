@@ -25,4 +25,7 @@ assert.match(layout, /\.library-folder-rename-input/, '.library-folder-rename-in
 // 样式
 assert.match(layout, /\.tree-rename-btn/, '必须有 .tree-rename-btn 样式')
 
+// 重命名按钮只出现在可映射到文档库的文件夹上（嵌套文件夹不显示 no-op 按钮）
+assert.match(tree, /renameableTitles/, '树必须按库名过滤重命名按钮（嵌套文件夹不显示 no-op 按钮）')
+
 console.log('library rename checks passed')

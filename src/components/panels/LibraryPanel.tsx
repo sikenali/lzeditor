@@ -136,6 +136,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
                 onSelectDoc={(id) => { useEditorStore.getState().switchDoc(id); handleClose() }}
                 onResetDoc={(id) => useEditorStore.getState().resetDocContent(id)}
                 renameTargetKey={renameTarget?.key ?? null}
+                renameableTitles={docLibraries.map((l: any) => l.name)}
                 onRenameFolder={(node) => setRenameTarget({ key: node.id, title: node.title })}
                 onRenameCommit={(_key, newName) => {
                   // 树文件夹名 ↔ 库名 按 title 匹配（renameLibrary 会同步改写 docs path）

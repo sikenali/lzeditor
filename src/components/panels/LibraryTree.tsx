@@ -51,8 +51,9 @@ export const LibraryTree: React.FC<{
   renameTargetKey?: string | null
   onRenameFolder?: (node: DocNode) => void
   onRenameCommit?: (key: string, newName: string) => void
+  renameableTitles?: string[]
   searchActive?: boolean
-}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, onResetDoc, renameTargetKey, onRenameFolder, onRenameCommit, searchActive }) => {
+}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, onResetDoc, renameTargetKey, onRenameFolder, onRenameCommit, renameableTitles, searchActive }) => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
 
   const renderNode = (node: DocNode, depth: number): React.ReactNode => {
@@ -93,7 +94,9 @@ export const LibraryTree: React.FC<{
             ) : (
               <>
                 <span className="tree-label">{node.title}</span>
-                {onRenameFolder && (
+                {/* 只有标题能映射到文档库的文件夹（顶层路径分组）才可重命名——
+                    嵌套子文件夹不显示按钮，否则点了没反应 */}
+                {onRenameFolder && renameableTitles?.includes(node.title) && (
                   <button
                     type="button"
                     className="tree-rename-btn"
