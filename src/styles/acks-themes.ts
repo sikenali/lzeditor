@@ -49,6 +49,11 @@ export function resolveThemeAssets(root: HTMLElement): void {
   })
 }
 
+// ACKS 引擎 CSS 是静态导入，拼接一次缓存；renderAcksArticle 每次都会调用 injectAcksCss，
+// 用已写入值比对，避免每次渲染都重写 ~130KB 的 textContent。
+const ACKS_THEME_CSS = [articleCss, milestoneBaseCss, milestoneGeneratedCss, themeRevisionCss, themeCatalogCss].join('\n')
+let lastInjectedCss: string | null = null
+
 export function injectAcksCss(): void {
   let el = document.getElementById('lz-acks-theme-css') as HTMLStyleElement | null
   if (!el) {
@@ -56,7 +61,10 @@ export function injectAcksCss(): void {
     el.id = 'lz-acks-theme-css'
     document.head.appendChild(el)
   }
-  el.textContent = [articleCss, milestoneBaseCss, milestoneGeneratedCss, themeRevisionCss, themeCatalogCss].join('\n')
+  // 只在内容真正变化时写 textContent（卸载时不移除节点，评审判定无害，保留）。
+  if (lastInjectedCss === ACKS_THEME_CSS) return
+  el.textContent = ACKS_THEME_CSS
+  lastInjectedCss = ACKS_THEME_CSS
 }
 
 export function renderAcksArticle(host: HTMLElement, mdHtml: string, themeId: string): void {

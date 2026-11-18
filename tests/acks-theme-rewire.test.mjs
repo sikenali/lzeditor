@@ -20,6 +20,7 @@ assert.match(typo, /getAcksTheme\(id\) \?\? getAcksTheme\(DEFAULT_TYPOGRAPHY_THE
 assert.match(typo, /buildTypographyTheme/, 'getTypographyTheme 走 buildTypographyTheme')
 assert.match(typo, /ACKS_THEME_IDS\.map/, 'TYPOGRAPHY_THEMES 由 43 款 ACKS id 生成')
 assert.doesNotMatch(typo, /wechatGreen|techBlue|lanying|orangeHeart|minimalGray/, '旧主题名不再出现')
+assert.match(typo, /setAttribute\('data-typography-theme', theme\?\.id \?\? DEFAULT_TYPOGRAPHY_THEME\)/, '根属性写解析后的主题 id（旧 id 回退 DEFAULT，避免 night 错配 graphite）')
 
 // --- Task 6: exportService 改走 ACKS token ---
 const exp = read('src/services/exportService.ts')
@@ -63,3 +64,13 @@ assert.match(smp, /style-select-btn/, '保留工具栏下拉选择器')
 const panelsCss = read('src/styles/panels.css')
 assert.match(panelsCss, /\.style-cards-pager/, '分页样式存在')
 assert.match(panelsCss, /\.pager-btn:disabled/, '箭头禁用态')
+
+// --- 最终审查修复：data-typography-theme 用解析后 id、死代码清理、CSS 注入节流 ---
+const exportDialog = read('src/components/panels/ExportDialog.tsx')
+const sidebarPreview = read('src/components/sidebar/SidebarPreview.tsx')
+assert.doesNotMatch(exportDialog, /\[data-typography-theme="[^"]+"\]\s*\./, 'ExportDialog 不再对 theme.css 做属性选择器 .replace 重映射（死代码）')
+assert.doesNotMatch(sidebarPreview, /\[data-typography-theme="[^"]+"\]\s*\./, 'SidebarPreview 不再对 theme.css 做属性选择器 .replace 重映射（死代码）')
+assert.match(exportDialog, /styleEl\.textContent = theme\.css/, 'ExportDialog 直接使用 theme.css')
+assert.match(sidebarPreview, /el\.textContent = theme\.css/, 'SidebarPreview 直接使用 theme.css')
+assert.match(acksThemes, /lastInjectedCss/, 'injectAcksCss 节流：已写入 CSS 才写 textContent')
+assert.match(smp, /暂无内容，请先编辑文档/, 'StyleMainPanel 空态占位保留')

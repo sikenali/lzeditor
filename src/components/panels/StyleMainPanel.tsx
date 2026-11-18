@@ -12,6 +12,13 @@ import { getDocMd } from '../../utils/docSource'
 import { copyRichText } from '../../clipboard'
 import { ExportDialog } from './ExportDialog'
 
+const PAGE_SIZE = 10
+/** 主题 id 所在的分页页码（不存在则回退第 0 页） */
+const themePageOf = (id: string): number => {
+  const idx = ACKS_THEME_IDS.indexOf(id)
+  return idx >= 0 ? Math.floor(idx / PAGE_SIZE) : 0
+}
+
 export const StyleMainPanel: React.FC = () => {
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
@@ -25,8 +32,7 @@ export const StyleMainPanel: React.FC = () => {
   const bodyRef = useRef<HTMLDivElement>(null)
   const articleBodyRef = useRef<HTMLDivElement>(null)
   const [activeStyle, setActiveStyle] = useState(typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
-  const [page, setPage] = useState(0)
-  const PAGE_SIZE = 10
+  const [page, setPage] = useState(() => themePageOf(activeStyle))
   const totalPages = Math.ceil(ACKS_THEME_IDS.length / PAGE_SIZE)
   const pageItems = ACKS_THEME_IDS.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
   const [previewVisible, setPreviewVisible] = useState(true)
@@ -114,6 +120,11 @@ export const StyleMainPanel: React.FC = () => {
   useEffect(() => {
     const el = articleBodyRef.current
     if (!el) return
+    // 内容为空时渲染占位空态（旧实现以“暂无内容”占位），不再调用 ACKS 渲染器。
+    if (!renderedHtml || !renderedHtml.trim()) {
+      el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:60px 16px;">暂无内容，请先编辑文档</p>'
+      return
+    }
     renderAcksArticle(el, renderedHtml, activeStyle)
   }, [activeStyle, renderedHtml])
 
@@ -185,7 +196,7 @@ export const StyleMainPanel: React.FC = () => {
                           <button
                             key={t.id}
                             className={`style-select-item${t.id === activeStyle ? ' active' : ''}`}
-                            onClick={() => { pickStyle(t.id); setStyleMenuOpen(false) }}
+                            onClick={() => { pickStyle(t.id); setPage(themePageOf(t.id)); setStyleMenuOpen(false) }}
                           >
                             <span className="style-select-dot" style={{ background: t.color }} />
                             <span>{t.name}</span>

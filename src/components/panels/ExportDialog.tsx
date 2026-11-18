@@ -93,8 +93,8 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     if (theme) {
       const styleEl = document.createElement('style')
       styleEl.id = 'lz-export-typography-css'
+      // theme.css 由 buildTypographyTheme 以裸宿主选择器（含 .export-preview-body）生成，无需再重映射。
       styleEl.textContent = theme.css
-        .replace(/\[data-typography-theme="[^"]+"\]\s*\.(lz-editor-content|read-article-body|preview-doc|export-preview-body)/g, '.export-preview-body')
       document.head.appendChild(styleEl)
     }
   }, [typographyTheme, previewHtml])
