@@ -37,6 +37,11 @@ assert.doesNotMatch(layoutCss, /\.sidebar-preview \.preview-doc/, '排版规则�
 assert.match(readModeCss, /\.read-mode-inline/, '阅读模式的容器样式必须还在')
 assert.match(readModeCss, /\.read-tag\b/, 'read-tag 基类被 StyleMainPanel 用，不能删')
 assert.doesNotMatch(readModeCss, /nav-hidden:hover/, '浮导航不靠 hover 显示（点内容区才显示）')
+// 浮导航必须绝对悬浮在内容之上（非 sticky 兄弟节点：sticky 在 style-main-panel 的兄弟上不生效，
+// 会渲染成内容与样式面板之间的整宽白条，按钮操作看似失效）
+const navFloatBlock = readModeCss.match(/\.main-nav-float\s*\{[^}]*\}/)?.[0] || ''
+assert.match(navFloatBlock, /position:\s*absolute/, '浮导航绝对定位于内容之上，不占 flex 流')
+assert.doesNotMatch(navFloatBlock, /position:\s*sticky/, '浮导航不再用 sticky（兄弟节点上不生效）')
 assert.match(globalsCss, /\.read-mode-toolbar/, '阅读模式的工具栏样式必须还在')
 assert.doesNotMatch(globalsCss, /read-toc/, 'read-toc 死 CSS 已清理（组件已移除）')
 assert.doesNotMatch(readModeCss, /read-toc/, 'read-mode 的 read-toc 死 CSS 已清理')

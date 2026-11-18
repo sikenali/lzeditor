@@ -217,8 +217,14 @@
 
 /* ── Floating Nav Buttons ── */
 .main-nav-float  {
-  position: sticky;
+  /* 浮导航：绝对定位于样式面板顶部、水平居中，悬浮在阅读内容之上（不占 flex 流，
+     隐藏时无空隙；sticky 在「兄弟节点」上不生效，会渲染成内容与面板之间的整宽条）。 */
+  position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
