@@ -22,6 +22,13 @@ export interface FacadeSelection {
   to: number;
 }
 
+/** The block/table-cell context the caret is in, when inside a table.
+ *  Source mode (CM6) has none, so its facade always returns `null`. */
+export interface TableContext {
+  rows: number;
+  cols: number;
+}
+
 /** 查找/替换参数（SearchPanel 的查询词与开关）。 */
 export interface SearchQueryOptions {
   /** 原始查询词；regex=true 时按正则解析，否则字面匹配。 */
@@ -68,11 +75,12 @@ export interface EditorFacade {
   /** Subscribes to selection changes (view-layer scroll/typewriter follow). */
   onSelectionChange(listener: (selection: FacadeSelection | null) => void): () => void;
   /**
-   * Source-mode reality: there is no block/table-cell context, so this is
-   * always `null`. The toolbar's table-structure buttons disable; `insert.table`
-   * still works through `execCommand`.
+   * The block/table-cell context the caret is in, or `null` outside a table.
+   * Source mode (CM6) has no table-cell context and always returns `null`,
+   * so its table-structure buttons disable; `insert.table` still works
+   * through `execCommand`. WYSIWYG (Milkdown) returns the real context.
    */
-  getTableContext(): null;
+  getTableContext(): TableContext | null;
   /** Injects the editor view root (used for focus/scroll ranges). */
   setViewRoot(root: HTMLElement | null): void;
   focus(): void;

@@ -17,8 +17,9 @@ for (const m of members) {
   assert.match(facade, new RegExp(m), `EditorFacade must declare ${m}`)
 }
 
-// ── Source-mode reality: no block/table context, no yeli store leak ──
-assert.match(facade, /getTableContext\(\): null/, 'getTableContext must be null in source mode')
+// ── Table context: source mode has none; WYSIWYG returns a real one ──
+assert.match(facade, /getTableContext\(\): TableContext \| null/, 'getTableContext must be TableContext | null')
+assert.match(facade, /interface TableContext/, 'must declare TableContext')
 assert.doesNotMatch(facade, /getDocumentStore/, 'yeli getDocumentStore must not leak')
 
 // ── Neutral registry names ──
