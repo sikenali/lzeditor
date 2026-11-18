@@ -52,7 +52,7 @@ function AssistantCard({ msg, actionable, onApply, onUndo, onCopy }: AssistantCa
           {msg.error || '请求失败'}
         </div>
       ) : status === 'idle' ? (
-        <div className="ai-chat-reply ai-chat-reply--empty" aria-label="已停止生成"></div>
+        <div className="ai-chat-reply ai-chat-reply--empty" role="status" aria-label="已停止生成"></div>
       ) : (
         <div
           className="ai-chat-reply"

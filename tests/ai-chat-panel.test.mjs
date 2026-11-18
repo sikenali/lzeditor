@@ -152,3 +152,20 @@ test('快速动作行含 6 个动作', async () => {
     '快速动作行必须保留现有 6 个动作',
   )
 })
+
+test('停止且无内容的回复卡片对读屏器暴露状态', async () => {
+  useAIStore.setState({
+    panelVisible: true,
+    mode: 'write',
+    panelInput: '',
+    panelSelectedText: '',
+    panelStatus: 'idle',
+    messages: [{ id: 'idle1', role: 'assistant', content: '', mode: 'write', status: 'idle' }],
+  })
+  const container = await render(React.createElement(AIPanel))
+
+  const empty = container.querySelector('.ai-chat-reply--empty')
+  assert.ok(empty, '必须有「停止且无内容」的空回复卡片')
+  assert.equal(empty.getAttribute('role'), 'status', '空回复卡片必须暴露 role=status 给读屏器')
+  assert.equal(empty.getAttribute('aria-label'), '已停止生成', '空回复卡片必须带「已停止生成」标签')
+})
