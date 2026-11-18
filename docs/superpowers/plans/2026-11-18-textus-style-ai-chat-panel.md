@@ -53,17 +53,6 @@ import assert from 'node:assert/strict'
 const { useAIStore } = await import('../src/store/aiStore.ts')
 const { AI_MODES } = await import('../src/shared/aiModes.ts')
 
-test('showPanel 设置 mode/selectedText，保留历史 messages', () => {
-  const s = useAIStore.getState()
-  s.addMessage({ id: 'u1', role: 'user', content: 'hi', mode: 'write' })
-  s.showPanel('review', 'selected', { x: 0, y: 0 })
-  const st = useAIStore.getState()
-  assert.equal(st.panelVisible, true)
-  assert.equal(st.mode, 'review')
-  assert.equal(st.panelSelectedText, 'selected')
-  assert.equal(st.messages.length, 1, '打开面板不清空历史')
-})
-
 test('addMessage/updateMessage/appendStreamToMessage 变更 messages', () => {
   const s = useAIStore.getState()
   s.addMessage({ id: 'a1', role: 'assistant', content: '', mode: 'write', status: 'streaming' })
@@ -73,6 +62,12 @@ test('addMessage/updateMessage/appendStreamToMessage 变更 messages', () => {
   const m = useAIStore.getState().messages.find(x => x.id === 'a1')
   assert.equal(m.content, 'Hello world')
   assert.equal(m.status, 'done')
+})
+
+test('messages 初始为空且 mode 初始为 write', () => {
+  const st = useAIStore.getState()
+  assert.deepEqual(st.messages, [])
+  assert.equal(st.mode, 'write')
 })
 
 test('setMode / setSelectedText', () => {
@@ -87,6 +82,8 @@ test('AI_MODES 含 4 模式与默认动作', () => {
   assert.equal(AI_MODES.write.defaultAction, 'rewrite')
 })
 ```
+
+> 注：`showPanel(mode,...)` 改签名属 Task 3（TS 接口不能有两个同名方法，本任务保留旧 `showPanel(action,...)`）。
 
 - [ ] **Step 2: 运行测试确认失败**
 
