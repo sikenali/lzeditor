@@ -170,7 +170,7 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
   await sleep(300)
   check('打字机/焦点：聚焦后可正常输入', (await shellText()).includes('X'))
 
-  // ── 4. AI 流式插入：mock SSE 驱动 AIPanel，增量进入文档 ─────────────────────
+  // ── 4. AI 流式插入：mock SSE 驱动 AI 聊天抽屉，增量进入文档 ─────────────────
   await page.route('**/v1/chat/completions', async (route) => {
     const body = [
       'data: {"choices":[{"delta":{"content":"LZ_AI_STREAM_"}}]}',
@@ -183,25 +183,28 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
     await route.fulfill({ status: 200, headers: { 'Content-Type': 'text/event-stream' }, body })
   })
   await page.locator('.toolbar-btn', { has: page.locator('.ri-openai-fill') }).click()
-  await page.waitForSelector('.ai-panel', { timeout: 8000 })
+  await page.waitForSelector('.ai-chat-panel', { timeout: 8000 })
   await sleep(250)
-  await page.locator('.ai-panel .ai-input').fill('介绍一下 LZ')
+  await page.locator('.ai-chat-input').fill('介绍一下 LZ')
   await page.waitForFunction(() => {
-    const btn = document.querySelector<HTMLButtonElement>('.ai-panel .ai-send-btn')
+    const btn = document.querySelector<HTMLButtonElement>('.ai-chat-send')
     return !!btn && !btn.disabled
   }, undefined, { timeout: 5000 })
-  await page.locator('.ai-panel .ai-send-btn').click()
-  await page.waitForSelector('.ai-panel .ai-output-content', { timeout: 10000 })
+  await page.locator('.ai-chat-send').click()
+  // 聊天抽屉里每条回复是一张 assistant 卡片，等它进入 done 态（对应旧浮层的输出区收尾）。
+  await page.waitForSelector('.ai-chat-assistant-card--done .ai-chat-reply', { timeout: 10000 })
   await sleep(500)
   const afterAI = await shellText()
   check('AI 流式插入：mock 增量已进入文档', afterAI.includes('LZ_AI_STREAM_OK'), JSON.stringify(afterAI))
 
   // ── 5. 区块内特效降级：mermaid 围栏渲染为不可编辑 source-safe 块 ───────────
-  // 上一轮 send 后面板处于 result，输入区隐藏；关闭再开（showPanel 重置为 idle）。
-  await page.locator('.ai-panel .ai-panel-close').click()
+  // 聊天抽屉的 composer 是常显的（不再有「结果态隐藏输入区」），这里关闭再开只为
+  // 验证关闭按钮并重置本轮的输入/流式态；消息列表会保留上一轮历史。
+  const doneCardsBefore = await page.locator('.ai-chat-assistant-card--done').count()
+  await page.locator('.ai-chat-close').click()
   await sleep(300)
   await page.locator('.toolbar-btn', { has: page.locator('.ri-openai-fill') }).click()
-  await page.waitForSelector('.ai-panel .ai-input', { timeout: 8000 })
+  await page.waitForSelector('.ai-chat-panel .ai-chat-input', { timeout: 8000 })
   await sleep(200)
   await page.route('**/v1/chat/completions', async (route) => {
     const fence = '\n```mermaid\ngraph TD\n  A-->B\n```\n'
@@ -213,13 +216,18 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
     ].join('\n')
     await route.fulfill({ status: 200, headers: { 'Content-Type': 'text/event-stream' }, body })
   })
-  await page.locator('.ai-panel .ai-input').fill('画个流程图')
+  await page.locator('.ai-chat-input').fill('画个流程图')
   await page.waitForFunction(() => {
-    const btn = document.querySelector<HTMLButtonElement>('.ai-panel .ai-send-btn')
+    const btn = document.querySelector<HTMLButtonElement>('.ai-chat-send')
     return !!btn && !btn.disabled
   }, undefined, { timeout: 5000 })
-  await page.locator('.ai-panel .ai-send-btn').click()
-  await page.waitForSelector('.ai-panel .ai-output-content', { timeout: 10000 })
+  await page.locator('.ai-chat-send').click()
+  // 上一轮的 done 卡片仍在列表里，按数量等待「新」一张 done 卡片出现。
+  await page.waitForFunction(
+    (n) => document.querySelectorAll('.ai-chat-assistant-card--done').length > n,
+    doneCardsBefore,
+    { timeout: 10000 },
+  )
   await sleep(600)
   const afterMermaid = await shellText()
   check('特效降级：mermaid 围栏源码进入文档', afterMermaid.includes('```mermaid') && afterMermaid.includes('graph TD'), JSON.stringify(afterMermaid))

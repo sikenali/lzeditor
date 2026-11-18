@@ -62,9 +62,12 @@ function AssistantCard({ msg, actionable, onApply, onUndo, onCopy }: AssistantCa
 
       {actionable && (status === 'done' || status === 'applied') && (
         <div className="ai-chat-actions">
-          <button className="ai-chat-action ai-chat-action--primary" onClick={onApply}>
-            应用到文档
-          </button>
+          {/* applyToDoc 只作用 done 且未应用的回复；已应用卡片上再给按钮是静默 no-op。 */}
+          {status === 'done' && (
+            <button className="ai-chat-action ai-chat-action--primary" onClick={onApply}>
+              应用到文档
+            </button>
+          )}
           <button className="ai-chat-action" onClick={onUndo}>
             撤销
           </button>
@@ -88,22 +91,47 @@ export const AIPanel: React.FC = () => {
 
   const [sendAction, setSendAction] = useState<AIAction>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // 停止信号有两个来源：本次 hook 的流式态，以及 store 里的 thinking 状态
   // （后者让面板重挂载后仍能显示停止按钮）。
   const streaming = isStreaming || panelStatus === 'thinking'
 
+  // 切换模式时清掉快速动作覆盖：否则写作里选的动作会静默带去审校等其它模式。
+  useEffect(() => {
+    setSendAction(null)
+  }, [mode])
+
   // 面板每次打开都重新读编辑区选区，覆盖 store 里可能残留的旧选区。
+  // 无 facade / 选区为空时也要清空，避免旧选区被当成上下文带进新请求。
   useEffect(() => {
     if (!panelVisible) return
     const facade = getEditorFacade()
-    if (!facade) return
+    if (!facade) {
+      useAIStore.getState().setSelectedText('')
+      return
+    }
     const range = facade.getSelection()
     if (!range || range.from >= range.to) {
       useAIStore.getState().setSelectedText('')
       return
     }
     useAIStore.getState().setSelectedText(facade.getText().slice(range.from, range.to))
+  }, [panelVisible])
+
+  // 打开面板即聚焦输入框，键盘流（直接输入/回车发送/Escape 关闭）无需先点一下。
+  useEffect(() => {
+    if (panelVisible) inputRef.current?.focus()
+  }, [panelVisible])
+
+  // Escape 关闭面板：绑在 window 上，焦点不在 textarea 时也生效。
+  useEffect(() => {
+    if (!panelVisible) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') useAIStore.getState().hidePanel()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [panelVisible])
 
   // 新消息或流式增量后贴底。
@@ -132,9 +160,8 @@ export const AIPanel: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       submit()
-    } else if (e.key === 'Escape') {
-      useAIStore.getState().hidePanel()
     }
+    // Escape 由 window 级监听统一处理（见上方 effect），这里不再重复。
   }
 
   return (
@@ -210,6 +237,7 @@ export const AIPanel: React.FC = () => {
 
         <div className="ai-chat-input-row">
           <textarea
+            ref={inputRef}
             className="ai-chat-input"
             value={panelInput}
             onChange={e => useAIStore.getState().setPanelInput(e.target.value)}
