@@ -366,6 +366,17 @@
   transition: opacity var(--transition-fast);
 }
 .ui-tip:hover::after  { opacity: 1; }
+/* 侧边栏 rail 的 hover 提示：浅色卡片，向右弹出（与顶栏 hover 标题一致） */
+.rail-nav .ui-tip--right::after  {
+  left: calc(100% + 8px);
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  border: 0.7px solid var(--color-border);
+  box-shadow: var(--color-popover-shadow);
+}
 
 /* ── Button ── */
 .ui-btn  {

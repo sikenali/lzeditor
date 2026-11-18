@@ -96,7 +96,7 @@ export const Toolbar: React.FC = () => {
 
   return (
     <>
-      <div className={`navtop toolbar toolbar-icon-only${showToolbarLabels ? ' toolbar-hover-labels' : ''}`}>
+      <div className={`navtop toolbar${showToolbarLabels ? '' : ' toolbar-icon-only toolbar-hover-labels'}`}>
         {/* ── Left ── */}
         <div className="toolbar-group">
           <button className="toolbar-btn" aria-label="文档库" onClick={() => setShowLibrary(!showLibrary)}>

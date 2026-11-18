@@ -1477,6 +1477,8 @@
   overflow: visible;
   z-index: 50;
 }
+/* 开启「显示工具栏按钮标题」：侧边栏标签常显，rail 加宽以容纳图标+文字 */
+.app-left-nav:has(.rail-nav--labels)  { width: auto; min-width: 76px; }
 
 .rail-nav  {
   --rail-btn-size: 40px;
@@ -1590,6 +1592,20 @@
 .rail-icon  { font-size: 20px; line-height: 1; flex-shrink: 0; }
 /* 文字不渲染，仅作 UiTip 提示内容与 aria-label 来源 */
 .rail-label  { display: none; }
+/* 开启「显示工具栏按钮标题」：侧边栏标签常显，rail 加宽（图标 + 文字） */
+.rail-nav--labels .rail-btn  {
+  width: auto;
+  min-width: 132px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+}
+.rail-nav--labels .rail-label  {
+  display: block;
+  font-size: 12px;
+  color: inherit;
+  white-space: nowrap;
+}
 
 /* 子菜单指示点：图标正右方 2px。独立元素，不依赖标签文字存在 */
 .rail-menu-dot  {

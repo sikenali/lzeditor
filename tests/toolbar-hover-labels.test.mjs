@@ -5,8 +5,8 @@ const toolbar = read('src/components/layout/Toolbar.tsx')
 const leftNav = read('src/components/layout/LeftNav.tsx')
 const layoutCss = read('src/styles/layout.css')
 
-// 顶栏恒 icon-only + showToolbarLabels 开时加 hover-labels
-assert.match(toolbar, /navtop toolbar toolbar-icon-only\$\{showToolbarLabels \? ' toolbar-hover-labels' : ''\}/, '顶栏恒 icon-only，showToolbarLabels 开时加 hover-labels')
+// 顶栏：开启→常显文字（无 icon-only）；关闭→icon-only + hover 显字
+assert.match(toolbar, /navtop toolbar\$\{showToolbarLabels \? '' : ' toolbar-icon-only toolbar-hover-labels'\}/, '顶栏开启常显 / 关闭 icon-only+hover')
 // hover 显 label：绝对定位下置，不挤压布局
 assert.match(layoutCss, /\.toolbar-icon-only\.toolbar-hover-labels \.toolbar-btn:hover \.toolbar-label[^}]*position:\s*absolute/, '顶栏 hover 显示 label（绝对定位）')
 // 键盘焦点也显示 label（可访问性）

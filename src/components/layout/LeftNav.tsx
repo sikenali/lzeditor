@@ -21,6 +21,7 @@ export const LeftNav: React.FC = () => {
   const showOutline = useEditorStore((s: any) => s.showOutline)
   const showSearch = useEditorStore((s: any) => s.showSearch)
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
+  const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
 
   const flyout = useFlyout()
   const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
@@ -76,8 +77,13 @@ export const LeftNav: React.FC = () => {
     else if (key === 'mode') modeAction(action)
   }
 
-  const menu = (key: string, ref: React.RefObject<HTMLButtonElement | null>, icon: string, label: string) => (
-    <UiTip text={label} placement="right">
+  // 开启显示工具栏按钮标题时：标签常显（rail-nav--labels），不再包 UiTip（避免 hover 双重提示）；
+  // 关闭时：纯图标，UiTip 右侧浅色卡片提示
+  const tip = (label: string, node: React.ReactNode, tipText?: string) =>
+    showToolbarLabels ? node : <UiTip text={tipText || label} placement="right">{node}</UiTip>
+
+  const menu = (key: string, ref: React.RefObject<HTMLButtonElement | null>, icon: string, label: string) =>
+    tip(label, (
       <div className="rail-menu-btn" onClick={() => flyout.open(key, ref.current)}>
         <button ref={ref} className={`rail-btn rail-btn--menu${flyout.isOpen(key) ? ' active' : ''}`} aria-label={label}>
           <span className="rail-icon-wrap">
@@ -87,20 +93,18 @@ export const LeftNav: React.FC = () => {
           <span className="rail-label">{label}</span>
         </button>
       </div>
-    </UiTip>
-  )
+    ))
 
-  const btn = (icon: string, label: string, onClick: () => void, active?: boolean, disabled?: boolean, tip?: string) => (
-    <UiTip text={tip || label} placement="right">
+  const btn = (icon: string, label: string, onClick: () => void, active?: boolean, disabled?: boolean, tipText?: string) =>
+    tip(label, (
       <button className={`rail-btn${active ? ' active' : ''}`} onClick={onClick} aria-label={label} disabled={disabled}>
         <span className={`remix rail-icon ${icon}`} aria-hidden="true"></span>
         <span className="rail-label">{label}</span>
       </button>
-    </UiTip>
-  )
+    ), tipText)
 
   return (
-    <aside className="rail-nav">
+    <aside className={`rail-nav${showToolbarLabels ? ' rail-nav--labels' : ''}`}>
       <div className="rail-top">
         <UiTip text="LZEditor" placement="right">
           <button className="rail-logo" aria-label="LZEditor">
