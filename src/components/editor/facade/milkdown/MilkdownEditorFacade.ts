@@ -29,6 +29,13 @@ import type {
 } from "../EditorFacade";
 import type { EditorRunner } from "../../../../additional/milkdown/textus/editor/useEditorRunner";
 import { parseMarkdownSource } from "../../../../additional/milkdown/textus/editor/markdown/parse-markdown-source";
+import { toggleSpan } from "../../../../additional/milkdown/textus/editor/marks/span-commands";
+import {
+  toggleFormat,
+  toggleCodeSpan,
+  STRIKETHROUGH,
+} from "../../../../additional/milkdown/textus/editor/keys/format-shortcut-plugin";
+import { LINK } from "../../../../additional/milkdown/textus/editor/markdown/link-source";
 import { createSearchSession } from "../cm6/cm6-search";
 
 /**
@@ -235,6 +242,133 @@ function insertNode(view: EditorView, node: ProseNode): boolean {
   return true;
 }
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * Inline formatting: the vendored textus schema has NO strong/emphasis/
+ * inline_code/link/strike_through MARKS — commonmarkWithoutMarks excludes
+ * them, and bold/italic/strike/code are `md_span`/`md_code_span` NODES and a
+ * link is a `link` NODE (all Typora-style, holding their Markdown source as
+ * text). The minimal commonmark assembly used by node tests DOES have the
+ * marks. So every selection.* handler is schema-aware: use the textus toggle
+ * helpers when `md_span` exists, fall back to `toggleMark` when the mark does.
+ * (The browser smoke test is what exercises the textus path.)
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** Bold: md_span rung 2 (textus) or the strong mark (commonmark). */
+function toggleBold(view: EditorView): boolean {
+  const { schema } = view.state;
+  if (schema.nodes.md_span) return toggleSpan(view, 2);
+  const mark = schema.marks.strong;
+  return mark ? toggleMark(mark)(view.state, view.dispatch) : false;
+}
+
+/** Italic: md_span rung 1 (textus) or the emphasis mark (commonmark). */
+function toggleItalic(view: EditorView): boolean {
+  const { schema } = view.state;
+  if (schema.nodes.md_span) return toggleSpan(view, 1);
+  const mark = schema.marks.emphasis;
+  return mark ? toggleMark(mark)(view.state, view.dispatch) : false;
+}
+
+/** Strikethrough: md_span `~~` (textus) or the strike_through mark (commonmark). */
+function toggleStrike(view: EditorView): boolean {
+  const { schema } = view.state;
+  if (schema.nodes.md_span) return toggleFormat(view, STRIKETHROUGH);
+  const mark = schema.marks.strike_through;
+  return mark ? toggleMark(mark)(view.state, view.dispatch) : false;
+}
+
+/** Inline code: md_code_span (textus) or the inline_code mark (commonmark). */
+function toggleInlineCode(view: EditorView): boolean {
+  const { schema } = view.state;
+  if (schema.nodes.md_code_span) return toggleCodeSpan(view);
+  const mark = schema.marks.inline_code;
+  return mark ? toggleMark(mark)(view.state, view.dispatch) : false;
+}
+
+/** Removes a textus link node (holding `[text](url)`) by replacing it with its
+ *  label text; false when the caret isn't in one. */
+function unwrapLinkNodes(view: EditorView): boolean {
+  const { state } = view;
+  const { from, to, empty } = state.selection;
+  const link = state.schema.nodes.link;
+  if (!link) return false;
+  const targets: Array<{ node: ProseNode; pos: number }> = [];
+  state.doc.nodesBetween(from, to, (node, pos) => {
+    if (node.type === link) {
+      targets.push({ node, pos });
+      return false;
+    }
+    return true;
+  });
+  if (!targets.length) return false;
+  let tr = state.tr;
+  for (let i = targets.length - 1; i >= 0; i--) {
+    const { node, pos } = targets[i];
+    tr = tr.replaceWith(pos, pos + node.nodeSize, node.content);
+  }
+  // Keep the caret where the selection was (mapped through the tr).
+  const mappedFrom = tr.mapping.map(empty ? from : from);
+  view.dispatch(tr.setSelection(TextSelection.create(tr.doc, mappedFrom)));
+  return true;
+}
+
+/** Link: textus `link` node (wraps selection in `[text](url)` source) or the
+ *  link mark (commonmark). `url` empty → remove the link. */
+function toggleLink(view: EditorView, url: string): boolean {
+  const { schema } = view.state;
+  if (schema.nodes.link) {
+    if (!url) return unwrapLinkNodes(view);
+    const link = schema.nodes.link;
+    const { from, to, empty } = view.state.selection;
+    const label = empty ? "" : view.state.doc.textBetween(from, to);
+    const source = `[${label}](${url})`;
+    const node = link.create({}, schema.text(source));
+    if (empty) {
+      view.dispatch(view.state.tr.replaceSelectionWith(node).scrollIntoView());
+      return true;
+    }
+    view.dispatch(view.state.tr.replaceWith(from, to, node).scrollIntoView());
+    return true;
+  }
+  const mark = schema.marks.link;
+  if (!mark) return false;
+  if (!url) {
+    const { from, to } = view.state.selection;
+    view.dispatch(view.state.tr.removeMark(from, to, mark));
+    return true;
+  }
+  return toggleMark(mark, { href: url } as never)(view.state, view.dispatch);
+}
+
+/** Clears formatting: unwraps textus inline wrapper nodes, or removes the
+ *  commonmark marks. Nothing selected → false. */
+function clearFormatting(view: EditorView): boolean {
+  const { state } = view;
+  const { from, to, empty } = state.selection;
+  if (empty) return false;
+  if (state.schema.nodes.md_span) {
+    const wrappers = new Set(["md_span", "md_code_span", LINK]);
+    const targets: Array<{ node: ProseNode; pos: number }> = [];
+    state.doc.nodesBetween(from, to, (node, pos) => {
+      if (node.isInline && wrappers.has(node.type.name)) {
+        targets.push({ node, pos });
+        return false;
+      }
+      return true;
+    });
+    if (!targets.length) return false;
+    let tr = state.tr;
+    for (let i = targets.length - 1; i >= 0; i--) {
+      const { node, pos } = targets[i];
+      tr = tr.replaceWith(pos, pos + node.nodeSize, node.content);
+    }
+    view.dispatch(tr);
+    return true;
+  }
+  view.dispatch(state.tr.removeMark(from, to));
+  return true;
+}
+
 const MEETING_NOTES = [
   "# 会议纪要",
   "",
@@ -428,38 +562,26 @@ export function createMilkdownEditorFacade(
       return pm(runner, (ctx) => {
         const v = ctx.get(editorViewCtx);
         const { schema } = v.state;
-        const marks = schema.marks;
 
         if (name === "document.undo" || name === "undo") return facade.undo();
         if (name === "document.redo" || name === "redo") return facade.redo();
 
-        // ── selection.* : toggle marks (never insert `**`/`*`/``) ──
+        // ── selection.* : toggle inline formatting (schema-aware: md_span nodes
+        //    in the textus schema, marks in the minimal commonmark assembly) ──
         if (name.startsWith("selection.")) {
           switch (name) {
             case "selection.bold":
-              return toggleMark(marks.strong)(v.state, v.dispatch);
+              return toggleBold(v);
             case "selection.italic":
-              return toggleMark(marks.emphasis)(v.state, v.dispatch);
+              return toggleItalic(v);
             case "selection.strike":
-              return marks.strike_through
-                ? toggleMark(marks.strike_through)(v.state, v.dispatch)
-                : false;
+              return toggleStrike(v);
             case "selection.code":
-              return toggleMark(marks.inline_code)(v.state, v.dispatch);
-            case "selection.link": {
-              const url = String(args?.url ?? "");
-              if (!url) {
-                const { from, to } = v.state.selection;
-                v.dispatch(v.state.tr.removeMark(from, to, marks.link));
-                return true;
-              }
-              return toggleMark(marks.link, { href: url } as never)(v.state, v.dispatch);
-            }
-            case "selection.clear": {
-              const { from, to } = v.state.selection;
-              v.dispatch(v.state.tr.removeMark(from, to));
-              return true;
-            }
+              return toggleInlineCode(v);
+            case "selection.link":
+              return toggleLink(v, String(args?.url ?? ""));
+            case "selection.clear":
+              return clearFormatting(v);
             default:
               return null;
           }

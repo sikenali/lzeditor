@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 
@@ -15,27 +15,10 @@ export const Footer: React.FC = () => {
   const wordCount      = useEditorStore(s => s.wordCount)
   const charCount      = useEditorStore(s => s.charCount)
   const cursorPosition = useEditorStore(s => s.cursorPosition)
-  const syncStatus     = useEditorStore(s => s.syncStatus)
   const showSearch     = useEditorStore(s => s.showSearch)
   const setShowSearch  = useEditorStore(s => s.setShowSearch)
   const activeDocId    = useEditorStore(s => s.activeDocId)
-  const lastEditTime   = useEditorStore(s => s.lastEditTime)
 
-  const [formattedTime, setFormattedTime] = useState('')
-
-  useEffect(() => {
-    const tick = () => {
-      const d = new Date(lastEditTime)
-      const pad = (n: number) => String(n).padStart(2, '0')
-      setFormattedTime(`${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`)
-    }
-    tick()
-    const timer = setInterval(tick, 30000)
-    return () => clearInterval(timer)
-  }, [lastEditTime])
-
-  const syncLabel = syncStatus === 'synced' ? '已保存' : syncStatus === 'saving' ? '保存中…' : '保存失败'
-  const syncIcon = syncStatus === 'synced' ? 'ri-check-line' : syncStatus === 'saving' ? 'ri-loader-4-line spinning' : 'ri-error-warning-line'
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   const toggleSearch = () => setShowSearch(!showSearch)
 
@@ -64,22 +47,10 @@ export const Footer: React.FC = () => {
         </button>
       </div>
 
-      {/* 右侧：状态信息（statusbar-left + statusbar-right）挨着版权 */}
+      {/* 右侧：状态信息（仅 statusbar-right）挨着版权 */}
       <div className="app-footer-right">
         {activeDocId != null && (
           <>
-            <div className="statusbar-left">
-              <span className={`statusbar-sync ${syncStatus === 'synced' ? 'synced' : syncStatus === 'saving' ? 'saving' : 'failed'}`}>
-                <span className={`remix ${syncIcon}`}></span>
-                <span>{syncLabel}</span>
-              </span>
-              <span className="statusbar-divider" />
-              <span className="statusbar-item">
-                <span className="remix ri-time-fill"></span>
-                <span>{formattedTime}</span>
-              </span>
-            </div>
-
             <div className="statusbar-right">
               <span className="statusbar-item">
                 <span className="remix ri-text"></span>

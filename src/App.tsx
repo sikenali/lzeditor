@@ -3,7 +3,7 @@ import { mdToHtml } from './utils/mdToHtml'
 import { shouldShowRightPreview, shouldShowRightPanel, shouldShowCenterColumn } from './utils/modeLayout'
 import { countLineDiff, formatTimeTs } from './utils/historyTimeline'
 import { nextVersionId } from './utils/versionId'
-import { isVersionSuppressed } from './utils/versionCapture'
+import { recordVersion } from './services/versionApi'
 import { Toolbar } from './components/layout/Toolbar'
 import { LeftNav } from './components/layout/LeftNav'
 import { DocumentMetaBar } from './components/layout/DocumentMetaBar'
@@ -190,7 +190,7 @@ function App() {
       } else if (key === 'o') {
         e.preventDefault(); dismissWelcome(); void pickFile().then(file => { if (file) importSingleFile(file) })
       } else if (key === 's') {
-        e.preventDefault(); es.setLastEditTime(Date.now())
+        e.preventDefault(); void saveCurrentDoc()
       } else if (key === 'e' && !e.altKey) {
         e.preventDefault(); dismissWelcome(); es.setOpenPanel('export')
       } else if (e.key === ',') {
@@ -414,6 +414,28 @@ function App() {
   const renderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => { if (renderTimerRef.current) clearTimeout(renderTimerRef.current) }, [])
 
+  // Ctrl+S 保存：后端记录保存时间，历史面板非 git 时间线显示最近 10 次。
+  // 后端不可达（离线/未起）时回退本地时间戳，保证保存始终可用。
+  const saveCurrentDoc = useCallback(async () => {
+    const es = useEditorStore.getState()
+    const docId = es.activeDocId
+    if (!docId) return
+    const md = es.mdContent || ''
+    const html = es.docHTML || mdToHtml(md)
+    const prev = es.versionsByDoc?.[docId]?.at(-1)?.md ?? ''
+    const changes = countLineDiff(prev, md)
+    const serverVersion = await recordVersion(docId, md, html, changes)
+    const st = useEditorStore.getState()
+    if (serverVersion) {
+      st.addVersion(docId, serverVersion)
+    } else {
+      const { date, time } = formatTimeTs(Date.now())
+      st.addVersion(docId, { id: nextVersionId(), md, html, ts: Date.now(), date, time, desc: 'ctrl+s 保存', changes, source: 'local' })
+    }
+    st.setLastEditTime(Date.now())
+    toast('已保存', { type: 'success', duration: 1500 })
+  }, [])
+
   // onChange(md) 输出：保真 md 回写 store + docsMd（同步），html 计算与落盘走 debounce。
   const handleEditorChange = useCallback((md: string) => {
     const es = useEditorStore.getState()
@@ -429,13 +451,6 @@ function App() {
         const st = useEditorStore.getState()
         if (st.activeDocId === docId) st.updateDoc({ html })
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
-        // 本地编辑快照：程序化载入（回滚/重播）期间抑制，避免产生重复快照。
-        if (!isVersionSuppressed()) {
-          const st2 = useEditorStore.getState()
-          const prev = st2.versionsByDoc?.[docId]?.at(-1)?.md ?? ''
-          const { date, time } = formatTimeTs(Date.now())
-          st2.addVersion(docId, { id: nextVersionId(), md, html, ts: Date.now(), date, time, desc: '本地编辑', changes: countLineDiff(prev, md), source: 'local' })
-        }
       } catch (e) { silentError('编辑器内容回写文档失败', e) }
     }, 180)
   }, [])

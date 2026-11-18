@@ -4,7 +4,7 @@ import { getEditorFacade } from '../editor/facade/registry'
 import { sanitizeHtml } from '../../utils/sanitizeHtml'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { mergeTimeline, commitShortHash, type GitVersionLike } from '../../utils/historyTimeline'
-import { setVersionSuppressed } from '../../utils/versionCapture'
+import { fetchVersions } from '../../services/versionApi'
 
 export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
@@ -36,7 +36,14 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     setGitPreviewHtml(null)
     setGitPreviewLoading(false)
     setSelectedVersion(null)
-    if (activeDocId) hydrateVersions(activeDocId)
+    if (activeDocId) {
+      // 先用本地缓存渲染（即时），再从后端拉取 Ctrl+S 保存历史覆写（权威）。
+      hydrateVersions(activeDocId)
+      void (async () => {
+        const server = await fetchVersions(activeDocId)
+        if (server) useEditorStore.getState().setDocVersions(activeDocId, server)
+      })()
+    }
     const api = window.electronAPI
     if (!diskPath || !api?.gitHistory) {
       setGitLoading(false)
@@ -88,11 +95,10 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
 
   const previewHtml = selected?.source === 'git' ? (gitPreviewHtml ?? '') : (selected?.html ?? '')
 
-  // 回滚/重播：载入内容，期间抑制快照采集（覆盖 180ms debounce），不改仓库
+  // 回滚/重播：载入内容，不改仓库（版本仅由 Ctrl+S 创建，回滚不会落新快照）。
   const loadVersion = async () => {
     if (!selected) return
     const docId = useEditorStore.getState().activeDocId
-    setVersionSuppressed(true)
     try {
       if (selected.source === 'git') {
         if (!diskPath) return
@@ -109,8 +115,8 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         setMdContent(selected.md)
         getEditorFacade()?.setText(selected.md)
       }
-    } finally {
-      setTimeout(() => setVersionSuppressed(false), 250)
+    } catch {
+      // 载入失败不阻塞面板
     }
   }
 

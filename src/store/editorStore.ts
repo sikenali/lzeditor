@@ -262,6 +262,13 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     if (byDoc[docId]) return
     set({ versionsByDoc: { ...byDoc, [docId]: loadVersions(docId) } })
   },
+  /** 用后端返回的 Ctrl+S 保存历史覆写（后端最新在前，这里转成时间升序并落盘缓存）。 */
+  setDocVersions: (docId: string, versions: DocVersion[]) => {
+    const byDoc = get().versionsByDoc || {}
+    const sorted = [...versions].sort((a, b) => a.ts - b.ts).slice(-MAX_VERSIONS)
+    set({ versionsByDoc: { ...byDoc, [docId]: sorted } })
+    saveVersions(docId, sorted)
+  },
 
   // ── Tab actions ──
   createDoc: (title?: string, path = '', libraryId?: string, diskPath?: string) => {

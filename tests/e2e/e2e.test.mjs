@@ -91,10 +91,13 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
   const getLS = () => page.evaluate(() => ({ ...localStorage }))
   const lsGet = async (key) => JSON.parse((await getLS())[key] || 'null')
 
-  // 0. 新建文档，让编辑器/预览挂载
+  // 0. 新建文档，让编辑器/预览挂载（默认 edit 模式 = Milkdown WYSIWYG）
   await page.locator('.welcome-btn--primary').click()
-  await sleep(700)
-  check('新建文档：编辑器挂载', (await page.locator('.cm-editor').count()) > 0)
+  await sleep(900)
+  const mdMount = await page.locator('.textus-editor-shell .ProseMirror').count()
+  const cmMount = await page.locator('.cm-editor').count()
+  check('新建文档：Milkdown 编辑器挂载（默认）', mdMount > 0, `ProseMirror=${mdMount}`)
+  check('新建文档：默认不是 CM6 源码模式', cmMount === 0, `cm-editor=${cmMount}`)
 
   // 1. §8.1 所有弹框统一样式 + 交互（默认顶栏布局下逐个开：导出/图片/链接/设置）
   const DIALOGS = [
@@ -245,9 +248,9 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
   await sleep(450)
   check('关闭按钮：点击后弹框关闭', (await page.locator('.settings-panel-shell').count()) === 0)
 
-  // 9. 排版设置作用到内容区
+  // 9. 排版设置作用到内容区（默认 edit 模式 = Milkdown 编辑区）
   const fontInfo = await page.evaluate(() => {
-    const el = document.querySelector('.preview-doc') || document.querySelector('.cm-editor')
+    const el = document.querySelector('.preview-doc') || document.querySelector('.cm-editor') || document.querySelector('.textus-editor-shell .ProseMirror')
     return el ? getComputedStyle(el).fontFamily : ''
   })
   check('排版字体设置作用到内容区', fontInfo.length > 5, fontInfo.slice(0, 60))

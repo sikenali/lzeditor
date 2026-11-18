@@ -380,18 +380,21 @@
 /* ── Input ── */
 .ud-input  {
   padding: 8px 12px;
-  border: 0.7px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--background);
-  color: var(--text-primary);
-  font-size: 13px;
+  border: 0.7px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 12px;
   outline: none;
-  transition: border-color var(--t-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
   width: 100%;
   box-sizing: border-box;
 }
-.ud-input:focus  { border-color: var(--accent-primary); }
-.ud-input::placeholder  { color: var(--text-muted); }
+.ud-input:focus  {
+  border-color: var(--color-primary);
+  background: var(--color-bg-white);
+}
+.ud-input::placeholder  { color: var(--color-text-muted); }
 
 /* ── Preview card ── */
 .ud-preview-card  {
@@ -635,7 +638,7 @@
 .settings-panel-content > .settings-content  {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   flex: 1;
   min-height: 0;
 }
@@ -687,12 +690,13 @@
 }
 .settings-content .settings-section  { margin-bottom: 0; }
 
-/* Section card chrome (DESIGN.md §5.4 / bid-maker .section-card) */
+/* Section card chrome (DESIGN.md §5.4 / bid-maker .section-card)
+   padding 对齐 lzmail 卡片（24px 28px），让各区块清晰分开显示 */
 .settings-section  {
   background: var(--color-bg-white);
   border: 0.7px solid var(--color-border-soft);
   border-radius: 14px;
-  padding: 16px 20px;
+  padding: 24px 28px;
   margin-bottom: 0;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -727,7 +731,8 @@
   flex-shrink: 0;
 }
 .theme-settings-view .settings-section  {
-  padding: 12px 16px;
+  /* 移除紧凑覆写：继承基线的 lzmail 卡片内边距（24px 28px），与其它标签一致 */
+  padding: 24px 28px;
 }
 .theme-settings-view .settings-section-title  {
   margin-bottom: 8px;

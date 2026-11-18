@@ -34,6 +34,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // AI 请求由前端直连 provider，/api 代理已随 server/src/routes 一起删除，不再需要
+    // Ctrl+S 保存历史走后端（server/src/index.ts 的 /api/versions）：
+    // dev 经 vite 代理转发到本机 3001；LPK 里 /api/ 由 lzcinit 直接 exec://3001。
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+      },
+    },
   },
 })

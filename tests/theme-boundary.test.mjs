@@ -45,7 +45,7 @@ const editorStore = read('src/store/editorStore.ts')
 assert.match(editorStore, /statusbarCollapsed/, 'store must persist statusbarCollapsed')
 
 const footer = read('src/components/layout/Footer.tsx')
-assert.match(footer, /statusbar-left/, 'statusbar-left content must move into footer')
+assert.doesNotMatch(footer, /statusbar-left/, 'statusbar-left must be removed (user: 去掉 statusbar-left，保存时间改由后端记录)')
 assert.match(footer, /statusbar-right/, 'statusbar-right content must move into footer')
 assert.doesNotMatch(footer, /statusbar-collapse/, 'collapse control must be removed (status merged into footer)')
 assert.match(footer, /© 2026 Powered by/, 'footer copyright must drop the brand name')

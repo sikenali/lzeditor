@@ -11,7 +11,8 @@ assert.match(hp, /gitShow/)                     // git 项取内容
 assert.match(hp, /source === 'git'/)            // 区分来源
 assert.match(hp, /ri-git-commit-line/)          // git 图标
 assert.match(hp, /ri-history-line/)             // 本地图标
-assert.match(hp, /setVersionSuppressed\(/)      // 回滚/重播抑制快照
+assert.match(hp, /fetchVersions\(/)             // 后端拉取 Ctrl+S 保存历史（权威）
+assert.match(hp, /setDocVersions\(/)            // 后端返回覆写 versionsByDoc
 assert.match(hp, /loading/)                     // git 异步 loading 态
 assert.match(hp, /mdToHtml\(/)                  // git 内容转 html 预览
 

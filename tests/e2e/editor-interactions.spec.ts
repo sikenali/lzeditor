@@ -119,9 +119,14 @@ test('浏览器回归：输入辅助 + 特效降级 + AI 流式插入', async (t
 
   // ── 0. 新建文档，挂载编辑器 ────────────────────────────────────────────────
   await page.locator('.welcome-btn--primary').click()
-  await sleep(700)
-  check('编辑器挂载：出现 .cm-editor', (await page.locator('.cm-editor').count()) > 0)
-  check('编辑器挂载：出现内容区 .cm-content', (await editable().count()) > 0)
+  await sleep(900)
+  // 默认 edit = Milkdown；CM6 源码视图在「代码模式」。切换过去再测 CM6 行为。
+  await page.locator('.toolbar-menu-btn', { has: page.locator('.ri-eye-2-fill') }).click()
+  await sleep(250)
+  await page.locator('.toolbar-submenu-item', { hasText: '代码模式' }).click()
+  await sleep(600)
+  check('代码模式：CM6 源码编辑器挂载', (await page.locator('.cm-editor').count()) > 0)
+  check('代码模式：出现内容区 .cm-content', (await editable().count()) > 0)
 
   // ── 1. 自动配对：`(` 键入生成 `()`，光标居中，Backspace 整对删除 ─────────────
   await editable().click()

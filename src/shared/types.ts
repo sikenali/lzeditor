@@ -105,6 +105,8 @@ export interface EditorStoreState {
   addVersion: (docId: string, version: DocVersion) => void
   /** 从 localStorage 播种某文档的本地快照（打开历史面板时调用）。 */
   hydrateVersions: (docId: string) => void
+  /** 用后端返回的 Ctrl+S 保存历史覆写（时间升序、截断到上限）。 */
+  setDocVersions: (docId: string, versions: DocVersion[]) => void
   lastEditTime: number
   setLastEditTime: (time: number) => void
   // 首次启动的欢迎页（每次浏览器会话只显示一次）
