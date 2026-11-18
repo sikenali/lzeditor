@@ -346,8 +346,6 @@ for f in blue clean-green dark dopamine dreamglow gold graphite guochao maximali
   curl -sL "$BASE/$f.svg" -o "$f.svg"
 done
 cd ../assets
-mkdir -p ../assets
-cd ../assets
 BASE=https://raw.githubusercontent.com/shynloc/ACKS-Markdown-Editor/main/src/theme-assets
 curl -sL $BASE/glass-ribbon.png -o glass-ribbon.png
 curl -sL $BASE/ink-gesture.png -o ink-gesture.png
