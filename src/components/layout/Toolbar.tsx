@@ -96,7 +96,7 @@ export const Toolbar: React.FC = () => {
 
   return (
     <>
-      <div className={`navtop toolbar${!showToolbarLabels ? ' toolbar-icon-only' : ''}`}>
+      <div className={`navtop toolbar toolbar-icon-only${showToolbarLabels ? ' toolbar-hover-labels' : ''}`}>
         {/* ── Left ── */}
         <div className="toolbar-group">
           <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)}>

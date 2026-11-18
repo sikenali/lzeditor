@@ -124,6 +124,24 @@
 }
 .toolbar-icon-only .toolbar-icon  { font-size: 20px; }
 .toolbar-icon-only .toolbar-label  { display: none; }
+/* showToolbarLabels 开启（.toolbar-hover-labels）时：hover 在图标下方显示标题（绝对定位，不挤布局） */
+.toolbar-icon-only.toolbar-hover-labels .toolbar-btn:hover .toolbar-label  {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--color-text-body);
+  background: var(--color-bg-card);
+  border: 0.7px solid var(--color-border);
+  box-shadow: var(--color-popover-shadow);
+  z-index: 200;
+  pointer-events: none;
+}
 .toolbar-icon-only .toolbar-menu-dot  { display: none; }
 
 /* ── Toolbar button hover tooltip (below icon, no arrow) ── */
