@@ -3,7 +3,6 @@ import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor
 import type { SettingsGroup } from '../../shared/types'
 import { UiModal } from '../../components/ui'
 import { toast } from '../../utils/toast'
-import { ContentStyleTab } from './settings/ContentStyleTab'
 import { EditorSettingsTab } from './settings/EditorSettingsTab'
 import { BehaviorSettingsTab } from './settings/BehaviorSettingsTab'
 import { ShortcutSettingsTab } from './settings/ShortcutSettingsTab'
@@ -22,7 +21,6 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
   {
     id: 'profile', label: '个性设置', icon: 'ri-user-settings-line',
     subs: [
-      { id: 'content', label: '内容样式', icon: 'ri-font-size' },
       { id: 'editor', label: '编辑设置', icon: 'ri-edit-2-line' },
       { id: 'app', label: '应用行为', icon: 'ri-apps-line' },
       { id: 'shortcut', label: '快捷键设置', icon: 'ri-keyboard-fill' },
@@ -96,13 +94,12 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
       {group.id === 'theme' && <ThemeSettingsView s={settings} u={updateSetting} />}
       {group.id === 'ai' && <ModelSettingsTab />}
       {group.id === 'profile' && (
-        subTab === 'content'
-          ? <ContentStyleTab s={settings} u={updateSetting} />
-          : subTab === 'editor'
-            ? <EditorSettingsTab s={settings} u={updateSetting} />
-            : subTab === 'app'
-              ? <BehaviorSettingsTab s={settings} u={updateSetting} />
-              : <ShortcutSettingsTab />
+        // subTab 可能残留旧值（如已删除的 'content'），归一为 'editor'
+        (subTab === 'editor' || !['app', 'shortcut'].includes(subTab))
+          ? <EditorSettingsTab s={settings} u={updateSetting} />
+          : subTab === 'app'
+            ? <BehaviorSettingsTab s={settings} u={updateSetting} />
+            : <ShortcutSettingsTab />
       )}
       {group.id === 'about' && <AboutSettingsTab />}
     </div>
