@@ -720,6 +720,42 @@
   font-weight: 500;
   color: var(--text-secondary);
 }
+
+/* ── Style cards pager (10/页 + 左右箭头) ── */
+.style-cards-pager  {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.pager-btn  {
+  width: 28px;
+  height: 28px;
+  border: 0.7px solid var(--border-subtle);
+  background: var(--background-elevated);
+  border-radius: 6px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast);
+}
+
+.pager-btn:disabled  {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.pager-btn:not(:disabled):hover  {
+  border-color: var(--accent-border);
+  color: var(--accent-primary);
+}
+
+.pager-info  {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 .history-action-btn  {
   display: inline-flex;
   align-items: center;
@@ -805,6 +841,11 @@
 .style-read-article  {
   max-width: 760px;
   margin: 0 auto;
+}
+
+/* ACKS 渲染宿主：不设额外排版，样式由 ACKS 渲染器/主题决定（不在 LZ_HOST_SELECTORS，避免 token CSS 泄漏） */
+.style-read-acks  {
+  max-width: 100%;
 }
 
 .style-panel  {

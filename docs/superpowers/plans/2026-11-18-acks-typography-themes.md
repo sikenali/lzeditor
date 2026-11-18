@@ -170,7 +170,7 @@ git commit -m "feat(acks): vendor ACKS 主题引擎（43 款，CATALOG v3）"
   - `acksThemeToLzCss(theme: AcksTheme, hostSelector: string): string`
   - `acksThemeToLzTokens(theme: AcksTheme): ExportThemeTokens`（`{ overlay, primary, text, muted, heading, code, border, amber }`，全部 `string`）
   - `buildTypographyTheme(theme: AcksTheme): TypographyTheme`（`{ id, name, color, tag, css }`）
-  - `acksThemeCardMeta(theme: AcksTheme): { name: string; color: string }`
+  - `acksThemeCardMeta(theme: AcksTheme): { name: string; color: string; bg: string; text: string }`（`color`=accent 用于标题/代码/选中态，`bg` 用于卡片缩略图底，`text` 用于正文样例色）
 
 - [ ] **Step 1: 写 `acks-mapping.ts`（纯函数，不 import 引擎/PNG）**
 
@@ -212,8 +212,8 @@ export function buildTypographyTheme(t: AcksTheme): TypographyTheme {
   return { id: t.id, name: t.name, color: t.accent, tag: '', css: LZ_HOST_SELECTORS.map(s => acksThemeToLzCss(t, s)).join('\n') }
 }
 
-export function acksThemeCardMeta(t: AcksTheme): { name: string; color: string } {
-  return { name: t.name, color: t.accent }
+export function acksThemeCardMeta(t: AcksTheme): { name: string; color: string; bg: string; text: string } {
+  return { name: t.name, color: t.accent, bg: t.bg, text: t.text }
 }
 ```
 
@@ -221,7 +221,7 @@ export function acksThemeCardMeta(t: AcksTheme): { name: string; color: string }
 
 ```js
 import assert from 'node:assert/strict'
-import { acksThemeToLzCss, acksThemeToLzTokens, buildTypographyTheme, DEFAULT_TYPOGRAPHY_THEME, LZ_HOST_SELECTORS } from '../src/styles/acks-mapping.ts'
+import { acksThemeToLzCss, acksThemeToLzTokens, buildTypographyTheme, acksThemeCardMeta, DEFAULT_TYPOGRAPHY_THEME, LZ_HOST_SELECTORS } from '../src/styles/acks-mapping.ts'
 const t = { id:'milestone-clean-light', name:'清隽阅读 · 浅色', bg:'#FBFAF8', text:'#2a2722', heading:'#23211d', accent:'#C2613A', accent2:'#C2613A', emphasis:'#C2613A', sectionHeading:'#23211d', titleText:'#23211d', titleBg:'#FBFAF8', thBg:'#f3efe5', thText:'#23211d', quoteBg:'#FBFAF8', quoteText:'#9b9483', quoteBorder:'#C2613A', codeBg:'#f0ebe0', codeText:'#9a4d27', codeBlockBg:'#f5f1e8', codeBlockText:'#3a372f', zebra:'#f6f2ea', bodySize:18, lineHeight:1.78, letterSpacing:0.1, h1:36.9, h2:27, h3:20, h4:17, fontFamily:"'Lora',Georgia,serif", headingFamily:"'Source Serif 4','Lora',serif", milestoneKey:'clean', milestoneVariant:'light', themeVersion:2, editorialProfile:'milestone-clean', signature:'ms-clean' }
 assert.equal(DEFAULT_TYPOGRAPHY_THEME, 'graphite')
 assert.ok(LZ_HOST_SELECTORS.includes('.preview-doc'))
@@ -232,6 +232,8 @@ assert.match(css, /\.preview-doc blockquote\{border-color:#C2613A/)
 assert.doesNotMatch(css, /\.style-read-article/, '作用域不含 .style-read-article')
 const tok = acksThemeToLzTokens(t)
 assert.equal(tok.primary, '#C2613A'); assert.equal(tok.text, '#2a2722'); assert.equal(tok.heading, '#23211d')
+const meta = acksThemeCardMeta(t)
+assert.equal(meta.name, '清隽阅读 · 浅色'); assert.equal(meta.color, '#C2613A'); assert.equal(meta.bg, '#FBFAF8'); assert.equal(meta.text, '#2a2722')
 const tt = buildTypographyTheme(t)
 assert.equal(tt.id, 'milestone-clean-light'); assert.equal(tt.color, '#C2613A'); assert.match(tt.css, /\.read-article-body/)
 ```
@@ -330,16 +332,27 @@ curl -sL $BASE/theme-revision.css -o theme-revision.css
 curl -sL $BASE/theme-catalog.css -o theme-catalog.css
 ```
 
-- [ ] **Step 2: 下载 3 张纹理 PNG 到 `src/vendor/acks/engine/assets/`**
+- [ ] **Step 2: 下载 30 个签名 SVG + 3 张纹理 PNG 到 `src/vendor/acks/engine/`**
 
 ```bash
-mkdir -p src/vendor/acks/engine/assets
-cd src/vendor/acks/engine/assets
+# 签名 SVG（theme-render.js 的 applyDecorations 读 MD.SIGNATURES[k].svg 原始 SVG 文本并 replaceAll 换色）
+mkdir -p src/vendor/acks/engine/theme-signatures
+cd src/vendor/acks/engine/theme-signatures
+BASE=https://raw.githubusercontent.com/shynloc/ACKS-Markdown-Editor/main/src/theme-signatures
+for f in blue clean-green dark dopamine dreamglow gold graphite guochao maximalism \
+         ms-academic ms-aireport ms-blue-purple ms-business ms-clean ms-cnclassic ms-cnvertical \
+         ms-darkcode ms-euro ms-magazine ms-poster ms-social ms-technical ms-wechat \
+         neo-brutalism neu-soft olive-notes receipt red-white song-ink zen; do
+  curl -sL "$BASE/$f.svg" -o "$f.svg"
+done
+cd ../assets
 BASE=https://raw.githubusercontent.com/shynloc/ACKS-Markdown-Editor/main/src/theme-assets
 curl -sL $BASE/glass-ribbon.png -o glass-ribbon.png
 curl -sL $BASE/ink-gesture.png -o ink-gesture.png
 curl -sL $BASE/paper-edge.png -o paper-edge.png
 ```
+
+（注：`theme-signatures.json` 有 32 条：30 条 `type:"svg"` 对应上面 30 个 svg 文件；2 条 `type:"image"`（`y3k`→glass-ribbon、`collage`→paper-edge）走 `data-theme-asset` 由 `resolveThemeAssets` 解析。`applyDecorations` 里 `signature.svg` 是原始 SVG 文本，必须 hydrate，不能是 data URI。）
 
 - [ ] **Step 3: 写 `src/styles/acks-themes.ts`（门面）**
 
@@ -362,6 +375,19 @@ const RENDER: any = (globalThis as any).ACKS_RENDER
 const THEME_ASSETS: Record<string,string> = { 'glass-ribbon': glassRibbon, 'ink-gesture': inkGesture, 'paper-edge': paperEdge }
 // ACKS 的 applyDecorations 用裸全局 THEME_ASSETS，需在建 DOM 前挂到全局
 ;(globalThis as any).THEME_ASSETS = THEME_ASSETS
+
+// hydrate signature.svg —— applyDecorations 读 MD.SIGNATURES[k].svg（原始 SVG 文本，replaceAll 换色）。
+// 30 个 type:"svg" 签名用 import.meta.glob(?raw) 载入，按 file 名回填到 MD.SIGNATURES。
+const signatureSvgs: Record<string,string> = import.meta.glob(
+  '../vendor/acks/engine/theme-signatures/*.svg',
+  { query: '?raw', import: 'default', eager: true }
+) as Record<string,string>
+for (const [p, svg] of Object.entries(signatureSvgs)) {
+  const fname = p.split('/').pop()!
+  for (const sig of Object.values(MD?.SIGNATURES ?? {})) {
+    if (sig?.type === 'svg' && sig.file === fname && !sig.svg) sig.svg = svg
+  }
+}
 
 export function getAcksTheme(id: string): AcksTheme | undefined { return MD?.THEMES?.[id] }
 export const ACKS_THEME_IDS: string[] = MD ? Object.keys(MD.THEMES) : []
@@ -417,6 +443,9 @@ assert.match(acksThemes, /\.ms-doc/, 'Milestone 用 .ms-doc')
 assert.match(acksThemes, /md\.dataset\.milestone/, 'Milestone 必须挂 data-milestone')
 assert.match(acksThemes, /data-theme-asset/, '必须解析 data-theme-asset 资源')
 assert.match(acksThemes, /lz-acks-theme-css/, 'ACKS CSS 注入独立 style 节点')
+assert.match(acksThemes, /import\.meta\.glob/, '签名 svg 用 import.meta.glob 载入')
+assert.match(acksThemes, /sig\.svg = svg/, '必须回填 MD.SIGNATURES[k].svg（applyDecorations 依赖）')
+assert.match(acksThemes, /THEME_ASSETS/, '必须定义 THEME_ASSETS（applyDecorations 依赖）')
 ```
 
 - [ ] **Step 5: 跑测试**
@@ -611,11 +640,18 @@ git commit -m "feat(acks): 默认主题 graphite，全部 classic 回退改常�
 **Interfaces:**
 - Consumes: Task 4 `renderAcksArticle`/`getAcksTheme`、Task 2 `acksThemeCardMeta`/`DEFAULT_TYPOGRAPHY_THEME`、`ACKS_THEME_IDS`。
 - Produces: 排版界面正文用 ACKS 渲染（`.style-read-article` 宿主）、43 卡片分页 10/页 + 左右箭头。
+- **Ruling（lzmail 参考实现）:** 保持现有 `.style-card`/`.style-card-thumb`/`.style-card-preview`/`.style-card-name` + `.style-toolbar`/`.style-select-btn`/`.style-select-menu`/`.style-action-btn` 元素结构**不变**（LZEditor 当前已与参考 `sikenali/lzeditor` 一致）；只把 13 款主题源换成 43 款 ACKS，缩略图 mini-mock 颜色改由 ACKS token 驱动（`meta.color`=accent 用于标题/代码/选中态、`meta.bg` 缩略图底、`meta.text` 正文样例色），并加分页导航。选中态沿用 `.active` 类 + 缩略图 `borderColor`=accent + 名称色=accent。
 
-- [ ] **Step 1: 正文宿主改 `.style-read-article`（原 `.read-article-body` 分支），去掉 `dangerouslySetInnerHTML`，改 ref + `renderAcksArticle`**
+- [ ] **Step 0: 确认现有卡片/工具栏元素结构不变（对照参考 `sikenali/lzeditor`）**
+
+卡片：`.style-card`（按钮，`.active` 选中类）> `.style-card-thumb`（56×72，圆角 3px，`borderColor`=选中? accent : 灰）> `.style-card-preview`（mini-mock：名称行/accent、二级标题装饰下划线 `accent33`、正文样例·代码块 `accent18`/accent、引用样例）+ `.style-card-name`（选中时 accent 色）。工具栏：`.style-toolbar` > `.style-label-group`（"文档样式:" + `style-select-btn` 下拉） + `style-action-btn`（预览/导出/关闭）。全部保留原结构，仅数据源与颜色 token 换 ACKS。
+
+- [ ] **Step 1: 正文改 ACKS 渲染进 `.style-read-article` 内的专用宿主，去掉 `dangerouslySetInnerHTML` + 旧排版注入**
 
 ```tsx
-const bodyRef = useRef<HTMLDivElement>(null)
+// 滚动容器 ref 保持不动（scrollSpy/章节跳转用），不要挪到别处：
+// <div ref={bodyRef} className="style-read-scroll" ...>
+const articleBodyRef = useRef<HTMLDivElement>(null)   // 专用 ACKS 宿主（新）
 const [activeStyle, setActiveStyle] = useState(typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
 const [page, setPage] = useState(0)
 const PAGE_SIZE = 10
@@ -625,13 +661,20 @@ const pageItems = ACKS_THEME_IDS.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE
 // 渲染：依赖 effectiveMd/activeStyle。renderedHtml 与旧 `.read-article-body` 用同一份 mdToHtml 输出，
 // 其 heading id（parseMdOutline 依赖）经 doc.innerHTML 包裹后保留，大纲/章节跳转不受影响（Review Focus #6）
 useEffect(() => {
-  const el = bodyRef.current; if (!el) return
+  const el = articleBodyRef.current; if (!el) return
   renderAcksArticle(el, renderedHtml, activeStyle)
 }, [activeStyle, renderedHtml])
 
 // 卡片点击
 const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typographyTheme', id) }
 ```
+
+**宿主 DOM 要点（必须遵守，避免 token CSS 泄漏到 ACKS 渲染器）：**
+- 结构（对照参考 `sikenali/lzeditor`）：`.style-read-scroll`(bodyRef) > `.style-read-article`(maxWidth 760) > [`.main-read-header`（保留，含 公众号 按钮）, 内容宿主 div]。
+- 内容宿主 div 用**新类 `.style-read-acks`**，**不要**用 `.read-article-body`（它在 `LZ_HOST_SELECTORS` 里，`acksThemeToLzCss` 会命中它叠在 ACKS 上，破坏一致性 —— Review Focus #3）。`.style-read-acks` 不在 `LZ_HOST_SELECTORS`。
+- 去掉内容宿主上的旧内联 `style={{ fontSize, lineHeight, '--style-accent' }}`（ACKS 渲染器自带排版/配色）。
+- **删除旧的排版注入 `useEffect`**（原 ~127-142 行，把 `theme.css` replace 成 `.read-article-body` 后注入 `lz-styleread-typography-css`）—— ACKS 渲染器现在拥有正文。
+- 章节跳转仍用 `bodyRef`（`.style-read-scroll`）`querySelectorAll('h1..h6')`，ACKS 渲染后的标题 id 保留在 DOM 里。
 
 - [ ] **Step 2: 卡片渲染改遍历 `pageItems`，颜色用 `acksThemeCardMeta(getAcksTheme(id)!)`；加左右箭头 + 页码**
 
@@ -645,7 +688,10 @@ const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typograph
     <span className="remix ri-arrow-right-s-line" />
   </button>
 </div>
-// 卡片：pageItems.map(id => { const t = getAcksTheme(id)!; const meta = acksThemeCardMeta(t); ... style-card-preview 颜色用 meta.color / t.bg / t.text / t.codeBg / t.codeText })
+// 卡片：pageItems.map(id => { const t = getAcksTheme(id)!; const meta = acksThemeCardMeta(t)
+//   缩略图底 background: meta.bg；preview 文字色 meta.text；标题行 color: meta.color；
+//   二级标题装饰 borderBottom: `${meta.color}33`；代码块 background: `${meta.color}18`, color: meta.color；
+//   名称行(style-card-name) 选中时 color: meta.color；选中缩略图 borderColor: meta.color })
 ```
 
 - [ ] **Step 3: `panels.css` 加 `.style-cards-pager` / `.pager-btn` / `.style-read-article` 样式**
@@ -657,6 +703,7 @@ const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typograph
 .pager-btn:not(:disabled):hover { border-color:var(--color-primary); color:var(--color-primary); }
 .pager-info { font-size:12px; color:var(--color-text-muted); }
 .style-read-article { max-width:760px; margin:0 auto; }
+.style-read-acks { max-width:100%; }   /* ACKS 渲染宿主：不设额外排版，样式由 ACKS 渲染器/主题决定 */
 ```
 
 - [ ] **Step 4: 加边界断言（`tests/acks-theme-rewire.test.mjs`）**
@@ -664,14 +711,23 @@ const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typograph
 ```js
 const smp = read('src/components/panels/StyleMainPanel.tsx')
 assert.match(smp, /renderAcksArticle/, '排版界面用 ACKS 渲染器')
-assert.match(smp, /style-read-article/, '宿主用 .style-read-article')
+assert.match(smp, /style-read-article/, '宿主容器用 .style-read-article')
+assert.match(smp, /style-read-acks/, 'ACKS 内容宿主用 .style-read-acks（非 token CSS 宿主）')
+assert.match(smp, /articleBodyRef/, 'ACKS 内容宿主有独立 ref')
 assert.doesNotMatch(smp, /dangerouslySetInnerHTML/, '不再用 dangerouslySetInnerHTML 渲染正文')
+assert.doesNotMatch(smp, /lz-styleread-typography-css/, '删除旧排版注入 useEffect')
 assert.match(smp, /const PAGE_SIZE = 10/, '每页 10 个')
 assert.match(smp, /totalPages/, '有分页')
 assert.match(smp, /ri-arrow-left-s-line/, '有左箭头')
 assert.match(smp, /ri-arrow-right-s-line/, '有右箭头')
 assert.match(smp, /pager-btn/, '箭头按钮有 pager-btn')
 assert.match(smp, /ACKS_THEME_IDS\.slice/, '按页切片')
+assert.match(smp, /acksThemeCardMeta/, '卡片用 acksThemeCardMeta')
+assert.match(smp, /meta\.color/, '卡片标题/选中态用 meta.color')
+assert.match(smp, /meta\.bg/, '缩略图底用 meta.bg')
+assert.match(smp, /meta\.text/, '正文样例色用 meta.text')
+assert.match(smp, /style-card-thumb/, '保留参考实现卡片缩略图结构')
+assert.match(smp, /style-select-btn/, '保留工具栏下拉选择器')
 const panelsCss = read('src/styles/panels.css')
 assert.match(panelsCss, /\.style-cards-pager/, '分页样式存在')
 assert.match(panelsCss, /\.pager-btn:disabled/, '箭头禁用态')

@@ -4,6 +4,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { useScrollSync, lineBridgeOf } from '../../hooks/scrollSync'
 import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
+import { DEFAULT_TYPOGRAPHY_THEME } from '../../styles/acks-mapping'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getDocMd } from '../../utils/docSource'
 import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
@@ -62,20 +63,16 @@ export const SidebarPreview: React.FC = () => {
   useEffect(() => {
     const previewEl = previewElRef.current
     if (!previewEl) return
-    const theme = getTypographyTheme(typographyTheme || 'classic')
+    const theme = getTypographyTheme(typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
     previewEl.innerHTML = previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
     previewEl.style.cssText = ''
     if (theme) {
-      // Apply typography theme inline styles to key elements
-      const css = theme.css
-        .replace(/\[data-typography-theme="[^"]+"\]\s*\.\lz-editor-content/g, '.preview-doc')
-        .replace(/\[data-typography-theme="[^"]+"\]\s*\.read-article-body/g, '.preview-doc')
-        .replace(/\[data-typography-theme="[^"]+"\]\s*\.export-preview-body/g, '.preview-doc')
+      // theme.css 已由 buildTypographyTheme 以裸宿主选择器（含 .preview-doc）生成，无需再重映射。
       const styleEl = document.getElementById('lz-sidebar-typography-css') as HTMLStyleElement | null
       if (styleEl) styleEl.remove()
       const el = document.createElement('style')
       el.id = 'lz-sidebar-typography-css'
-      el.textContent = css
+      el.textContent = theme.css
       document.head.appendChild(el)
     }
     // mermaid 是异步增强：占位符先显示，渲完再换成图

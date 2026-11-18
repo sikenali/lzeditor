@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
+import { DEFAULT_TYPOGRAPHY_THEME } from '../../styles/acks-mapping'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { UDSection, UDSettingRow, UDPreviewCard, UiModal, UiSelect, UiSwitch } from '../ui'
 import { getDocMd } from '../../utils/docSource'
@@ -88,13 +89,13 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   useEffect(() => {
     const el = document.getElementById('lz-export-typography-css')
     if (el) el.remove()
-    const themeId = styleId || typographyTheme || 'classic'
+    const themeId = styleId || typographyTheme || DEFAULT_TYPOGRAPHY_THEME
     const theme = getTypographyTheme(themeId)
     if (theme) {
       const styleEl = document.createElement('style')
       styleEl.id = 'lz-export-typography-css'
+      // theme.css 由 buildTypographyTheme 以裸宿主选择器（含 .export-preview-body）生成，无需再重映射。
       styleEl.textContent = theme.css
-        .replace(/\[data-typography-theme="[^"]+"\]\s*\.(lz-editor-content|read-article-body|preview-doc|export-preview-body)/g, '.export-preview-body')
       document.head.appendChild(styleEl)
     }
   }, [typographyTheme, previewHtml])
@@ -120,7 +121,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
       await exportDocument({
         title: safeTitle, content: format === 'md' ? mdSource : html, format,
           options: isPrintFormat ? {
-            typographyTheme: typographyTheme || 'classic', codeTheme: codeTheme || 'atom-one-dark',
+            typographyTheme: typographyTheme || DEFAULT_TYPOGRAPHY_THEME, codeTheme: codeTheme || 'atom-one-dark',
             macCodeBlock: macCodeBlock || false, includeTOC: includeTOC !== false,
             includeLineNumbers: includeLineNumbers || false, includePageNumbers: includePageNumbers || false,
             paperSize, orientation, fontSize: defaultFontSize, lineHeight: lineHeight,

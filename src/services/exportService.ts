@@ -1,5 +1,7 @@
 import { silentError } from '../utils/silentError'
 import { getCodeTheme } from '../styles/code-themes'
+import { acksThemeToLzTokens, DEFAULT_TYPOGRAPHY_THEME } from '../styles/acks-mapping'
+import { getAcksTheme } from '../styles/acks-themes'
 export interface ExportOptions {
   title: string
   author?: string
@@ -62,22 +64,7 @@ function macCodeCSS(macBg: string): string {
 }
 
 
-const TYPOGRAPHY_THEME_VARS: Record<string, Record<string, string>> = {
-  classic:    { primary: '#333333', text: '#2b2b2b', muted: '#647d96', heading: '#1a1a1a', code: '#f6f8fa', overlay: '#ffffff', border: '#e1e4e8', amber: '#d02f55' },
-  'wechat-green': { primary: '#07c160', text: '#1f1f1f', muted: '#52705f', heading: '#067f42', code: '#f0f8f0', overlay: '#f5faf5', border: '#d4ecc8', amber: '#0a8f4d' },
-  'tech-blue': { primary: '#1e6bb8', text: '#14508c', muted: '#4a6a85', heading: '#14508c', code: '#f0f6fb', overlay: '#f8faff', border: '#d3e5f3', amber: '#1a63aa' },
-  lanying:    { primary: '#3aa1f0', text: '#0e6fd0', muted: '#4f6b83', heading: '#0e6fd0', code: '#f0f8ff', overlay: '#f8faff', border: '#c5e2f8', amber: '#0d67c2' },
-  'orange-heart': { primary: '#ef7060', text: '#e05442', muted: '#595959', heading: '#e05442', code: '#fef8f6', overlay: '#fff8fa', border: '#f6ddd8', amber: '#d95948' },
-  violet:     { primary: '#8e44ad', text: '#6d3487', muted: '#6f5680', heading: '#6d3487', code: '#faf7fc', overlay: '#fbf8ff', border: '#e7d8ef', amber: '#83429f' },
-  ink:        { primary: '#576b95', text: '#40464f', muted: '#666e7e', heading: '#2f353d', code: '#f6f7f9', overlay: '#ffffff', border: '#dfe3ea', amber: '#4f608a' },
-  'chinese-red': { primary: '#c0392b', text: '#a93226', muted: '#7a5750', heading: '#a93226', code: '#fef8f6', overlay: '#fff8fa', border: '#f0d5d0', amber: '#b03425' },
-  bamboo:     { primary: '#0e9285', text: '#0b7268', muted: '#4f6f6b', heading: '#0e9285', code: '#f0f8f6', overlay: '#f8faff', border: '#b9e2dc', amber: '#0b7268' },
-  magazine:   { primary: '#1a1a1a', text: '#2b2b2b', muted: '#6b6b6b', heading: '#1a1a1a', code: '#faf7ef', overlay: '#ffffff', border: '#e6dfd0', amber: '#8a6d1d' },
-  night:      { primary: '#7aa2f7', text: '#c6cade', muted: '#565f89', heading: '#7aa2f7', code: '#24283b', overlay: '#1a1b26', border: '#414868', amber: '#ff9e64' },
-  sakura:     { primary: '#e8618c', text: '#2f2f2f', muted: '#8a6470', heading: '#d8577f', code: '#fdf6f9', overlay: '#fff8fa', border: '#f5d9e2', amber: '#d8577f' },
-  minimal:    { primary: '#3d3d3d', text: '#3d3d3d', muted: '#8c8c8c', heading: '#1f1f1f', code: '#f5f5f5', overlay: '#ffffff', border: '#e0e0e0', amber: '#595959' },
-}
-const DEFAULT_THEME_VARS = TYPOGRAPHY_THEME_VARS.classic
+const themeFor = (id: string) => getAcksTheme(id) ?? getAcksTheme(DEFAULT_TYPOGRAPHY_THEME)!
 
 function hexToRgb(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -87,7 +74,7 @@ function hexToRgb(hex: string): string {
 }
 
 function getCSSVars(typographyThemeId: string): string {
-  const v = TYPOGRAPHY_THEME_VARS[typographyThemeId] || DEFAULT_THEME_VARS
+  const v = acksThemeToLzTokens(themeFor(typographyThemeId))
   const rgb = hexToRgb(v.primary)
   return [
     `--accent-primary: ${v.primary};`,
@@ -194,7 +181,7 @@ function generateHeadingCSS(headingStyles: Record<string, string>, accent: strin
 function buildStyledHTML(title: string, content: string, opts: any): string {
   const pageW = PAPER_SIZES[opts.paperSize] || '210mm'
   const pageH = PAPER_HEIGHTS[opts.paperSize] || '297mm'
-  const v = TYPOGRAPHY_THEME_VARS[opts.typographyTheme] || DEFAULT_THEME_VARS
+  const v = acksThemeToLzTokens(themeFor(opts.typographyTheme))
   const container = document.createElement('div')
   const fs = opts.fontSize ?? 14
   const lh = opts.lineHeight ?? '1.8'
@@ -232,7 +219,7 @@ function buildStyledHTML(title: string, content: string, opts: any): string {
 
 export async function exportDocument(options: ExportOptions): Promise<void> {
   const { title, content, format, options: expOpts = {} } = options
-  const typographyTheme = expOpts.typographyTheme || 'classic'
+  const typographyTheme = expOpts.typographyTheme || DEFAULT_TYPOGRAPHY_THEME
   const includeTOC = expOpts.includeTOC !== false
   const includeLineNumbers = expOpts.includeLineNumbers || false
   const includePageNumbers = expOpts.includePageNumbers || false
@@ -291,7 +278,7 @@ async function exportHTML(title: string, content: string, opts: any): Promise<vo
   const tocHTML = opts.includeTOC ? buildTOC(content) : content
   const processed = opts.includeLineNumbers ? addLineNumbers(tocHTML) : tocHTML
   const finalContent = opts.includePageNumbers ? addPageNumbers(processed, opts.paperSize, opts.orientation) : processed
-  const html = buildStyledHTML(title, finalContent, { ...opts, typographyTheme: opts.typographyTheme || 'classic', extraCSS: codeCSS + macCSS })
+  const html = buildStyledHTML(title, finalContent, { ...opts, typographyTheme: opts.typographyTheme || DEFAULT_TYPOGRAPHY_THEME, extraCSS: codeCSS + macCSS })
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

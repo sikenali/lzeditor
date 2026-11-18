@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { SettingsState, SettingsGroup, ApiKeyEntry } from '../shared/types'
 import { ACCENT_PRESETS } from '../styles/themes'
+import { DEFAULT_TYPOGRAPHY_THEME } from '../styles/acks-mapping'
 
 export { ACCENT_PRESETS } from '../styles/themes'
 
@@ -66,7 +67,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   activeGroup: 'theme',
   subTab: '',
   exportFormat: 'pdf',
-  typographyTheme: 'classic',
+  typographyTheme: DEFAULT_TYPOGRAPHY_THEME,
   codeTheme: 'atom-one-dark',
   macCodeBlock: false,
   includeTOC: true,

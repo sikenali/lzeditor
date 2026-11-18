@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSettingsStore } from '../store/settingsStore'
 import { applyTypographyTheme } from '../styles/typography-themes'
+import { DEFAULT_TYPOGRAPHY_THEME } from '../styles/acks-mapping'
 import { getCodeTheme } from '../styles/code-themes'
 import { themeTokens, ACCENT_PRESETS, type ThemeType } from '../styles/themes'
 
@@ -177,7 +178,7 @@ function resolveAccentId(accent?: string): string {
 export function useTheme() {
   const theme = useSettingsStore(s => s.theme)
   const accentColor = useSettingsStore(s => s.accentColor)
-  const typographyTheme = useSettingsStore(s => s.typographyTheme || 'classic')
+  const typographyTheme = useSettingsStore(s => s.typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
   const codeTheme = useSettingsStore(s => s.codeTheme || 'atom-one-dark')
   const macCodeBlock = useSettingsStore(s => s.macCodeBlock)
 
