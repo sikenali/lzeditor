@@ -12,3 +12,11 @@ assert.match(acksThemes, /lz-acks-theme-css/, 'ACKS CSS 注入独立 style 节�
 assert.match(acksThemes, /import\.meta\.glob/, '签名 svg 用 import.meta.glob 载入')
 assert.match(acksThemes, /sig\.svg = svg/, '必须回填 MD.SIGNATURES[k].svg（applyDecorations 依赖）')
 assert.match(acksThemes, /THEME_ASSETS/, '必须定义 THEME_ASSETS（applyDecorations 依赖）')
+
+// --- Task 5: typography-themes 改走 ACKS（删 13 款手写主题） ---
+const typo = read('src/styles/typography-themes.ts')
+assert.doesNotMatch(typo, /const classic: TypographyTheme/, '13 款手写主题已删除')
+assert.match(typo, /getAcksTheme\(id\) \?\? getAcksTheme\(DEFAULT_TYPOGRAPHY_THEME\)/, '未知 id 回退 graphite')
+assert.match(typo, /buildTypographyTheme/, 'getTypographyTheme 走 buildTypographyTheme')
+assert.match(typo, /ACKS_THEME_IDS\.map/, 'TYPOGRAPHY_THEMES 由 43 款 ACKS id 生成')
+assert.doesNotMatch(typo, /wechatGreen|techBlue|lanying|orangeHeart|minimalGray/, '旧主题名不再出现')
