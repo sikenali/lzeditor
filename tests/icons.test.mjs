@@ -4,12 +4,15 @@ import { test } from 'node:test'
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 
+// 只扫文本源码找 `ri-*` 类名；跳过二进制资源（字体/图片等）。否则把 woff2 当 utf8 读，
+// 随机字节会解码成 `ri-c`/`ri-g` 之类的假命中，误报"图标名不存在"。
+const SKIP_BINARY = /\.(woff2?|ttf|otf|eot|png|jpe?g|gif|webp|avif|ico|mp3|mp4|wasm)$/i
 function walk(dir) {
   const out = []
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = `${dir}/${e.name}`
     if (e.isDirectory()) out.push(...walk(p))
-    else out.push(p)
+    else if (!SKIP_BINARY.test(p)) out.push(p)
   }
   return out
 }
