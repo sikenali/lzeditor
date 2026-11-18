@@ -160,7 +160,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
               <UDSection label="章节引用">
                 <UiSelect value={chapterRef} onChange={setChapterRef} options={[
                   { value: '', label: '整篇文档' },
-                  ...chapters.map(c => ({ value: c.id, label: `${'　'.repeat(c.level - 1)}${c.text}` }))
+                  ...chapters.map(c => ({ value: c.id, label: c.text, badge: `H${c.level}` }))
                 ]} />
               </UDSection>
 

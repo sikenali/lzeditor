@@ -7,6 +7,8 @@ export interface UiSelectOption {
   desc?: string
   disabled?: boolean
   group?: string
+  /** 可选的层级徽标文本（如 H1/H2/H3），在下拉项与触发器中渲染 */
+  badge?: string
 }
 
 export interface UiSelectProps {
@@ -80,6 +82,7 @@ export const UiSelect: React.FC<UiSelectProps> = ({
         onClick={() => setOpen(o => !o)}
         onKeyDown={onKeyDown}
       >
+        {selected?.badge && <span className="ui-select-item-badge">{selected.badge}</span>}
         <span className={selected ? 'ui-select-label' : 'ui-select-label ui-select-placeholder'}>
           {selected ? selected.label : placeholder}
         </span>
@@ -119,7 +122,10 @@ export const UiSelect: React.FC<UiSelectProps> = ({
                   }}
                 >
                   <span className="ui-select-item-text">
-                    <span className="ui-select-item-label">{opt.label}</span>
+                    <span className="ui-select-item-row">
+                      {opt.badge && <span className="ui-select-item-badge">{opt.badge}</span>}
+                      <span className="ui-select-item-label">{opt.label}</span>
+                    </span>
                     {opt.desc && <span className="ui-select-item-desc">{opt.desc}</span>}
                   </span>
                   {active && Check && <Check size={14} />}

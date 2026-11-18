@@ -217,6 +217,20 @@
 .ui-select-item.active  { background: var(--color-primary-soft); color: var(--color-primary); }
 .ui-select-item.disabled  { color: var(--color-text-muted); cursor: not-allowed; }
 .ui-select-item-text  { display: flex; flex-direction: column; min-width: 0; }
+.ui-select-item-row  { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.ui-select-item-badge  {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 0.7px solid var(--color-border);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
 .ui-select-item-label  { font-size: var(--text-md); }
 .ui-select-item-desc  { font-size: 12px; color: var(--color-text-muted); }
 
