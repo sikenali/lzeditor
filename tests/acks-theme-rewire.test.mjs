@@ -27,3 +27,15 @@ assert.doesNotMatch(exp, /TYPOGRAPHY_THEME_VARS|DEFAULT_THEME_VARS/, '旧 13 款
 assert.match(exp, /acksThemeToLzTokens/, '导出走 ACKS 结构化 token')
 assert.doesNotMatch(exp, /'classic'/, '导出不再回退 classic')
 assert.match(exp, /DEFAULT_TYPOGRAPHY_THEME/, '导出默认走常量')
+
+// --- Task 7: 默认主题 graphite，全部 classic 回退改常量 ---
+const mapping = read('src/styles/acks-mapping.ts')
+assert.match(mapping, /DEFAULT_TYPOGRAPHY_THEME\s*=\s*'graphite'/, 'DEFAULT_TYPOGRAPHY_THEME = graphite')
+const settingsStore = read('src/store/settingsStore.ts')
+assert.doesNotMatch(settingsStore, /typographyTheme:\s*'classic'/, '默认主题改 graphite（不再写死 classic）')
+assert.match(settingsStore, /typographyTheme:\s*DEFAULT_TYPOGRAPHY_THEME/, 'settingsStore 默认走常量 DEFAULT_TYPOGRAPHY_THEME（=graphite）')
+for (const f of ['src/main.tsx', 'src/hooks/useTheme.ts', 'src/components/sidebar/SidebarPreview.tsx', 'src/components/panels/ExportDialog.tsx']) {
+  const src = read(f)
+  assert.doesNotMatch(src, /\|\|\s*'classic'/, `${f} 不应回退 classic`)
+  assert.match(src, /DEFAULT_TYPOGRAPHY_THEME/, `${f} 应 import 并使用 DEFAULT_TYPOGRAPHY_THEME`)
+}

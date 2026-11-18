@@ -4,6 +4,7 @@ import { useEditorStore } from '../../store/editorStore'
 import { useScrollSync, lineBridgeOf } from '../../hooks/scrollSync'
 import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
+import { DEFAULT_TYPOGRAPHY_THEME } from '../../styles/acks-mapping'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getDocMd } from '../../utils/docSource'
 import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
@@ -62,7 +63,7 @@ export const SidebarPreview: React.FC = () => {
   useEffect(() => {
     const previewEl = previewElRef.current
     if (!previewEl) return
-    const theme = getTypographyTheme(typographyTheme || 'classic')
+    const theme = getTypographyTheme(typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
     previewEl.innerHTML = previewHtml || '<p style="color:var(--text-muted);text-align:center;padding:40px 16px;">暂无内容，请先编辑文档</p>'
     previewEl.style.cssText = ''
     if (theme) {

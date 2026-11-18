@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { useSettingsStore, loadSettingsFromStorage, DEFAULT_SETTINGS } from './store/settingsStore'
 import { applyTheme } from './hooks/useTheme'
 import { applyTypographyTheme } from './styles/typography-themes'
+import { DEFAULT_TYPOGRAPHY_THEME } from './styles/acks-mapping'
 import './styles/tokens.css'
 import './styles/fonts.css'
 import './styles/ui.css'
@@ -25,7 +26,7 @@ const saved = loadSettingsFromStorage()
 useSettingsStore.setState({ ...DEFAULT_SETTINGS, ...saved })
 const state = useSettingsStore.getState()
 applyTheme(state.theme, state.accentColor)
-applyTypographyTheme(state.typographyTheme || 'classic')
+applyTypographyTheme(state.typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
