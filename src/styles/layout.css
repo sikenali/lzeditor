@@ -1367,14 +1367,17 @@
 .app-footer  {
   height: 58px;
   padding: 0 32px;
-  display: flex;
+  /* 页脚右侧信息（©/LightOS）挪到左侧下方：两行 grid，中央按钮组仍靠右 */
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
   align-items: center;
-  justify-content: space-between;
+  align-content: center;
+  column-gap: 24px;
   /* DESIGN-1.md §2.1 毛玻璃页脚 */
   background: rgba(var(--bg-rgb), 0.75);
   position: relative;
   flex-shrink: 0;
-  gap: 24px;
 }
 /* §2.1 页脚顶部 0.7px 微光分割线（渐变） */
 .app-footer::before  {
@@ -1386,6 +1389,8 @@
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 25%, transparent) 50%, transparent);
 }
 .app-footer-left  {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1396,6 +1401,8 @@
 }
 .app-footer-logo  { width: 20px; height: 20px; flex-shrink: 0; }
 .app-footer-center  {
+  grid-column: 2;
+  grid-row: 1 / span 2;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1422,7 +1429,9 @@
 }
 .app-footer-btn .remix  { font-size: 14px; }
 .app-footer-right  {
-  font-size: var(--text-md);
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 11px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }

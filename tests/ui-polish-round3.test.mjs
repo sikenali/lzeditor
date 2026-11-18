@@ -8,3 +8,9 @@ const outline = read('src/components/sidebar/SidebarOutline.tsx')
 assert.doesNotMatch(preview, /sidebar-header-title">预览/, 'SidebarPreview 不得再有「预览」标题')
 // 目录侧栏「目录」标题保留（样式/大纲不受影响）
 assert.match(outline, /sidebar-header-title">目录/, 'SidebarOutline「目录」标题必须保留')
+
+// ── 页脚：右侧信息挪到左侧下方 ──
+const layout = read('src/styles/layout.css')
+// 页脚右侧信息必须排在左侧下方（grid 两行），文字缩小
+assert.match(layout, /\.app-footer\s*\{[^}]*display:\s*grid/, '.app-footer 必须改 grid 布局')
+assert.match(layout, /\.app-footer-right\s*\{[^}]*font-size:\s*1[01]px/, '.app-footer-right 文字必须缩小到 ~11px')
