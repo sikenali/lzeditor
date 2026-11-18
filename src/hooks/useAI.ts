@@ -65,6 +65,10 @@ export function useAI() {
     active: false, stale: false, anchor: null, expectedRev: -1,
     originalText: '', insertStart: 0, totalLen: 0,
   })
+  // streamRef 归属的消息 id：每次 send 重置游标时一起覆盖。applyToDoc 靠它判断
+  // 「当前游标描述的仍是待应用消息自己的流」，从而拒绝用别人的流去算应用/撤销。
+  // 不在 error/idle 清除——下次 send 会覆盖，门控只依赖「归属是否一致」。
+  const streamMsgIdRef = useRef<string | null>(null)
 
   /** 把一段流式文本写入文档：首个 chunk 定位 anchor 并替换选区，后续在 anchor 后追加；
    *  revision 不匹配（用户中途编辑）则丢弃该 chunk 并停止实时插入，绝不覆盖最新内容。 */
@@ -98,6 +102,7 @@ export function useAI() {
   }, [])
 
   const send = useCallback<SendFn>(async (first: string | AIAction, second?: string | AIAction, third?: string) => {
+    // TODO(Task 3): 移除旧形态 send(action, input, selectedText) 兼容分支
     // 兼容旧调用 send(action, input, selectedText)：第三个参数只有旧形态才有。
     const legacy = typeof third === 'string'
     const input = (legacy ? second : first) as string
@@ -112,15 +117,18 @@ export function useAI() {
     const { apiKeys, selectedModelId, temperature, maxTokens } = settings
     const activeKey = (apiKeys || []).find(k => k.id === selectedModelId) || (apiKeys || []).find(k => k.enabled)
 
+    // 流式进行中的重复触发一律忽略（包括此时恰好没有 Key 的情况，避免误插 error 卡片）。
+    if (abortRef.current) return
     if (!activeKey?.key) {
       store.addMessage({ id: uid(), role: 'assistant', content: '', mode, status: 'error', error: NO_API_KEY })
+      // TODO(Task 3): 移除旧字段写入（panelError/panelStatus 等）
       // 旧 AIPanel 仍读这些字段（Task 3 移除）。
       store.setPanelError(NO_API_KEY)
       store.setPanelStatus('error')
       return
     }
-    if (abortRef.current) return
 
+    // TODO(Task 3): 移除旧字段写入（panel*）
     store.setPanelStatus('thinking')
     store.setPanelError(null)
     store.setPanelOutput('')
@@ -138,6 +146,8 @@ export function useAI() {
       active: false, stale: false, anchor: null, expectedRev: -1,
       originalText: '', insertStart: 0, totalLen: 0,
     }
+    // 游标随之改归属本条 assistant 消息：旧消息的流式区间从此不可再用。
+    streamMsgIdRef.current = aid
     const facade = getEditorFacade()
 
     // 文档结构上下文从 markdown 源码解析（yeli 是源码画布，无文档树）
@@ -171,6 +181,7 @@ export function useAI() {
         const data = await resp.json()
         accumulated = data.content?.[0]?.text || ''
         if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
+        // TODO(Task 3): 移除旧字段写入（panelOutput/panelStatus）
         useAIStore.getState().setPanelOutput(accumulated)
         useAIStore.getState().setPanelStatus('result')
       } else {
@@ -191,6 +202,7 @@ export function useAI() {
         if (!reader) {
           accumulated = await resp.text()
           if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
+          // TODO(Task 3): 移除旧字段写入（panelOutput/panelStatus）
           useAIStore.getState().setPanelOutput(accumulated)
           useAIStore.getState().setPanelStatus('result')
           useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
@@ -233,8 +245,10 @@ export function useAI() {
         useAIStore.getState().setPanelStatus(signal.aborted ? (accumulated ? 'result' : 'idle') : 'result')
       }
       useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
+      // TODO(Task 3): 移除旧字段写入（appendConversation）
       useAIStore.getState().appendConversation({ role: 'user', content: prompt })
     } catch (err: any) {
+      // TODO(Task 3): 移除旧字段写入（panelOutput/panelError/panelStatus）
       if (err?.name === 'AbortError') {
         useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
         if (accumulated) {
@@ -262,11 +276,19 @@ export function useAI() {
       m => m.role === 'assistant' && m.status === 'done' && !m.applied,
     )
     if (!msg) return
+    // 归属门控：streamRef 只描述「最近一次 send」的流。若这条消息不是当前流的主人
+    // （被更晚的一次 send 覆盖过游标），用它去 planApply 会把别人的插入区间/
+    // originalText 当成自己的，导致重复插入或撤销记录损坏。此时直接放弃本次 apply：
+    // 不应用、不标记 applied、不登记 record、不改 panelStatus。
+    // streamMsgIdRef 为 null 表示本会话还没有任何 send（如直接注入的消息），沿用
+    // planApply 的「未流式」常规路径，不在此拦截。
+    if (streamMsgIdRef.current !== null && streamMsgIdRef.current !== msg.id) return
 
     const facade = getEditorFacade()
     // 无 facade：仅标记 applied（与旧路径一致，不登记）。
     if (!facade) {
       state.updateMessage(msg.id, { applied: true, status: 'applied' })
+      // TODO(Task 3): 移除旧字段写入（panelStatus）
       state.setPanelStatus('applied')
       return
     }

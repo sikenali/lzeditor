@@ -260,3 +260,88 @@ test('流式中断且无内容：assistant 状态回 idle', async () => {
   assert.equal(assistant.content, '')
   assert.equal(assistant.status, 'idle', '无内容的中断必须回到 idle，不能留 streaming')
 })
+
+// ════════════════════════ 归属门控 / 复制 / 错误 ════════════════════════
+
+test('归属门控：apply 更旧的 done 消息时不二次插入、不登记撤销记录、不标记 applied', async () => {
+  enableKey()
+  const facade = makeFacade('原文', { from: 0, to: 2 })
+  registerEditorFacade(facade)
+  let call = 0
+  globalThis.fetch = async () => {
+    call++
+    // 第一次：正常流式返回，内容已写入文档并 done。
+    if (call === 1) return sseResponse(['结果A'])
+    // 第二次：立即 abort（无任何 chunk）→ 该消息应回 idle，streamRef 归属变成它。
+    const err = new Error('Aborted')
+    err.name = 'AbortError'
+    throw err
+  }
+  await mountHook()
+
+  await act(async () => { await api.send('first', 'rewrite') })
+  const msgA = useAIStore.getState().messages.find((m) => m.role === 'assistant')
+  assert.equal(msgA.status, 'done')
+  assert.equal(facade.getText(), '结果A', '第一条消息的内容必须已流式写入文档')
+
+  await act(async () => { await api.send('second', 'rewrite') })
+  const secondAssistant = useAIStore.getState().messages.filter((m) => m.role === 'assistant').at(-1)
+  assert.equal(secondAssistant.status, 'idle', '无内容的 abort 必须回 idle')
+  assert.notEqual(secondAssistant.id, msgA.id)
+
+  const textBeforeApply = facade.getText()
+  await act(async () => { api.applyToDoc() })
+
+  const st = useAIStore.getState()
+  assert.equal(facade.getText(), textBeforeApply, '更旧的 done 消息不得再次插入内容')
+  assert.equal(st.getUndoRecord(), null, '归属不符时不得登记撤销记录')
+  const a = st.messages.find((m) => m.id === msgA.id)
+  assert.equal(a.status, 'done', '被门控拦下的消息状态不能变')
+  assert.ok(!a.applied, '被门控拦下的消息不能被标记 applied')
+  assert.equal(a.applyRecord, undefined)
+})
+
+test('copyOutput：复制最后一条 done/applied 的 assistant 内容；无可用消息时不调用', async () => {
+  await mountHook()
+  const writes = []
+  Object.defineProperty(globalThis.navigator, 'clipboard', {
+    value: { writeText: async (t) => { writes.push(t) } },
+    configurable: true,
+    writable: true,
+  })
+
+  // 没有 done/applied 的 assistant 消息：不触碰剪贴板。
+  useAIStore.getState().addMessage({
+    id: 'err1', role: 'assistant', content: '不应复制', mode: 'write', status: 'error',
+  })
+  await act(async () => { api.copyOutput() })
+  assert.equal(writes.length, 0, '没有可复制消息时不能调用 writeText')
+
+  useAIStore.getState().addMessage({
+    id: 's1', role: 'assistant', content: '仍是流式', mode: 'write', status: 'streaming',
+  })
+  await act(async () => { api.copyOutput() })
+  assert.equal(writes.length, 0, 'streaming 消息不可复制')
+
+  useAIStore.getState().addMessage({
+    id: 'd1', role: 'assistant', content: '复制内容', mode: 'write', status: 'done',
+  })
+  await act(async () => { api.copyOutput() })
+  assert.deepEqual(writes, ['复制内容'], '必须复制该 done 消息的 content')
+})
+
+test('非 abort 请求错误：assistant 置 error 并带错误信息，不崩溃', async () => {
+  enableKey()
+  globalThis.fetch = async () => { throw new Error('boom: 网关挂了') }
+  await mountHook()
+
+  await act(async () => { await api.send('hello', 'rewrite') })
+
+  const st = useAIStore.getState()
+  const assistant = st.messages.find((m) => m.role === 'assistant')
+  assert.ok(assistant, '失败请求仍要留下错误卡片')
+  assert.equal(assistant.status, 'error')
+  assert.ok(assistant.error && assistant.error.includes('boom'), 'error 必须携带原始信息')
+  assert.equal(st.panelStatus, 'error', '旧面板状态同步为 error')
+  assert.equal(st.messages.find((m) => m.role === 'user')?.content, 'hello')
+})
