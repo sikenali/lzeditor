@@ -35,7 +35,7 @@ export interface ChatEntry {
   content: string
   mode: AIMode
   action?: AIAction
-  status?: 'streaming' | 'done' | 'error' | 'applied'
+  status?: 'streaming' | 'done' | 'error' | 'applied' | 'idle'
   error?: string
   applied?: boolean
   applyRecord?: ApplyRecord

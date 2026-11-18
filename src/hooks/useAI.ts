@@ -6,6 +6,7 @@ import type { EditorFacade } from '../components/editor/facade/EditorFacade'
 import { parseMdOutline, outlineToMarkdownTree } from '../utils/mdOutline'
 import { buildPrompt } from '../services/promptTemplate'
 import { planApply, type AIStreamState } from './aiApply'
+import { AI_MODES } from '../shared/aiModes'
 import type { AIAction, ChatMessage } from '../shared/types'
 
 /** Parse one SSE event block and append its text payload. */
@@ -40,6 +41,18 @@ function scrubSecrets(text: string): string {
     .replace(/\b(Bearer)\s+[A-Za-z0-9._\-~+/=]+/gi, '$1 ***')
     .replace(/(sk-[A-Za-z0-9_-]{8,})/g, '***')
     .replace(/([A-Za-z0-9]{2,40}[Aa]uthorization|x-api-key|api[-_]?key)["']?\s*[:=]\s*["']([^"']{8,})["']/gi, '$1="***"')
+}
+
+/** 聊天消息 id：消息不落盘，时间戳 + 自增即可避免同一 tick 内冲突。 */
+let messageSeq = 0
+const uid = () => `msg-${Date.now().toString(36)}-${(messageSeq++).toString(36)}`
+
+const NO_API_KEY = '请先在设置中配置 API Key'
+
+/** 新形态 `send(input, action?)`；旧 AIPanel 的三参数调用在 Task 3 前继续可用。 */
+type SendFn = {
+  (input: string, action?: AIAction): Promise<void>
+  (action: AIAction, input: string, selectedText: string): Promise<void>
 }
 
 export function useAI() {
@@ -84,22 +97,36 @@ export function useAI() {
     setIsStreaming(false)
   }, [])
 
-  const send = useCallback(async (action: AIAction, input: string, selectedText: string) => {
+  const send = useCallback<SendFn>(async (first: string | AIAction, second?: string | AIAction, third?: string) => {
+    // 兼容旧调用 send(action, input, selectedText)：第三个参数只有旧形态才有。
+    const legacy = typeof third === 'string'
+    const input = (legacy ? second : first) as string
+    const explicitAction = (legacy ? first : second) as AIAction | undefined
+    const selectedText = legacy ? third : useAIStore.getState().panelSelectedText
+
+    const store = useAIStore.getState()
+    const mode = store.mode
+    const effAction = explicitAction ?? AI_MODES[mode].defaultAction
+
     const settings = useSettingsStore.getState()
     const { apiKeys, selectedModelId, temperature, maxTokens } = settings
     const activeKey = (apiKeys || []).find(k => k.id === selectedModelId) || (apiKeys || []).find(k => k.enabled)
 
     if (!activeKey?.key) {
-      useAIStore.getState().setPanelError('请先在设置中配置 API Key')
-      useAIStore.getState().setPanelStatus('error')
+      store.addMessage({ id: uid(), role: 'assistant', content: '', mode, status: 'error', error: NO_API_KEY })
+      // 旧 AIPanel 仍读这些字段（Task 3 移除）。
+      store.setPanelError(NO_API_KEY)
+      store.setPanelStatus('error')
       return
     }
     if (abortRef.current) return
 
-    const store = useAIStore.getState()
     store.setPanelStatus('thinking')
     store.setPanelError(null)
     store.setPanelOutput('')
+    store.addMessage({ id: uid(), role: 'user', content: input, mode })
+    const aid = uid()
+    store.addMessage({ id: aid, role: 'assistant', content: '', mode, action: effAction, status: 'streaming' })
     setIsStreaming(true)
 
     const controller = new AbortController()
@@ -117,15 +144,15 @@ export function useAI() {
     const schemaContext = outlineToMarkdownTree(parseMdOutline(facade?.getText() || ''))
 
     const vars: any = { selected_text: selectedText, schema_context: schemaContext }
-    if (action === 'rewrite' || action === 'polish') vars.style = input || '流畅自然'
-    if (action === 'continue') {
+    if (effAction === 'rewrite' || effAction === 'polish') vars.style = input || '流畅自然'
+    if (effAction === 'continue') {
       vars.user_instruction = input
       vars.context_before = selectedText
     }
-    if (action === 'translate') vars.target = input || '中文'
-    if (action === 'question') vars.user_instruction = input
+    if (effAction === 'translate') vars.target = input || '中文'
+    if (effAction === 'question') vars.user_instruction = input
 
-    const prompt = buildPrompt(action || 'question', vars)
+    const prompt = buildPrompt(effAction || 'question', vars)
     const messages: ChatMessage[] = [{ role: 'user', content: prompt }]
     let accumulated = ''
 
@@ -143,6 +170,7 @@ export function useAI() {
         if (!resp.ok) throw new Error(`API Error: ${resp.status}`)
         const data = await resp.json()
         accumulated = data.content?.[0]?.text || ''
+        if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
         useAIStore.getState().setPanelOutput(accumulated)
         useAIStore.getState().setPanelStatus('result')
       } else {
@@ -162,8 +190,10 @@ export function useAI() {
         const reader = resp.body?.getReader()
         if (!reader) {
           accumulated = await resp.text()
+          if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
           useAIStore.getState().setPanelOutput(accumulated)
           useAIStore.getState().setPanelStatus('result')
+          useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
           return
         }
         const decoder = new TextDecoder()
@@ -185,22 +215,28 @@ export function useAI() {
             const prevLen = accumulated.length
             const r = extractSSEText(frame, accumulated)
             accumulated = r.acc
+            const delta = accumulated.slice(prevLen)
             useAIStore.getState().setPanelOutput(accumulated)
+            if (delta) useAIStore.getState().appendStreamToMessage(aid, delta)
             // 逐 chunk 事务：把新到增量写入文档（stale 时自动丢弃，不覆盖用户编辑）
-            if (facade) streamIntoDoc(facade, accumulated.slice(prevLen))
+            if (facade) streamIntoDoc(facade, delta)
           }
         }
         if (buffer.trim()) {
           const prevLen = accumulated.length
           accumulated = extractSSEText(buffer, accumulated).acc
+          const delta = accumulated.slice(prevLen)
           useAIStore.getState().setPanelOutput(accumulated)
-          if (facade) streamIntoDoc(facade, accumulated.slice(prevLen))
+          if (delta) useAIStore.getState().appendStreamToMessage(aid, delta)
+          if (facade) streamIntoDoc(facade, delta)
         }
         useAIStore.getState().setPanelStatus(signal.aborted ? (accumulated ? 'result' : 'idle') : 'result')
       }
+      useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
       useAIStore.getState().appendConversation({ role: 'user', content: prompt })
     } catch (err: any) {
       if (err?.name === 'AbortError') {
+        useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
         if (accumulated) {
           useAIStore.getState().setPanelOutput(accumulated)
           useAIStore.getState().setPanelStatus('result')
@@ -208,7 +244,9 @@ export function useAI() {
           useAIStore.getState().setPanelStatus('idle')
         }
       } else {
-        useAIStore.getState().setPanelError(err?.message || '请求失败')
+        const message = err?.message || '请求失败'
+        useAIStore.getState().updateMessage(aid, { status: 'error', error: message })
+        useAIStore.getState().setPanelError(message)
         useAIStore.getState().setPanelStatus('error')
       }
     } finally {
@@ -219,40 +257,53 @@ export function useAI() {
 
   const applyToDoc = useCallback(() => {
     const state = useAIStore.getState()
-    if (state.panelStatus !== 'result') return
-    const output = state.panelOutput || ''
+    // 只应用于最后一条「已完成且未应用」的 assistant 回复；已 applied 的不重复插入。
+    const msg = [...state.messages].reverse().find(
+      m => m.role === 'assistant' && m.status === 'done' && !m.applied,
+    )
+    if (!msg) return
+
     const facade = getEditorFacade()
     // 无 facade：仅标记 applied（与旧路径一致，不登记）。
     if (!facade) {
-      useAIStore.getState().setPanelStatus('applied')
+      state.updateMessage(msg.id, { applied: true, status: 'applied' })
+      state.setPanelStatus('applied')
       return
     }
     // planApply 内含 stale 保护：首 chunk revision 不匹配时不覆盖用户中途编辑，
     // 且 replaceRange 事务失败（越界）不抛未捕获异常，只登记空应用。
-    const plan = planApply(facade, streamRef.current, output, state.panelAction)
-    useAIStore.getState().recordApply(plan.record)
-    useAIStore.getState().setPanelStatus('applied')
+    const plan = planApply(facade, streamRef.current, msg.content, msg.action ?? 'question')
+    state.recordApply(plan.record)
+    // recordApply 才生成 id/timestamp，撤销时靠它反查消息，所以回读完整记录。
+    const record = useAIStore.getState().getUndoRecord()
+    state.updateMessage(msg.id, { applied: true, status: 'applied', applyRecord: record ?? undefined })
+    state.setPanelStatus('applied')
   }, [])
 
   const undo = useCallback(() => {
-    const record = useAIStore.getState().getUndoRecord()
+    const state = useAIStore.getState()
+    const record = state.getUndoRecord()
     if (!record) return
+    const msg = state.messages.find(m => m.applyRecord?.id === record.id)
     const facade = getEditorFacade()
     if (facade) {
       const text = facade.getText()
       const start = record.newText ? text.indexOf(record.newText) : record.position.from
       const end = start >= 0 ? start + record.newText.length : record.position.to
       if (start >= 0) facade.replaceRange(start, end, record.originalText || '')
-      useAIStore.getState().undoLastApply()
-      useAIStore.getState().setPanelStatus('result')
-      return
     }
-    useAIStore.getState().undoLastApply()
-    useAIStore.getState().setPanelStatus('result')
+    state.undoLastApply()
+    state.setPanelStatus('result')
+    if (msg) state.updateMessage(msg.id, { applied: false, status: 'done', applyRecord: undefined })
   }, [])
 
   const copyOutput = useCallback(() => {
-    navigator.clipboard.writeText(useAIStore.getState().panelOutput)
+    const messages = useAIStore.getState().messages
+    const last = [...messages].reverse().find(
+      m => m.role === 'assistant' && (m.status === 'done' || m.status === 'applied'),
+    )
+    if (!last) return
+    navigator.clipboard.writeText(last.content)
   }, [])
 
   return { send, isStreaming, stop, applyToDoc, undo, copyOutput }
