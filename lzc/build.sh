@@ -157,6 +157,13 @@ echo "{\"version\":\"${VERSION}\"}" > "$SCRIPT_DIR/_lpk_content/backend/version.
 
 # ========== 构建前端 ==========
 echo "Building frontend..."
+# 前端版本号单一来源：每次构建用解析后的 VERSION 重写 shared/version.ts，
+# 使 About/Welcome/LeftNav 显示的版本与 LPK 版本（LPK_VERSION 或 git tag）同步。
+cat > "$PROJECT_ROOT/src/shared/version.ts" <<VERTS
+// 由 lzc/build.sh 在每次构建时按解析后的 VERSION 重写（与 package.json / git tag 同步）。
+// 前端打包时读不到 package.json，故由构建注入；不要手动改这个文件。
+export const APP_VERSION = '${VERSION}'
+VERTS
 rm -rf "$PROJECT_ROOT/dist"
 (cd "$PROJECT_ROOT" && npm run build)
 if [ ! -f "$PROJECT_ROOT/dist/index.html" ]; then
