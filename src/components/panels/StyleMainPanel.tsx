@@ -4,28 +4,31 @@ import { parseMdOutline } from '../../utils/mdOutline'
 import { registerOutlineJumper, clearOutlineJumper } from '../../utils/outlineJump'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { getTypographyTheme, TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
+import { TYPOGRAPHY_THEMES } from '../../styles/typography-themes'
+import { getAcksTheme, ACKS_THEME_IDS, renderAcksArticle } from '../../styles/acks-themes'
+import { acksThemeCardMeta, DEFAULT_TYPOGRAPHY_THEME } from '../../styles/acks-mapping'
 import { useScrollSpy } from '../../hooks/useScrollSpy'
-import { DEFAULT_CONTENT } from '../../components/editor/constants'
-import { getDocMd, getDocHtml } from '../../utils/docSource'
+import { getDocMd } from '../../utils/docSource'
 import { copyRichText } from '../../clipboard'
 import { ExportDialog } from './ExportDialog'
 
 export const StyleMainPanel: React.FC = () => {
-  const docHTML = useEditorStore((s) => s.docHTML)
   const mdContent = useEditorStore((s: any) => s.mdContent || '')
   const docsMd = useEditorStore((s: any) => s.docsMd || {})
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
-  // 阅读字号跟随阅读模式的 readFontSize（12~24 可调），而不是写死的 17
-  const fontSize = useEditorStore((s) => s.readFontSize)
   const setAppMode = useEditorStore((s) => s.setAppMode)
   const updateSetting = useSettingsStore(s => s.updateSetting)
   const activeTocId = useEditorStore((s) => s.activeTocId)
   const setActiveTocId = useEditorStore((s) => s.setActiveTocId)
 
   const bodyRef = useRef<HTMLDivElement>(null)
-  const [activeStyle, setActiveStyle] = useState(typographyTheme || 'classic')
+  const articleBodyRef = useRef<HTMLDivElement>(null)
+  const [activeStyle, setActiveStyle] = useState(typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
+  const [page, setPage] = useState(0)
+  const PAGE_SIZE = 10
+  const totalPages = Math.ceil(ACKS_THEME_IDS.length / PAGE_SIZE)
+  const pageItems = ACKS_THEME_IDS.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
   const [previewVisible, setPreviewVisible] = useState(true)
   // 浮导航（上一章/下一章/回到顶部/全屏）默认隐藏，点内容区才显示
   const [navVisible, setNavVisible] = useState(false)
@@ -88,24 +91,6 @@ export const StyleMainPanel: React.FC = () => {
     try { return mdToHtml(effectiveMd) } catch { return effectiveMd }
   }, [effectiveMd])
 
-  const initialHtml = useMemo(() => {
-    if (docHTML) return docHTML
-    return getDocHtml(activeDocId || 'readme')
-  }, [docHTML, activeDocId])
-
-  const defaultHtml = useMemo(() => {
-    try {
-      return mdToHtml(DEFAULT_CONTENT)
-    } catch {
-      return DEFAULT_CONTENT
-    }
-  }, [])
-
-  const [effectiveHtml, setEffectiveHtml] = useState(initialHtml || defaultHtml)
-  useEffect(() => {
-    setEffectiveHtml(docHTML || initialHtml || defaultHtml)
-  }, [docHTML, initialHtml, defaultHtml])
-
   // ── Extract chapters from markdown outline ──
   // parseMdOutline 的 id 与 mdToHtml 渲染锚点一致（同一 headingId），滚动同步直接可用。
   const outlineItems = useMemo(() => parseMdOutline(effectiveMd), [effectiveMd])
@@ -124,24 +109,17 @@ export const StyleMainPanel: React.FC = () => {
     return () => clearOutlineJumper()
   }, [])
 
+  // 正文由 ACKS 渲染器接管：依赖 effectiveMd/activeStyle。renderedHtml 与旧 `.read-article-body` 用同一份
+  // mdToHtml 输出，其 heading id（parseMdOutline 依赖）经 doc.innerHTML 包裹后保留，大纲/章节跳转不受影响。
   useEffect(() => {
-    const el = bodyRef.current
+    const el = articleBodyRef.current
     if (!el) return
-    const theme = getTypographyTheme(typographyTheme || 'classic')
-    if (theme && el) {
-      el.style.cssText = ''
-      const css = theme.css
-        .replace(/\[data-typography-theme="[^"]+"\]\s*\.(lz-editor-content|read-article-body|preview-doc|export-preview-body)/g, '.read-article-body')
-      const styleEl = document.getElementById('lz-styleread-typography-css') as HTMLStyleElement | null
-      if (styleEl) styleEl.remove()
-      const styleTag = document.createElement('style')
-      styleTag.id = 'lz-styleread-typography-css'
-      styleTag.textContent = css
-      document.head.appendChild(styleTag)
-    }
-  }, [typographyTheme, effectiveHtml])
+    renderAcksArticle(el, renderedHtml, activeStyle)
+  }, [activeStyle, renderedHtml])
 
   const activeStyleData = TYPOGRAPHY_THEMES.find(t => t.id === activeStyle) ?? TYPOGRAPHY_THEMES[0]
+
+  const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typographyTheme', id) }
 
   const handleFullscreen = () => {
     const el = document.documentElement
@@ -160,7 +138,7 @@ export const StyleMainPanel: React.FC = () => {
         <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         {/* ── Read content area ── */}
         <div ref={bodyRef} className="style-read-scroll" onClick={() => setNavVisible(true)}>
-          <div className="style-read-article" style={{ maxWidth: 760 }}>
+          <div className="style-read-article">
             <div className="main-read-header">
               <div className="main-read-tags">
                 <span className="read-tag read-tag-tech">Markdown</span>
@@ -170,11 +148,7 @@ export const StyleMainPanel: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div
-              className="read-article-body"
-              style={{ fontSize: `${fontSize}px`, lineHeight: '1.9', '--style-accent': activeStyleData.color } as React.CSSProperties}
-              dangerouslySetInnerHTML={{ __html: renderedHtml || '<p style="color:var(--text-muted);text-align:center;padding:60px;">暂无内容</p>' }}
-            />
+            <div ref={articleBodyRef} className="style-read-acks" />
           </div>
         </div>
         </div>
@@ -211,7 +185,7 @@ export const StyleMainPanel: React.FC = () => {
                           <button
                             key={t.id}
                             className={`style-select-item${t.id === activeStyle ? ' active' : ''}`}
-                            onClick={() => { setActiveStyle(t.id); updateSetting('typographyTheme', t.id); setStyleMenuOpen(false) }}
+                            onClick={() => { pickStyle(t.id); setStyleMenuOpen(false) }}
                           >
                             <span className="style-select-dot" style={{ background: t.color }} />
                             <span>{t.name}</span>
@@ -241,35 +215,49 @@ export const StyleMainPanel: React.FC = () => {
             <div className={`style-cards-wrapper${previewVisible ? '' : ' preview-collapsed'}`}>
               <div className="style-cards-inner">
                 <div className="style-cards">
-                  {TYPOGRAPHY_THEMES.map(t => (
-                    <button
-                      key={t.id}
-                      className={`style-card${t.id === activeStyle ? ' active' : ''}`}
-                      onClick={() => { setActiveStyle(t.id); updateSetting('typographyTheme', t.id) }}
-                    >
-                      <div
-                        className="style-card-thumb"
-                        style={{
-                          borderColor: t.id === activeStyle ? t.color : 'rgba(204,204,204,1)',
-                          background: t.id === 'night' ? '#1a1b26' : '#fff',
-                        }}
+                  {pageItems.map(id => {
+                    const t = getAcksTheme(id)!
+                    const meta = acksThemeCardMeta(t)
+                    const active = id === activeStyle
+                    return (
+                      <button
+                        key={id}
+                        className={`style-card${active ? ' active' : ''}`}
+                        onClick={() => pickStyle(id)}
                       >
                         <div
-                          className="style-card-preview"
-                          data-typography-theme={t.id}
-                          style={{ fontSize: 5, lineHeight: 1.4, color: t.id === 'night' ? '#c6cade' : '#333', padding: '2px 3px' }}
+                          className="style-card-thumb"
+                          style={{
+                            borderColor: active ? meta.color : 'rgba(204,204,204,1)',
+                            background: meta.bg,
+                          }}
                         >
-                          <div style={{ fontSize: 6, fontWeight: 600, color: t.color, marginBottom: 1 }}>{t.name}</div>
-                          <div style={{ fontSize: 4.5, color: 'rgba(128,128,128,0.7)', borderBottom: `1px solid ${t.color}33`, paddingBottom: 1, marginBottom: 1 }}>二级标题装饰</div>
-                          <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.8)' }}>正文文字样例·<code style={{ background: `${t.color}18`, color: t.color, padding: '0 2px', borderRadius: 1, fontSize: 4 }}>代码</code></div>
-                          <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.6)', marginTop: 1 }}>引用文字样例</div>
+                          <div
+                            className="style-card-preview"
+                            data-typography-theme={id}
+                            style={{ fontSize: 5, lineHeight: 1.4, color: meta.text, padding: '2px 3px' }}
+                          >
+                            <div style={{ fontSize: 6, fontWeight: 600, color: meta.color, marginBottom: 1 }}>{meta.name}</div>
+                            <div style={{ fontSize: 4.5, color: 'rgba(128,128,128,0.7)', borderBottom: `1px solid ${meta.color}33`, paddingBottom: 1, marginBottom: 1 }}>二级标题装饰</div>
+                            <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.8)' }}>正文文字样例·<code style={{ background: `${meta.color}18`, color: meta.color, padding: '0 2px', borderRadius: 1, fontSize: 4 }}>代码</code></div>
+                            <div style={{ fontSize: 4.5, color: 'rgba(80,80,80,0.6)', marginTop: 1 }}>引用文字样例</div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="style-card-name" style={t.id === activeStyle ? { color: t.color } : undefined}>
-                        {t.name}
-                      </div>
-                    </button>
-                  ))}
+                        <div className="style-card-name" style={active ? { color: meta.color } : undefined}>
+                          {meta.name}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="style-cards-pager">
+                  <button className="pager-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} title="上一页">
+                    <span className="remix ri-arrow-left-s-line" />
+                  </button>
+                  <span className="pager-info">{page + 1}/{totalPages}</span>
+                  <button className="pager-btn" disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)} title="下一页">
+                    <span className="remix ri-arrow-right-s-line" />
+                  </button>
                 </div>
               </div>
             </div>
