@@ -570,6 +570,11 @@
 /* ── Sidebar Preview — glassmorphism ── */
 .sidebar-preview-wrapper  {
   flex-shrink: 0; position: relative;
+  /* 左侧布局（navMode='left'）：wrapper 挂 .app-right-panel（固定 360px）内，
+     内联 width:previewWidth（默认 400px）会撑破面板 → 右缘出视口（>1440）、
+     滚动条被推出、右侧内容被裁。用 max-width:100% 约束到容器宽（顶栏布局的
+     父容器 >400px，不受影响）。 */
+  max-width: 100%; min-width: 0;
   background: var(--chrome-surface);
   backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
   border-left: 0.7px solid var(--glass-border);
