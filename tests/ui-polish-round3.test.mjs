@@ -14,3 +14,8 @@ const layout = read('src/styles/layout.css')
 // 页脚右侧信息必须排在左侧下方（grid 两行），文字缩小
 assert.match(layout, /\.app-footer\s*\{[^}]*display:\s*grid/, '.app-footer 必须改 grid 布局')
 assert.match(layout, /\.app-footer-right\s*\{[^}]*font-size:\s*1[01]px/, '.app-footer-right 文字必须缩小到 ~11px')
+
+// ── 设置窗口：更紧凑 + 固定尺寸 ──
+const settings = read('src/components/panels/SettingsDialog.tsx')
+assert.match(settings, /PANEL_MAX_WIDTH\s*=\s*960/, '设置窗口 maxWidth 必须 960')
+assert.match(settings, /PANEL_HEIGHT\s*=\s*'min\(680px,\s*86vh\)'/, '设置窗口 height 必须 min(680px,86vh) 固定紧凑')

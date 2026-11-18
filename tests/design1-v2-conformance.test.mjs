@@ -34,9 +34,9 @@ assert.match(modal, /radius = 12/, 'UiModal 默认圆角必须 12px（§8.1）')
 const uiCss = read('src/styles/ui.css')
 assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-modal-shadow\)/, '弹框阴影必须主题感知 var(--color-modal-shadow)（§8.1）')
 
-// §5.1/§5.3 设置中心：1280px 上限，导航 180px/44px，系统蓝激活
+// §5.1/§5.3 设置中心：960px 上限（2026-11-18 更紧凑，原 1280），导航 180px/44px，系统蓝激活
 const settings = read('src/components/panels/SettingsDialog.tsx')
-assert.match(settings, /PANEL_MAX_WIDTH = 1280/, '设置弹框最大宽必须 1280px（§5.1）')
+assert.match(settings, /PANEL_MAX_WIDTH = 960/, '设置弹框最大宽必须 960px（2026-11-18 紧凑化，原 §5.1 1280）')
 const sdlg = read('src/styles/settings-dialog.css')
 const navList = sdlg.match(/\.settings-nav-list\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3）')
