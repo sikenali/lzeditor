@@ -29,6 +29,7 @@ import type {
 } from "../EditorFacade";
 import type { EditorRunner } from "../../../../additional/milkdown/textus/editor/useEditorRunner";
 import { parseMarkdownSource } from "../../../../additional/milkdown/textus/editor/markdown/parse-markdown-source";
+import { createSearchSession } from "../cm6/cm6-search";
 
 /**
  * The Milkdown-backed {@link EditorFacade}.
@@ -62,29 +63,80 @@ function serialize(ctx: Ctx): string {
   return ctx.get(serializerCtx)(view.state.doc);
 }
 
-/** Converts a source-string offset to the nearest ProseMirror position.
- *  Walks the document's text leaves, accumulating source length — exact for
- *  inline text, approximate across block boundaries (Phase 2 refines). */
-function sourceOffsetToPos(view: EditorView, offset: number): number {
+/** Per-top-level-block markdown length, serializing each block in isolation.
+ *  Exact for block boundaries (the block's own markers count); the full doc
+ *  joins blocks with `\n\n`, so block i starts at Σ lengths + i. */
+function blockMarkdownLengths(ctx: Ctx, doc: ProseNode): number[] {
+  const serializer = ctx.get(serializerCtx);
+  const lens: number[] = [];
+  for (let i = 0; i < doc.childCount; i++) {
+    lens.push(serializer(doc.type.create(null, [doc.child(i)])).length);
+  }
+  return lens;
+}
+
+/** Converts a ProseMirror position to the source-string offset of the same
+ *  point. Exact at block boundaries; within a block the text between the block
+ *  start and `pos` (markers excluded) is counted — paragraphs (the common
+ *  case) are exact, marked spans approximate by the marker length. */
+function posToSourceOffset(ctx: Ctx, view: EditorView, pos: number): number {
   const doc = view.state.doc;
-  const size = doc.content.size;
+  const lens = blockMarkdownLengths(ctx, doc);
   let acc = 0;
-  let pos = 0;
-  doc.descendants((node, nodePos) => {
-    if (node.isText) {
-      const len = node.text?.length ?? 0;
-      if (acc + len >= offset) {
-        pos = nodePos + Math.max(0, offset - acc);
-        return false; // stop
-      }
-      acc += len;
-      // Account for the newline the serializer inserts between blocks.
-      if (nodePos + node.nodeSize < size) acc += 1;
-      return true;
+  for (let i = 0; i < doc.childCount; i++) {
+    const child = doc.child(i);
+    const childStart = childStartPos(doc, i);
+    const childEnd = childStart + child.nodeSize;
+    if (pos <= childEnd) {
+      const within = Math.max(0, pos - childStart);
+      const textLen = doc.textBetween(childStart, childStart + within, "\n", "\n").length;
+      return acc + textLen;
     }
-    return true;
-  });
-  return Math.max(0, Math.min(pos, size));
+    acc += lens[i] + 1;
+  }
+  return acc;
+}
+
+/** The ProseMirror content position where top-level child `i` begins. */
+function childStartPos(doc: ProseNode, index: number): number {
+  let pos = 0;
+  for (let i = 0; i < index; i++) pos += doc.child(i).nodeSize;
+  return pos;
+}
+
+/** Converts a source-string offset to the nearest ProseMirror position.
+ *  Inverse of {@link posToSourceOffset}: walks top-level blocks by their
+ *  serialized length, then maps within the block via `textBetween`. */
+function sourceOffsetToPos(ctx: Ctx, view: EditorView, offset: number): number {
+  const doc = view.state.doc;
+  const lens = blockMarkdownLengths(ctx, doc);
+  let acc = 0;
+  for (let i = 0; i < doc.childCount; i++) {
+    const childStart = childStartPos(doc, i);
+    const child = doc.child(i);
+    const nextAcc = acc + lens[i] + 1;
+    if (offset < nextAcc) {
+      const within = Math.max(0, offset - acc);
+      // Map within-block text length → PM position (approximate, markers excluded).
+      let best = childStart;
+      let walked = 0;
+      doc.descendants((node, nodePos) => {
+        if (nodePos < childStart || nodePos > childStart + child.nodeSize) return true;
+        if (node.isText) {
+          const len = node.text?.length ?? 0;
+          if (walked + len >= within) {
+            best = nodePos + Math.max(0, within - walked);
+            return false;
+          }
+          walked += len;
+        }
+        return true;
+      });
+      return Math.max(childStart, Math.min(best, childStart + child.nodeSize));
+    }
+    acc = nextAcc;
+  }
+  return doc.content.size;
 }
 
 /** Whether a block-convert command should `setBlockType` to `nodeType`. */
@@ -215,7 +267,6 @@ export function createMilkdownEditorFacade(
   let latestMd = "";
   let revision = 0;
   let lastSelection: FacadeSelection | null = null;
-  let lastSearch: SearchQueryOptions | null = null;
   let currentViewRoot: HTMLElement | null = viewRoot;
 
   // Self-subscribe to document / selection changes via listenerCtx.
@@ -235,7 +286,16 @@ export function createMilkdownEditorFacade(
     return runner((ctx) => ctx.get(editorViewCtx));
   }
 
-  const facade: EditorFacade = {
+  // 搜索会话复用 CM6 的纯模块（操作 getText/replaceRange/setSelection，无 CM6 依赖）。
+  // facade 在运行时才赋值，访问器闭包延迟解引用，避免循环初始化。
+  let facade: EditorFacade;
+  const search = createSearchSession({
+    getText: () => facade.getText(),
+    replaceRange: (from, to, text) => facade.replaceRange(from, to, text),
+    setSelection: (from, to) => facade.setSelection(from, to),
+  });
+
+  facade = {
     setText(markdown: string): void {
       runner((ctx) => {
         const v = ctx.get(editorViewCtx);
@@ -300,14 +360,16 @@ export function createMilkdownEditorFacade(
       const v = view();
       if (!v) return lastSelection;
       const sel = v.state.selection;
-      return { from: sel.from, to: sel.to };
+      const from = runner((ctx) => posToSourceOffset(ctx, v, sel.from)) ?? sel.from;
+      const to = runner((ctx) => posToSourceOffset(ctx, v, sel.to)) ?? sel.to;
+      return { from, to };
     },
 
     setSelection(from: number, to: number): void {
       runner((ctx) => {
         const v = ctx.get(editorViewCtx);
-        const f = sourceOffsetToPos(v, from);
-        const t = sourceOffsetToPos(v, to);
+        const f = sourceOffsetToPos(ctx, v, from);
+        const t = sourceOffsetToPos(ctx, v, to);
         v.dispatch(
           v.state.tr.setSelection(TextSelection.create(v.state.doc, f, t)).scrollIntoView(),
         );
@@ -517,80 +579,25 @@ export function createMilkdownEditorFacade(
       });
     },
 
-    // ── search (Phase 2 refines caret; content round-trips correctly) ──
+    // ── search：复用 CM6 搜索会话（findNext/findPrev 真实跳转，替换保真） ──
     searchMatches(options: SearchQueryOptions): number {
-      lastSearch = options;
-      const src = facade.getText();
-      if (options.regex) {
-        try {
-          const re = new RegExp(options.term, options.caseSensitive ? "g" : "gi");
-          return (src.match(re) ?? []).length;
-        } catch {
-          throw new RangeError(`invalid regex: ${options.term}`);
-        }
-      }
-      const needle = options.caseSensitive ? options.term : options.term.toLowerCase();
-      const hay = options.caseSensitive ? src : src.toLowerCase();
-      let count = 0;
-      let idx = 0;
-      while ((idx = hay.indexOf(needle, idx)) !== -1) {
-        count += 1;
-        idx += needle.length;
-      }
-      return count;
+      return search.searchMatches(options);
     },
 
     findNext(): boolean {
-      return false; // Phase 2: exact caret placement on matches.
+      return search.findNext();
     },
 
     findPrev(): boolean {
-      return false; // Phase 2.
+      return search.findPrev();
     },
 
     replaceCurrent(text: string): number {
-      const sel = facade.getSelection();
-      if (!sel || sel.from >= sel.to) return 0;
-      facade.replaceRange(sel.from, sel.to, text);
-      return 1;
+      return search.replaceCurrent(text);
     },
 
     replaceAll(text: string): number {
-      if (!lastSearch) return 0;
-      const src = facade.getText();
-      let count = 0;
-      if (lastSearch.regex) {
-        try {
-          const re = new RegExp(
-            lastSearch.term,
-            lastSearch.caseSensitive ? "g" : "gi",
-          );
-          const replaced = src.replace(re, () => {
-            count += 1;
-            return text;
-          });
-          facade.setText(replaced);
-          return count;
-        } catch {
-          throw new RangeError(`invalid regex: ${lastSearch.term}`);
-        }
-      }
-      const needle = lastSearch.caseSensitive
-        ? lastSearch.term
-        : lastSearch.term.toLowerCase();
-      const hay = lastSearch.caseSensitive ? src : src.toLowerCase();
-      let idx = 0;
-      let out = "";
-      let last = 0;
-      while ((idx = hay.indexOf(needle, idx)) !== -1) {
-        count += 1;
-        out += src.slice(last, idx) + text;
-        last = idx + needle.length;
-        idx += needle.length;
-      }
-      out += src.slice(last);
-      if (count > 0) facade.setText(out);
-      return count;
+      return search.replaceAll(text);
     },
   };
 

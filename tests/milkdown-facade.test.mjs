@@ -151,3 +151,46 @@ test('undo/redo 回退/重做命令', async () => {
   assert.equal(redone, true, 'redo 应成功')
   assert.match(facade.getText(), /^#\s+原始/, 'redo 后应回到标题')
 })
+
+test('搜索：searchMatches/findNext/findPrev/replaceAll 走源码字符串', async () => {
+  const { runner } = await makeEditor('foo bar foo baz')
+  const facade = createMilkdownEditorFacade(runner, null)
+
+  const opts = { term: 'foo', regex: false, caseSensitive: false, wholeWord: false }
+  const count = facade.searchMatches(opts)
+  assert.equal(count, 2, '应命中 2 处 foo')
+
+  assert.equal(facade.findNext(), true, 'findNext 应跳到第一处')
+  assert.equal(facade.findNext(), true, 'findNext 应跳到第二处')
+  assert.equal(facade.findNext(), true, 'findNext 末处回绕到第一处')
+  assert.equal(facade.findPrev(), true, 'findPrev 应回上一处')
+
+  const replaced = facade.replaceAll('qux')
+  assert.equal(replaced, 2, '应替换 2 处')
+  const out = facade.getText()
+  assert.match(out, /qux bar qux baz/, '应全部替换为 qux')
+  assert.doesNotMatch(out, /foo/, '不应残留 foo')
+})
+
+test('getSelection 返回源码字符串偏移（AI 回写依赖）', async () => {
+  const { editor, runner } = await makeEditor('第一段\n\n第二段\n\n## 标题\n\n第三段')
+  const facade = createMilkdownEditorFacade(runner, null)
+  const md = facade.getText()
+
+  // 把选区设到「第二段」的「二段」两字
+  const start = md.indexOf('二段')
+  facade.setSelection(start, start + 2)
+  const sel = facade.getSelection()
+  assert.equal(sel.from, start, `sel.from 应为字符串偏移 ${start}，实际 ${sel.from}`)
+  assert.equal(sel.to, start + 2, `sel.to 应为 ${start + 2}，实际 ${sel.to}`)
+  assert.equal(md.slice(sel.from, sel.to), '二段', '选中的源码切片应为「二段」')
+
+  // AI 回写：replaceRange(sel.from, sel.to, newText) 应替换对的位置
+  facade.replaceRange(sel.from, sel.to, '替换')
+  const after = facade.getText()
+  assert.match(after, /第替换/, '应把「二段」替换成「替换」→ 第二段变第替换')
+  assert.match(after, /第一段/, '其他块不受影响')
+  assert.match(after, /## 标题/, '标题块不受影响')
+
+  await editor.destroy()
+})
