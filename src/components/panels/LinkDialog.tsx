@@ -82,13 +82,13 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
         </>
       }
     >
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+      <div style={{ padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto', flex: 1 }}>
         {/* 2 标签切换 */}
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               className={`ud-btn${linkType === 'external' ? ' ud-btn--primary' : ''}`}
               onClick={() => setLinkType('external')}
-              style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
+              style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '8px 8px' }}
             >
               <span className="remix ri-global-line" style={{ fontSize: 18 }}></span>
               <span style={{ fontSize: 12 }}>外部链接</span>
@@ -96,7 +96,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
             <button
               className={`ud-btn${linkType === 'internal' ? ' ud-btn--primary' : ''}`}
               onClick={() => setLinkType('internal')}
-              style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
+              style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '8px 8px' }}
             >
               <span className="remix ri-file-list-3-line" style={{ fontSize: 18 }}></span>
               <span style={{ fontSize: 12 }}>内部链接</span>

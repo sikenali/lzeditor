@@ -65,7 +65,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--color-system-blue-soft': 'rgba(0,122,255,0.10)',
     '--color-glow': '#00D4AA',
     '--color-focus-ring': '#007AFF',
-    '--color-modal-shadow': '0 8px 40px rgba(0,0,0,0.1)',
+    '--color-modal-shadow': '0 4px 20px rgba(0,0,0,0.06)',
     '--color-popover-shadow': '0 4px 24px rgba(0,0,0,0.10)',
     '--color-inset-highlight': 'rgba(255,255,255,0.55)',
 

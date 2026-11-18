@@ -98,13 +98,13 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
         </>
       }
     >
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
+      <div style={{ padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto', flex: 1 }}>
         {/* 2 标签切换 - 本地上传在前，URL链接在后 */}
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             className={`ud-btn${!useUrl ? ' ud-btn--primary' : ''}`}
             onClick={() => setUseUrl(false)}
-            style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
+            style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '8px 8px' }}
           >
             <span className="remix ri-upload-cloud-line" style={{ fontSize: 18 }}></span>
             <span style={{ fontSize: 12 }}>本地上传</span>
@@ -112,7 +112,7 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
           <button
             className={`ud-btn${useUrl ? ' ud-btn--primary' : ''}`}
             onClick={() => setUseUrl(true)}
-            style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '12px 8px' }}
+            style={{ flex: 1, justifyContent: 'center', flexDirection: 'column', gap: 4, padding: '8px 8px' }}
           >
             <span className="remix ri-link" style={{ fontSize: 18 }}></span>
             <span style={{ fontSize: 12 }}>URL 链接</span>

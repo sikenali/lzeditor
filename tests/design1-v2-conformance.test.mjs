@@ -23,7 +23,8 @@ for (const t of ['--color-modal-shadow','--color-popover-shadow','--color-inset-
 }
 assert.notEqual(block('parchment').match(/'--color-modal-shadow':\s*'([^']+)'/)?.[1], block('dark').match(/'--color-modal-shadow':\s*'([^']+)'/)?.[1], 'modal-shadow 必须随主题感知')
 // §8.1 弹框阴影主题感知精确值：浅色柔和无深空晕，深色深空底 + 青绿内发光
-assert.match(block('parchment'), /'--color-modal-shadow':\s*'0 8px 40px rgba\(0,\s*0,\s*0,\s*0\.1\)'/, '浅色弹框阴影必须柔和 0 8px 40px rgba(0,0,0,0.1)（§8.1 禁深空割裂）')
+// 2026-11-18：0 8px 40px rgba(0,0,0,0.1) 在浅色主题下与边框叠加读成「双层圆框」，软化为 0 4px 20px rgba(0,0,0,0.06)
+assert.match(block('parchment'), /'--color-modal-shadow':\s*'0 4px 20px rgba\(0,\s*0,\s*0,\s*0\.06\)'/, '浅色弹框阴影必须柔和 0 4px 20px rgba(0,0,0,0.06)（§8.1 禁深空割裂）')
 assert.match(block('dark'), /'--color-modal-shadow':\s*'0 8px 48px rgba\(0,\s*0,\s*0,\s*0\.55\),\s*inset 0 1px 0 rgba\(0,\s*212,\s*170,\s*0\.08\)'/, '深色弹框阴影必须深空底 + 青绿内发光（§8.1）')
 // system-blue 常量 #007AFF（§7）
 assert.match(tokens, /--color-system-blue:\s*#007AFF/)
@@ -41,7 +42,7 @@ const sdlg = read('src/styles/settings-dialog.css')
 const navList = sdlg.match(/\.settings-nav-list\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3）')
 const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
-assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
+assert.match(navRow, /height:\s*38px/, '设置导航条目必须 38px（2026-11-18 紧凑化，原 44px）')
 const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须系统蓝浅底')
 // 3px 左条是独立伪元素规则（.settings-nav-row.active::before），不能嵌在 .active 块里，单独断言

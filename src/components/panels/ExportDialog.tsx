@@ -154,7 +154,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   )
 
   const rightTop = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {isPrintFormat && (
         <>
           <UDSection label="样式选项">

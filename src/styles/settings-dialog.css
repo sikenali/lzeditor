@@ -1,6 +1,6 @@
 .settings-section:last-child  { margin-bottom: 0; }
 
-.setting-row  { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.setting-row  { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
 .setting-label  {
   display: flex; flex-direction: column; gap: 2px;
   min-width: 120px; font-size: 14px; color: var(--text-secondary);
@@ -259,7 +259,7 @@
 /* ── Left nav ── */
 .ud-left  {
   width: 220px; flex-shrink: 0;
-  padding: 16px 12px;
+  padding: 10px 12px;
   border-right: 0.7px solid var(--border-subtle);
   overflow-y: auto;
   display: flex; flex-direction: column; gap: 4px;
@@ -271,7 +271,7 @@
 /* ── Nav chips ── */
 .ud-chip  {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
+  padding: 6px 12px;
   border-radius: 10px;
   border: 0.7px solid transparent;
   background: transparent;
@@ -323,13 +323,13 @@
 }
 .ud-right-top  {
   flex-shrink: 0;
-  padding: 16px 20px 12px;
+  padding: 12px 20px 10px;
   border-bottom: 0.7px solid var(--border-subtle);
 }
 .ud-right-content  {
   flex: 1; min-height: 0;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: 12px 20px;
 }
 .ud-right-content::-webkit-scrollbar  { width: 5px; }
 .ud-right-content::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 4px; }
@@ -340,11 +340,11 @@
 }
 
 /* ── Sections ── */
-.ud-section  { margin-bottom: 20px; }
+.ud-section  { margin-bottom: 10px; }
 .ud-section:last-child  { margin-bottom: 0; }
 .ud-section-head  {
   display: flex; align-items: baseline; justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 .ud-section-label  {
   font-size: 12px; font-weight: 700; color: var(--text-muted);
@@ -358,7 +358,7 @@
 /* ── Setting rows ── */
 .ud-setting-row  {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0;
+  padding: 7px 0;
   border-bottom: 0.7px solid var(--border-subtle);
   gap: 16px;
 }
@@ -401,7 +401,7 @@
   background: var(--background);
 }
 .ud-preview-label  {
-  padding: 8px 14px;
+  padding: 6px 14px;
   font-size: 11px; font-weight: 600; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.06em;
   border-bottom: 0.7px solid var(--border-subtle);
@@ -410,7 +410,7 @@
 .ud-preview-body  {
   padding: 16px;
   /* 导出预览固定高度 + 滚动条（内容长时滚动，不撑破弹框） */
-  height: 380px;
+  height: 280px;
   overflow-y: auto;
   overflow-x: auto;
 }
@@ -453,7 +453,7 @@
 /* ── Unified Dialog specific overrides ── */
 .ud-upload-area  {
   display: flex; flex-direction: column; align-items: center;
-  padding: 24px; border: 2px dashed var(--border-subtle); border-radius: 12px;
+  padding: 18px; border: 2px dashed var(--border-subtle); border-radius: 12px;
   cursor: pointer; transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast); text-align: center;
 }
 .ud-upload-area:hover  { border-color: var(--accent-primary); background: var(--accent-a5); }
@@ -569,7 +569,7 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 44px;
+  height: 38px;
   padding: 0 12px;
   border: none;
   border-radius: 8px;
@@ -629,13 +629,13 @@
   padding-right: 4px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .settings-panel-content > .settings-content  {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
   flex: 1;
   min-height: 0;
 }
@@ -691,8 +691,8 @@
 .settings-section  {
   background: var(--color-bg-white);
   border: 0.7px solid var(--color-border-soft);
-  border-radius: 16px;
-  padding: 24px 28px;
+  border-radius: 14px;
+  padding: 16px 20px;
   margin-bottom: 0;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -702,11 +702,11 @@
    padding-bottom / border-bottom 必须显式清零：:113 那处定义带 10px + 分隔线，会穿透过来 */
 .settings-section-title  {
   display: block;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--color-text-primary);
   padding-bottom: 0;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   border-bottom: none;
 }
 .settings-section-title > span:first-child  {
@@ -1167,7 +1167,7 @@
 
 /* bid .section-card border-radius: 16px —— 此处不得覆写为 0，否则区块卡片退化为平带 */
 .settings-section  {
-  border-radius: 16px; box-shadow: var(--t-sh-12);
+  border-radius: 14px; box-shadow: var(--t-sh-12);
 }
 
 .settings-top-tabs .settings-subtab-btn.active  {
@@ -1231,7 +1231,7 @@
 
 /* 卡片沿用 .settings-section 的边框/圆角/阴影与 --t-* 深色覆写，只加宽内边距到 bid 的 24px 40px */
 .settings-section.model-card  {
-  padding: 24px 40px;
+  padding: 16px 20px;
 }
 
 .density-group  {
