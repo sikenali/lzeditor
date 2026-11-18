@@ -145,7 +145,6 @@ export const SidebarPreview: React.FC = () => {
       <div className="sidebar-preview preview-pane">
         <div className="sidebar-header">
           <span className="remix sidebar-header-icon ri-eye-2-fill"></span>
-          <span className="sidebar-header-title">预览</span>
           <button
             className="sidebar-wechat-btn"
             onClick={handleCopyWechat}
