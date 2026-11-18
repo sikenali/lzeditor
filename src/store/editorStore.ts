@@ -192,7 +192,19 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     saveLayoutState({ statusbarCollapsed })
   },
   setCodeMode: (codeMode: boolean) => set({ codeMode }),
-  setAppMode: (appMode: 'edit' | 'code' | 'style' | 'history' | 'read') => set({ appMode }),
+  setAppMode: (appMode: 'edit' | 'code' | 'style' | 'history' | 'read') => {
+    // 切换编辑器模式（Milkdown ↔ CM6）前，把当前活跃 facade 的保真文本同步
+    // 回 docsMd：markdownUpdated 是 200ms 防抖，末次编辑可能还没流出，
+    // getText() 同步序列化兜底，保证切换不丢内容（fidelity）。
+    if (appMode !== get().appMode) {
+      const current = getEditorFacade()?.getText()
+      const docId = get().activeDocId
+      if (current !== undefined && docId) {
+        get().updateDoc({ md: current, docsMd: { [docId]: current } })
+      }
+    }
+    set({ appMode })
+  },
   createLibrary: (name: string) => {
     const title = (name || '').trim() || `Library ${get().docLibraries.length + 1}`
     const id = `lib-${Date.now()}`

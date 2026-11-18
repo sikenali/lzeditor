@@ -13,6 +13,7 @@ import { ExportDialog } from './components/panels/ExportDialog'
 import { HistoryPanel } from './components/panels/HistoryPanel'
 import { StyleMainPanel } from './components/panels/StyleMainPanel'
 import { CodeEditor } from './components/editor/CodeEditor'
+import { MilkdownEditor } from './components/editor/MilkdownEditor'
 import { getDocMd } from './utils/docSource'
 import { README_CONTENT } from './components/editor/constants'
 import { ReadMode } from './components/editor/ReadMode'
@@ -463,9 +464,12 @@ function App() {
     if (appMode === 'style') {
       return null
     }
-    // 编辑 / 代码 两种模式挂源码编辑器：预览模式右侧内容走右栏，代码模式不给右栏留位。
-    // WYSIWYG 已移除，恒挂 CodeMirror 源码编辑器（可编辑）。
-    return <CodeEditor md={editorMd} onChange={handleEditorChange} />
+    // 编辑 / 代码 两种模式挂编辑器：edit（默认）→ Milkdown WYSIWYG，
+    // code → CM6 源码视图。切换经 store.setAppMode 保真（不丢 markdown）。
+    if (appMode === 'code') {
+      return <CodeEditor md={editorMd} onChange={handleEditorChange} />
+    }
+    return <MilkdownEditor md={editorMd} onChange={handleEditorChange} />
   })()
 
   // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容

@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Editor } from '@milkdown/kit/core'
 import { listenerCtx } from '@milkdown/kit/plugin/listener'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
 import { configureEditorRoot, withEditorCore } from '../../additional/milkdown/textus/editor/editor-extensions'
 import { useSettings } from '../../additional/milkdown/textus/shim/settings-context'
 import { useLatest } from '../../additional/milkdown/textus/utils/hooks/useLatest'
-import { useEditorRunner, type EditorRunner } from '../../additional/milkdown/textus/editor/useEditorRunner'
+import { useEditorRunner } from '../../additional/milkdown/textus/editor/useEditorRunner'
+import { createMilkdownEditorFacade } from './facade/milkdown/MilkdownEditorFacade'
+import { getEditorFacade, registerEditorFacade } from './facade/registry'
+import type { EditorFacade } from './facade/EditorFacade'
 import '../../additional/milkdown/milkdown.css'
 import '@milkdown/kit/prose/view/style/prosemirror.css'
 import '../../additional/milkdown/textus/theme/content-base.css'
@@ -16,34 +19,50 @@ import '../../additional/milkdown/textus/editor/diagram-zoom.css'
 import '../../additional/milkdown/textus/editor/hover/hover-card.css'
 
 /* ═══════════════════════════════════════════════════════════
-   Milkdown 可编辑编辑器（WYSIWYG）。
+   Milkdown 可编辑编辑器（WYSIWYG，默认模式）。
    vendored Textus 装配（withEditorCore）+ 受控 markdown 初值 +
    markdownUpdated 回调把保真 markdown 带出。docPath 恒 null（无磁盘），
    走 noDiskImages 分支（同 TextusPreview）。CSS 由 .textus-editor-shell 作用域。
+   挂载时注册自己的 EditorFacade（模式感知），卸载时清除——与 CodeEditor 同构。
    ═══════════════════════════════════════════════════════════ */
 
 interface MilkdownEditorProps {
-  /** 受控 markdown 初值（切换文档时用）。 */
+  /** 受控 markdown 初值/外部写入（切换文档时用）。 */
   md: string
-  /** 每次编辑后带出保真 markdown。 */
+  /** 每次编辑后带出保真 markdown（App 回写 store）。 */
   onChange: (md: string) => void
-  /** 挂载就绪后提供命令入口（供 facade 用）。 */
-  onReady?: (runner: EditorRunner) => void
+  /** 挂载就绪后提供已注册的 facade（可选，App 一般不直接用）。 */
+  onReady?: (facade: EditorFacade) => void
 }
 
-function EditableEditor({ md, onChange, onReady }: MilkdownEditorProps) {
+function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps & { shellRef: React.RefObject<HTMLDivElement | null> }) {
   const { settings, t } = useSettings()
   const settingsRef = useLatest(settings)
   const docPathRef = useLatest<string | null>(null)
   const labelRef = useLatest(t.splitPreview)
   const onChangeRef = useLatest(onChange)
   const runner = useEditorRunner()
+  const facadeRef = useRef<EditorFacade | null>(null)
 
-  // 命令入口就绪后交给 facade（runner 稳定，仅挂载后触发一次）
+  // 命令入口就绪后创建并注册 facade（模式感知：哪个编辑器活着注册哪个）。
   useEffect(() => {
-    onReady?.(runner)
+    if (!runner) return
+    const facade = createMilkdownEditorFacade(runner, shellRef.current)
+    facadeRef.current = facade
+    registerEditorFacade(facade)
+    onReady?.(facade)
+    return () => {
+      if (getEditorFacade() === facade) registerEditorFacade(null)
+      facadeRef.current = null
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runner])
+
+  // 外部源码变化（切文档/导入/回滚）：与当前保真输出不同才 setText（不重置光标）。
+  useEffect(() => {
+    const facade = facadeRef.current
+    if (facade && facade.getText() !== md) facade.setText(md)
+  }, [md])
 
   useEditor((root) =>
     withEditorCore(
@@ -65,12 +84,12 @@ function EditableEditor({ md, onChange, onReady }: MilkdownEditorProps) {
 }
 
 export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
+  const shellRef = useRef<HTMLDivElement | null>(null)
   return (
-    <div className="textus-editor-shell" data-content-theme="slate">
+    <div className="textus-editor-shell" data-content-theme="slate" ref={shellRef}>
       <MilkdownProvider>
-        <EditableEditor {...props} />
+        <EditableEditor {...props} shellRef={shellRef} />
       </MilkdownProvider>
     </div>
   )
 }
-

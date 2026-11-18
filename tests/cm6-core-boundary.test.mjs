@@ -22,8 +22,9 @@ assert.match(codeEditor, /registerEditorFacade\(facade\)/, 'CodeEditor 挂载时
 assert.match(codeEditor, /createCM6EditorFacade/, 'CodeEditor 必须经 createCM6EditorFacade 构建')
 assert.doesNotMatch(codeEditor, new RegExp(YELI_NS), 'CodeEditor 不能引用 yeli vendor')
 
-// ── App 挂载 CM6 编辑器，旧编辑器彻底下线 ──
-assert.match(app, /<CodeEditor md=\{editorMd\}/, '编辑/代码/排版模式都必须挂 CodeEditor')
+// ── App 挂载编辑器：edit（Milkdown 默认）/ code（CM6 源码）并存切换 ──
+assert.match(app, /<CodeEditor md=\{editorMd\}/, 'code 模式挂 CodeEditor（CM6 源码）')
+assert.match(app, /<MilkdownEditor md=\{editorMd\}/, 'edit（默认）模式挂 Milkdown WYSIWYG')
 assert.doesNotMatch(app, /<YeliEditor|<CM6Editor|<LZEditor/, 'App 不再引用任何旧编辑器')
 
 // ── EditorFacade 契约：写入路径全部走 typed 事务 ──
@@ -41,18 +42,17 @@ assert.match(facade, /findPrev\(\): boolean/, 'facade 必须实现上一处')
 assert.match(facade, /replaceCurrent\(text: string\): number/, 'facade 必须实现替换当前')
 assert.match(facade, /replaceAll\(text: string\): number/, 'facade 必须实现全部替换')
 
-// ── 源码模式：表格上下文恒 null（table.* 回退为插入 markdown 表格） ──
-assert.match(facade, /getTableContext\(\): null/, 'getTableContext 必须恒为 null')
+// ── 表格上下文：源码恒 null；WYSIWYG 返回真实上下文（TableContext | null） ──
+assert.match(facade, /getTableContext\(\): TableContext \| null/, 'getTableContext 必须 TableContext | null')
 
 // ── CM6 facade 必须绑定 EditorView 并路由命令/搜索 ──
 assert.match(cm6Facade, /from ['"]@codemirror\/view['"]/, 'CM6 facade 必须绑定 @codemirror/view')
 assert.match(cm6Facade, /applyEditorCommand/, 'execCommand 必须经命令映射路由')
 assert.match(cm6Facade, /createSearchSession/, '搜索必须委托 search session')
 
-// ── TipTap / ProseMirror / yeli 必须彻底下线，src 里不允许再有引用 ──
-// 例外：src/additional/ 是从 Textus 移植继承的并存功能，有意引入
-// Milkdown 7（其底层是 ProseMirror）；只有那一棵子树允许，主 src 仍禁。
-const ADDITIONAL_PREFIX = join('src', 'additional') + '/'
+// ── TipTap / yeli 必须彻底下线，主 src 与 additional 都不许引用 ──
+// Milkdown 现在是默认编辑器（edit 模式），主 src 与 src/additional 都允许
+// Milkdown/ProseMirror；只禁 TipTap / yeli vendor。
 const walk = (dir) => {
   const out = []
   for (const name of readdirSync(dir)) {
@@ -64,26 +64,20 @@ const walk = (dir) => {
 }
 const banned = walk('src').filter((f) => {
   const src = readFileSync(f, 'utf8')
-  // 主 src 任何文件都不得引用这些；src/additional 只许 Milkdown/ProseMirror，
-  // 仍禁 TipTap / yeli。
-  const inAdditional = f.startsWith(ADDITIONAL_PREFIX)
-  const forbidden =
-    /@tiptap|@memfoldai/.test(src) || src.includes(YELI_NS)
-  const milkdownOnlyHere = inAdditional
-    ? false
-    : /@milkdown|prosemirror|useEditor\(|_cm6View/.test(src)
-  return forbidden || milkdownOnlyHere
+  // TipTap / yeli 彻底下线：主 src 与 src/additional 都不许引用。
+  // Milkdown/ProseMirror/useEditor 现在是默认编辑器，允许。
+  return /@tiptap|@memfoldai/.test(src) || src.includes(YELI_NS)
 })
 assert.deepStrictEqual(
   banned.map((f) => relative(process.cwd(), f)),
   [],
-  '主 src 不应再依赖 TipTap / ProseMirror / yeli vendor（Milkdown 仅限 src/additional）',
+  '主 src 与 additional 都不应再依赖 TipTap / yeli vendor（Milkdown 已是默认编辑器）',
 )
 
-// ── 并存模式：WYSIWYG 已移除，App 恒挂 CM6 源码编辑器 ──
-assert.match(app, /<CodeEditor\s/, 'App 必须恒挂源码编辑器（不再按 wysiwyg 切换）')
-assert.doesNotMatch(app, /TextusPreview/, 'App 不再挂 TextusPreview（WYSIWYG 已移除）')
-assert.doesNotMatch(app, /wysiwyg/, 'App 无 wysiwyg 引用')
+// ── 并存模式：Milkdown（edit 默认）+ CM6（code）点击切换，切换保真 ──
+assert.match(app, /if \(appMode === 'code'\) \{[\s\S]*?<CodeEditor/, 'code 模式挂 CM6 源码编辑器')
+assert.match(app, /return <MilkdownEditor md=\{editorMd\}/, 'edit（默认）模式挂 Milkdown WYSIWYG')
+assert.doesNotMatch(app, /TextusPreview/, 'App 不再挂 TextusPreview（WYSIWYG 已改为可编辑）')
 const previewShell = read('src/additional/milkdown/TextusPreview.tsx')
 assert.match(previewShell, /SplitPreview/, 'TextusPreview 必须渲染 SplitPreview')
 assert.match(previewShell, /filePath=\{null\}/, '预览无磁盘（filePath=null）')
@@ -91,7 +85,7 @@ assert.match(previewShell, /data-theme/, '外壳必须镜像 data-theme（亮/�
 const vendoredPreview = read('src/additional/milkdown/textus/editor/modes/SplitPreview.tsx')
 assert.match(vendoredPreview, /withEditorCore\(/, 'SplitPreview 必须委托 withEditorCore 安装插件链')
 assert.match(vendoredPreview, /preview:\s*true/, 'SplitPreview 必须为 preview:true（只读、语法全绘）')
-assert.equal(existsSync('src/additional/milkdown/MilkdownEditor.tsx'), false, 'MilkdownEditor.tsx 必须删除（已改只读预览）')
+assert.equal(existsSync('src/additional/milkdown/MilkdownEditor.tsx'), false, 'src/additional 下无 MilkdownEditor.tsx（可编辑版在 src/components/editor）')
 assert.equal(existsSync('src/additional/milkdown/textus/editor/editor-factory.ts'), false, 'editor-factory.ts 必须删除')
 const reducedPresets = read('src/additional/milkdown/textus/editor/markdown/reduced-presets.ts')
 assert.match(reducedPresets, /@milkdown\/kit\/preset\/commonmark/, 'Milkdown 必须用 CommonMark 预设')
@@ -99,7 +93,11 @@ assert.match(reducedPresets, /@milkdown\/kit\/preset\/gfm/, 'Milkdown 必须用 
 const editorChain = read('src/additional/milkdown/textus/editor/editor-extensions.ts')
 assert.match(editorChain, /\.use\(listener\)/, 'Milkdown 必须监听 markdown 变更（listener 装在链上）')
 const editorStore = read('src/store/editorStore.ts')
-assert.doesNotMatch(editorStore, /wysiwyg/, 'editorStore 不得再保存 wysiwyg 开关（已移除）')
+assert.doesNotMatch(editorStore, /wysiwyg/, 'editorStore 不得再保存 wysiwyg 开关（改用 appMode）')
+const milkdownEditor = read('src/components/editor/MilkdownEditor.tsx')
+assert.match(milkdownEditor, /registerEditorFacade\(facade\)/, 'MilkdownEditor 挂载时必须注册 facade（模式感知）')
+assert.match(milkdownEditor, /createMilkdownEditorFacade/, 'MilkdownEditor 必须经 createMilkdownEditorFacade 构建')
+assert.match(editorStore, /getEditorFacade\(\)\?\.getText\(\)/, 'setAppMode 切换前必须 flush 当前 facade 文本（保真）')
 
 // ── CM6 依赖已在 package.json ──
 const pkg = JSON.parse(read('package.json'))
