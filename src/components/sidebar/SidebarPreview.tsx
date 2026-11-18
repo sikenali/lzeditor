@@ -10,6 +10,8 @@ import { getDocMd } from '../../utils/docSource'
 import { renderMermaidBlocks } from '../../utils/markdown/mermaid'
 import { renderEchartsBlocks } from '../../utils/markdown/echarts'
 import { resolveTheme } from '../../hooks/useTheme'
+import { ScrollRail } from '../ui/ScrollRail'
+import { markersFromPreviewDom } from '../../utils/railMarkers'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
@@ -159,6 +161,13 @@ export const SidebarPreview: React.FC = () => {
             <div className="preview-doc" ref={previewElRef} />
           </div>
         </div>
+        <ScrollRail
+          getScroller={() => scrollContainerRef.current}
+          getMarkers={() => markersFromPreviewDom(previewElRef.current, scrollContainerRef.current)}
+          version={previewHtml}
+          ariaLabel="预览文档导航"
+          className="scroll-rail--preview"
+        />
       </div>
       <div
         className={`sidebar-resize-handle${dragging ? ' dragging' : ''}`}

@@ -19,6 +19,7 @@ import './styles/code-mode.css'
 import './styles/floating.css'
 import './styles/app.css'
 import './styles/welcome-screen.css'
+import './styles/scroll-rail.css'
 
 // Restore persisted settings and apply theme synchronously before first
 // paint to avoid a flash of wrong theme.

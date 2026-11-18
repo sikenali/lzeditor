@@ -32,6 +32,11 @@
 }
 
 /* The Milkdown root (the document scroller): fills the shell and scrolls. */
+.textus-editor-shell [data-milkdown-root] {
+  height: 100%;
+  min-height: 0;
+}
+
 .textus-editor-shell .milkdown {
   height: 100%;
   overflow: auto;

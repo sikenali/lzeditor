@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { Editor } from '@milkdown/kit/core'
 import { listenerCtx } from '@milkdown/kit/plugin/listener'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
@@ -9,6 +9,8 @@ import { useEditorRunner } from '../../additional/milkdown/textus/editor/useEdit
 import { createMilkdownEditorFacade } from './facade/milkdown/MilkdownEditorFacade'
 import { getEditorFacade, registerEditorFacade } from './facade/registry'
 import type { EditorFacade } from './facade/EditorFacade'
+import { ScrollRail } from '../ui/ScrollRail'
+import { markersFromPreviewDom } from '../../utils/railMarkers'
 import '../../additional/milkdown/milkdown.css'
 import '@milkdown/kit/prose/view/style/prosemirror.css'
 import '../../additional/milkdown/textus/theme/content-base.css'
@@ -85,11 +87,30 @@ function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps
 
 export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
   const shellRef = useRef<HTMLDivElement | null>(null)
+  const getScroller = useCallback(
+    () => shellRef.current?.querySelector<HTMLElement>('.milkdown') ?? null,
+    [],
+  )
+  // WYSIWYG 的块已经渲染在 DOM 里，直接量真实位置（图片 / 代码块高度可变，
+  // 按源码行号比例定位会漂）。源码模式才退回行号比例。
+  const getMarkers = useCallback(
+    () => markersFromPreviewDom(
+      shellRef.current?.querySelector<HTMLElement>('.ProseMirror') ?? null,
+      shellRef.current?.querySelector<HTMLElement>('.milkdown') ?? null,
+    ),
+    [],
+  )
   return (
     <div className="textus-editor-shell" data-content-theme="slate" ref={shellRef}>
       <MilkdownProvider>
         <EditableEditor {...props} shellRef={shellRef} />
       </MilkdownProvider>
+      <ScrollRail
+        getScroller={getScroller}
+        getMarkers={getMarkers}
+        version={props.md}
+        ariaLabel="编辑区文档导航"
+      />
     </div>
   )
 }

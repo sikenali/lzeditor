@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import type { EditorView } from "@codemirror/view";
 import { createCM6EditorFacade } from "./facade/cm6/CM6EditorFacade";
 import { buildCM6Core, createCm6Settings, type Cm6Settings } from "./facade/cm6/cm6-extensions";
@@ -9,6 +9,8 @@ import { useEditorStore } from "../../store/editorStore";
 import { useSettingsStore } from "../../store/settingsStore";
 import { fontStackFor } from "../../hooks/useTypographyOverrides";
 import "../../styles/code-editor.css";
+import { ScrollRail } from "../ui/ScrollRail";
+import { markersFromMarkdown } from "../../utils/railMarkers";
 
 /**
  * lzeditor's source editor: a CodeMirror 6 canvas (left-write / right-read,
@@ -153,6 +155,15 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
       style.setProperty("--cm-text-justify", textJustify ? "justify" : "start");
     }, [contentWidth, editorFont, defaultFontSize, lineHeight, textIndent, textJustify]);
 
+    const getScroller = useCallback(
+      () => handleRef.current?.view.scrollDOM ?? null,
+      [],
+    );
+    const getMarkers = useCallback(
+      (contentHeight: number) => markersFromMarkdown(md, contentHeight),
+      [md],
+    );
+
     useImperativeHandle(
       ref,
       () => ({
@@ -167,6 +178,15 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
       [],
     );
 
-    return <div className="code-editor-shell" ref={shellRef} />;
+    return (
+      <div className="code-editor-shell" ref={shellRef}>
+        <ScrollRail
+          getScroller={getScroller}
+          getMarkers={getMarkers}
+          version={md}
+          ariaLabel="编辑区文档导航"
+        />
+      </div>
+    );
   },
 );
