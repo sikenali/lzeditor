@@ -646,10 +646,12 @@ git commit -m "feat(acks): 默认主题 graphite，全部 classic 回退改常�
 
 卡片：`.style-card`（按钮，`.active` 选中类）> `.style-card-thumb`（56×72，圆角 3px，`borderColor`=选中? accent : 灰）> `.style-card-preview`（mini-mock：名称行/accent、二级标题装饰下划线 `accent33`、正文样例·代码块 `accent18`/accent、引用样例）+ `.style-card-name`（选中时 accent 色）。工具栏：`.style-toolbar` > `.style-label-group`（"文档样式:" + `style-select-btn` 下拉） + `style-action-btn`（预览/导出/关闭）。全部保留原结构，仅数据源与颜色 token 换 ACKS。
 
-- [ ] **Step 1: 正文宿主改 `.style-read-article`（原 `.read-article-body` 分支），去掉 `dangerouslySetInnerHTML`，改 ref + `renderAcksArticle`**
+- [ ] **Step 1: 正文改 ACKS 渲染进 `.style-read-article` 内的专用宿主，去掉 `dangerouslySetInnerHTML` + 旧排版注入**
 
 ```tsx
-const bodyRef = useRef<HTMLDivElement>(null)
+// 滚动容器 ref 保持不动（scrollSpy/章节跳转用），不要挪到别处：
+// <div ref={bodyRef} className="style-read-scroll" ...>
+const articleBodyRef = useRef<HTMLDivElement>(null)   // 专用 ACKS 宿主（新）
 const [activeStyle, setActiveStyle] = useState(typographyTheme || DEFAULT_TYPOGRAPHY_THEME)
 const [page, setPage] = useState(0)
 const PAGE_SIZE = 10
@@ -659,13 +661,20 @@ const pageItems = ACKS_THEME_IDS.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE
 // 渲染：依赖 effectiveMd/activeStyle。renderedHtml 与旧 `.read-article-body` 用同一份 mdToHtml 输出，
 // 其 heading id（parseMdOutline 依赖）经 doc.innerHTML 包裹后保留，大纲/章节跳转不受影响（Review Focus #6）
 useEffect(() => {
-  const el = bodyRef.current; if (!el) return
+  const el = articleBodyRef.current; if (!el) return
   renderAcksArticle(el, renderedHtml, activeStyle)
 }, [activeStyle, renderedHtml])
 
 // 卡片点击
 const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typographyTheme', id) }
 ```
+
+**宿主 DOM 要点（必须遵守，避免 token CSS 泄漏到 ACKS 渲染器）：**
+- 结构（对照参考 `sikenali/lzeditor`）：`.style-read-scroll`(bodyRef) > `.style-read-article`(maxWidth 760) > [`.main-read-header`（保留，含 公众号 按钮）, 内容宿主 div]。
+- 内容宿主 div 用**新类 `.style-read-acks`**，**不要**用 `.read-article-body`（它在 `LZ_HOST_SELECTORS` 里，`acksThemeToLzCss` 会命中它叠在 ACKS 上，破坏一致性 —— Review Focus #3）。`.style-read-acks` 不在 `LZ_HOST_SELECTORS`。
+- 去掉内容宿主上的旧内联 `style={{ fontSize, lineHeight, '--style-accent' }}`（ACKS 渲染器自带排版/配色）。
+- **删除旧的排版注入 `useEffect`**（原 ~127-142 行，把 `theme.css` replace 成 `.read-article-body` 后注入 `lz-styleread-typography-css`）—— ACKS 渲染器现在拥有正文。
+- 章节跳转仍用 `bodyRef`（`.style-read-scroll`）`querySelectorAll('h1..h6')`，ACKS 渲染后的标题 id 保留在 DOM 里。
 
 - [ ] **Step 2: 卡片渲染改遍历 `pageItems`，颜色用 `acksThemeCardMeta(getAcksTheme(id)!)`；加左右箭头 + 页码**
 
@@ -694,6 +703,7 @@ const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typograph
 .pager-btn:not(:disabled):hover { border-color:var(--color-primary); color:var(--color-primary); }
 .pager-info { font-size:12px; color:var(--color-text-muted); }
 .style-read-article { max-width:760px; margin:0 auto; }
+.style-read-acks { max-width:100%; }   /* ACKS 渲染宿主：不设额外排版，样式由 ACKS 渲染器/主题决定 */
 ```
 
 - [ ] **Step 4: 加边界断言（`tests/acks-theme-rewire.test.mjs`）**
@@ -701,8 +711,11 @@ const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typograph
 ```js
 const smp = read('src/components/panels/StyleMainPanel.tsx')
 assert.match(smp, /renderAcksArticle/, '排版界面用 ACKS 渲染器')
-assert.match(smp, /style-read-article/, '宿主用 .style-read-article')
+assert.match(smp, /style-read-article/, '宿主容器用 .style-read-article')
+assert.match(smp, /style-read-acks/, 'ACKS 内容宿主用 .style-read-acks（非 token CSS 宿主）')
+assert.match(smp, /articleBodyRef/, 'ACKS 内容宿主有独立 ref')
 assert.doesNotMatch(smp, /dangerouslySetInnerHTML/, '不再用 dangerouslySetInnerHTML 渲染正文')
+assert.doesNotMatch(smp, /lz-styleread-typography-css/, '删除旧排版注入 useEffect')
 assert.match(smp, /const PAGE_SIZE = 10/, '每页 10 个')
 assert.match(smp, /totalPages/, '有分页')
 assert.match(smp, /ri-arrow-left-s-line/, '有左箭头')
