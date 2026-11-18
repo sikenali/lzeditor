@@ -17,7 +17,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const setActiveLibrary = useEditorStore((s: any) => s.setActiveLibrary)
   const renameLibrary = useEditorStore((s: any) => s.renameLibrary)
   const [renameTarget, setRenameTarget] = useState<{ key: string; title: string } | null>(null)
-  const [category, setCategory] = useState('docs')
+  const [category, setCategory] = useState('url')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>(() => {
     // 内置文档（readme）的分组默认展开，否则藏在两层折叠里等于不存在
     const init: Record<string, boolean> = {}
@@ -42,7 +42,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   }
 
   const handleOpenLibraryDialog = () => {
-    setCategory('docs')
+    setCategory('url')
     setOpenPanel('library')
   }
 
@@ -226,6 +226,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
       subtitle={CATEGORIES.find(c => c.id === category)?.label || '文档库'}
       footer={footer}
       width={900}
+      height={600}
     >
       <div className="ud-body ud-body-split">
         <div className="ud-left">{leftNav}</div>

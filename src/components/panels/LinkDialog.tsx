@@ -72,6 +72,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
       title="插入链接"
       subtitle="链接将插入到当前光标位置"
       width={720}
+      height={520}
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>

@@ -88,6 +88,7 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
       title="插入图片"
       subtitle="支持 URL 或本地上传"
       width={720}
+      height={520}
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
