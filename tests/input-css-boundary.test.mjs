@@ -107,3 +107,12 @@ test('查找/替换统一走 ui-input，不再用 search-input-group/search-inpu
   assert.ok(!searchPanelSrc.includes('search-input-group'), '不应再用 search-input-group')
   assert.ok(!searchPanelSrc.includes('className="search-input"'), '不应再用独立的 search-input 类')
 })
+
+// 原 .search-input-group 带 flex:1 + min-width:0，让输入容器撑满 .search-row；
+// 换成 .ui-input 后 base 规则无 flex:1（会 shrink-wrap 成内容宽），必须由容器上下文补回，
+// 否则 查找/上一处/下一处 按钮不再顶到行右缘（布局回归）。
+test('查找/替换 ui-input 容器应撑满行（flex:1; min-width:0）', () => {
+  const body = block(panelsCss, '.search-row > .ui-input  {')
+  assert.match(body, /flex:\s*1/, '查找/替换容器应 flex:1 撑满 .search-row')
+  assert.match(body, /min-width:\s*0/, '查找/替换容器应 min-width:0')
+})

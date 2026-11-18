@@ -927,6 +927,9 @@
 
 .search-ops-col  { display: flex; flex-direction: column; gap: 10px; }
 .search-row  { display: flex; align-items: center; gap: 8px; }
+/* 查找/替换输入容器撑满 .search-row（原 .search-input-group 的 flex:1 随删除丢失，
+   .ui-input base 规则无 flex:1，需在容器上下文补回，否则按钮不再顶到行右缘） */
+.search-row > .ui-input  { flex: 1; min-width: 0; }
 .search-input-label  {
   font-size: 13px; font-family: var(--font-sans);
   color: var(--text-muted); white-space: nowrap; flex-shrink: 0; font-weight: 500;
