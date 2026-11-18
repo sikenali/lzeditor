@@ -170,7 +170,7 @@ git commit -m "feat(acks): vendor ACKS 主题引擎（43 款，CATALOG v3）"
   - `acksThemeToLzCss(theme: AcksTheme, hostSelector: string): string`
   - `acksThemeToLzTokens(theme: AcksTheme): ExportThemeTokens`（`{ overlay, primary, text, muted, heading, code, border, amber }`，全部 `string`）
   - `buildTypographyTheme(theme: AcksTheme): TypographyTheme`（`{ id, name, color, tag, css }`）
-  - `acksThemeCardMeta(theme: AcksTheme): { name: string; color: string }`
+  - `acksThemeCardMeta(theme: AcksTheme): { name: string; color: string; bg: string; text: string }`（`color`=accent 用于标题/代码/选中态，`bg` 用于卡片缩略图底，`text` 用于正文样例色）
 
 - [ ] **Step 1: 写 `acks-mapping.ts`（纯函数，不 import 引擎/PNG）**
 
@@ -212,8 +212,8 @@ export function buildTypographyTheme(t: AcksTheme): TypographyTheme {
   return { id: t.id, name: t.name, color: t.accent, tag: '', css: LZ_HOST_SELECTORS.map(s => acksThemeToLzCss(t, s)).join('\n') }
 }
 
-export function acksThemeCardMeta(t: AcksTheme): { name: string; color: string } {
-  return { name: t.name, color: t.accent }
+export function acksThemeCardMeta(t: AcksTheme): { name: string; color: string; bg: string; text: string } {
+  return { name: t.name, color: t.accent, bg: t.bg, text: t.text }
 }
 ```
 
@@ -221,7 +221,7 @@ export function acksThemeCardMeta(t: AcksTheme): { name: string; color: string }
 
 ```js
 import assert from 'node:assert/strict'
-import { acksThemeToLzCss, acksThemeToLzTokens, buildTypographyTheme, DEFAULT_TYPOGRAPHY_THEME, LZ_HOST_SELECTORS } from '../src/styles/acks-mapping.ts'
+import { acksThemeToLzCss, acksThemeToLzTokens, buildTypographyTheme, acksThemeCardMeta, DEFAULT_TYPOGRAPHY_THEME, LZ_HOST_SELECTORS } from '../src/styles/acks-mapping.ts'
 const t = { id:'milestone-clean-light', name:'清隽阅读 · 浅色', bg:'#FBFAF8', text:'#2a2722', heading:'#23211d', accent:'#C2613A', accent2:'#C2613A', emphasis:'#C2613A', sectionHeading:'#23211d', titleText:'#23211d', titleBg:'#FBFAF8', thBg:'#f3efe5', thText:'#23211d', quoteBg:'#FBFAF8', quoteText:'#9b9483', quoteBorder:'#C2613A', codeBg:'#f0ebe0', codeText:'#9a4d27', codeBlockBg:'#f5f1e8', codeBlockText:'#3a372f', zebra:'#f6f2ea', bodySize:18, lineHeight:1.78, letterSpacing:0.1, h1:36.9, h2:27, h3:20, h4:17, fontFamily:"'Lora',Georgia,serif", headingFamily:"'Source Serif 4','Lora',serif", milestoneKey:'clean', milestoneVariant:'light', themeVersion:2, editorialProfile:'milestone-clean', signature:'ms-clean' }
 assert.equal(DEFAULT_TYPOGRAPHY_THEME, 'graphite')
 assert.ok(LZ_HOST_SELECTORS.includes('.preview-doc'))
@@ -232,6 +232,8 @@ assert.match(css, /\.preview-doc blockquote\{border-color:#C2613A/)
 assert.doesNotMatch(css, /\.style-read-article/, '作用域不含 .style-read-article')
 const tok = acksThemeToLzTokens(t)
 assert.equal(tok.primary, '#C2613A'); assert.equal(tok.text, '#2a2722'); assert.equal(tok.heading, '#23211d')
+const meta = acksThemeCardMeta(t)
+assert.equal(meta.name, '清隽阅读 · 浅色'); assert.equal(meta.color, '#C2613A'); assert.equal(meta.bg, '#FBFAF8'); assert.equal(meta.text, '#2a2722')
 const tt = buildTypographyTheme(t)
 assert.equal(tt.id, 'milestone-clean-light'); assert.equal(tt.color, '#C2613A'); assert.match(tt.css, /\.read-article-body/)
 ```
@@ -611,6 +613,11 @@ git commit -m "feat(acks): 默认主题 graphite，全部 classic 回退改常�
 **Interfaces:**
 - Consumes: Task 4 `renderAcksArticle`/`getAcksTheme`、Task 2 `acksThemeCardMeta`/`DEFAULT_TYPOGRAPHY_THEME`、`ACKS_THEME_IDS`。
 - Produces: 排版界面正文用 ACKS 渲染（`.style-read-article` 宿主）、43 卡片分页 10/页 + 左右箭头。
+- **Ruling（lzmail 参考实现）:** 保持现有 `.style-card`/`.style-card-thumb`/`.style-card-preview`/`.style-card-name` + `.style-toolbar`/`.style-select-btn`/`.style-select-menu`/`.style-action-btn` 元素结构**不变**（LZEditor 当前已与参考 `sikenali/lzeditor` 一致）；只把 13 款主题源换成 43 款 ACKS，缩略图 mini-mock 颜色改由 ACKS token 驱动（`meta.color`=accent 用于标题/代码/选中态、`meta.bg` 缩略图底、`meta.text` 正文样例色），并加分页导航。选中态沿用 `.active` 类 + 缩略图 `borderColor`=accent + 名称色=accent。
+
+- [ ] **Step 0: 确认现有卡片/工具栏元素结构不变（对照参考 `sikenali/lzeditor`）**
+
+卡片：`.style-card`（按钮，`.active` 选中类）> `.style-card-thumb`（56×72，圆角 3px，`borderColor`=选中? accent : 灰）> `.style-card-preview`（mini-mock：名称行/accent、二级标题装饰下划线 `accent33`、正文样例·代码块 `accent18`/accent、引用样例）+ `.style-card-name`（选中时 accent 色）。工具栏：`.style-toolbar` > `.style-label-group`（"文档样式:" + `style-select-btn` 下拉） + `style-action-btn`（预览/导出/关闭）。全部保留原结构，仅数据源与颜色 token 换 ACKS。
 
 - [ ] **Step 1: 正文宿主改 `.style-read-article`（原 `.read-article-body` 分支），去掉 `dangerouslySetInnerHTML`，改 ref + `renderAcksArticle`**
 
@@ -645,7 +652,10 @@ const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typograph
     <span className="remix ri-arrow-right-s-line" />
   </button>
 </div>
-// 卡片：pageItems.map(id => { const t = getAcksTheme(id)!; const meta = acksThemeCardMeta(t); ... style-card-preview 颜色用 meta.color / t.bg / t.text / t.codeBg / t.codeText })
+// 卡片：pageItems.map(id => { const t = getAcksTheme(id)!; const meta = acksThemeCardMeta(t)
+//   缩略图底 background: meta.bg；preview 文字色 meta.text；标题行 color: meta.color；
+//   二级标题装饰 borderBottom: `${meta.color}33`；代码块 background: `${meta.color}18`, color: meta.color；
+//   名称行(style-card-name) 选中时 color: meta.color；选中缩略图 borderColor: meta.color })
 ```
 
 - [ ] **Step 3: `panels.css` 加 `.style-cards-pager` / `.pager-btn` / `.style-read-article` 样式**
@@ -672,6 +682,12 @@ assert.match(smp, /ri-arrow-left-s-line/, '有左箭头')
 assert.match(smp, /ri-arrow-right-s-line/, '有右箭头')
 assert.match(smp, /pager-btn/, '箭头按钮有 pager-btn')
 assert.match(smp, /ACKS_THEME_IDS\.slice/, '按页切片')
+assert.match(smp, /acksThemeCardMeta/, '卡片用 acksThemeCardMeta')
+assert.match(smp, /meta\.color/, '卡片标题/选中态用 meta.color')
+assert.match(smp, /meta\.bg/, '缩略图底用 meta.bg')
+assert.match(smp, /meta\.text/, '正文样例色用 meta.text')
+assert.match(smp, /style-card-thumb/, '保留参考实现卡片缩略图结构')
+assert.match(smp, /style-select-btn/, '保留工具栏下拉选择器')
 const panelsCss = read('src/styles/panels.css')
 assert.match(panelsCss, /\.style-cards-pager/, '分页样式存在')
 assert.match(panelsCss, /\.pager-btn:disabled/, '箭头禁用态')
