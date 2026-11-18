@@ -17,6 +17,7 @@ import './styles/panels.css'
 import './styles/read-mode.css'
 import './styles/code-mode.css'
 import './styles/floating.css'
+import './styles/ai-chat.css'
 import './styles/app.css'
 import './styles/welcome-screen.css'
 

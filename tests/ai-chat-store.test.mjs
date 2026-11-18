@@ -38,21 +38,18 @@ test('AI_MODES 含 4 模式与默认动作', () => {
   assert.equal(AI_MODES.write.defaultAction, 'rewrite')
 })
 
-test('showPanel(mode) 保留 messages，旧 showPanel(action) 行为不变', () => {
+test('showPanel(mode) 保留 messages，重置输入/状态', () => {
   const s = useAIStore.getState()
   s.addMessage({ id: 'm1', role: 'user', content: 'hi', mode: 'write' })
+  s.setPanelInput('草稿')
 
   s.showPanel('create', 'sel', { x: 1, y: 2 })
-  let st = useAIStore.getState()
+  const st = useAIStore.getState()
   assert.equal(st.panelVisible, true)
   assert.equal(st.mode, 'create')
   assert.equal(st.panelSelectedText, 'sel')
   assert.deepEqual(st.panelPosition, { x: 1, y: 2 })
-  assert.equal(st.messages.length, 1)
-
-  s.showPanel('rewrite', 'old', { x: 3, y: 4 })
-  st = useAIStore.getState()
-  assert.equal(st.panelAction, 'rewrite')
-  assert.equal(st.panelSelectedText, 'old')
-  assert.deepEqual(st.conversationMessages, [])
+  assert.equal(st.messages.length, 1, '重新打开面板不能清空对话')
+  assert.equal(st.panelInput, '', '重新打开面板要清空输入')
+  assert.equal(st.panelStatus, 'idle')
 })

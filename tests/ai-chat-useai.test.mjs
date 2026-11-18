@@ -160,18 +160,27 @@ test('有 Key：先追加 user，再追加 streaming assistant，chunk 增量累
   assert.equal(messages[1].status, 'done')
 })
 
-test('有 Key 的旧三参数调用仍走通，并同步写旧 panelOutput/panelStatus', async () => {
+test('send(input, action) 用 store 里的选区作为上下文，并同步 panelStatus', async () => {
   enableKey()
-  globalThis.fetch = async () => sseResponse(['旧', '路径'])
+  let body = null
+  globalThis.fetch = async (_url, init) => {
+    body = JSON.parse(init.body)
+    return sseResponse(['改写结果'])
+  }
   await mountHook()
+  useAIStore.setState({ panelSelectedText: '待改写文本' })
 
-  await act(async () => { await api.send('rewrite', '原文', '待改写文本') })
+  await act(async () => { await api.send('更正式一些', 'rewrite') })
+
+  const prompt = body.messages[0].content
+  assert.match(prompt, /待改写文本/, '选中的文本必须进入 prompt')
+  assert.match(prompt, /更正式一些/, '输入框内容必须进入 prompt')
 
   const st = useAIStore.getState()
-  assert.equal(st.panelOutput, '旧路径', '旧 AIPanel 仍读 panelOutput，必须继续写')
   assert.equal(st.panelStatus, 'result')
-  assert.equal(st.messages.length, 2, '旧调用也要进入聊天消息流')
-  assert.equal(st.messages[1].content, '旧路径')
+  assert.equal(st.messages.length, 2, '新形态调用也要进入聊天消息流')
+  assert.equal(st.messages[1].content, '改写结果')
+  assert.equal(st.messages[1].action, 'rewrite')
 })
 
 // ════════════════════════ 应用 / 撤销 ════════════════════════
@@ -342,6 +351,6 @@ test('非 abort 请求错误：assistant 置 error 并带错误信息，不崩�
   assert.ok(assistant, '失败请求仍要留下错误卡片')
   assert.equal(assistant.status, 'error')
   assert.ok(assistant.error && assistant.error.includes('boom'), 'error 必须携带原始信息')
-  assert.equal(st.panelStatus, 'error', '旧面板状态同步为 error')
+  assert.equal(st.panelStatus, 'error', '面板状态同步为 error')
   assert.equal(st.messages.find((m) => m.role === 'user')?.content, 'hello')
 })

@@ -1,247 +1,247 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useAIStore } from '../../store/aiStore'
 import { useAI } from '../../hooks/useAI'
-import { useEditorStore } from '../../store/editorStore'
-import type { AIAction } from '../../shared/types'
+import { getEditorFacade } from './facade/registry'
+import { AI_MODES, AI_MODE_ORDER } from '../../shared/aiModes'
+import { mdToHtml } from '../../utils/mdToHtml'
+import type { AIAction, ChatEntry } from '../../shared/types'
 
-const ACTION_LABELS: Record<string, string> = {
-  rewrite: '改写',
-  polish: '润色',
-  continue: '续写',
-  summarize: '摘要',
-  translate: '翻译',
-  question: '提问',
+/** 快速动作行：保留旧浮层的 6 个动作，作为「下一条发送意图」覆盖模式默认动作。 */
+const QUICK_ACTIONS: Array<{ action: Exclude<AIAction, null>; label: string }> = [
+  { action: 'rewrite', label: '改写' },
+  { action: 'polish', label: '润色' },
+  { action: 'continue', label: '续写' },
+  { action: 'summarize', label: '摘要' },
+  { action: 'translate', label: '翻译' },
+  { action: 'question', label: '提问' },
+]
+
+/** 选区提示只展示开头，完整内容留在 title 里。 */
+function summarizeSelection(text: string): string {
+  const flat = text.replace(/\s+/g, ' ').trim()
+  return flat.length > 80 ? `${flat.slice(0, 80)}…` : flat
 }
 
-const ACTION_PLACEHOLDERS: Record<string, string> = {
-  rewrite: '改写为更正式的商务风格…',
-  polish: '润色这段文字，优化表达…',
-  continue: '续写以下内容，保持风格一致…',
-  summarize: '提炼核心观点，生成摘要…',
-  translate: '翻译为中文…',
-  question: '输入你的问题…',
+interface AssistantCardProps {
+  msg: ChatEntry
+  actionable: boolean
+  onApply: () => void
+  onUndo: () => void
+  onCopy: () => void
 }
 
-const ACTION_ICONS: Record<string, string> = {
-  rewrite: 'ri-pen-nib-fill',
-  polish: 'ri-brush-line',
-  continue: 'ri-arrow-right-s-line',
-  summarize: 'ri-article-fill',
-  translate: 'ri-translate-2',
-  question: 'ri-chat-history-line',
-}
+function AssistantCard({ msg, actionable, onApply, onUndo, onCopy }: AssistantCardProps) {
+  const status = msg.status ?? 'done'
 
-function getActionKey(action: AIAction): string {
-  return action ?? 'question'
-}
+  return (
+    <div className={`ai-chat-assistant-card ai-chat-assistant-card--${status}`}>
+      <div className="ai-chat-assistant-meta">
+        <span className={`remix ${AI_MODES[msg.mode].icon}`}></span>
+        <span>{AI_MODES[msg.mode].label}</span>
+        {status === 'applied' && <span className="ai-chat-applied-badge">已应用</span>}
+      </div>
 
-const ACTIONS: AIAction[] = ['rewrite', 'polish', 'continue', 'summarize', 'translate', 'question']
+      {status === 'streaming' ? (
+        <div className="ai-chat-reply ai-chat-reply--streaming">
+          {msg.content}
+          <span className="ai-chat-cursor" aria-hidden="true"></span>
+        </div>
+      ) : status === 'error' ? (
+        <div className="ai-chat-error">
+          <span className="remix ri-error-warning-line"></span>
+          {msg.error || '请求失败'}
+        </div>
+      ) : status === 'idle' ? (
+        <div className="ai-chat-reply ai-chat-reply--empty" aria-label="已停止生成"></div>
+      ) : (
+        <div
+          className="ai-chat-reply"
+          dangerouslySetInnerHTML={{ __html: mdToHtml(msg.content) }}
+        />
+      )}
 
-const TRANSLATE_LANGS = ['中文', '英文', '日文', '韩文', '繁体中文']
-
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value))
-}
-
-function clampPanelX(x: number, w: number): number {
-  return clamp(x, 8, window.innerWidth - w - 8)
-}
-
-function clampPanelY(y: number, h: number): number {
-  return clamp(y, 8, window.innerHeight - h - 8)
+      {actionable && (status === 'done' || status === 'applied') && (
+        <div className="ai-chat-actions">
+          <button className="ai-chat-action ai-chat-action--primary" onClick={onApply}>
+            应用到文档
+          </button>
+          <button className="ai-chat-action" onClick={onUndo}>
+            撤销
+          </button>
+          <button className="ai-chat-action" onClick={onCopy}>
+            复制
+          </button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export const AIPanel: React.FC = () => {
-  const state = useAIStore()
+  const panelVisible = useAIStore(s => s.panelVisible)
+  const mode = useAIStore(s => s.mode)
+  const messages = useAIStore(s => s.messages)
+  const panelInput = useAIStore(s => s.panelInput)
+  const panelStatus = useAIStore(s => s.panelStatus)
+  const panelSelectedText = useAIStore(s => s.panelSelectedText)
   const { send, isStreaming, stop, applyToDoc, undo, copyOutput } = useAI()
-  // editorContentRef 由 CodeEditor 注入为 CM6 的 scrollDOM（.cm-editor 内的
-  // 滚动容器），是实际存在的编辑区；editorRef 已无注入方（恒为 null）。
-  const editorContentRef = useEditorStore(s => s.editorContentRef)
-  const panelRef = useRef<HTMLDivElement>(null)
 
-  const PANEL_W = 360
-  const PANEL_H = 420
+  const [sendAction, setSendAction] = useState<AIAction>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
-  const computePanelPosition = (): { x: number; y: number } => {
-    const stored = state.panelPosition
-    if (stored) return stored
+  // 停止信号有两个来源：本次 hook 的流式态，以及 store 里的 thinking 状态
+  // （后者让面板重挂载后仍能显示停止按钮）。
+  const streaming = isStreaming || panelStatus === 'thinking'
 
-    const editorEl = editorContentRef as HTMLElement | null
-    if (!editorEl) return { x: 8, y: 120 }
-
-    const editorRect = editorEl.getBoundingClientRect()
-    const x = clampPanelX(editorRect.right + 8, PANEL_W)
-    const y = clampPanelY(editorRect.top + editorRect.height / 2 - PANEL_H / 2, PANEL_H)
-    return { x, y }
-  }
-
-  const panelPosition = computePanelPosition()
-
-  // Clamp position to viewport on open / resize
+  // 面板每次打开都重新读编辑区选区，覆盖 store 里可能残留的旧选区。
   useEffect(() => {
-    if (!state.panelVisible) return
-    const update = () => {
-      const x = clampPanelX(panelPosition.x, PANEL_W)
-      const y = clampPanelY(panelPosition.y, PANEL_H)
-      if (panelRef.current) {
-        panelRef.current.style.left = x + 'px'
-        panelRef.current.style.top = y + 'px'
-      }
+    if (!panelVisible) return
+    const facade = getEditorFacade()
+    if (!facade) return
+    const range = facade.getSelection()
+    if (!range || range.from >= range.to) {
+      useAIStore.getState().setSelectedText('')
+      return
     }
-    update()
-    window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [state.panelVisible, panelPosition.x, panelPosition.y])
+    useAIStore.getState().setSelectedText(facade.getText().slice(range.from, range.to))
+  }, [panelVisible])
 
-  const handleSubmit = () => {
-    const input = state.panelInput.trim()
-    if (!input || isStreaming) return
+  // 新消息或流式增量后贴底。
+  useEffect(() => {
+    const el = listRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [messages, streaming])
 
-    send(state.panelAction || 'question', input, state.panelSelectedText)
+  if (!panelVisible) return null
+
+  // 操作行只挂在最后一条可操作的 assistant 回复上：applyToDoc/undo/copyOutput
+  // 都是「最后一条」语义，挂在旧卡片上会让人误以为作用于那一条。
+  const lastActionableId = [...messages]
+    .reverse()
+    .find(m => m.role === 'assistant' && (m.status === 'done' || m.status === 'applied'))
+    ?.id
+
+  const submit = () => {
+    const input = useAIStore.getState().panelInput.trim()
+    if (!input || streaming) return
+    void send(input, sendAction ?? undefined)
+    setSendAction(null)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit()
-    }
-    if (e.key === 'Escape') {
+      submit()
+    } else if (e.key === 'Escape') {
       useAIStore.getState().hidePanel()
     }
   }
 
-  if (!state.panelVisible) return null
-
-  const placeholder = ACTION_PLACEHOLDERS[getActionKey(state.panelAction)] || '输入指令…'
-  const actionLabel = ACTION_LABELS[getActionKey(state.panelAction)] || 'AI'
-  const actionIcon = ACTION_ICONS[getActionKey(state.panelAction)] || 'ri-speed-up-line'
-
   return (
-    <div
-      ref={panelRef}
-      className={`ai-panel ${state.panelStatus === 'thinking' ? 'thinking' : ''}`}
-      style={{
-        position: 'fixed',
-        left: panelPosition.x,
-        top: panelPosition.y,
-      }}
-    >
-      {/* Header */}
-      <div className="ai-panel-header">
-        <span className={`remix ai-panel-icon ${actionIcon}`}></span>
-        <span className="ai-panel-title">{actionLabel}</span>
-        <button className="ai-panel-close" onClick={() => useAIStore.getState().hidePanel()}>
+    <aside className="ai-chat-panel" aria-label="AI 助手">
+      <div className="ai-chat-header">
+        <div className="ai-chat-title">
+          <span className="remix ri-sparkling-line"></span>
+          AI 助手
+        </div>
+        <button
+          className="ai-chat-close"
+          onClick={() => useAIStore.getState().hidePanel()}
+          title="关闭"
+          aria-label="关闭 AI 面板"
+        >
           <span className="remix ri-close-line"></span>
         </button>
       </div>
 
-      {/* Action chips */}
-      <div className="ai-chip-group">
-        {ACTIONS.map((a) => (
+      <div className="ai-chat-modes" role="tablist" aria-label="AI 模式">
+        {AI_MODE_ORDER.map(m => (
           <button
-            key={a}
-            className={`ai-chip ${state.panelAction === a ? 'active' : ''}`}
-            onClick={() => {
-              const sel = state.panelSelectedText
-              const pos = computePanelPosition()
-              useAIStore.getState().showPanel(a, sel, pos)
-            }}
+            key={m}
+            role="tab"
+            aria-selected={mode === m}
+            className={`ai-chat-mode ${mode === m ? 'active' : ''}`}
+            onClick={() => useAIStore.getState().setMode(m)}
           >
-            {ACTION_LABELS[getActionKey(a)] || a}
+            <span className={`remix ${AI_MODES[m].icon}`}></span>
+            {AI_MODES[m].label}
           </button>
         ))}
       </div>
 
-      {/* Translate target language */}
-      {state.panelAction === 'translate' && (
-        <div className="ai-lang-row">
-          {TRANSLATE_LANGS.map((lang) => (
+      <div className="ai-chat-messages" ref={listRef}>
+        {messages.length === 0 && (
+          <div className="ai-chat-empty">
+            <span className="remix ri-chat-3-line"></span>
+            <p>开始一段对话：选中文字可做改写、审校，也可以直接提问。</p>
+          </div>
+        )}
+        {messages.map(msg => (
+          msg.role === 'user' ? (
+            <div key={msg.id} className="ai-chat-user-bubble">
+              <div className="ai-chat-user-text">{msg.content}</div>
+              <span className="ai-chat-mode-tag">{AI_MODES[msg.mode].label}</span>
+            </div>
+          ) : (
+            <AssistantCard
+              key={msg.id}
+              msg={msg}
+              actionable={msg.id === lastActionableId}
+              onApply={applyToDoc}
+              onUndo={undo}
+              onCopy={copyOutput}
+            />
+          )
+        ))}
+      </div>
+
+      <div className="ai-chat-composer">
+        <div className="ai-chat-quick">
+          {QUICK_ACTIONS.map(({ action, label }) => (
             <button
-              key={lang}
-              className={`ai-lang-chip${state.panelInput.trim() === lang ? ' active' : ''}`}
-              onClick={() => useAIStore.getState().setPanelInput(lang)}
+              key={action}
+              className={`ai-chat-quick-chip ${sendAction === action ? 'active' : ''}`}
+              onClick={() => setSendAction(cur => (cur === action ? null : action))}
             >
-              {lang}
+              {label}
             </button>
           ))}
         </div>
-      )}
 
-      {/* Input area */}
-      {(state.panelStatus === 'idle' || state.panelStatus === 'thinking' || state.panelStatus === 'error') && (
-        <div className="ai-input-wrapper">
+        <div className="ai-chat-input-row">
           <textarea
-            className="ai-input"
-            value={state.panelInput}
-            onChange={(e) => useAIStore.getState().setPanelInput(e.target.value)}
+            className="ai-chat-input"
+            value={panelInput}
+            onChange={e => useAIStore.getState().setPanelInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={isStreaming}
+            placeholder={AI_MODES[mode].hint}
             rows={3}
           />
-          <button
-            className="ai-send-btn"
-            disabled={!state.panelInput.trim() || isStreaming}
-            onClick={handleSubmit}
-          >
-            <span className="remix ri-send-plane-fill"></span>
-          </button>
+          {streaming ? (
+            <button className="ai-chat-stop" onClick={stop} title="停止生成">
+              <span className="remix ri-stop-fill"></span>
+              停止
+            </button>
+          ) : (
+            <button
+              className="ai-chat-send"
+              onClick={submit}
+              disabled={!panelInput.trim()}
+              title="发送"
+              aria-label="发送"
+            >
+              <span className="remix ri-send-plane-fill"></span>
+            </button>
+          )}
         </div>
-      )}
 
-      {/* Streaming / result output */}
-      {state.panelOutput && state.panelStatus !== 'applied' && (
-        <div className="ai-output">
-          <div className="ai-output-content">{state.panelOutput}</div>
-        </div>
-      )}
-
-      {/* Thinking indicator */}
-      {state.panelStatus === 'thinking' && (
-        <div className="ai-thinking-row">
-          <div className="ai-loading-dots">
-            <span></span><span></span><span></span>
-            <span className="ai-loading-text">AI 思考中…</span>
+        {panelSelectedText && (
+          <div className="ai-chat-context" title={panelSelectedText}>
+            <span className="remix ri-text"></span>
+            选区：{summarizeSelection(panelSelectedText)}
           </div>
-          <button className="ai-stop-btn" onClick={stop} title="停止生成">
-            <span className="remix ri-stop-fill"></span> 停止
-          </button>
-        </div>
-      )}
-
-      {/* Error message */}
-      {state.panelStatus === 'error' && state.panelError && (
-        <div className="ai-error-msg">
-          <span className="remix ri-error-warning-line"></span>
-          {state.panelError}
-          <button onClick={() => useAIStore.getState().setPanelError(null)} className="ai-error-close">
-            <span className="remix ri-close-line"></span>
-          </button>
-        </div>
-      )}
-
-      {/* Result actions */}
-      {state.panelStatus === 'result' && state.panelOutput && (
-        <div className="ai-actions">
-          <button className="ai-action-btn primary" onClick={applyToDoc}>
-            <span className="remix ri-checkbox-fill"></span> 应用到文档
-          </button>
-          <button className="ai-action-btn secondary" onClick={undo}>
-            <span className="remix ri-arrow-go-back-line"></span> 撤销
-          </button>
-          <button className="ai-action-btn secondary" onClick={copyOutput}>
-            <span className="remix ri-file-copy-line"></span> 复制
-          </button>
-        </div>
-      )}
-
-      {/* Applied confirmation */}
-      {state.panelStatus === 'applied' && (
-        <div className="ai-applied-bar">
-          <span><span className="remix ri-checkbox-circle-fill"></span> 已应用到文档</span>
-          <span className="ai-applied-time">{new Date().toLocaleTimeString()}</span>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </aside>
   )
 }

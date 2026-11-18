@@ -49,12 +49,6 @@ const uid = () => `msg-${Date.now().toString(36)}-${(messageSeq++).toString(36)}
 
 const NO_API_KEY = '请先在设置中配置 API Key'
 
-/** 新形态 `send(input, action?)`；旧 AIPanel 的三参数调用在 Task 3 前继续可用。 */
-type SendFn = {
-  (input: string, action?: AIAction): Promise<void>
-  (action: AIAction, input: string, selectedText: string): Promise<void>
-}
-
 export function useAI() {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -101,16 +95,10 @@ export function useAI() {
     setIsStreaming(false)
   }, [])
 
-  const send = useCallback<SendFn>(async (first: string | AIAction, second?: string | AIAction, third?: string) => {
-    // TODO(Task 3): 移除旧形态 send(action, input, selectedText) 兼容分支
-    // 兼容旧调用 send(action, input, selectedText)：第三个参数只有旧形态才有。
-    const legacy = typeof third === 'string'
-    const input = (legacy ? second : first) as string
-    const explicitAction = (legacy ? first : second) as AIAction | undefined
-    const selectedText = legacy ? third : useAIStore.getState().panelSelectedText
-
+  const send = useCallback(async (input: string, explicitAction?: AIAction) => {
     const store = useAIStore.getState()
     const mode = store.mode
+    const selectedText = store.panelSelectedText
     const effAction = explicitAction ?? AI_MODES[mode].defaultAction
 
     const settings = useSettingsStore.getState()
@@ -121,17 +109,11 @@ export function useAI() {
     if (abortRef.current) return
     if (!activeKey?.key) {
       store.addMessage({ id: uid(), role: 'assistant', content: '', mode, status: 'error', error: NO_API_KEY })
-      // TODO(Task 3): 移除旧字段写入（panelError/panelStatus 等）
-      // 旧 AIPanel 仍读这些字段（Task 3 移除）。
-      store.setPanelError(NO_API_KEY)
       store.setPanelStatus('error')
       return
     }
 
-    // TODO(Task 3): 移除旧字段写入（panel*）
     store.setPanelStatus('thinking')
-    store.setPanelError(null)
-    store.setPanelOutput('')
     store.addMessage({ id: uid(), role: 'user', content: input, mode })
     const aid = uid()
     store.addMessage({ id: aid, role: 'assistant', content: '', mode, action: effAction, status: 'streaming' })
@@ -181,8 +163,6 @@ export function useAI() {
         const data = await resp.json()
         accumulated = data.content?.[0]?.text || ''
         if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
-        // TODO(Task 3): 移除旧字段写入（panelOutput/panelStatus）
-        useAIStore.getState().setPanelOutput(accumulated)
         useAIStore.getState().setPanelStatus('result')
       } else {
         const base = (activeKey.endpoint || 'https://api.openai.com').replace(/\/v1$/, '').replace(/\/$/, '')
@@ -202,8 +182,6 @@ export function useAI() {
         if (!reader) {
           accumulated = await resp.text()
           if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
-          // TODO(Task 3): 移除旧字段写入（panelOutput/panelStatus）
-          useAIStore.getState().setPanelOutput(accumulated)
           useAIStore.getState().setPanelStatus('result')
           useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
           return
@@ -228,7 +206,6 @@ export function useAI() {
             const r = extractSSEText(frame, accumulated)
             accumulated = r.acc
             const delta = accumulated.slice(prevLen)
-            useAIStore.getState().setPanelOutput(accumulated)
             if (delta) useAIStore.getState().appendStreamToMessage(aid, delta)
             // 逐 chunk 事务：把新到增量写入文档（stale 时自动丢弃，不覆盖用户编辑）
             if (facade) streamIntoDoc(facade, delta)
@@ -238,21 +215,16 @@ export function useAI() {
           const prevLen = accumulated.length
           accumulated = extractSSEText(buffer, accumulated).acc
           const delta = accumulated.slice(prevLen)
-          useAIStore.getState().setPanelOutput(accumulated)
           if (delta) useAIStore.getState().appendStreamToMessage(aid, delta)
           if (facade) streamIntoDoc(facade, delta)
         }
         useAIStore.getState().setPanelStatus(signal.aborted ? (accumulated ? 'result' : 'idle') : 'result')
       }
       useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
-      // TODO(Task 3): 移除旧字段写入（appendConversation）
-      useAIStore.getState().appendConversation({ role: 'user', content: prompt })
     } catch (err: any) {
-      // TODO(Task 3): 移除旧字段写入（panelOutput/panelError/panelStatus）
       if (err?.name === 'AbortError') {
         useAIStore.getState().updateMessage(aid, { status: accumulated ? 'done' : 'idle' })
         if (accumulated) {
-          useAIStore.getState().setPanelOutput(accumulated)
           useAIStore.getState().setPanelStatus('result')
         } else {
           useAIStore.getState().setPanelStatus('idle')
@@ -260,7 +232,6 @@ export function useAI() {
       } else {
         const message = err?.message || '请求失败'
         useAIStore.getState().updateMessage(aid, { status: 'error', error: message })
-        useAIStore.getState().setPanelError(message)
         useAIStore.getState().setPanelStatus('error')
       }
     } finally {
@@ -288,7 +259,6 @@ export function useAI() {
     // 无 facade：仅标记 applied（与旧路径一致，不登记）。
     if (!facade) {
       state.updateMessage(msg.id, { applied: true, status: 'applied' })
-      // TODO(Task 3): 移除旧字段写入（panelStatus）
       state.setPanelStatus('applied')
       return
     }
