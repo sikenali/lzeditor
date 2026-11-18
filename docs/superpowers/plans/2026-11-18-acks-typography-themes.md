@@ -332,16 +332,29 @@ curl -sL $BASE/theme-revision.css -o theme-revision.css
 curl -sL $BASE/theme-catalog.css -o theme-catalog.css
 ```
 
-- [ ] **Step 2: 下载 3 张纹理 PNG 到 `src/vendor/acks/engine/assets/`**
+- [ ] **Step 2: 下载 30 个签名 SVG + 3 张纹理 PNG 到 `src/vendor/acks/engine/`**
 
 ```bash
-mkdir -p src/vendor/acks/engine/assets
-cd src/vendor/acks/engine/assets
+# 签名 SVG（theme-render.js 的 applyDecorations 读 MD.SIGNATURES[k].svg 原始 SVG 文本并 replaceAll 换色）
+mkdir -p src/vendor/acks/engine/theme-signatures
+cd src/vendor/acks/engine/theme-signatures
+BASE=https://raw.githubusercontent.com/shynloc/ACKS-Markdown-Editor/main/src/theme-signatures
+for f in blue clean-green dark dopamine dreamglow gold graphite guochao maximalism \
+         ms-academic ms-aireport ms-blue-purple ms-business ms-clean ms-cnclassic ms-cnvertical \
+         ms-darkcode ms-euro ms-magazine ms-poster ms-social ms-technical ms-wechat \
+         neo-brutalism neu-soft olive-notes receipt red-white song-ink zen; do
+  curl -sL "$BASE/$f.svg" -o "$f.svg"
+done
+cd ../assets
+mkdir -p ../assets
+cd ../assets
 BASE=https://raw.githubusercontent.com/shynloc/ACKS-Markdown-Editor/main/src/theme-assets
 curl -sL $BASE/glass-ribbon.png -o glass-ribbon.png
 curl -sL $BASE/ink-gesture.png -o ink-gesture.png
 curl -sL $BASE/paper-edge.png -o paper-edge.png
 ```
+
+（注：`theme-signatures.json` 有 32 条：30 条 `type:"svg"` 对应上面 30 个 svg 文件；2 条 `type:"image"`（`y3k`→glass-ribbon、`collage`→paper-edge）走 `data-theme-asset` 由 `resolveThemeAssets` 解析。`applyDecorations` 里 `signature.svg` 是原始 SVG 文本，必须 hydrate，不能是 data URI。）
 
 - [ ] **Step 3: 写 `src/styles/acks-themes.ts`（门面）**
 
@@ -364,6 +377,19 @@ const RENDER: any = (globalThis as any).ACKS_RENDER
 const THEME_ASSETS: Record<string,string> = { 'glass-ribbon': glassRibbon, 'ink-gesture': inkGesture, 'paper-edge': paperEdge }
 // ACKS 的 applyDecorations 用裸全局 THEME_ASSETS，需在建 DOM 前挂到全局
 ;(globalThis as any).THEME_ASSETS = THEME_ASSETS
+
+// hydrate signature.svg —— applyDecorations 读 MD.SIGNATURES[k].svg（原始 SVG 文本，replaceAll 换色）。
+// 30 个 type:"svg" 签名用 import.meta.glob(?raw) 载入，按 file 名回填到 MD.SIGNATURES。
+const signatureSvgs: Record<string,string> = import.meta.glob(
+  '../vendor/acks/engine/theme-signatures/*.svg',
+  { query: '?raw', import: 'default', eager: true }
+) as Record<string,string>
+for (const [p, svg] of Object.entries(signatureSvgs)) {
+  const fname = p.split('/').pop()!
+  for (const sig of Object.values(MD?.SIGNATURES ?? {})) {
+    if (sig?.type === 'svg' && sig.file === fname && !sig.svg) sig.svg = svg
+  }
+}
 
 export function getAcksTheme(id: string): AcksTheme | undefined { return MD?.THEMES?.[id] }
 export const ACKS_THEME_IDS: string[] = MD ? Object.keys(MD.THEMES) : []
@@ -419,6 +445,9 @@ assert.match(acksThemes, /\.ms-doc/, 'Milestone 用 .ms-doc')
 assert.match(acksThemes, /md\.dataset\.milestone/, 'Milestone 必须挂 data-milestone')
 assert.match(acksThemes, /data-theme-asset/, '必须解析 data-theme-asset 资源')
 assert.match(acksThemes, /lz-acks-theme-css/, 'ACKS CSS 注入独立 style 节点')
+assert.match(acksThemes, /import\.meta\.glob/, '签名 svg 用 import.meta.glob 载入')
+assert.match(acksThemes, /sig\.svg = svg/, '必须回填 MD.SIGNATURES[k].svg（applyDecorations 依赖）')
+assert.match(acksThemes, /THEME_ASSETS/, '必须定义 THEME_ASSETS（applyDecorations 依赖）')
 ```
 
 - [ ] **Step 5: 跑测试**
