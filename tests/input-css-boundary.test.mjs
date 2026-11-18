@@ -38,7 +38,6 @@ test('§8.2 依赖的 token 值本身是对的', () => {
 // 四处输入框的声明块 + focus 块 + 高度（唯一例外是 rename 的 34px）
 const CHECKS = [
   { name: '.ui-input（UiInput 组件，md 基线）', css: uiCss, sel: '.ui-input  {', focus: '.ui-input:focus-within  {', height: 42, placeholder: '.ui-input input::placeholder  {' },
-  { name: '.search-input-group（查找/替换）', css: panelsCss, sel: '.search-input-group  {', focus: '.search-input-group:focus-within  {', height: 42, placeholder: '.search-input::placeholder  {' },
   { name: '.library-search-input（文库搜索）', css: layoutCss, sel: '.library-search-input  {', focus: '.library-search-input:focus  {', height: 42, placeholder: '.library-search-input::placeholder  {' },
   { name: '.library-folder-rename-input（树内重命名）', css: layoutCss, sel: '.library-folder-rename-input  {', focus: '.library-folder-rename-input:focus  {', height: 34, placeholder: null },
 ]
@@ -100,8 +99,11 @@ test('全局输入框兜底规则不得用 !important 否决组件样式', () =>
   assert.match(rule, /:where\(/, '兜底规则必须包在 :where() 里，特异性归零，组件类才能覆盖它')
 })
 
-test('.search-input-group 只允许定义一次，不允许被尾部重复定义压掉 §8.2', () => {
-  // 只匹配「类名后直接跟 {」的声明块；:focus-within 这类伪类选择器不会命中
-  const n = (panelsCss.match(/\.search-input-group\s*\{/g) || []).length
-  assert.equal(n, 1, `.search-input-group 声明块只应出现 1 次，实际 ${n} 次`)
+// 查找/替换（SearchPanel）统一走 .ui-input 容器，内层 <input> 无 class；
+// 不再使用 .search-input-group / .search-input（Task 2）。
+const searchPanelSrc = read('src/components/panels/SearchPanel.tsx')
+test('查找/替换统一走 ui-input，不再用 search-input-group/search-input', () => {
+  assert.match(searchPanelSrc, /className="ui-input"/, '查找/替换输入组应使用 ui-input 容器')
+  assert.ok(!searchPanelSrc.includes('search-input-group'), '不应再用 search-input-group')
+  assert.ok(!searchPanelSrc.includes('className="search-input"'), '不应再用独立的 search-input 类')
 })

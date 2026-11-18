@@ -146,11 +146,10 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
         )}
         <div className="search-ops-col">
           <div className="search-row">
-            <div className="search-input-group">
+            <div className="ui-input">
               <span className="search-input-label">查找</span>
               <input
                 ref={inputRef}
-                className="search-input"
                 type="text"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
@@ -164,10 +163,9 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
             <button className="search-btn" onClick={handleNext} disabled={!searchTerm.trim()}>下一处</button>
           </div>
           <div className="search-row">
-            <div className="search-input-group">
+            <div className="ui-input">
               <span className="search-input-label">替换</span>
               <input
-                className="search-input"
                 type="text"
                 value={replaceTerm}
                 onChange={e => setReplaceTerm(e.target.value)}
