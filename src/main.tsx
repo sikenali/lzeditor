@@ -19,10 +19,6 @@ import './styles/code-mode.css'
 import './styles/floating.css'
 import './styles/app.css'
 import './styles/welcome-screen.css'
-import { exposePluginApiForDevelopment } from './plugins'
-
-// 开发构建把插件 API 挂到 window.__lzPlugins，便于插件/控制台调试
-exposePluginApiForDevelopment()
 
 // Restore persisted settings and apply theme synchronously before first
 // paint to avoid a flash of wrong theme.

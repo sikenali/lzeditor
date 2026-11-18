@@ -6,7 +6,6 @@ import { getEditorFacade } from '../editor/facade/registry'
 import {
   NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
-  usePluginMenuItems, runPluginMenuAction,
 } from './editorActions'
 
 /**
@@ -63,10 +62,6 @@ export const Toolbar: React.FC = () => {
   const { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
   const tableActive = useTableActive()
 
-  // ── 插件菜单项（纯增量：追加到飞出菜单，'plugin:' 前缀动作隔离）──
-  const pluginFormatItems = [...usePluginMenuItems('block'), ...usePluginMenuItems('floating')]
-  const pluginInsertItems = usePluginMenuItems('plugins')
-
   const newBtnRef = useRef<HTMLButtonElement>(null)
   const formatBtnRef = useRef<HTMLButtonElement>(null)
   const tableBtnRef = useRef<HTMLButtonElement>(null)
@@ -89,8 +84,6 @@ export const Toolbar: React.FC = () => {
   const onMenuAction = (action: string) => {
     const key = flyout.key
     flyout.close()
-    // 插件菜单动作：命中则运行，不进入现有分支（现有动作命名空间不受影响）
-    if (runPluginMenuAction(action)) return
     if (key === 'new') {
       if (action === 'new') newDocument()
       else if (action === 'openFolder') void openFolderDialog()
@@ -212,9 +205,9 @@ export const Toolbar: React.FC = () => {
           align="below"
           items={
             flyout.key === 'new' ? NEW_ITEMS
-            : flyout.key === 'format' ? (pluginFormatItems.length ? [...FORMAT_ITEMS, { sep: true }, ...pluginFormatItems] : FORMAT_ITEMS)
+            : flyout.key === 'format' ? FORMAT_ITEMS
             : flyout.key === 'table' ? applyTableItems(tableActive)
-            : flyout.key === 'insert' ? (pluginInsertItems.length ? [...INSERT_ITEMS, { sep: true }, ...pluginInsertItems] : INSERT_ITEMS)
+            : flyout.key === 'insert' ? INSERT_ITEMS
             : MODE_ITEMS
           }
           onAction={onMenuAction}

@@ -10,8 +10,6 @@ import { BehaviorSettingsTab } from './settings/BehaviorSettingsTab'
 import { ShortcutSettingsTab } from './settings/ShortcutSettingsTab'
 import { ModelSettingsTab } from './settings/ModelSettingsTab'
 import { AboutSettingsTab } from './settings/AboutSettingsTab'
-import { pluginRegistries } from '../../plugins'
-import { usePluginRegistry } from '../../plugins'
 
 type SubTab = { id: string; label: string; icon: string }
 
@@ -48,13 +46,7 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const subTab = settings.subTab ?? ''
   const updateSetting = settings.updateSetting
 
-  // ── 插件设置页（纯增量：追加到现有 4 组之后，不碰主题/模型/个性/关于）──
-  const pluginPages = usePluginRegistry(pluginRegistries.settingsPages)
-  const allGroups = [
-    ...NAV_GROUPS,
-    ...pluginPages.map(p => ({ id: p.id, label: p.label, icon: p.icon ?? 'ri-plug-line', subs: [] as SubTab[] })),
-  ]
-  const pluginPage = pluginPages.find(p => p.id === activeGroup)
+  const allGroups = NAV_GROUPS
   const group = allGroups.find(g => g.id === activeGroup) ?? allGroups[0]
   const subs = group.subs
 
@@ -119,8 +111,6 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 : <EditorSettingsTab s={settings} u={updateSetting} />
       )}
       {group.id === 'about' && <AboutSettingsTab />}
-      {/* 插件设置页：activeGroup 命中插件页时渲染其内容 */}
-      {pluginPage && pluginPage.render()}
     </div>
   )
 

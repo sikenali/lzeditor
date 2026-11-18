@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { pluginRegistries } from '../../plugins'
-import { usePluginRegistry } from '../../plugins'
 
 export const Footer: React.FC = () => {
   const showOutline = useEditorStore(s => s.showOutline)
@@ -40,9 +38,6 @@ export const Footer: React.FC = () => {
   const syncIcon = syncStatus === 'synced' ? 'ri-check-line' : syncStatus === 'saving' ? 'ri-loader-4-line spinning' : 'ri-error-warning-line'
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   const toggleSearch = () => setShowSearch(!showSearch)
-
-  // ── 插件状态项（纯增量：追加到状态信息之后，版权之前）──
-  const pluginStatusItems = usePluginRegistry(pluginRegistries.statusItems)
 
   return (
     <footer className="app-footer">
@@ -117,12 +112,6 @@ export const Footer: React.FC = () => {
             <span className="statusbar-divider" />
           </>
         )}
-        {/* 插件状态项插槽：挨着现有状态信息显示 */}
-        {pluginStatusItems.map(item => (
-          <span key={item.id} className="statusbar-item">
-            {item.render()}
-          </span>
-        ))}
       </div>
     </footer>
   )

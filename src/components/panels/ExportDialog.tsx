@@ -7,7 +7,6 @@ import { mdToHtml } from '../../utils/mdToHtml'
 import { UDSection, UDSettingRow, UDPreviewCard, UiModal, UiSelect, UiSwitch } from '../ui'
 import { getDocMd } from '../../utils/docSource'
 import { toast } from '../../utils/toast'
-import { runWillExport } from '../../plugins'
 
 function getEffectiveMd(activeDocId: string | null, storeMd: string, docsMd: Record<string, string>): string {
   if (storeMd) return storeMd
@@ -105,8 +104,6 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     updateSetting('exportFormat', format)
     updateSetting('paperSize', paperSize)
     updateSetting('orientation', orientation)
-    // 插件 will-export 钩子（只读）：在真正导出前调用，不改导出逻辑
-    try { runWillExport(format) } catch { /* 不阻断导出 */ }
     // 未编辑过的文档 docHTML 为空：回落到当前有效 md 的渲染结果，
     // 否则内置手册/新开未编辑文档会导出成 <h1>Empty</h1>。
     const html = docHTML || previewHtml || '<h1>Empty</h1>'

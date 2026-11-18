@@ -35,9 +35,6 @@ import { useEditorStore, switchDocSilently } from './store/editorStore'
 import { useSettingsStore } from './store/settingsStore'
 import { getEditorFacade } from './components/editor/facade/registry'
 import { useAIStore } from './store/aiStore'
-import { runWillSave } from './plugins'
-import { PluginFloatingViews } from './plugins/views'
-import { usePluginTrayBridge } from './plugins/tray'
 import { useTheme } from './hooks/useTheme'
 import { useTypographyOverrides } from './hooks/useTypographyOverrides'
 import { WelcomeScreen } from './components/layout/WelcomeScreen'
@@ -91,9 +88,6 @@ function App() {
   const docsMd = useEditorStore(s => s.docsMd || {})
   const navMode = useSettingsStore(s => s.navMode || 'top')
   const showSearch = useEditorStore(s => s.showSearch)
-
-  // ── 插件托盘桥：把 menu==='tray' 的插件项同步到主进程托盘菜单 ──
-  usePluginTrayBridge()
 
   // 面板打开时让编辑器失去焦点
   useEffect(() => {
@@ -434,9 +428,6 @@ function App() {
         const html = mdToHtml(md)
         const st = useEditorStore.getState()
         if (st.activeDocId === docId) st.updateDoc({ html })
-        // 插件 will-save 钩子（只读）：在真正落盘前调用，不改保存逻辑
-        const title = st.docs.find((d: any) => d.id === docId)?.title ?? ''
-        runWillSave({ md, title })
         localStorage.setItem(`lzeditor-doc-${docId}`, JSON.stringify({ md, html, savedAt: Date.now() }))
         // 本地编辑快照：程序化载入（回滚/重播）期间抑制，避免产生重复快照。
         if (!isVersionSuppressed()) {
@@ -557,7 +548,6 @@ function App() {
       {openPanel === 'history' && <HistoryPanel onClose={closePanel} />}
       {openPanel === 'library' && <LibraryPanel onClose={closePanel} />}
       <AIPanel />
-      <PluginFloatingViews />
 
       {insertPanel === 'image' && <ImageDialog onClose={closeInsert} onInsert={insertImage} onUpload={uploadImage} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
       {insertPanel === 'link' && <LinkDialog onClose={closeInsert} onInsert={insertLink} codeModeCursor={codeModeCursor} onInsertMarkdown={insertMarkdown} />}
