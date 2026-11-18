@@ -1103,12 +1103,6 @@
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
-.about-unofficial  {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--color-text-faint);
-  line-height: 1.4;
-}
 .about-card .about-version  {
   margin-top: 8px;
   margin-bottom: 0;

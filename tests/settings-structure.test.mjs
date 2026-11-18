@@ -32,7 +32,6 @@ for (const [f, marker] of [
 assert.match(model, /模型制造商/, 'provider sub-tab label')
 assert.match(model, /模型管理/, 'model tab page header')
 assert.match(model, /apiKeys/, 'must use the apiKeys store')
-assert.match(about, /Unofficial Web Client/, 'about must include the unofficial tag (lzmail reference)')
 assert.match(about, /ri-github-line/, 'about must show the centered GitHub icon (lzmail reference)')
 
 for (const f of ['UnifiedDialog.tsx', 'PanelContainer.tsx', 'LFInput.tsx', 'LFSInput.internal.tsx', 'SelectBox.tsx', 'Checkbox.tsx']) {

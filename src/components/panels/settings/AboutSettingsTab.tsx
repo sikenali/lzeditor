@@ -5,7 +5,7 @@ import { APP_VERSION } from '../../../shared/version'
 const VERSION = APP_VERSION
 
 // 关于卡片 —— 参考 lzmail AboutSettings 实现：居中竖排、无面包屑页头
-// logo 徽标 → 品牌名 → slogan → Unofficial 标签 → 版本 → 单个居中 GitHub 图标 → 版权
+// logo 徽标 → 品牌名 → slogan → 版本 → 单个居中 GitHub 图标 → 版权
 export const AboutSettingsTab: React.FC = () => {
   const year = new Date().getFullYear()
 
@@ -22,9 +22,6 @@ export const AboutSettingsTab: React.FC = () => {
 
         {/* Slogan */}
         <div className="about-slogan">AI Markdown 编辑器 · 轻文档写作与导出</div>
-
-        {/* Unofficial 标签 */}
-        <div className="about-unofficial">Unofficial Web Client</div>
 
         {/* 版本 */}
         <div className="about-version">版本：v{VERSION}</div>
