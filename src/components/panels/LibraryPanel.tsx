@@ -16,7 +16,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const createLibrary = useEditorStore((s: any) => s.createLibrary)
   const setActiveLibrary = useEditorStore((s: any) => s.setActiveLibrary)
   const renameLibrary = useEditorStore((s: any) => s.renameLibrary)
-  const [renameTargetId, setRenameTargetId] = useState<string | null>(null)
+  const [renameTarget, setRenameTarget] = useState<{ key: string; title: string } | null>(null)
   const [category, setCategory] = useState('docs')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>(() => {
     // 内置文档（readme）的分组默认展开，否则藏在两层折叠里等于不存在
@@ -112,40 +112,6 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
               <span className="remix ri-close-line"></span>
             </button>
           </div>
-          <div className="library-folder-list">
-            {docLibraries.map((lib: any) => (
-              <div key={lib.id} className="library-folder-row">
-                <button
-                  className={`library-folder-item ${activeLibraryId === lib.id ? 'active' : ''}`}
-                  onClick={() => setActiveLibrary(lib.id)}
-                >
-                  <span className="remix ri-folder-fill library-folder-icon"></span>
-                  <span className="library-folder-name">{lib.name}</span>
-                  <span className="library-folder-count">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id && !doc.system).length}</span>
-                </button>
-                <button
-                  className="library-folder-rename-btn"
-                  onClick={(e) => { e.stopPropagation(); setRenameTargetId(renameTargetId === lib.id ? null : lib.id) }}
-                  title="重命名"
-                >
-                  <span className="remix ri-edit-line"></span>
-                </button>
-                {renameTargetId === lib.id && (
-                  <input
-                    className="library-folder-rename-input"
-                    defaultValue={lib.name}
-                    autoFocus
-                    onBlur={(e) => {
-                      const name = e.target.value.trim()
-                      if (name) renameLibrary(lib.id, name)
-                      setRenameTargetId(null)
-                    }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
           <div className="library-search-wrap">
             <span className="remix ri-search-line library-search-icon"></span>
             <input
@@ -169,6 +135,14 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
                 onToggleFolder={toggleFolder}
                 onSelectDoc={(id) => { useEditorStore.getState().switchDoc(id); handleClose() }}
                 onResetDoc={(id) => useEditorStore.getState().resetDocContent(id)}
+                renameTargetKey={renameTarget?.key ?? null}
+                onRenameFolder={(node) => setRenameTarget({ key: node.id, title: node.title })}
+                onRenameCommit={(_key, newName) => {
+                  // 树文件夹名 ↔ 库名 按 title 匹配（renameLibrary 会同步改写 docs path）
+                  const lib = docLibraries.find((l: any) => l.name === renameTarget?.title)
+                  if (lib) renameLibrary(lib.id, newName)
+                  setRenameTarget(null)
+                }}
                 searchActive={!!searchText}
               />
             </div>

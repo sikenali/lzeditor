@@ -206,8 +206,17 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   },
   setActiveLibrary: (id: string) => set({ activeLibraryId: id }),
   renameLibrary: (id: string, name: string) => {
+    // 树文件夹名取自 doc.path 首段——库改名必须同步改写该库下所有文档的 path
+    const oldName = get().docLibraries.find((lib: any) => lib.id === id)?.name
     set((s: any) => ({
       docLibraries: s.docLibraries.map((lib: any) => lib.id === id ? { ...lib, name } : lib),
+      docs: s.docs.map((d: any) => {
+        if (d.libraryId !== id || !oldName) return d
+        const p = d.path || ''
+        if (p === oldName) return { ...d, path: name }
+        if (p.startsWith(oldName + '/')) return { ...d, path: name + p.slice(oldName.length) }
+        return d
+      }),
     }))
     saveCatalog()
   },

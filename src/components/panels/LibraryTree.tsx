@@ -48,8 +48,11 @@ export const LibraryTree: React.FC<{
   onToggleFolder: (id: string) => void
   onSelectDoc?: (id: string) => void
   onResetDoc?: (id: string) => void
+  renameTargetKey?: string | null
+  onRenameFolder?: (node: DocNode) => void
+  onRenameCommit?: (key: string, newName: string) => void
   searchActive?: boolean
-}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, onResetDoc, searchActive }) => {
+}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, onResetDoc, renameTargetKey, onRenameFolder, onRenameCommit, searchActive }) => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
 
   const renderNode = (node: DocNode, depth: number): React.ReactNode => {
@@ -63,17 +66,46 @@ export const LibraryTree: React.FC<{
     const isActive = !isFolder && node.id === activeDocId
 
     if (isFolder) {
+      // 文件夹条目镜像文档条目的 div 结构——里面要嵌重命名按钮，
+      // button 里不能再套 button
+      const isRenaming = renameTargetKey === node.id
       return (
         <div key={node.id}>
-          <button
+          <div
             className={`library-tree-item ${isExpanded ? 'expanded' : ''}`}
             style={{ paddingLeft: `${depth * 16 + 12}px` }}
             onClick={() => onToggleFolder(node.id)}
           >
             <span className={`remix ${isExpanded ? 'ri-arrow-down-s-line' : 'ri-arrow-right-s-line'} tree-arrow`}></span>
             <span className={`remix ${isExpanded ? 'ri-folder-open-fill' : 'ri-folder-fill'} tree-icon`}></span>
-            <span className="tree-label">{node.title}</span>
-          </button>
+            {isRenaming ? (
+              <input
+                className="library-folder-rename-input"
+                defaultValue={node.title}
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  const name = e.target.value.trim()
+                  onRenameCommit?.(node.id, name || node.title)
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+              />
+            ) : (
+              <>
+                <span className="tree-label">{node.title}</span>
+                {onRenameFolder && (
+                  <button
+                    type="button"
+                    className="tree-rename-btn"
+                    title="重命名"
+                    onClick={(e) => { e.stopPropagation(); onRenameFolder(node) }}
+                  >
+                    <span className="remix ri-edit-line"></span>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
           {isExpanded && hasChildren && (
             <div className="tree-children">{node.children!.map(c => renderNode(c, depth + 1))}</div>
           )}

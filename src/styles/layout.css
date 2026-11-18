@@ -808,27 +808,9 @@
 }
 .sidebar-library-title  { display: flex; align-items: center; gap: 8px; color: var(--text-heading); font-weight: 600; font-size: 13px; }
 .sidebar-library-title .remix  { color: var(--accent-primary); }
-.library-folder-list  { padding: 10px; display: flex; flex-direction: column; gap: 4px; border-bottom: 0.7px solid var(--border-subtle); }
-.library-folder-row  { display: flex; align-items: center; gap: 2px; }
-.library-folder-item  {
-  display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
-  padding: 8px 10px; border-radius: 8px; border: none; background: transparent;
-  color: inherit; cursor: pointer; text-align: left; font-size: 13px;
-}
-.library-folder-item:hover,
-.library-folder-item.active  { background: var(--accent-a5); color: var(--accent-primary); }
-.library-folder-icon  { flex: 0 0 auto; }
-.library-folder-name  { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.library-folder-count  { font-size: 11px; color: var(--text-muted); }
-.library-folder-rename-btn  {
-  display: flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px; border-radius: 6px; border: none;
-  background: transparent; color: var(--text-muted); cursor: pointer;
-  font-size: 13px; flex-shrink: 0; transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast);
-}
-.library-folder-rename-btn:hover  { background: var(--accent-a5); color: var(--accent-primary); }
 /* §8.2 的颜色与圆角；高度取紧凑档 34px（等同 .ui-input--sm）——
-   树行本身约 33px，套满 42px 会让整行在编辑时跳动 */
+   树行本身约 33px，套满 42px 会让整行在编辑时跳动。
+   现在由树内文件夹重命名输入复用（input-css-boundary 测试钉死）。 */
 .library-folder-rename-input  {
   flex: 1; min-width: 0; height: 34px;
   border: 0.7px solid var(--color-border);
@@ -1225,6 +1207,27 @@
 }
 .library-tree-item:hover .tree-reset-btn  { opacity: 1; }
 .tree-reset-btn:hover  {
+  color: var(--accent-primary);
+  background: var(--accent-a10);
+}
+/* 树文件夹的「重命名」按钮：与 .tree-reset-btn 同款，hover 行才出现 */
+.tree-rename-btn  {  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity var(--t-fast), color var(--t-fast), background var(--t-fast);
+}
+.library-tree-item:hover .tree-rename-btn  { opacity: 1; }
+.tree-rename-btn:hover  {
   color: var(--accent-primary);
   background: var(--accent-a10);
 }
