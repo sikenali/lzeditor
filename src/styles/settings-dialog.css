@@ -471,8 +471,10 @@
 }
 .ud-preview-body  {
   padding: 16px;
-  min-height: 120px;
-  overflow: auto;
+  /* 导出预览固定高度 + 滚动条（内容长时滚动，不撑破弹框） */
+  height: 380px;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 .ud-hint .remix  { color: var(--accent-primary); font-size: 14px; }
 .ud-actions  { display: flex; gap: 8px; flex-shrink: 0; }

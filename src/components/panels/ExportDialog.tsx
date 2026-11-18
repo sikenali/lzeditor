@@ -209,7 +209,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
       icon="ri-download-2-line"
       title="导出文档"
       subtitle="选择左侧的文件类型导出文件"
-      width={900}
+      width={780}
       footer={
         <div className="ud-actions">
           <button className="ud-btn ud-btn--ghost" onClick={onClose}>取消</button>
