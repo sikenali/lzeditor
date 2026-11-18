@@ -10,7 +10,7 @@ const about = read('src/components/panels/settings/AboutSettingsTab.tsx')
 for (const label of ['主题设置', '模型管理', '个性设置', '关于']) {
   assert.match(settings, new RegExp(label), `missing top nav ${label}`)
 }
-for (const label of ['编辑设置', '应用行为', '快捷键设置']) {
+for (const label of ['编辑设置', '排版设置', '符号拼写', '应用行为', '快捷键设置']) {
   assert.match(settings, new RegExp(label), `missing profile sub-tab ${label}`)
 }
 assert.doesNotMatch(settings, /同步备份/, 'sync/backup group must be removed')
@@ -18,7 +18,9 @@ assert.doesNotMatch(settings, /@heroui|PanelContainer|UnifiedDialog|LFInput|Sele
 assert.match(settings, /from '\.\.\/\.\.\/components\/ui'/, 'must import the ui barrel')
 
 for (const [f, marker] of [
-  ['EditorSettingsTab.tsx', '排版'],
+  ['EditorSettingsTab.tsx', '编辑器内核'],
+  ['LayoutSettingsTab.tsx', '内容排版'],
+  ['SymbolSpellSettingsTab.tsx', '拼写检查'],
   ['BehaviorSettingsTab.tsx', '应用行为'],
   ['ShortcutSettingsTab.tsx', '文档操作'],
   ['AboutSettingsTab.tsx', '懒猫编辑器'],
@@ -30,7 +32,8 @@ for (const [f, marker] of [
 assert.match(model, /模型制造商/, 'provider sub-tab label')
 assert.match(model, /模型管理/, 'model tab page header')
 assert.match(model, /apiKeys/, 'must use the apiKeys store')
-assert.match(about, /LightOS/, 'about must credit LightOS')
+assert.match(about, /Unofficial Web Client/, 'about must include the unofficial tag (lzmail reference)')
+assert.match(about, /ri-github-line/, 'about must show the centered GitHub icon (lzmail reference)')
 
 for (const f of ['UnifiedDialog.tsx', 'PanelContainer.tsx', 'LFInput.tsx', 'LFSInput.internal.tsx', 'SelectBox.tsx', 'Checkbox.tsx']) {
   assert.equal(existsSync(new URL(`../src/components/ui/${f}`, import.meta.url)), false, `legacy ui file must be deleted: ${f}`)

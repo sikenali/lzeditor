@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 const toolbar = read('src/components/layout/Toolbar.tsx')
-const settings = read('src/components/panels/settings/EditorSettingsTab.tsx')
+const settings = read('src/components/panels/settings/LayoutSettingsTab.tsx')
 
 // 12 核心按钮常显
 for (const label of ['文档库', '新建', '大纲', '格式', '图片', '链接', '表格', '插入', '模式', '历史', '导出', '设置']) {

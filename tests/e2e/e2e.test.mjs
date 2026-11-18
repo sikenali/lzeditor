@@ -143,10 +143,10 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
   const rowSwitch = (text) => page.locator('.settings-panel-shell').locator(`text="${text}"`)
     .locator('xpath=ancestor::*[.//button[@role="switch"]][1]').locator('button[role="switch"]')
 
-  // 2. 编辑设置：排版开关
+  // 2. 排版设置：排版开关
   await page.locator('.settings-nav-row', { hasText: '个性设置' }).click()
   await sleep(250)
-  await page.locator('.settings-subtab', { hasText: '编辑设置' }).click()
+  await page.locator('.settings-subtab', { hasText: '排版设置' }).click()
   await sleep(400)
   async function toggleAndVerify(label, key) {
     const sw = rowSwitch(label)

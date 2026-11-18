@@ -132,6 +132,9 @@ function getSetting<K extends string>(key: K, fallback: unknown): unknown {
 
 let tray: Tray | null = null
 
+// 插件托盘项（渲染侧登记，追加到托盘菜单，纯增量不覆盖现有项）
+let pluginTrayItems: Array<{ id: string; label: string }> = []
+
 function applyTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, '../public/icon.png'))
   if (getSetting('showTrayIcon', true) === false) {
@@ -139,15 +142,26 @@ function applyTray() {
     return
   }
   if (tray) return
-  tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon)
-  tray.setToolTip('lzeditor')
-  tray.setContextMenu(Menu.buildFromTemplate([
+  const template: Electron.MenuItemConstructorOptions[] = [
     { label: '显示主窗口', click: () => { mainWindow?.show(); mainWindow?.focus() } },
     { type: 'separator' },
-    { label: '退出', click: () => app.quit() },
-  ]))
+  ]
+  // 插件托盘项：点击时把插件项 id 回发渲染进程，由插件 run() 执行
+  for (const item of pluginTrayItems) {
+    template.push({ label: item.label, click: () => mainWindow?.webContents.send('plugins:tray-item', item.id) })
+  }
+  if (pluginTrayItems.length) template.push({ type: 'separator' })
+  template.push({ label: '退出', click: () => app.quit() })
+  tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon)
+  tray.setToolTip('lzeditor')
+  tray.setContextMenu(Menu.buildFromTemplate(template))
   tray.on('click', () => { mainWindow?.show(); mainWindow?.focus() })
 }
+
+ipcMain.on('plugins:tray-set', (_event, items: Array<{ id: string; label: string }>) => {
+  pluginTrayItems = Array.isArray(items) ? items : []
+  applyTray()
+})
 
 ipcMain.on('app:settings', (_event, settings: Record<string, unknown>) => {
   appSettings = settings || {}

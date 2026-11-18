@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useAIStore } from '../../store/aiStore'
 import { useAI } from '../../hooks/useAI'
 import { useEditorStore } from '../../store/editorStore'
+import { pluginRegistries } from '../../plugins'
+import { usePluginRegistry } from '../../plugins'
 import type { AIAction } from '../../shared/types'
 
 const ACTION_LABELS: Record<string, string> = {
@@ -59,6 +61,16 @@ export const AIPanel: React.FC = () => {
   const editorContentRef = useEditorStore(s => s.editorContentRef)
   const panelRef = useRef<HTMLDivElement>(null)
 
+  // ── 插件 AI 工具（纯增量：追加到现有动作之外，独立处理结果回填）──
+  const pluginTools = usePluginRegistry(pluginRegistries.aiTools)
+  const [pluginAction, setPluginAction] = useState<string | null>(null)
+  const [pluginBusy, setPluginBusy] = useState(false)
+
+  // 面板关闭时复位插件工具选择
+  useEffect(() => {
+    if (!state.panelVisible) setPluginAction(null)
+  }, [state.panelVisible])
+
   const PANEL_W = 360
   const PANEL_H = 420
 
@@ -95,7 +107,33 @@ export const AIPanel: React.FC = () => {
 
   const handleSubmit = () => {
     const input = state.panelInput.trim()
-    if (!input || isStreaming) return
+    if (!input || isStreaming || pluginBusy) return
+
+    // 插件 AI 工具：走自己的 run()，结果回填到面板输出区（不动现有 send 管线）
+    if (pluginAction) {
+      const tool = pluginTools.find(t => t.id === pluginAction)
+      if (tool) {
+        const text = state.panelSelectedText || state.panelInput
+        const run = async () => {
+          setPluginBusy(true)
+          useAIStore.getState().setPanelStatus('thinking')
+          useAIStore.getState().setPanelError(null)
+          try {
+            const out = await tool.run(text)
+            useAIStore.getState().setPanelOutput(out)
+            useAIStore.getState().setPanelStatus('result')
+          } catch (e) {
+            useAIStore.getState().setPanelError(e instanceof Error ? e.message : String(e))
+            useAIStore.getState().setPanelStatus('error')
+          } finally {
+            setPluginBusy(false)
+          }
+        }
+        void run()
+        return
+      }
+    }
+
     send(state.panelAction || 'question', input, state.panelSelectedText)
   }
 
@@ -111,9 +149,12 @@ export const AIPanel: React.FC = () => {
 
   if (!state.panelVisible) return null
 
-  const placeholder = ACTION_PLACEHOLDERS[getActionKey(state.panelAction)] || '输入指令…'
-  const actionLabel = ACTION_LABELS[getActionKey(state.panelAction)] || 'AI'
-  const actionIcon = ACTION_ICONS[getActionKey(state.panelAction)] || 'ri-speed-up-line'
+  const activePluginTool = pluginAction ? pluginTools.find(t => t.id === pluginAction) : undefined
+  const placeholder = activePluginTool
+    ? `${activePluginTool.label}：输入内容…`
+    : ACTION_PLACEHOLDERS[getActionKey(state.panelAction)] || '输入指令…'
+  const actionLabel = activePluginTool?.label || ACTION_LABELS[getActionKey(state.panelAction)] || 'AI'
+  const actionIcon = activePluginTool ? 'ri-flashlight-fill' : ACTION_ICONS[getActionKey(state.panelAction)] || 'ri-speed-up-line'
 
   return (
     <div
@@ -139,14 +180,33 @@ export const AIPanel: React.FC = () => {
         {ACTIONS.map((a) => (
           <button
             key={a}
-            className={`ai-chip ${state.panelAction === a ? 'active' : ''}`}
+            className={`ai-chip ${state.panelAction === a && !pluginAction ? 'active' : ''}`}
             onClick={() => {
+              setPluginAction(null)
               const sel = state.panelSelectedText
               const pos = computePanelPosition()
               useAIStore.getState().showPanel(a, sel, pos)
             }}
           >
             {ACTION_LABELS[getActionKey(a)] || a}
+          </button>
+        ))}
+        {/* 插件 AI 工具：追加到现有动作之后 */}
+        {pluginTools.map(tool => (
+          <button
+            key={tool.id}
+            className={`ai-chip${pluginAction === tool.id ? ' active' : ''}`}
+            onClick={() => {
+              setPluginAction(tool.id)
+              setPluginBusy(false)
+              useAIStore.getState().setPanelOutput('')
+              useAIStore.getState().setPanelError(null)
+              const sel = state.panelSelectedText
+              const pos = computePanelPosition()
+              useAIStore.getState().showPanel('question', sel, pos)
+            }}
+          >
+            {tool.label}
           </button>
         ))}
       </div>
@@ -175,12 +235,12 @@ export const AIPanel: React.FC = () => {
             onChange={(e) => useAIStore.getState().setPanelInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            disabled={isStreaming}
+            disabled={isStreaming || pluginBusy}
             rows={3}
           />
           <button
             className="ai-send-btn"
-            disabled={!state.panelInput.trim() || isStreaming}
+            disabled={!state.panelInput.trim() || isStreaming || pluginBusy}
             onClick={handleSubmit}
           >
             <span className="remix ri-send-plane-fill"></span>

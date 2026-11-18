@@ -1,73 +1,49 @@
 import React from 'react'
-import { useEditorStore } from '../../../store/editorStore'
-
-const MANUAL_DOC_ID = 'readme'
+import { UiTip } from '../../ui'
 import { APP_VERSION } from '../../../shared/version'
 
 const VERSION = APP_VERSION
 
+// 关于卡片 —— 参考 lzmail AboutSettings 实现：居中竖排、无面包屑页头
+// logo 徽标 → 品牌名 → slogan → Unofficial 标签 → 版本 → 单个居中 GitHub 图标 → 版权
 export const AboutSettingsTab: React.FC = () => {
   const year = new Date().getFullYear()
 
-  // 「文档」在编辑器内打开 README.md
-  const handleOpenManual = () => {
-    const s = useEditorStore.getState()
-    if (s.docs.some((d: any) => d.id === MANUAL_DOC_ID)) s.switchDoc(MANUAL_DOC_ID)
-    s.setAppMode('edit')
-    s.setOpenPanel('none')
-  }
-
   return (
     <>
-      {/* 页面头部卡片（bid-maker .page-header-card） */}
-      <div className="page-header-card">
-        <div className="page-header-content">
-          <div className="page-header-info">
-            <div className="page-breadcrumb">
-              <span>首页</span>
-              <span className="sep">/</span>
-              <span>设置中心</span>
-              <span className="sep">/</span>
-              <span className="current">关于</span>
-            </div>
-            <div className="page-header-title">
-              <h1>关于</h1>
-              <p>版本信息、开源仓库与版权声明</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 品牌信息卡片（bid-maker .about-card） */}
       <div className="about-card">
+        {/* Logo 徽标 */}
         <div className="about-badge">
-          <img src="/logo.svg" alt="懒猫编辑器" style={{ width: 58, height: 58, borderRadius: 14 }} />
+          <img src="/logo.svg" alt="懒猫编辑器" width={52} height={52} />
         </div>
+
+        {/* 品牌名 */}
         <div className="about-name">懒猫编辑器</div>
+
+        {/* Slogan */}
         <div className="about-slogan">AI Markdown 编辑器 · 轻文档写作与导出</div>
+
+        {/* Unofficial 标签 */}
+        <div className="about-unofficial">Unofficial Web Client</div>
+
+        {/* 版本 */}
         <div className="about-version">版本：v{VERSION}</div>
 
-        <div className="about-links">
-          <a href="https://github.com/sikenali/lzeditor" className="about-link" target="_blank" rel="noopener noreferrer">
-            <span className="remix ri-github-fill"></span> GitHub
+        {/* GitHub 图标链接 */}
+        <UiTip text="访问 GitHub 仓库" placement="bottom">
+          <a
+            href="https://github.com/sikenali/lzeditor"
+            className="about-github"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="访问 GitHub 仓库"
+          >
+            <span className="remix ri-github-line"></span>
           </a>
-          <span className="about-sep">·</span>
-          <button type="button" className="about-link" onClick={handleOpenManual}>
-            <span className="remix ri-book-open-line"></span> 文档
-          </button>
-          <span className="about-sep">·</span>
-          <a href="https://github.com/sikenali/lzeditor/issues" className="about-link" target="_blank" rel="noopener noreferrer">
-            <span className="remix ri-feedback-line"></span> 反馈
-          </a>
-          <span className="about-sep">·</span>
-          <a href="/THIRD_PARTY_NOTICES.md" className="about-link" target="_blank" rel="noopener noreferrer">
-            <span className="remix ri-file-text-line"></span> 开源许可
-          </a>
-        </div>
+        </UiTip>
 
-        <div className="about-copy">
-          © {year} 懒猫编辑器 Powered by <a href="https://lazycat.cloud/" target="_blank" rel="noopener noreferrer">LightOS</a>
-        </div>
+        {/* 版权 */}
+        <div className="about-copy">© {year} 懒猫编辑器 · sikenali</div>
       </div>
     </>
   )

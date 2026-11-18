@@ -18,6 +18,13 @@ import './styles/code-mode.css'
 import './styles/floating.css'
 import './styles/app.css'
 import './styles/welcome-screen.css'
+import { registerDemoPlugins } from './plugins/demo'
+import { exposePluginApiForDevelopment } from './plugins'
+
+// 内置示例插件：演示贡献点接线（纯增量，不碰现有功能）
+registerDemoPlugins()
+// 开发构建把插件 API 挂到 window.__lzPlugins，便于插件/控制台调试
+exposePluginApiForDevelopment()
 
 // Restore persisted settings and apply theme synchronously before first
 // paint to avoid a flash of wrong theme.

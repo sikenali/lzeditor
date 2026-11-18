@@ -1,24 +1,6 @@
 import React from 'react'
 import { useEditorStore } from '../../../store/editorStore'
-import { UiSelect, UiSwitch, UDSettingRow } from '../../ui'
-
-// 字体全部自托管在 src/assets/fonts/（见 styles/fonts.css），盒子零系统字体，不能靠系统栈。
-// 不再列思源黑体 / 思源宋体：思源黑体已是默认栈本身；宋体变体字体要 21 MB，不值得带。
-const FONT_OPTIONS = [
-  { value: 'sans-serif', label: 'Inter + Noto Sans SC (默认)' },
-  { value: 'serif',      label: '宋体' },
-  { value: 'monospace',  label: 'JetBrains Mono' },
-  { value: '"PingFang SC", sans-serif', label: '苹方 (macOS)' },
-]
-const FONT_SIZE_OPTIONS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 22]
-const LINE_HEIGHT_OPTIONS: { value: '1.5' | '1.7' | '2.0'; label: string }[] = [
-  { value: '1.5', label: '紧凑' }, { value: '1.7', label: '适中' }, { value: '2.0', label: '宽松' },
-]
-const CONTENT_WIDTH_OPTIONS = ['960', '1024', '1200', '1280']
-const SPELL_CHECK_LANGS = [
-  { value: 'zh-CN', label: '中文 (简体)' }, { value: 'en-US', label: '英语 (美国)' },
-  { value: 'en-GB', label: '英语 (英国)' }, { value: 'ja-JP', label: '日语' }, { value: 'ko-KR', label: '韩语' },
-]
+import { UiSwitch, UDSettingRow } from '../../ui'
 
 function renderKernelSection(s: any, u: any) {
   const TAB_SIZES = [2, 4, 8]
@@ -52,121 +34,6 @@ function renderKernelSection(s: any, u: any) {
   )
 }
 
-function renderGeneralSection(s: any, u: any) {
-
-  return (
-    <>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>排版</span></div>
-        <div className="setting-row" style={{ marginBottom: 16 }}>
-          <div className="setting-label"><span>默认字体</span><span className="setting-hint">编辑区默认字体族</span></div>
-          <UiSelect value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
-        </div>
-        <div className="setting-row" style={{ marginBottom: 16 }}>
-          <div className="setting-label"><span>默认字号</span><span className="setting-hint">编辑区默认字体大小</span></div>
-          <div className="font-size-segmented">
-            {FONT_SIZE_OPTIONS.map(sz => (
-              <button key={sz} className={`font-size-btn ${(s.defaultFontSize || 16) === sz ? 'active' : ''}`} onClick={() => u('defaultFontSize', sz)}>{sz}</button>
-            ))}
-          </div>
-        </div>
-        <div className="setting-row" style={{ marginBottom: 16 }}>
-          <div className="setting-label"><span>行高</span><span className="setting-hint">段落行间距</span></div>
-          <div className="segmented-control">
-            {LINE_HEIGHT_OPTIONS.map(o => (
-              <button key={o.value} className={`segmented-btn ${(s.lineHeight || '1.7') === o.value ? 'active' : ''}`} onClick={() => u('lineHeight', o.value)}>
-                {o.label}<span style={{ opacity: 0.5, marginLeft: 4 }}>{o.value}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="setting-row">
-          <div className="setting-label"><span>内容宽度</span><span className="setting-hint">编辑区最大宽度</span></div>
-          <div className="content-width-segmented">
-            {CONTENT_WIDTH_OPTIONS.map(w => (
-              <button key={w} className={`content-width-btn ${(s.contentWidth || '1280') === w ? 'active' : ''}`} onClick={() => u('contentWidth', w)}>{w}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>段落排版</span></div>
-        <UDSettingRow icon="ri-text-spacing" label="首行缩进" desc="每个段落首行缩进两个字符">
-        <UiSwitch size="sm" checked={ s.textIndent || false } onChange={ v => u('textIndent', v) } />
-      </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-align-justify" label="两端对齐" desc="段落文字左右两端对齐">
-        <UiSwitch size="sm" checked={ s.textJustify || false } onChange={ v => u('textJustify', v) } />
-      </UDSettingRow>
-      </div>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>工具栏</span></div>
-        <UDSettingRow icon="ri-apps-2-fill" label="显示常用格式按钮" desc="在工具栏上显示常用的样式菜单，开启后全部显示">
-        <UiSwitch size="sm" checked={ s.quickFormatButtons !== false } onChange={ v => u('quickFormatButtons', v) } />
-      </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="在图标下方显示文字标签">
-        <UiSwitch size="sm" checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
-      </UDSettingRow>
-      </div>
-    </>
-  )
-
-}
-
-function renderLocalizationSection(s: any, u: any) {
-
-  return (
-    <>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>拼写检查</span></div>
-        <UDSettingRow icon="ri-english-input" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
-        <UiSwitch size="sm" checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
-      </UDSettingRow>
-        <div style={{ padding: '8px 0 0 44px', marginBottom: 8 }}>
-          <div className="setting-row" style={{ marginBottom: 0 }}>
-            <div className="setting-label" style={{ minWidth: 80 }}><span>检查语言</span></div>
-            <UiSelect value={s.spellCheckLang || 'zh-CN'} onChange={v => u('spellCheckLang', v)} options={SPELL_CHECK_LANGS.map(l => ({ value: l.value, label: l.label }))} style={{ maxWidth: 200 }} />
-          </div>
-        </div>
-      </div>
-      <div className="settings-section">
-        <div className="settings-section-title"><span>Markdown 快捷符号</span></div>
-        <UDSettingRow icon="ri-asterisk" label="允许使用符号键 (* _ + ~ = 和 `) 设置选中的文本的格式" desc="选中文字后按 * 加粗、_ 斜体等">
-        <UiSwitch size="sm" checked={ s.allowMarkdownSymbols !== false } onChange={ v => u('allowMarkdownSymbols', v) } />
-      </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-braces-fill" label="自动补完 Markdown 符号对" desc="输入 ( 时自动补全 )，输入 「 时自动补全 」 等">
-        <UiSwitch size="sm" checked={ s.autoCompleteMarkdownPairs !== false } onChange={ v => u('autoCompleteMarkdownPairs', v) } />
-      </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-double-quotes-l" label="自动替换引号为智能引号" desc="英文弯引号，提升可读性；与直角引号互斥">
-          <UiSwitch size="sm" checked={s.smartQuotes !== false}
-            onChange={v => { u('smartQuotes', v); if (v) u('cornerQuotes', false) }} />
-        </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-text-spacing" label="自动在中日韩文字及英文数字间插入空格" desc="在汉字与英文/数字之间自动插入一个空格">
-          <UiSwitch size="sm" checked={ s.autoSpaceCJK !== false } onChange={ v => u('autoSpaceCJK', v) } />
-        </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-double-quotes-r" label={'自动替换引号为直角引号（「」/『』）'} desc={'将 "" 替换为 「」，将 \'\' 替换为 『』；与智能引号互斥'}>
-          <UiSwitch size="sm" checked={s.cornerQuotes || false}
-            onChange={v => { u('cornerQuotes', v); if (v) u('smartQuotes', false) }} />
-        </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-translate-2" label="自动替换半角符号为全角符号（逗号与分号）" desc="将半角 , 和 ; 替换为全角 ，和 ；">
-          <UiSwitch size="sm" checked={ s.fullwidthSymbols || false } onChange={ v => u('fullwidthSymbols', v) } />
-        </UDSettingRow>
-        <div className="setting-divider" />
-        <UDSettingRow icon="ri-list-ordered" label="显示行号" desc="在编辑器左侧显示行号">
-          <UiSwitch size="sm" checked={ s.showLineNumbers || false } onChange={ v => u('showLineNumbers', v) } />
-        </UDSettingRow>
-      </div>
-    </>
-  )
-
-}
-
 function renderEditModeSection(s: any, u: any) {
 
   return (
@@ -197,8 +64,6 @@ function renderEditModeSection(s: any, u: any) {
 export const EditorSettingsTab: React.FC<{ s: any; u: any }> = ({ s, u }) => (
   <>
     {renderKernelSection(s, u)}
-    {renderGeneralSection(s, u)}
-    {renderLocalizationSection(s, u)}
     {renderEditModeSection(s, u)}
   </>
 )

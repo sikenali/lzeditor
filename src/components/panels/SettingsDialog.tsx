@@ -4,10 +4,14 @@ import type { SettingsGroup } from '../../shared/types'
 import { UiModal } from '../../components/ui'
 import { toast } from '../../utils/toast'
 import { EditorSettingsTab } from './settings/EditorSettingsTab'
+import { LayoutSettingsTab } from './settings/LayoutSettingsTab'
+import { SymbolSpellSettingsTab } from './settings/SymbolSpellSettingsTab'
 import { BehaviorSettingsTab } from './settings/BehaviorSettingsTab'
 import { ShortcutSettingsTab } from './settings/ShortcutSettingsTab'
 import { ModelSettingsTab } from './settings/ModelSettingsTab'
 import { AboutSettingsTab } from './settings/AboutSettingsTab'
+import { pluginRegistries } from '../../plugins'
+import { usePluginRegistry } from '../../plugins'
 
 type SubTab = { id: string; label: string; icon: string }
 
@@ -22,6 +26,8 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
     id: 'profile', label: '个性设置', icon: 'ri-user-settings-line',
     subs: [
       { id: 'editor', label: '编辑设置', icon: 'ri-edit-2-line' },
+      { id: 'layout', label: '排版设置', icon: 'ri-layout-line' },
+      { id: 'symbol', label: '符号拼写', icon: 'ri-quill-pen-line' },
       { id: 'app', label: '应用行为', icon: 'ri-apps-line' },
       { id: 'shortcut', label: '快捷键设置', icon: 'ri-keyboard-fill' },
     ],
@@ -42,7 +48,14 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const subTab = settings.subTab ?? ''
   const updateSetting = settings.updateSetting
 
-  const group = NAV_GROUPS.find(g => g.id === activeGroup) ?? NAV_GROUPS[0]
+  // ── 插件设置页（纯增量：追加到现有 4 组之后，不碰主题/模型/个性/关于）──
+  const pluginPages = usePluginRegistry(pluginRegistries.settingsPages)
+  const allGroups = [
+    ...NAV_GROUPS,
+    ...pluginPages.map(p => ({ id: p.id, label: p.label, icon: p.icon ?? 'ri-plug-line', subs: [] as SubTab[] })),
+  ]
+  const pluginPage = pluginPages.find(p => p.id === activeGroup)
+  const group = allGroups.find(g => g.id === activeGroup) ?? allGroups[0]
   const subs = group.subs
 
   // 分组切换时把子标签复位到第一个
@@ -59,12 +72,12 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
   const leftNav = (
     <nav className="settings-nav-list">
-      {NAV_GROUPS.map(item => (
+      {allGroups.map(item => (
         <button
           key={item.id}
           type="button"
           className={`settings-nav-row${activeGroup === item.id ? ' active' : ''}`}
-          onClick={() => { setActiveGroup(item.id); setSubTab(item.subs[0]?.id ?? '') }}
+          onClick={() => { setActiveGroup(item.id as SettingsGroup); setSubTab(item.subs[0]?.id ?? '') }}
         >
           <span className={`remix settings-nav-ico ${item.icon}`}></span>
           <span className="settings-nav-txt">{item.label}</span>
@@ -94,14 +107,20 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
       {group.id === 'theme' && <ThemeSettingsView s={settings} u={updateSetting} />}
       {group.id === 'ai' && <ModelSettingsTab />}
       {group.id === 'profile' && (
-        // subTab 可能残留旧值（如已删除的 'content'），归一为 'editor'
-        (subTab === 'editor' || !['app', 'shortcut'].includes(subTab))
-          ? <EditorSettingsTab s={settings} u={updateSetting} />
-          : subTab === 'app'
-            ? <BehaviorSettingsTab s={settings} u={updateSetting} />
-            : <ShortcutSettingsTab />
+        // subTab 可能残留旧值（如已删除的 'content'），归一为第一个子标签（编辑设置）
+        subTab === 'layout'
+          ? <LayoutSettingsTab s={settings} u={updateSetting} />
+          : subTab === 'symbol'
+            ? <SymbolSpellSettingsTab s={settings} u={updateSetting} />
+            : subTab === 'app'
+              ? <BehaviorSettingsTab s={settings} u={updateSetting} />
+              : subTab === 'shortcut'
+                ? <ShortcutSettingsTab />
+                : <EditorSettingsTab s={settings} u={updateSetting} />
       )}
       {group.id === 'about' && <AboutSettingsTab />}
+      {/* 插件设置页：activeGroup 命中插件页时渲染其内容 */}
+      {pluginPage && pluginPage.render()}
     </div>
   )
 

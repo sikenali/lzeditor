@@ -34,6 +34,15 @@ const api: ElectronAPI = {
   // 把渲染进程的行为设置同步给主进程（托盘图标、关窗即退等）
   sendSettings: (settings: Record<string, unknown>) => ipcRenderer.send('app:settings', settings),
 
+  // 插件托盘项：渲染侧登记 → 主进程追加到托盘菜单；点击 → 回调回渲染侧运行
+  setPluginTrayItems: (items: Array<{ id: string; label: string }>) =>
+    ipcRenderer.send('plugins:tray-set', items),
+  onPluginTrayItem: (callback: (id: string) => void) => {
+    const wrapper = (_event: unknown, id: string) => callback(id)
+    ipcRenderer.on('plugins:tray-item', wrapper)
+    return () => ipcRenderer.removeListener('plugins:tray-item', wrapper)
+  },
+
   // Platform
   platform: process.platform,
 }

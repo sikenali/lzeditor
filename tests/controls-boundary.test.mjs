@@ -182,7 +182,7 @@ assert.match(settingsStore, /raw\.map\(migrateApiKey\)/, '老存档的 apiKeys �
 assert.match(typesTs, /modelConfigTab\?: 'provider' \| 'custom'/, '模型设置页的 tab 选择必须能落盘')
 
 // 两个引号开关共用同一条替换管线，都开会静默覆盖
-const editorTab = read('src/components/panels/settings/EditorSettingsTab.tsx')
+const editorTab = read('src/components/panels/settings/SymbolSpellSettingsTab.tsx')
 assert.match(editorTab, /u\('smartQuotes', v\); if \(v\) u\('cornerQuotes', false\)/, '开智能引号必须关掉直角引号')
 assert.match(editorTab, /u\('cornerQuotes', v\); if \(v\) u\('smartQuotes', false\)/, '开直角引号必须关掉智能引号')
 assert.match(editorTab, /逗号与分号/, '半角转全角只替换逗号与分号，文案必须说准')

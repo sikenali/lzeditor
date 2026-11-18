@@ -421,3 +421,39 @@
 
 /* ── 欢迎页按钮文字 ── */
 .welcome-btn-label  { line-height: 1.2; }
+
+/* ── 插件浮动视图层（纯增量，独立浮层，不占现有面板） ── */
+.plugin-floating-layer  {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 16px;
+}
+.plugin-floating-view  {
+  pointer-events: auto;
+  background: var(--color-bg-white);
+  border: 0.7px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 240px;
+  max-width: 360px;
+  overflow: hidden;
+}
+.plugin-floating-view-title  {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-body);
+  border-bottom: 0.7px solid var(--color-border-soft);
+}
+.plugin-floating-view-title .remix  { color: var(--color-primary); font-size: 15px; }
+.plugin-floating-view-body  { padding: 4px; }

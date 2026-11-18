@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
 import { getEditorFacade } from '../editor/facade/registry'
+import { pluginRegistries } from '../../plugins'
+import { usePluginRegistry } from '../../plugins'
+import type { PluginMenuId } from '../../plugins'
 
 export interface MenuItem {
   icon?: string
@@ -67,6 +70,29 @@ export const MODE_ITEMS: MenuItem[] = [
   { icon: 'ri-palette-line', label: '排版模式', action: 'style' },
   { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
 ]
+
+/* ═══════════════════════════════════════════════════════════
+   插件菜单项（纯增量）：以 'plugin:<id>' 动作前缀追加到飞出菜单，
+   与现有 action 命名空间隔离，不覆盖任何现有动作。
+   ═══════════════════════════════════════════════════════════ */
+export const PLUGIN_ACTION_PREFIX = 'plugin:'
+
+/** 订阅并转换指定菜单的插件项为 MenuItem[]（用于追加到飞出菜单）。 */
+export function usePluginMenuItems(menu: PluginMenuId): MenuItem[] {
+  const items = usePluginRegistry(pluginRegistries.menuItems)
+  return items
+    .filter(m => m.menu === menu)
+    .map(m => ({ icon: m.icon, label: m.label, action: `${PLUGIN_ACTION_PREFIX}${m.id}` }))
+}
+
+/** 处理插件菜单动作：命中则运行插件 run() 并返回 true（调用方跳过现有分支）。 */
+export function runPluginMenuAction(action: string): boolean {
+  if (!action.startsWith(PLUGIN_ACTION_PREFIX)) return false
+  const id = action.slice(PLUGIN_ACTION_PREFIX.length)
+  const item = pluginRegistries.menuItems.list().find(m => m.id === id)
+  if (item) { try { item.run() } catch { /* 插件动作失败不阻断菜单 */ } }
+  return true
+}
 
 /**
  * 表格工具项的置灰只和「光标是否在表格内」有关，两个入口共用同一份。

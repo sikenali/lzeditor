@@ -65,5 +65,10 @@ export interface ElectronAPI {
   // ── 把渲染侧的行为设置同步给主进程（托盘图标、关窗即退）──
   sendSettings: (settings: Record<string, unknown>) => void
 
+  // ── 插件托盘项（纯增量：渲染侧登记插件菜单项，主进程追加到托盘菜单）──
+  setPluginTrayItems: (items: Array<{ id: string; label: string }>) => void
+  /** 托盘插件项被点击：回调收到插件项 id，返回解绑函数。 */
+  onPluginTrayItem: (callback: (id: string) => void) => () => void
+
   platform: NodeJS.Platform
 }
