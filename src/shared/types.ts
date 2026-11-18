@@ -25,6 +25,22 @@ export interface ApplyRecord {
   position: { from: number; to: number }
 }
 
+/** 聊天式 AI 面板的四个模式。 */
+export type AIMode = 'write' | 'review' | 'create' | 'research'
+
+/** 聊天式 AI 面板中的一条消息。 */
+export interface ChatEntry {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  mode: AIMode
+  action?: AIAction
+  status?: 'streaming' | 'done' | 'error' | 'applied'
+  error?: string
+  applied?: boolean
+  applyRecord?: ApplyRecord
+}
+
 
 export interface DocVersion {
   id: string
@@ -206,13 +222,25 @@ export interface AIStoreState {
   conversationMessages: ChatMessage[]
   lastSelection: { text: string; from: number; to: number } | null
   applyHistory: ApplyRecord[]
-  showPanel: (action: AIAction, selectedText: string, position: { x: number; y: number }) => void
+  // ── 聊天式面板（旧 panel* 字段保留，供旧 AIPanel 使用）──
+  mode: AIMode
+  messages: ChatEntry[]
+  /** 旧入口：按动作打开浮层；新入口：按模式打开聊天面板。 */
+  showPanel: {
+    (action: AIAction, selectedText: string, position: { x: number; y: number }): void
+    (mode: AIMode, selectedText: string, position: { x: number; y: number }): void
+  }
   hidePanel: () => void
   setPanelInput: (input: string) => void
   setPanelStatus: (status: 'idle' | 'thinking' | 'result' | 'error' | 'applied') => void
   setPanelOutput: (output: string) => void
   setPanelError: (error: string | null) => void
   appendConversation: (message: ChatMessage) => void
+  setMode: (mode: AIMode) => void
+  setSelectedText: (text: string) => void
+  addMessage: (message: ChatEntry) => void
+  updateMessage: (id: string, patch: Partial<ChatEntry>) => void
+  appendStreamToMessage: (id: string, delta: string) => void
   recordApply: (record: Omit<ApplyRecord, 'id' | 'timestamp'>) => void
   undoLastApply: () => void
   getUndoRecord: () => ApplyRecord | null
