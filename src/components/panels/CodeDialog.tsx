@@ -95,6 +95,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
       title="插入代码块"
       subtitle={`${language} · ${THEME_OPTIONS.find(t => t.id === themeId)?.name || ''}`}
       width={900}
+      height={520}
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>

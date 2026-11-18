@@ -125,7 +125,8 @@
 .toolbar-icon-only .toolbar-icon  { font-size: 20px; }
 .toolbar-icon-only .toolbar-label  { display: none; }
 /* showToolbarLabels 开启（.toolbar-hover-labels）时：hover 在图标下方显示标题（绝对定位，不挤布局） */
-.toolbar-icon-only.toolbar-hover-labels .toolbar-btn:hover .toolbar-label  {
+.toolbar-icon-only.toolbar-hover-labels .toolbar-btn:hover .toolbar-label,
+.toolbar-icon-only.toolbar-hover-labels .toolbar-btn:focus-visible .toolbar-label  {
   position: absolute;
   top: calc(100% + 4px);
   left: 50%;

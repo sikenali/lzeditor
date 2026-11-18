@@ -19,6 +19,7 @@ export const EmojiDialog: React.FC<{ onClose: () => void; onInsert: (text: strin
       title="表情符号"
       subtitle="选择表情插入到文档中"
       width={900}
+      height={520}
     >
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto', flex: 1 }}>
         {/* 主题切换 - 与插入图片标签样式一致 */}

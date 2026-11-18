@@ -99,23 +99,23 @@ export const Toolbar: React.FC = () => {
       <div className={`navtop toolbar toolbar-icon-only${showToolbarLabels ? ' toolbar-hover-labels' : ''}`}>
         {/* ── Left ── */}
         <div className="toolbar-group">
-          <button className="toolbar-btn" onClick={() => setShowLibrary(!showLibrary)}>
+          <button className="toolbar-btn" aria-label="文档库" onClick={() => setShowLibrary(!showLibrary)}>
             <span className="remix toolbar-icon ri-archive-2-line"></span>
             <span className="toolbar-label">文档库</span>
           </button>
           <div className="toolbar-menu-btn" onClick={() => flyout.open('new', newBtnRef.current)}>
-            <button ref={newBtnRef} className={`toolbar-btn ${flyout.isOpen('new') ? 'menu-open' : ''}`}>
+            <button ref={newBtnRef} aria-label="新建" className={`toolbar-btn ${flyout.isOpen('new') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-file-add-line"></span>
               <span className="toolbar-label">新建</span>
               <span className="toolbar-menu-dot"></span>
             </button>
           </div>
-          <button className="toolbar-btn" onClick={() => setShowOutline(!showOutline)}>
+          <button className="toolbar-btn" aria-label="大纲" onClick={() => setShowOutline(!showOutline)}>
             <span className="remix toolbar-icon ri-list-unordered"></span>
             <span className="toolbar-label">大纲</span>
           </button>
           {quickFormatButtons && (
-            <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)}>
+            <button className="toolbar-btn" aria-label="查找" onClick={() => setShowSearch(!showSearch)}>
               <span className="remix toolbar-icon ri-search-line"></span>
               <span className="toolbar-label">查找</span>
             </button>
@@ -125,29 +125,29 @@ export const Toolbar: React.FC = () => {
         {/* ── Middle ── */}
         <div className="toolbar-group toolbar-group--middle">
           {quickFormatButtons && <>
-            <button className="toolbar-btn" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className="toolbar-label">粗体</span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
-            <button className="toolbar-btn" onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className="toolbar-label">删除线</span></button>
+            <button className="toolbar-btn" aria-label="粗体" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className="toolbar-label">粗体</span></button>
+            <button className="toolbar-btn" aria-label="斜体" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
+            <button className="toolbar-btn" aria-label="删除线" onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className="toolbar-label">删除线</span></button>
             {/* 下划线/高亮 markdown 无法在 yeli 表达，按钮已移除（见 B3）。 */}
           </>}
 
           <div className="toolbar-menu-btn" onClick={() => flyout.open('format', formatBtnRef.current)}>
-            <button ref={formatBtnRef} className={`toolbar-btn format-btn ${flyout.isOpen('format') ? 'menu-open' : ''}`}>
+            <button ref={formatBtnRef} aria-label="格式" className={`toolbar-btn format-btn ${flyout.isOpen('format') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-text-wrap"></span>
               <span className="toolbar-label">格式</span>
               <span className="toolbar-menu-dot"></span>
             </button>
           </div>
 
-          <button className="toolbar-btn" onClick={() => useEditorStore.getState().setInsertPanel('image')}>
+          <button className="toolbar-btn" aria-label="图片" onClick={() => useEditorStore.getState().setInsertPanel('image')}>
             <span className="remix toolbar-icon ri-image-line"></span><span className="toolbar-label">图片</span>
           </button>
-          <button className="toolbar-btn" onClick={() => useEditorStore.getState().setInsertPanel('link')}>
+          <button className="toolbar-btn" aria-label="链接" onClick={() => useEditorStore.getState().setInsertPanel('link')}>
             <span className="remix toolbar-icon ri-link"></span><span className="toolbar-label">链接</span>
           </button>
 
           <div className="toolbar-menu-btn" onClick={() => flyout.open('table', tableBtnRef.current)}>
-            <button ref={tableBtnRef} className={`toolbar-btn ${flyout.isOpen('table') ? 'menu-open' : ''}`}>
+            <button ref={tableBtnRef} aria-label="表格" className={`toolbar-btn ${flyout.isOpen('table') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-table-2"></span>
               <span className="toolbar-label">表格</span>
               <span className="toolbar-menu-dot"></span>
@@ -155,7 +155,7 @@ export const Toolbar: React.FC = () => {
           </div>
 
           <div className="toolbar-menu-btn" onClick={() => flyout.open('insert', insertBtnRef.current)}>
-            <button ref={insertBtnRef} className={`toolbar-btn ${flyout.isOpen('insert') ? 'menu-open' : ''}`}>
+            <button ref={insertBtnRef} aria-label="插入" className={`toolbar-btn ${flyout.isOpen('insert') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-add-circle-line"></span>
               <span className="toolbar-label">插入</span>
               <span className="toolbar-menu-dot"></span>
@@ -169,28 +169,28 @@ export const Toolbar: React.FC = () => {
             <button
               className={`toolbar-btn${aiPanelVisible ? ' toolbar-btn--active' : ''}`}
               onClick={openAI}
-              title="AI 助手"
+              aria-label="AI 助手"
             >
               <span className="remix toolbar-icon ri-openai-fill"></span>
               <span className="toolbar-label">AI</span>
             </button>
           )}
           <div className="toolbar-menu-btn" onClick={() => flyout.open('mode', modeBtnRef.current)}>
-            <button ref={modeBtnRef} className={`toolbar-btn ${flyout.isOpen('mode') ? 'menu-open' : ''}`}>
+            <button ref={modeBtnRef} aria-label="模式" className={`toolbar-btn ${flyout.isOpen('mode') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-eye-2-fill"></span>
               <span className="toolbar-label">模式</span>
               <span className="toolbar-menu-dot"></span>
             </button>
           </div>
-          <button className="toolbar-btn" onClick={() => useEditorStore.getState().setAppMode(appMode === 'history' ? 'edit' : 'history')} aria-current={appMode === 'history' ? 'page' : undefined}>
+          <button className="toolbar-btn" aria-label="历史" onClick={() => useEditorStore.getState().setAppMode(appMode === 'history' ? 'edit' : 'history')} aria-current={appMode === 'history' ? 'page' : undefined}>
             <span className="remix toolbar-icon ri-history-fill"></span>
             <span className="toolbar-label">历史</span>
           </button>
-          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
+          <button className="toolbar-btn" aria-label="导出" onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
             <span className="remix toolbar-icon ri-download-2-line"></span>
             <span className="toolbar-label">导出</span>
           </button>
-          <button className="toolbar-btn" onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')}>
+          <button className="toolbar-btn" aria-label="设置" onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')}>
             <span className="remix toolbar-icon ri-settings-3-fill"></span>
             <span className="toolbar-label">设置</span>
           </button>

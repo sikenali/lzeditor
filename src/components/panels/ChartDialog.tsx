@@ -96,6 +96,7 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string
       title="插入图表"
       subtitle="生成 ECharts 图表并插入文档"
       width={900}
+      height={520}
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
