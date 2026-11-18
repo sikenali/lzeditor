@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
    全部为「新增注册表 + 新增渲染插槽」，不触碰现有功能路径。
    ═══════════════════════════════════════════════════════════ */
 
-/** 一个命令：id 必须带插件命名空间（如 `demo.say`）。 */
+/** 一个命令：id 必须带插件命名空间（如 `myplugin.cmd`）。 */
 export interface PluginCommand {
   id: string
   title: string

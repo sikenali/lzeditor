@@ -47,8 +47,11 @@ export const Footer: React.FC = () => {
   return (
     <footer className="app-footer">
       <div className="app-footer-left">
-        <img className="app-footer-logo" src="/logo.svg" alt="懒猫编辑器" />
-        <span>懒猫编辑器</span>
+        <div className="app-footer-brand">
+          <img className="app-footer-logo" src="/logo.svg" alt="懒猫编辑器" />
+          <span>懒猫编辑器</span>
+        </div>
+        <span className="app-footer-copy">© 2026 Powered by <a href="https://lazycat.cloud/" target="_blank" rel="noopener noreferrer" className="app-footer-link">LightOS</a></span>
       </div>
 
       {/* 大纲 / 即时预览 / 样式预览 —— 居中显示 */}
@@ -120,7 +123,6 @@ export const Footer: React.FC = () => {
             {item.render()}
           </span>
         ))}
-        <span>© 2026 Powered by <a href="https://lazycat.cloud/" target="_blank" rel="noopener noreferrer" className="app-footer-link">LightOS</a></span>
       </div>
     </footer>
   )

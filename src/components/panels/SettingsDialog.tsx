@@ -192,7 +192,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
   }
 
   return (
-    <>
+    <div className="theme-settings-view">
       {/* 页面头部卡片 */}
       <div className="page-header-card">
         <div className="page-header-content">
@@ -300,7 +300,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
           ))}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

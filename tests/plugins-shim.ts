@@ -3,4 +3,3 @@
 // 让测试与源码共用同一个模块实例，保证跨文件断言（如 demo 注册进 registry）成立。
 export { createRegistry } from '../src/plugins/registry'
 export { pluginApi, pluginRegistries, runWillSave, runWillExport } from '../src/plugins/api'
-export { registerDemoPlugins } from '../src/plugins/demo'

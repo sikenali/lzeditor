@@ -2,7 +2,6 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   createRegistry, pluginApi, pluginRegistries, runWillSave, runWillExport,
-  registerDemoPlugins,
 } from './plugins-shim.ts'
 
 test('createRegistry: register / getSnapshot / subscribe / unsubscribe', () => {
@@ -80,13 +79,4 @@ test('runWillSave / runWillExport invoke hooks (read-only, non-blocking)', () =>
   assert.doesNotThrow(() => runWillSave({ md: '', title: '' }), 'a throwing hook does not break others')
 
   offSave(); offExport()
-})
-
-test('registerDemoPlugins registers built-in demo contributions without throwing', () => {
-  assert.doesNotThrow(() => registerDemoPlugins())
-  assert.ok(pluginRegistries.commands.list().some(c => c.id === 'demo.say'), 'demo command registered')
-  assert.ok(pluginRegistries.settingsPages.list().some(p => p.id === 'demo.page'), 'demo settings page registered')
-  assert.ok(pluginRegistries.statusItems.list().some(s => s.id === 'demo.status'), 'demo status item registered')
-  assert.ok(pluginRegistries.aiTools.list().some(t => t.id === 'demo.clean'), 'demo ai tool registered')
-  assert.ok(pluginRegistries.menuItems.list().some(m => m.id === 'demo.menu.say'), 'demo menu item registered')
 })
