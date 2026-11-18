@@ -114,10 +114,12 @@ export const Toolbar: React.FC = () => {
             <span className="remix toolbar-icon ri-list-unordered"></span>
             <span className="toolbar-label">大纲</span>
           </button>
-          <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)}>
-            <span className="remix toolbar-icon ri-search-line"></span>
-            <span className="toolbar-label">查找</span>
-          </button>
+          {quickFormatButtons && (
+            <button className="toolbar-btn" onClick={() => setShowSearch(!showSearch)}>
+              <span className="remix toolbar-icon ri-search-line"></span>
+              <span className="toolbar-label">查找</span>
+            </button>
+          )}
         </div>
 
         {/* ── Middle ── */}
@@ -163,14 +165,16 @@ export const Toolbar: React.FC = () => {
 
         {/* ── Right ── */}
         <div className="toolbar-group">
-          <button
-            className={`toolbar-btn${aiPanelVisible ? ' toolbar-btn--active' : ''}`}
-            onClick={openAI}
-            title="AI 助手"
-          >
-            <span className="remix toolbar-icon ri-openai-fill"></span>
-            <span className="toolbar-label">AI</span>
-          </button>
+          {quickFormatButtons && (
+            <button
+              className={`toolbar-btn${aiPanelVisible ? ' toolbar-btn--active' : ''}`}
+              onClick={openAI}
+              title="AI 助手"
+            >
+              <span className="remix toolbar-icon ri-openai-fill"></span>
+              <span className="toolbar-label">AI</span>
+            </button>
+          )}
           <div className="toolbar-menu-btn" onClick={() => flyout.open('mode', modeBtnRef.current)}>
             <button ref={modeBtnRef} className={`toolbar-btn ${flyout.isOpen('mode') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-eye-2-fill"></span>

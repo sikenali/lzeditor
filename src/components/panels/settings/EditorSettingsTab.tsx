@@ -101,7 +101,7 @@ function renderGeneralSection(s: any, u: any) {
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span></div>
-        <UDSettingRow icon="ri-apps-2-fill" label="显示常用格式按钮" desc="在工具栏直接显示粗体、斜体、下划线、删除线、高亮五个按钮，关闭后仅保留格式菜单">
+        <UDSettingRow icon="ri-apps-2-fill" label="显示常用格式按钮" desc="在工具栏上显示常用的样式菜单，开启后全部显示">
         <UiSwitch size="sm" checked={ s.quickFormatButtons !== false } onChange={ v => u('quickFormatButtons', v) } />
       </UDSettingRow>
         <div className="setting-divider" />
