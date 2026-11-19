@@ -182,13 +182,12 @@
 }
 
 .settings-section  {
-  background: var(--glass-bg);
-  border: 0.6px solid var(--glass-border);
-  border-radius: 14px;
+  background: var(--color-bg-card);
+  border: 0.6px solid var(--color-border-soft);
+  border-radius: 16px;
   padding: 18px;
   margin-bottom: 16px;
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .settings-section-title  {
@@ -693,7 +692,7 @@
 .settings-section  {
   background: var(--color-bg-white);
   border: 0.6px solid var(--color-border-soft);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 24px 28px;
   margin-bottom: 0;
   backdrop-filter: none;
@@ -843,7 +842,7 @@
 }
 .theme-preview-thumb  {
   width: 100%;
-  height: 100px;
+  height: 128px;
   border-radius: var(--radius-sm);
   padding: 16px;
   display: flex;
@@ -886,8 +885,8 @@
   cursor: pointer;
 }
 .accent-circle  {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1179,7 +1178,7 @@
 }
 
 .settings-content  {
-  background: var(--t-bg-16); backdrop-filter: var(--t-blur-4); -webkit-backdrop-filter: var(--t-blur-4); border-radius: 0;
+  background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 0;
 }
 
 /* bid .section-card border-radius: 16px —— 此处不得覆写为 0，否则区块卡片退化为平带 */

@@ -33,9 +33,9 @@ assert.match(css, /\.accent-name\.current\s*\{[^}]*font-weight:\s*700/, '选中�
 assert.match(css, /\.accent-check-icon[^{]*\{[^}]*color:\s*var\(--color-on-primary\)/, '✓ 必须深色 on-primary')
 assert.doesNotMatch(css, /\.accent-check-icon[^{]*\{[^}]*color:\s*#fff/, '✓ 不得白字')
 
-// lzc2vsdx 尺寸：缩略图 100px / 色盘 64px / ✓ 20px
-assert.match(css, /\.theme-preview-thumb\s*\{[\s\S]{0,300}?height:\s*100px;/, '缩略图必须 100px（lzc2vsdx）')
-assert.match(css, /\.accent-circle\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;/, '色盘必须 64px（lzc2vsdx）')
+// DESIGN-1 §6 尺寸：缩略图 128px / 色盘 80px
+assert.match(css, /\.theme-preview-thumb\s*\{[\s\S]{0,300}?height:\s*128px;/, '缩略图必须 128px（§6.2）')
+assert.match(css, /\.accent-circle\s*\{[^}]*width:\s*80px;[^}]*height:\s*80px;/, '色盘必须 80px（§6.3）')
 assert.match(css, /\.accent-check-icon\s*\{[^}]*font-size:\s*20px;/, '✓ 徽标必须 20px（lzc2vsdx）')
 
 // 选中色盘青晕（lzc2vsdx .accent-swatch.active）：预设圆盘选中必须挂 current class，且 .current/.active 有青晕
@@ -43,3 +43,10 @@ assert.match(dialog, /className=\{`accent-circle\$\{accent === p\.id \? ' curren
 assert.match(css, /\.accent-circle\.current,\s*\.accent-circle-custom\.active\s*\{[^}]*box-shadow:\s*0 0 0 3px rgba\(var\(--tech-cyan-rgb\),\s*0\.2\)/, '选中色盘（预设+自定义）必须青色光晕')
 
 console.log('settings conformance ok')
+
+// DESIGN-1 §6.2/§6.3/§6.1 主题卡/色盘/区块卡字面
+assert.match(css, /\.theme-preview-thumb\s*\{[^}]*height:\s*128px;/, '主题预览缩略图必须 128px（§6.2）')
+assert.match(css, /\.accent-group\s*\{[^}]*gap:\s*40px;/, '色盘间距必须 40px（§6.3）')
+assert.match(css, /\.accent-circle\s*\{[^}]*width:\s*80px;[^}]*height:\s*80px;/, '色盘直径必须 80px（§6.3）')
+assert.match(css, /\.settings-section\s*\{[^}]*border-radius:\s*16px;/, '区块卡必须 16px 圆角（§6.1）')
+assert.doesNotMatch(css, /\.settings-section\s*\{[^}]*backdrop-filter:\s*blur/, '区块卡必须实心（§6.1 不玻璃化）')
