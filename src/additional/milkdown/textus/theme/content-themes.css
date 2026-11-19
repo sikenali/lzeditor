@@ -18,6 +18,13 @@
     var(--font-cjk-punct-serif), Georgia, var(--font-cjk-serif), serif;
 }
 
+/* --doc-font 的 var() 链在 lzeditor 里解析不可靠（getComputedStyle 返回空，
+   整条 font-family 会失效、主题字体不生效）。这里给 paper 的文档显式兜底为
+   衬线栈，确保 Textus 的暖纸张衬线渲染真正落地（scoped 测试钉死 .textus-editor-shell 前缀）。 */
+.textus-editor-shell[data-content-theme="paper"] .milkdown {
+  font-family: var(--font-cjk-punct-serif), Georgia, var(--font-cjk-serif), serif;
+}
+
 @media (prefers-color-scheme: dark) {
   .textus-editor-shell:not([data-theme="light"])[data-content-theme="paper"] {
     --doc-bg: #1f1b16;

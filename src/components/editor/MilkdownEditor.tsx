@@ -101,7 +101,7 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
     [],
   )
   return (
-    <div className="textus-editor-shell" data-content-theme="slate" ref={shellRef}>
+    <div className="textus-editor-shell" data-content-theme="paper" ref={shellRef}>
       <MilkdownProvider>
         <EditableEditor {...props} shellRef={shellRef} />
       </MilkdownProvider>
