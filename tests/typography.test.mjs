@@ -68,7 +68,9 @@ test('fonts.css 引用的每个字体子集文件都真实存在', () => {
   for (const u of urls) {
     assert.ok(existsSync(new URL(u, new URL('../src/styles/', import.meta.url))), `font file missing: ${u}`)
   }
-  assert.equal(new Set(urls).size, urls.length, 'duplicate font url')
+  // CJK 标点面刻意复用同一份 Noto 字体文件（只靠 unicode-range 接管标点），
+  // 所以允许重复 url；这里只要求覆盖足够多的子集且每个文件真实存在。
+  assert.ok(new Set(urls).size >= 14, `expected >= 14 distinct font files, got ${new Set(urls).size}`)
 })
 
 test('fonts.css 声明了自托管的三个字体族', () => {

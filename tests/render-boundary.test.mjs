@@ -144,6 +144,19 @@ test('水平线与未闭合围栏不被误判为 front matter', () => {
   assert.equal(detectFlavor('# t\n\n  ````js\n  // 还没闭合\n'), 'commonmark')
 })
 
+test('中文标点紧贴强调记号时仍能渲染为强调，且不残留零宽空格', () => {
+  const out = raw('**懒猫编辑器（LZEditor）**是一款\n\n是（**重点**）内容')
+  assert.match(out, /<strong>懒猫编辑器（LZEditor）<\/strong>是一款/)
+  assert.match(out, /是（<strong>重点<\/strong>）内容/)
+  assert.equal(out.includes('\u200B'), false, '零宽空格只用于解析，不应出现在输出里')
+})
+
+test('表格不在文档开头也能被自动识别为 GFM', () => {
+  assert.equal(detectFlavor('# 标题\n\n正文\n\n| a | b |\n| - | - |\n| 1 | 2 |\n'), 'gfm')
+  const out = renderMarkdownRaw('# 标题\n\n正文\n\n| a | b |\n| - | - |\n| 1 | 2 |\n', {}).html
+  assert.match(out, /<table>/)
+})
+
 test('代码块里的语法特征不参与渲染与检测', () => {
   const out = renderMarkdownRaw('# 标题\n\n```text\n[[wikilink]]\n~~strike~~\n| 假表格 |\nimport Foo from "x.mdx"\n```', {}).html
   assert.match(out, /\[\[wikilink\]\]/)

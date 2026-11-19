@@ -11,6 +11,7 @@ import { getEditorFacade, registerEditorFacade } from './facade/registry'
 import type { EditorFacade } from './facade/EditorFacade'
 import { ScrollRail } from '../ui/ScrollRail'
 import { markersFromPreviewDom } from '../../utils/railMarkers'
+import { useSettingsStore } from '../../store/settingsStore'
 import '../../additional/milkdown/milkdown.css'
 import '@milkdown/kit/prose/view/style/prosemirror.css'
 import '../../additional/milkdown/textus/theme/content-base.css'
@@ -87,6 +88,16 @@ function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps
 
 export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
   const shellRef = useRef<HTMLDivElement | null>(null)
+  const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
+  const lineHeight = useSettingsStore((s) => s.lineHeight)
+
+  // 编辑设置里的字号 / 行高同样作用于 WYSIWYG，否则两种编辑模式正文尺度不一致。
+  useEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+    shell.style.setProperty('--cm-font-size', `${defaultFontSize}px`)
+    shell.style.setProperty('--cm-line-height', lineHeight || '1.8')
+  }, [defaultFontSize, lineHeight])
   const getScroller = useCallback(
     () => shellRef.current?.querySelector<HTMLElement>('.milkdown') ?? null,
     [],

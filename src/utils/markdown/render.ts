@@ -220,6 +220,21 @@ function stripMdxStatements(md: string): string {
   return md.replace(/^ {0,3}(?:import|export)\s+[^\n]*;\s*$/gm, '')
 }
 
+/**
+ * CJK 标点紧贴强调记号时，CommonMark 的 flanking 规则会让 `**` 收不了尾
+ * （`）` 是标点、后面又是汉字，不构成 right-flanking），结果 `**重点**` 原样
+ * 显示成星号。中文写作里这种写法很常见。
+ *
+ * 解法是在标点与记号之间插入一个零宽空格：它既不是空白也不是标点，
+ * flanking 判定就能通过。渲染完再把零宽空格从 HTML 里抹掉，正文不会多字符。
+ */
+const CJK_PUNCT_BEFORE_DELIM =
+  /([（）【】「」『』《》〈〉“”‘’！？。，、；：…—])(\*{1,3}|~{2}|_{1,3})/g
+
+function softenCjkDelimiters(md: string): string {
+  return md.replace(CJK_PUNCT_BEFORE_DELIM, '$1\u200B$2')
+}
+
 /** `[[Target]]` / `[[Target|alias]]`，目标当作页内锚点处理。 */
 function wikiLink(state: StateInline, silent: boolean): boolean {
   const src = state.src
@@ -504,6 +519,7 @@ export function renderMarkdownRaw(md: string, options: RenderOptions = {}): Rend
   let src = md
   if (flavor === 'obsidian') src = stripObsidianComments(src)
   if (flavor === 'mdx') src = stripMdxStatements(src)
+  src = softenCjkDelimiters(src)
 
   const env: Env = { maths: [] }
   if (options.lines) env.blockLines = true
@@ -522,6 +538,8 @@ export function renderMarkdownRaw(md: string, options: RenderOptions = {}): Rend
     }
   }
   if (/\uE000/.test(html)) html = html.replace(/\uE000\d+\uE001/g, '')
+  // 强调记号前插入的零宽空格只用于过 flanking 判定，不留在正文里
+  if (html.includes('\u200B')) html = html.replace(/\u200B/g, '')
 
   options.onFlavor?.(flavor)
   return { html, flavor }

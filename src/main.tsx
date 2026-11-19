@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import 'katex/dist/katex.min.css'
+// 必须在 App 之前：App 会 import Textus 的分层正文样式
+import './styles/layer-order.css'
 import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useSettingsStore, loadSettingsFromStorage, DEFAULT_SETTINGS } from './store/settingsStore'

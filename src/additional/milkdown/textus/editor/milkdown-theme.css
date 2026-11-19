@@ -1186,6 +1186,12 @@
   user-select: none;
 }
 
+/* 静止的文档不显示源码记号：只有正在写的那个编辑器里才露出 "# "。
+   （vendored 版本缺这条上游规则，导致未聚焦时标题前一直挂着 "# "。） */
+.textus-editor-shell .ProseMirror:not(.ProseMirror-focused) .heading-marker {
+  display: none;
+}
+
 /* md_span's look is in content-base.css's layer, so a theme's plain
    `strong {}` wins; only the delimiter reveal is here. */
 

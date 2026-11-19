@@ -53,7 +53,7 @@ const S = {
   pandocATex: /^=+ [^\n]+$/,
   pandocBlockCite: /^\[[^\]\n]+\]$/,
   pandocAttr: /\{#[\w-]+(?:\s+[\w.-]+)*\}/,
-  gfmTable: /^ {0,3}\|[^\n]*\|[\s\S]{0,40}?\n[ \t]*\|[\s:|-]+\|?[\s\S]*$/,
+  gfmTable: /^ {0,3}\|[^\n]*\|[\s\S]{0,40}?\n[ \t]*\|[\s:|-]+\|?[\s\S]*$/m,
   gfmStrike: /~~[^\s~][^~\n]*~~/,
   gfmTask: /^ {0,3}[-*+]\s+\[[ xX]\]/m,
   gfmAutolink: /^ {0,3}https?:\/\/[^\s)]+$/m,

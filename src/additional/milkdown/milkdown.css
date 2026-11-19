@@ -19,16 +19,10 @@
   min-height: 0;
   --document-gutter: 96px;
   --document-width: 690px;
-  /* The vendored content-base.css sizes .milkdown from --doc-font-size /
-     --doc-line-height, whose default is a cqi clamp that needs a container
-     Textus got from `.editor-content` — which lzeditor doesn't have, so it
-     would resolve against the viewport. Pin them to the app's editor type
-     scale instead, so the document is 14px/1.7 like the CodeMirror mode and
-     doesn't change with the window. The content theme's --doc-font (the face)
-     still applies: it's set on a more specific [data-content-theme] selector.
-   */
-  --doc-font-size: var(--cm-font-size, 14px);
-  --doc-line-height: var(--cm-line-height, 1.7);
+  /* 正文尺度跟随编辑设置；默认按 Textus 的阅读尺度（16px/1.8），
+     而不是把文档钉死在 14px——14px 在 690px 行宽下过小、标题也显得没层级。 */
+  --doc-font-size: var(--cm-font-size, 16px);
+  --doc-line-height: var(--cm-line-height, 1.8);
 }
 
 /* The Milkdown root (the document scroller): fills the shell and scrolls. */

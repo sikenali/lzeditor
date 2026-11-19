@@ -4,6 +4,51 @@
    Noto Sans SC 用官方变体字体单文件，wght 轴 100-900 连续可调。
    全部 OFL 许可。 */
 
+/* ── CJK 标点面（与 Textus 同法）─────────────────────────────
+   弯引号 / 破折号 / 省略号这些字符 Latin 字体也有，按字体回退顺序会先被
+   Latin 面吃掉，中文界面里就变成半角字形。这里用 unicode-range 只接管
+   这几个标点，让它们从 CJK 面出字；其余字符不受影响。 */
+@font-face {
+  font-family: "Textus Punct SC";
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    local("PingFang SC"), local("PingFangSC-Regular"),
+    local("Noto Sans CJK SC"), local("Noto Sans SC"),
+    local("Source Han Sans SC"), local("Microsoft YaHei"),
+    url('../assets/fonts/noto-sans-sc/NotoSansSC-VF.woff2') format('woff2');
+  unicode-range: U+2014, U+201C-201D, U+2026;
+}
+@font-face {
+  font-family: "Textus Punct Serif SC";
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    local("Songti SC"), local("STSongti-SC-Regular"),
+    local("Noto Serif CJK SC"), local("Source Han Serif SC"),
+    local("Noto Serif SC"), local("SimSun"),
+    url('../assets/fonts/acks/noto-serif-sc/NotoSerifSC-VF.woff2') format('woff2');
+  unicode-range: U+2014, U+201C-201D, U+2026;
+}
+
+/* Textus 主题的 --doc-font 栈引用的字体变量。lzeditor 之前没有定义它们，
+   var() 解析失败会让整条 font-family 声明失效（主题字体根本不生效）。 */
+:root {
+  --font-cjk-sans-sc:
+    "Noto Sans SC", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC",
+    "Microsoft YaHei", "WenQuanYi Micro Hei";
+  --font-cjk-serif-sc:
+    "Noto Serif SC", "Songti SC", "STSong", "Noto Serif CJK SC",
+    "Source Han Serif SC", SimSun;
+  --font-cjk-sans: var(--font-cjk-sans-sc);
+  --font-cjk-serif: var(--font-cjk-serif-sc);
+  --font-apple-system: -apple-system;
+  --font-system-ui: system-ui;
+  --font-text-sans: Inter, var(--font-system-ui), var(--font-cjk-sans);
+  --font-cjk-punct: "Textus Punct SC";
+  --font-cjk-punct-serif: "Textus Punct Serif SC";
+}
+
 @font-face {
   font-family: 'Inter';
   font-style: normal;

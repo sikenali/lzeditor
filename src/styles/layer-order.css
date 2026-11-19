@@ -1,0 +1,12 @@
+/* 层叠顺序必须在任何分层样式加载前定下来。
+   ------------------------------------------------------------
+   Textus 的正文样式在 @layer textus-content 里（vendored 主题刻意分层，
+   让用户自定义主题能无级胜出）；应用的 CSS reset 在 @layer base 里。
+   两者谁赢只看层顺序：先声明的层优先级低。App.tsx 在 main.tsx 里先于
+   应用样式被 import，导致 textus-content 先声明、base 后声明——reset
+   反而压过 Textus 的标题/列表/代码样式，正文被 reset 拍平。
+
+   这里在 App 之前声明顺序，让 textus-content 高于 base：
+   reset 仍是兜底，Textus 的文档排版正常生效。未分层的应用样式仍然
+   高于这两个层（与之前一致），不会影响应用 chrome。 */
+@layer base, textus-content;
