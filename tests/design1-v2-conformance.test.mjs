@@ -76,8 +76,6 @@ assert.match(inputRing, /box-shadow:\s*0 0 0 3px var\(--accent-a20\)/, 'input:fo
 assert.doesNotMatch(inputRing, /--color-focus-ring/, 'input:focus-visible 不得使用系统蓝键盘环')
 const globalRing = globalsCss4.match(/\n:focus-visible\s*\{[^}]*\}/)?.[0] || ''
 assert.match(globalRing, /outline:\s*2px solid var\(--color-focus-ring\)/, '全局 :focus-visible outline 必须系统蓝')
-const codeCss4 = read('src/styles/code-mode.css')
-assert.match(codeCss4, /\.code-splitter:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus-ring\)/, 'code splitter 键盘焦点环必须系统蓝')
 const welcomeCss4 = read('src/styles/welcome-screen.css')
 assert.match(welcomeCss4, /\.welcome-btn:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus-ring\)/, '欢迎页按钮键盘焦点环必须系统蓝')
 assert.match(welcomeCss4, /\.welcome-recent-item:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus-ring\)/, '欢迎页最近项键盘焦点环必须系统蓝')

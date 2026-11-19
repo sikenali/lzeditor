@@ -52,4 +52,8 @@ assert.doesNotMatch(readModeCss, /read-article-code/, '旧代码模式 textarea 
 assert.match(sidebarPreview, /renderMermaidBlocks/, '预览必须 hydrate mermaid')
 assert.match(sidebarPreview, /renderEchartsBlocks/, '预览必须 hydrate echarts')
 
+// ── G20 死代码：code-mode.css 不得残留 .code-split 死规则 ──
+const codeMode = read('src/styles/code-mode.css')
+assert.doesNotMatch(codeMode, /\.code-split(?:ter|ter-container)\b/, 'code-mode.css 不得残留 .code-split 死规则')
+
 console.log('code mode boundary checks passed')

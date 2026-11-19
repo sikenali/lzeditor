@@ -73,39 +73,6 @@
   text-overflow: ellipsis;
 }
 
-/* 分割线：可见线 6px，命中区 24px。
-   grid 轨道只有 6px，两边各 -9px 的负外边距把盒子撑成 24px，
-   负值等量所以线还是居中的。WCAG 2.5.8 要求目标够大，6px 点不中。 */
-.code-splitter {
-  position: relative;
-  z-index: 1;
-  margin: 0 -9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: col-resize;
-  touch-action: none;
-  user-select: none;
-}
-
-.code-splitter-line {
-  width: 6px;
-  height: 100%;
-  background: var(--border-subtle);
-  transition: background 0.12s ease;
-}
-
-.code-splitter:hover .code-splitter-line,
-.code-splitter.dragging .code-splitter-line {
-  background: var(--accent-primary);
-  opacity: 0.55;
-}
-
-.code-splitter:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: -2px;
-}
-
 /* 右栏：预览独立滚动，与左栏互不干扰 */
 .lz-editor-content--code .code-preview-pane {
   display: flex;
