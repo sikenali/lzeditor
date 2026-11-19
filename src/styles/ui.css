@@ -23,9 +23,9 @@
    max-height: calc(100vh - 40px);
    display: flex;
    flex-direction: column;
-   background: var(--color-bg-secondary);
-   border: 0.7px solid var(--color-border-soft);
-   box-shadow: var(--color-modal-shadow);
+   background: var(--modal-glass-bg, var(--color-bg-secondary));
+   border: 0.6px solid var(--modal-glass-border, var(--color-border-soft));
+   box-shadow: var(--color-modal-shadow), inset 0 1px 0 var(--modal-glass-inset, transparent);
    animation: ui-pop-in var(--t-slow) var(--ease) forwards;
  }
 @keyframes ui-pop-in  {
@@ -72,6 +72,18 @@
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1.3;
+}
+/* 标题前 4×16px 青发光条（lzc2vsdx title-bar） */
+.ui-modal-title::before  {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  box-shadow: 0 0 6px rgba(var(--tech-cyan-rgb), 0.35);
+  margin-right: 8px;
 }
 .ui-modal-subtitle  {
   font-size: 13px;
