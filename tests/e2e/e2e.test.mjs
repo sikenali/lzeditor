@@ -117,7 +117,7 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
       return { r: parseFloat(c.borderRadius), mask: ov ? getComputedStyle(ov).backgroundColor : '' }
     })
     check(`${name}弹框：走 UiModal（遮罩+✕ 关闭按钮）`, hasClose > 0 && /rgba\(0,\s*0,\s*0,\s*0\.4\)/.test(m.mask), `close=${hasClose}, mask=${m.mask}`)
-    check(`${name}弹框：圆角 14px`, m.r === 14, `实测 ${m.r}px`)
+    check(`${name}弹框：圆角 12px（§8.1）`, m.r === 12, `实测 ${m.r}px`)
     await page.keyboard.press('Escape')
     await sleep(350)
     check(`${name}弹框：Escape 关闭`, (await page.locator('.ui-modal-overlay').count()) === 0)
@@ -137,10 +137,10 @@ test('真实浏览器：设置中心全量交互 + DESIGN.md §8/§9/§10 样式
       mask: ov ? getComputedStyle(ov).backgroundColor : '',
     }
   })
-  check('lzc2vsdx 尺寸 = min(88vw,1100px) × min(86vh,calc(100vh-40px))',
-    Math.abs(ms.w - Math.min(1440 * 0.88, 1100)) < 2 && Math.abs(ms.h - Math.min(900 * 0.86, 860)) < 2,
+  check('§5.1 尺寸 = min(92vw,1280px) × 92vh',
+    Math.abs(ms.w - Math.min(1440 * 0.92, 1280)) < 2 && Math.abs(ms.h - 900 * 0.92) < 2,
     `${ms.w}px × ${ms.h}px`)
-  check('圆角 14px', ms.r === 14, `实测 ${ms.r}px`)
+  check('圆角 12px（§8.1）', ms.r === 12, `实测 ${ms.r}px`)
   check('§8.1 遮罩 rgba(0,0,0,0.4)', /rgba\(0,\s*0,\s*0,\s*0\.4\)/.test(ms.mask), ms.mask)
 
   const rowSwitch = (text) => page.locator('.settings-panel-shell').locator(`text="${text}"`)
