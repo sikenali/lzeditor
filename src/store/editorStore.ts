@@ -126,7 +126,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   showSearch: false,
   codeMode: false,
   codeModeCursor: 0,
-  appMode: 'edit' as const,
+  appMode: 'code' as const,
   docLibraries: restored.docLibraries,
   activeLibraryId: 'default',
   previewMode: 'render' as 'render' | 'code',
