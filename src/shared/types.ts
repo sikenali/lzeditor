@@ -156,7 +156,7 @@ export interface SettingsState {
   editorFont?: string
   defaultFontSize?: number
   lineHeight?: '1.0' | '1.5' | '1.7' | '2.0'
-  contentWidth?: '960' | '1024' | '1200' | '1280'
+  contentWidth?: '760' | '960' | '1024' | '1200' | '1280'
   typewriterMode?: boolean
   focusMode?: boolean
   previewModeEnabled?: boolean

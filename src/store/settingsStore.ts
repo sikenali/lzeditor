@@ -51,11 +51,13 @@ export function migrateApiKey(entry: ApiKeyEntry): ApiKeyEntry {
  * - v3：contentWidth 默认改为 '1280'（铺满编辑区，.app 限宽 1280px）。升级时把老存档的
  *   '1024'（旧默认值）迁移为 '1280'，否则老用户升级后文本仍不铺满。
  */
-export const SETTINGS_VERSION = 3
+export const SETTINGS_VERSION = 4
 /** v1→v2：previewModeEnabled 默认 true（分屏）→ false（仅源码编辑器）。 */
 export const PREVIEW_MODE_OFF_VERSION = 2
 /** v2→v3：contentWidth 默认 '1024' → '1280'（铺满编辑区）。 */
 export const CONTENT_WIDTH_FULL_VERSION = 3
+/** v3→v4：内容测度统一 760px——contentWidth 默认 '1280' → '760'。 */
+export const CONTENT_WIDTH_MEASURE_VERSION = 4
 
 export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
@@ -79,7 +81,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   editorFont: 'sans-serif',
   defaultFontSize: 16,
   lineHeight: '1.7',
-  contentWidth: '1280',
+  contentWidth: '760',
   typewriterMode: false,
   focusMode: false,
   previewModeEnabled: false,
@@ -219,6 +221,11 @@ export function loadSettingsFromStorage(): Partial<SettingsState> {
       // 老存档里的 '1024' 是旧默认值全量落盘，并非用户显式开启，按新默认迁移为 '1280'。
       if (version < CONTENT_WIDTH_FULL_VERSION && raw?.contentWidth === '1024') {
         raw.contentWidth = '1280'
+      }
+      // 迁移 v3→v4：内容测度统一 760px——老存档 '1280'/'1024' 都是旧默认值全量落盘，
+      // 并非用户显式开启，按新默认统一迁移为 '760'。
+      if (version < CONTENT_WIDTH_MEASURE_VERSION && (raw?.contentWidth === '1280' || raw?.contentWidth === '1024')) {
+        raw.contentWidth = '760'
       }
       Object.assign(parsed, raw)
     }

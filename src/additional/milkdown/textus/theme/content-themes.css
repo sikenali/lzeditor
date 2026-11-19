@@ -8,6 +8,8 @@
 .textus-editor-shell[data-content-theme="paper"] {
   --doc-bg: #faf6ee;
   --doc-text: #2b2620;
+  /* 模式显示重构：正文行高统一 27.33px（精确命中规格，覆盖 --cm-line-height 比例）。 */
+  --doc-line-height: 27.33px;
   --doc-muted: #706758;
   --doc-border: #e4dcc8;
   --doc-quote-border: #b5652f;
