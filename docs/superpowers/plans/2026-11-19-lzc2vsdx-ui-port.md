@@ -1,6 +1,6 @@
 # lzeditor UI 复用 lzc2vsdx 实现样式 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 整站 UI（顶栏/侧栏/面板/对话框/设置界面）采用 lzc2vsdx 的 Nebula 组件级视觉签名（8px 圆角/38px 输入/0.6px 发丝线/弹簧微交互/深色玻璃弹窗/发光标题条/设置 200px 青发光导航），功能不变。
 
@@ -42,7 +42,7 @@
 - Consumes: 既有 `--radius-sm`(8px)/`--radius-md`(12px)/`--ease-spring`/`--t-snap` 令牌。
 - Produces: `--radius-btn` 令牌（Task 2/3/4 的按钮/输入圆角复用）；`.ui-input`/`.ui-select-trigger` 38px 契约（Task 2+ 不改）。
 
-- [ ] **Step 1: 更新既有测试到新值（红）**
+- [x] **Step 1: 更新既有测试到新值（红）**
 
 `tests/input-css-boundary.test.mjs`：
 - 加 `assert.match(tokensCss, /--radius-btn:\s*var\(--radius-sm\)/, '按钮/输入圆角由 --radius-btn(8px) 提供')`
@@ -54,32 +54,32 @@
 - 改 L590 `.ui-input` 高 `42→38px`；L591 `.ui-input` border `0.7px→0.6px`
 - 改 L610 `.ui-select-trigger` 高 `42→38px`；L611 border `0.7px→0.6px`
 
-- [ ] **Step 2: 运行确认先红**
+- [x] **Step 2: 运行确认先红**
 
 Run: `node --import tsx --test tests/input-css-boundary.test.mjs tests/ui-interactions.test.mjs`
 Expected: FAIL（.ui-input 仍 42px/0.7px/radius-md）
 
-- [ ] **Step 3: 改 `tokens.css` 加 `--radius-btn`**
+- [x] **Step 3: 改 `tokens.css` 加 `--radius-btn`**
 
 `tokens.css` 圆角块：`--radius: var(--radius-md);` 旁加 `--radius-btn: var(--radius-sm); /* 按钮/输入 8px（lzc2vsdx） */`
 
-- [ ] **Step 4: 改 `ui.css` 按钮/输入/选择**
+- [x] **Step 4: 改 `ui.css` 按钮/输入/选择**
 
 - `.ui-btn`：`border-radius: var(--radius-md)` → `var(--radius-btn)`；加悬停 `transform: translateY(-1px)`（`--t-base`/`--ease-spring`）+ 按下 `:active { transform: scale(0.97) }`（`--t-snap`）。
 - `.ui-input`：`height: 42px` → `38px`；`border-radius: var(--radius-md)` → `var(--radius-btn)`；`border: 0.7px` → `0.6px`。
 - `.ui-select-trigger`：`height: 42px` → `38px`；`border-radius: var(--radius-md)` → `var(--radius-btn)`；`border: 0.7px` → `0.6px`。
 
-- [ ] **Step 5: 改 `layout.css` 库输入**
+- [x] **Step 5: 改 `layout.css` 库输入**
 
 - `.library-search-input`：`height: 42px` → `38px`；`border-radius` → `var(--radius-btn)`；`border 0.7px` → `0.6px`。
 - `.library-folder-rename-input`：`height: 34px`（保留，树行功能原因）；`border-radius` → `var(--radius-btn)`；`border 0.7px` → `0.6px`。
 
-- [ ] **Step 6: 运行测试转绿**
+- [x] **Step 6: 运行测试转绿**
 
 Run: `node --import tsx --test tests/input-css-boundary.test.mjs tests/ui-interactions.test.mjs`
 Expected: PASS
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add src/styles/tokens.css src/styles/ui.css src/styles/layout.css tests/input-css-boundary.test.mjs tests/ui-interactions.test.mjs
@@ -101,7 +101,7 @@ git commit -m "feat(ui): 输入/选择/按钮 lzc2vsdx 化 — 8px 圆角 + 38px
 - Consumes: `--radius-btn`（Task 1）、`--tech-cyan-rgb`、`--color-bg-secondary`。
 - Produces: `--modal-glass-*` 深色令牌（仅本任务消费）；`.ui-modal` 玻璃契约。
 
-- [ ] **Step 1: 写失败测试 `tests/lzc2vsdx-ui-port.test.mjs`（弹窗部分）**
+- [x] **Step 1: 写失败测试 `tests/lzc2vsdx-ui-port.test.mjs`（弹窗部分）**
 
 ```js
 import assert from 'node:assert/strict'
@@ -124,34 +124,34 @@ assert.match(ui, /\.ui-modal-title[\s\S]{0,400}?::before[\s\S]{0,200}?width:\s*4
 console.log('modal port ok')
 ```
 
-- [ ] **Step 2: 运行确认先红**
+- [x] **Step 2: 运行确认先红**
 
 Run: `node --import tsx --test tests/lzc2vsdx-ui-port.test.mjs`
 Expected: FAIL（玻璃/radius 14/发光条未实现）
 
-- [ ] **Step 3: 改 `themes.ts` 深色对象加玻璃令牌**
+- [x] **Step 3: 改 `themes.ts` 深色对象加玻璃令牌**
 
 dark 对象新增：`'--modal-glass-bg': 'rgba(10, 22, 40, 0.95)'`、`'--modal-glass-border': 'rgba(0, 212, 170, 0.12)'`、`'--modal-glass-inset': 'rgba(0, 212, 170, 0.06)'`。（浅色 parchment 不设 —— CSS 回退保证不透明。）
 
-- [ ] **Step 4: 改 `ui.css` `.ui-modal` + `.ui-modal-title`**
+- [x] **Step 4: 改 `ui.css` `.ui-modal` + `.ui-modal-title`**
 
 - `.ui-modal`：`background: var(--color-bg-secondary)` → `var(--modal-glass-bg, var(--color-bg-secondary))`；`border: 0.7px solid var(--color-border-soft)` → `0.6px solid var(--modal-glass-border, var(--color-border-soft))`；深色时加 `box-shadow: inset 0 1px 0 var(--modal-glass-inset, transparent)`（并入现有 `--color-modal-shadow` 或独立）。无 `[data-theme]` 块。
 - `.ui-modal-title`：加 `::before` `content:''; display:inline-block; vertical-align:middle; width:4px; height:16px; border-radius:2px; background:var(--color-primary); box-shadow:0 0 6px rgba(var(--tech-cyan-rgb),0.35); margin-right:8px;`（若标题已有 flex/结构，用 inline-block 兼容）。
 
-- [ ] **Step 5: 改 `UiModal.tsx` 默认 radius**
+- [x] **Step 5: 改 `UiModal.tsx` 默认 radius**
 
 `radius = 12` → `radius = 14`。
 
-- [ ] **Step 6: 改 `panels.css` 发丝线**
+- [x] **Step 6: 改 `panels.css` 发丝线**
 
 `panels.css` 内 `0.7px` → `0.6px`（发丝边框，非 letter-spacing）。
 
-- [ ] **Step 7: 运行测试转绿**
+- [x] **Step 7: 运行测试转绿**
 
 Run: `node --import tsx --test tests/lzc2vsdx-ui-port.test.mjs tests/ui-interactions.test.mjs`
 Expected: PASS（ui-interactions 弹窗 fixture 传 radius=12 显式，默认改 14 不影响）
 
-- [ ] **Step 8: 提交**
+- [x] **Step 8: 提交**
 
 ```bash
 git add src/styles/themes.ts src/styles/ui.css src/components/ui/UiModal.tsx src/styles/panels.css tests/lzc2vsdx-ui-port.test.mjs
@@ -170,7 +170,7 @@ git commit -m "feat(ui): 弹窗 lzc2vsdx 化 — 深色玻璃面板 + UiModal �
 - Consumes: `--tech-cyan-rgb`、`--ease-spring`。
 - Produces: 无（最后布局任务）。顶栏渐变已符合（accent 跟随 color-mix，等价 lzc2vsdx border-image）；`.toolbar-btn` 弹簧已有（L105/L107），不改。
 
-- [ ] **Step 1: 追加失败测试到 `tests/lzc2vsdx-ui-port.test.mjs`**
+- [x] **Step 1: 追加失败测试到 `tests/lzc2vsdx-ui-port.test.mjs`**
 
 ```js
 const layout = read('src/styles/layout.css')
@@ -182,23 +182,23 @@ assert.match(layout, /\.rail-btn:hover[\s\S]{0,300}?transform:\s*translateY\(-1p
 console.log('layout port ok')
 ```
 
-- [ ] **Step 2: 运行确认先红**
+- [x] **Step 2: 运行确认先红**
 
 Run: `node --import tsx --test tests/lzc2vsdx-ui-port.test.mjs`
 Expected: FAIL（发光条/rail 弹簧未实现）
 
-- [ ] **Step 3: 改 `layout.css`**
+- [x] **Step 3: 改 `layout.css`**
 
 - 侧栏分区标题：`.sidebar-header-title`、`.library-section-title` 加 `::before`（`content:''; display:inline-block; vertical-align:middle; width:4px; height:16px; border-radius:2px; background:var(--color-primary); box-shadow:0 0 6px rgba(var(--tech-cyan-rgb),0.35); margin-right:8px;`）。若标题是块级非 flex，用 inline-block 使发光条与文字同行（CSS-only；如父容器需 flex 才能对齐，仅在 TSX 加最小 class 并标注）。
 - `.rail-btn`：`:hover` 加 `transform: translateY(-1px)`（`--ease-spring`/`--t-base`）；`:active` 加 `transform: scale(0.97)`（`--t-snap`）。
 - 顶栏渐变：**不改**（已符合）。
 
-- [ ] **Step 4: 运行测试转绿**
+- [x] **Step 4: 运行测试转绿**
 
 Run: `node --import tsx --test tests/lzc2vsdx-ui-port.test.mjs`
 Expected: PASS
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add src/styles/layout.css tests/lzc2vsdx-ui-port.test.mjs
@@ -218,7 +218,7 @@ git commit -m "feat(ui): 布局 chrome lzc2vsdx 化 — 分区标题发光条 + 
 - Consumes: `--radius-btn`（Task 1）、`--modal-glass-*`（Task 2）、`--tech-cyan-rgb`。
 - Produces: 无（最终任务）。
 
-- [ ] **Step 1: 更新测试到 lzc2vsdx 值（红）**
+- [x] **Step 1: 更新测试到 lzc2vsdx 值（红）**
 
 `tests/settings-conformance.test.mjs`（重写为 lzc2vsdx 值）：
 - `PANEL_WIDTH = '88vw'`、`PANEL_MAX_WIDTH = 1100`、`PANEL_HEIGHT = '86vh'`
@@ -240,16 +240,16 @@ git commit -m "feat(ui): 布局 chrome lzc2vsdx 化 — 分区标题发光条 + 
 `tests/e2e/e2e.test.mjs`：
 - 改弹窗尺寸断言：`min(92vw,1280px) × min(92vh,calc(100vh-40px))` → `min(88vw,1100px) × min(86vh,calc(100vh-40px))`；数学 `min(1440*0.88,1100)=1100`、`min(900*0.86,860)=774`
 
-- [ ] **Step 2: 运行确认先红**
+- [x] **Step 2: 运行确认先红**
 
 Run: `node --import tsx --test tests/settings-conformance.test.mjs tests/design1-v2-conformance.test.mjs tests/ui-polish-round3.test.mjs`
 Expected: FAIL（仍 1280/92vh/180px/44px/128px/80px）
 
-- [ ] **Step 3: 改 `SettingsDialog.tsx` PANEL 常量**
+- [x] **Step 3: 改 `SettingsDialog.tsx` PANEL 常量**
 
 `PANEL_WIDTH = '92vw'` → `'88vw'`；`PANEL_MAX_WIDTH = 1280` → `1100`；`PANEL_HEIGHT = '92vh'` → `'86vh'`。
 
-- [ ] **Step 4: 改 `settings-dialog.css`（全面 lzc2vsdx 化）**
+- [x] **Step 4: 改 `settings-dialog.css`（全面 lzc2vsdx 化）**
 
 - `.settings-nav-list`：`width: 180px` → `200px`；`background: var(--color-bg-white)` → `var(--color-bg-secondary)`；圆角 `--radius-md`。
 - `.settings-nav-row`：`height: 44px` → `42px`；圆角 `--radius-sm`；`:hover` 加 `transform: translateY(-1px)`（`--ease-spring`/`--t-base`）+ `:active` `scale(0.97)`。
@@ -261,17 +261,17 @@ Expected: FAIL（仍 1280/92vh/180px/44px/128px/80px）
 - 设置按钮/输入圆角 `--radius-btn`。
 - 卡片深色玻璃（复用 `--modal-glass-*` 回退）。
 
-- [ ] **Step 5: 运行测试转绿**
+- [x] **Step 5: 运行测试转绿**
 
 Run: `node --import tsx --test tests/settings-conformance.test.mjs tests/design1-v2-conformance.test.mjs tests/ui-polish-round3.test.mjs`
 Expected: PASS
 
-- [ ] **Step 6: typecheck + 全量测试 + e2e**
+- [x] **Step 6: typecheck + 全量测试 + e2e**
 
 Run: `npm run typecheck && npm test && npm run test:e2e`
 Expected: typecheck 0 错；全量通过；e2e 通过（含更新后的 `min(88vw,1100) × min(86vh,…)` 断言）
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add src/components/panels/SettingsDialog.tsx src/styles/settings-dialog.css tests/settings-conformance.test.mjs tests/design1-v2-conformance.test.mjs tests/ui-polish-round3.test.mjs tests/e2e/e2e.test.mjs docs/superpowers/specs/2026-11-19-lzc2vsdx-ui-port-design.md
