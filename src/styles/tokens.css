@@ -62,6 +62,7 @@
   --radius-xs: 4px; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
   --radius-2xl: 24px; --radius-full: 9999px;
   --radius: var(--radius-md);
+  --radius-btn: var(--radius-sm); /* 按钮/输入 8px（lzc2vsdx） */
 
   /* macOS traffic-light window controls (used by code block decorations) */
   --mac-dot-red: #FF5F56;

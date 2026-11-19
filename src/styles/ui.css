@@ -117,11 +117,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 42px;
+  height: 38px;
   padding: 0 12px;
   background: var(--color-bg-secondary);
-  border: 0.7px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 0.6px solid var(--color-border);
+  border-radius: var(--radius-btn);
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 .ui-input:focus-within  {
@@ -166,11 +166,11 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  height: 42px;
+  height: 38px;
   padding: 0 12px;
   background: var(--color-bg-secondary);
-  border: 0.7px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 0.6px solid var(--color-border);
+  border-radius: var(--radius-btn);
   color: var(--color-text-primary);
   font-size: var(--text-md);
   font-family: inherit;
@@ -387,7 +387,7 @@
   height: 40px;
   padding: 0 18px;
   border: 0.7px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-btn);
   font-size: var(--text-md);
   font-family: inherit;
   cursor: pointer;
@@ -395,7 +395,8 @@
   transition: background var(--transition-fast), color var(--transition-fast),
     border-color var(--transition-fast), transform var(--transition-fast);
 }
-.ui-btn:active:not(.disabled)  { transform: translateY(1px); }
+.ui-btn:hover:not(.disabled)  { transform: translateY(-1px); transition: transform var(--t-base) var(--ease-spring); }
+.ui-btn:active:not(.disabled)  { transform: scale(0.97); transition: transform var(--t-snap) var(--ease-spring); }
 .ui-btn--primary  { background: var(--accent-primary); border-color: var(--accent-primary); color: var(--accent-foreground); }
 .ui-btn--primary:hover:not(.disabled)  { background: var(--accent-hover); }
 .ui-btn--outline  { border: 0.7px solid var(--border-subtle); color: var(--text-secondary); }

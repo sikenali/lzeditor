@@ -586,9 +586,9 @@ test('toast 重复点关闭不会重复执行', async () => {
 const uiCss = read('src/styles/ui.css')
 const tokensCss = read('src/styles/tokens.css')
 
-test('§8.2 UiInput：高度 42px、0.7px 边框、12px 圆角、focus 变白+主色边框', () => {
-  assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?height: 42px/)
-  assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?border: 0\.7px solid var\(--color-border\)/)
+test('§8.2 UiInput：高度 38px、0.6px 边框、8px 圆角、focus 变白+主色边框', () => {
+  assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?height: 38px/)
+  assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?border: 0\.6px solid var\(--color-border\)/)
   assert.match(uiCss, /\.ui-input\s*\{[\s\S]{0,400}?background: var\(--color-bg-secondary\)/)
   assert.match(tokensCss, /--radius-md:\s*12px/, '§8.2 的圆角 12px 由 --radius-md 提供')
   assert.match(uiCss, /\.ui-input:focus-within\s*\{[\s\S]{0,200}?background: var\(--color-bg-white\)/)
@@ -607,8 +607,8 @@ test('§8.4 UiSwitch：开启主色底+白滑块，关闭次级底+灰滑块', (
 })
 
 test('§8.5 UiSelect 与 Input 同风格：同样高度、边框、圆角', () => {
-  assert.match(uiCss, /\.ui-select-trigger\s*\{[\s\S]{0,500}?height: 42px/)
-  assert.match(uiCss, /\.ui-select-trigger\s*\{[\s\S]{0,500}?border: 0\.7px solid var\(--color-border\)/)
+  assert.match(uiCss, /\.ui-select-trigger\s*\{[\s\S]{0,500}?height: 38px/)
+  assert.match(uiCss, /\.ui-select-trigger\s*\{[\s\S]{0,500}?border: 0\.6px solid var\(--color-border\)/)
 })
 
 test('§8.3 UiCheck：默认 18px 圆徽标，选中主色边框 + 主题主色对勾', () => {

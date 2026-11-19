@@ -30,6 +30,7 @@ const block = (css, sel) => {
 
 test('§8.2 依赖的 token 值本身是对的', () => {
   assert.match(tokensCss, /--radius-md:\s*12px/, '圆角 12px 由 --radius-md 提供')
+  assert.match(tokensCss, /--radius-btn:\s*var\(--radius-sm\)/, '按钮/输入圆角由 --radius-btn(8px) 提供')
   assert.match(tokensCss, /--color-border:\s*#D4DEEB/, '§8.2 的边框色（Nebula）')
   assert.match(tokensCss, /--color-bg-secondary:\s*#EEF2F7/, '§8.2 的底色（Nebula）')
   assert.match(tokensCss, /--color-bg-white:\s*#FFFFFF/, '§8.2 的 focus 底色')
@@ -37,8 +38,8 @@ test('§8.2 依赖的 token 值本身是对的', () => {
 
 // 四处输入框的声明块 + focus 块 + 高度（唯一例外是 rename 的 34px）
 const CHECKS = [
-  { name: '.ui-input（UiInput 组件，md 基线）', css: uiCss, sel: '.ui-input  {', focus: '.ui-input:focus-within  {', height: 42, placeholder: '.ui-input input::placeholder  {' },
-  { name: '.library-search-input（文库搜索）', css: layoutCss, sel: '.library-search-input  {', focus: '.library-search-input:focus  {', height: 42, placeholder: '.library-search-input::placeholder  {' },
+  { name: '.ui-input（UiInput 组件，md 基线）', css: uiCss, sel: '.ui-input  {', focus: '.ui-input:focus-within  {', height: 38, placeholder: '.ui-input input::placeholder  {' },
+  { name: '.library-search-input（文库搜索）', css: layoutCss, sel: '.library-search-input  {', focus: '.library-search-input:focus  {', height: 38, placeholder: '.library-search-input::placeholder  {' },
   { name: '.library-folder-rename-input（树内重命名）', css: layoutCss, sel: '.library-folder-rename-input  {', focus: '.library-folder-rename-input:focus  {', height: 34, placeholder: null },
 ]
 
@@ -49,8 +50,8 @@ for (const c of CHECKS) {
   test(`${c.name}：§8.2 高度/边框/圆角/背景`, () => {
     assert.notEqual(body, '', `${c.sel} 必须存在`)
     assert.match(body, new RegExp(`height:\\s*${c.height}px`), `${c.name} 高度应为 ${c.height}px`)
-    assert.match(body, /border:\s*0\.7px solid var\(--color-border\)/, `${c.name} 边框必须是 0.7px var(--color-border)`)
-    assert.match(body, /border-radius:\s*var\(--radius-md\)/, `${c.name} 圆角必须是 --radius-md(12px)`)
+    assert.match(body, /border:\s*0\.6px solid var\(--color-border\)/, `${c.name} 边框必须是 0.6px var(--color-border)`)
+    assert.match(body, /border-radius:\s*var\(--radius-btn\)/, `${c.name} 圆角必须是 --radius-btn(8px)`)
     assert.match(body, /background:\s*var\(--color-bg-secondary\)/, `${c.name} 背景必须是 --color-bg-secondary`)
   })
 
