@@ -70,3 +70,19 @@ const readMode = read('src/styles/read-mode.css')
 const floatNav = readMode.match(/^\.main-nav-float\s*\{[^}]*\}/m)?.[0] || ''
 assert.match(floatNav, /backdrop-filter:\s*blur\(12px\)/, '阅读浮航容器必须玻璃 blur(12px)（G16）')
 assert.match(floatNav, /border-radius:\s*8px/, '阅读浮航容器必须 8px 圆角（G16）')
+
+// G7/G10/G11/G19 slash 命令玻璃 + 按钮 8px + toast 10px
+const floating = read('src/styles/floating.css')
+const settingsCss = read('src/styles/settings-dialog.css')
+const welcomeCss = read('src/styles/welcome-screen.css')
+const panelsCss = read('src/styles/panels.css')
+const slash = floating.match(/\.slash-command\s*\{[^}]*\}/)?.[0] || ''
+assert.match(slash, /border:\s*0\.6px/, 'slash 命令必须 0.6px 边（G7）')
+assert.match(slash, /border-radius:\s*8px/, 'slash 命令必须 8px 圆角（G7）')
+assert.match(slash, /backdrop-filter/, 'slash 命令必须玻璃（G7）')
+assert.match(settingsCss, /\.ud-btn\s*\{[^}]*border-radius:\s*8px;/, '.ud-btn 必须 8px 圆角（G10）')
+assert.match(welcomeCss, /\.welcome-btn\s*\{[^}]*border-radius:\s*8px;/, '.welcome-btn 必须 8px 圆角（G10）')
+assert.match(panelsCss, /\.search-btn\s*\{[^}]*border-radius:\s*8px;/, '.search-btn 必须 8px 圆角（G10）')
+assert.match(settingsCss, /\.page-reset-button\s*\{[^}]*border-radius:\s*8px;/, '.page-reset-button 必须 8px 圆角（G11）')
+const toast = read('src/utils/toast.ts')
+assert.match(toast, /borderRadius\s*=\s*'10px'|borderRadius:\s*'10px'/, 'toast 必须 10px 圆角（G19）')

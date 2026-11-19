@@ -4,7 +4,7 @@
  * - Position: top-center, 20px from top, translateX(-50%), z-index 10000
  * - Width: min(420px, 90vw), min 200px
  * - Padding: 12px 16px 12px 18px
- * - Radius: var(--radius-md) = 10px
+ * - Radius: 10px
  * - Border: 0.7px solid var(--color-border)
  * - Background: var(--color-bg-white)
  * - Left color bar 3×20px radius 2px (per type)
@@ -97,8 +97,8 @@ export function toast(message: string, options: ToastOptions | number = {}): voi
   el.style.width = 'min(420px, 90vw)'
   el.style.minWidth = '200px'
   el.style.padding = '12px 16px 12px 18px'
-  el.style.borderRadius = 'var(--radius-md)'
-  el.style.border = '0.7px solid var(--color-border)'
+  el.style.borderRadius = '10px'
+  el.style.border = '0.6px solid var(--color-border)'
   el.style.background = 'var(--color-bg-white)'
   el.style.color = 'var(--color-text-primary)'
   el.style.fontSize = '14px'

@@ -427,7 +427,7 @@
 /* ── Buttons ── */
 .ud-btn  {
   padding: 8px 18px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 0.6px solid var(--border-subtle);
   background: var(--chrome-surface);
   color: var(--text-secondary);
@@ -786,7 +786,7 @@
   height: 48px;
   border: 0.6px solid var(--color-border);
   background: var(--color-bg-white);
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
   color: var(--color-text-body);

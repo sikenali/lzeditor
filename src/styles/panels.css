@@ -977,7 +977,7 @@
   color: var(--text-muted); white-space: nowrap; flex-shrink: 0; font-weight: 500;
 }
 .search-btn  {
-  height: 34px; padding: 0 12px; border-radius: 6px;
+  height: 34px; padding: 0 12px; border-radius: 8px;
   border: 0.6px solid var(--border-subtle); background: var(--background-elevated);
   color: var(--text-secondary); font-size: 13px;
   font-family: var(--font-sans);

@@ -8,9 +8,10 @@
   z-index: var(--z-popover);
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-card);
-  border: 0.7px solid var(--color-border-soft);
-  border-radius: var(--radius-lg);
+  background: rgba(var(--bg-rgb), 0.72);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 0.6px solid var(--color-border-soft);
+  border-radius: 8px;
   box-shadow: var(--color-popover-shadow);
   overflow: hidden;
 }
