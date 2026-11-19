@@ -13,7 +13,7 @@ const FONT_SIZE_OPTIONS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 22]
 const LINE_HEIGHT_OPTIONS: { value: '1.5' | '1.7' | '2.0'; label: string }[] = [
   { value: '1.5', label: '紧凑' }, { value: '1.7', label: '适中' }, { value: '2.0', label: '宽松' },
 ]
-const CONTENT_WIDTH_OPTIONS = ['960', '1024', '1200', '1280']
+const CONTENT_WIDTH_OPTIONS = ['760', '960', '1024', '1200', '1280']
 
 function renderContentSection(s: any, u: any) {
 
@@ -47,7 +47,7 @@ function renderContentSection(s: any, u: any) {
           <div className="setting-label"><span>内容宽度</span><span className="setting-hint">编辑区最大宽度</span></div>
           <div className="content-width-segmented">
             {CONTENT_WIDTH_OPTIONS.map(w => (
-              <button key={w} className={`content-width-btn ${(s.contentWidth || '1280') === w ? 'active' : ''}`} onClick={() => u('contentWidth', w)}>{w}</button>
+              <button key={w} className={`content-width-btn ${(s.contentWidth || '760') === w ? 'active' : ''}`} onClick={() => u('contentWidth', w)}>{w}</button>
             ))}
           </div>
         </div>

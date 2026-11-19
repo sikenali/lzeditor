@@ -44,6 +44,12 @@
   line-height: var(--read-line-height, 1.7);
   font-family: var(--read-font-family, var(--font-sans));
 }
+/* 模式显示重构：正文行高统一 27.33px，覆盖设置管线（上一规则仍消费 --read-line-height，
+   不写成死变量），使预览/阅读正文与编辑内容测度一致、非默认设置下不分叉。 */
+.read-article-body,
+.preview-doc  {
+  line-height: 27.33px;
+}
 .read-article-body h1  {
   font-size: 28px; font-weight: 700; color: var(--text-heading);
   margin: 0 0 20px 0; padding-bottom: 12px;
