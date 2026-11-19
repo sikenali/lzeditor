@@ -133,6 +133,7 @@ dark:   --shadow-xs 0 1px 3px rgba(0,0,0,0.50)  ... --shadow-xl 0 12px 40px rgba
 
 1. **深色边框对比度**：Nebula 深色边框 `#1E2A3A`/`#162030` 比 DESIGN-1 §7 墨夜版规定的 `≥ #2A2B2E` 更暗更细腻。这是 **lzc2vsdx 实际发货值**（视觉参考优先），边框更含蓄、深空感更强。§7 的对比度地板视为**建议性**——如你希望严格合规，可单独提亮深色边框，但会偏离 lzc2vsdx 观感。**默认跟随 lzc2vsdx。**
 2. **深色次要文字**：`--color-text-muted #64748B` 在深空底上对比度约 4.4:1（§7 要求 ≥4.5:1），临界。跟随 lzc2vsdx 原值，不做提升。
+2b. **电光青作浅底文字对比不足**：青 `#00D4AA` 对浅底 `#F4F7FA` 仅 ~1.5:1，**不能**作浅底正文文字。Nebula 的模型是「青**填充** + 深字 `--color-on-primary #0A1628`」（如按钮/CTA），文字对比由 on-primary 提供（青底深字 ≈10:1）。实施时把「主色对底色 ≥4.5:1」断言改为「on-primary 对主色 ≥4.5:1」，并确保主色填充表面文字用 `--color-on-primary`/`--accent-foreground`。
 3. **强调色迁移**：现有用户 localStorage 里可能存了旧的朱红/鎏金等 accent hex；`resolveAccent` 对 `#` 开头的值直接采用，旧 hex 会保留生效（不崩）。若存的是旧 preset id（如 `vermilion`），映射到新色板时找不到会回退默认青。可接受，无需迁移脚本。
 4. **`--t-*` 组件级主题对**：`themes.ts` 里大量 `--t-*`（veil/fg/shadow/surface 等）是 parchment/dark 手写对。切换 Nebula 后，这些**暖色基底派生值需核对**（尤其 `--t-hui-bg #FDF9F0`、`--t-bg-18 rgba(244,244,244,1)` 等浅色硬值要改冷调），否则浅色下会有零星暖色残留。
 5. **Milkdown/CM6 内容主题**：正文排版主题（typography-themes / acks-themes / code-themes）不强行换——它们是「正文阅读」域，与 app chrome 分离。仅确认默认主题在 Nebula 底色上可读。
