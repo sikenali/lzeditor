@@ -120,7 +120,7 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
 
     // Export / library pane surface (flat in light, glass in dark).
 
-    '--t-hui-bg':  '#FDF9F0',
+    '--t-hui-bg':  '#FFFFFF',
     '--t-tip-fg':  'rgba(30,30,35,1)',
 
     /* ── 组件级主题对（自动生成：light 值在本对象，dark 值在 dark 对象）── */

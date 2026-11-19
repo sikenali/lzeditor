@@ -521,7 +521,7 @@
   background: var(--chrome-surface);
 }
 .sidebar-header-icon  { font-size: 15px; color: var(--accent-primary); }
-.sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
+.sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; font-family: var(--font-display); }
 .sidebar-close-btn  {
   width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
   border-radius: 6px; color: var(--text-muted); border: none; background: none;
@@ -595,7 +595,7 @@
   background: var(--chrome-surface);
 }
 .sidebar-preview .sidebar-header-icon  { font-size: 15px; color: var(--accent-primary); }
-.sidebar-preview .sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
+.sidebar-preview .sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; font-family: var(--font-display); }
 .sidebar-preview .sidebar-scroll  { flex: 1; overflow-y: auto; padding: 16px; }
 /* 字号 / 行高 / 字体由 read-mode.css 的 --read-* 变量统一控制（同一组变量
    同时管预览和阅读模式），这里只留预览面板专属的色值和字距。 */
@@ -1533,6 +1533,7 @@
   padding: 0;
   border: none;
   background: transparent;
+  font-family: var(--font-display);
   cursor: pointer;
   border-radius: var(--radius-md);
 }
