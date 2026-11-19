@@ -1,31 +1,28 @@
 import { create } from 'zustand'
-import type { AIStoreState, AIAction, ApplyRecord, ChatMessage } from '../shared/types'
+import type { AIStoreState, AIMode, ApplyRecord, ChatEntry } from '../shared/types'
 
 export const useAIStore = create<AIStoreState>((set, get) => ({
   // AI Panel state
   panelVisible: false,
-  panelAction: null,
   panelSelectedText: '',
   panelPosition: null,
   panelStatus: 'idle',
   panelInput: '',
-  panelOutput: '',
-  panelError: null,
-  conversationMessages: [],
   lastSelection: null,
   applyHistory: [],
+  // Chat-style AI panel state
+  mode: 'write',
+  messages: [],
 
-  showPanel: (action: AIAction, selectedText: string, position: { x: number; y: number }) =>
+  // 打开面板：保留对话历史，仅重置本次输入与状态。
+  showPanel: (mode: AIMode, selectedText: string, position: { x: number; y: number }) =>
     set({
       panelVisible: true,
-      panelAction: action,
+      mode,
       panelSelectedText: selectedText,
       panelPosition: position,
       panelStatus: 'idle',
       panelInput: '',
-      panelOutput: '',
-      panelError: null,
-      conversationMessages: [],
     }),
 
   hidePanel: () =>
@@ -33,18 +30,22 @@ export const useAIStore = create<AIStoreState>((set, get) => ({
       panelVisible: false,
       panelStatus: 'idle',
       panelInput: '',
-      panelOutput: '',
-      panelError: null,
     }),
 
   setPanelInput: (input: string) => set({ panelInput: input }),
   setPanelStatus: (status: AIStoreState['panelStatus']) => set({ panelStatus: status }),
-  setPanelOutput: (output: string) => set({ panelOutput: output }),
-  setPanelError: (error: string | null) => set({ panelError: error }),
 
-  appendConversation: (message: ChatMessage) =>
+  setMode: (mode: AIMode) => set({ mode }),
+  setSelectedText: (text: string) => set({ panelSelectedText: text }),
+  addMessage: (message: ChatEntry) =>
+    set((state: AIStoreState) => ({ messages: [...state.messages, message] })),
+  updateMessage: (id: string, patch: Partial<ChatEntry>) =>
     set((state: AIStoreState) => ({
-      conversationMessages: [...state.conversationMessages, message],
+      messages: state.messages.map(x => (x.id === id ? { ...x, ...patch } : x)),
+    })),
+  appendStreamToMessage: (id: string, delta: string) =>
+    set((state: AIStoreState) => ({
+      messages: state.messages.map(x => (x.id === id ? { ...x, content: x.content + delta } : x)),
     })),
 
   recordApply: (record: Omit<ApplyRecord, 'id' | 'timestamp'>) =>

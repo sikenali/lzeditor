@@ -172,7 +172,7 @@ function App() {
     const toggleAI = () => {
       const s = useAIStore.getState()
       if (s.panelVisible) s.hidePanel()
-      else s.showPanel('question', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
+      else s.showPanel('write', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
     }
 
     const onKey = (e: KeyboardEvent) => {

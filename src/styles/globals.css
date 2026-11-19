@@ -21,7 +21,7 @@ body  {
 }
 
 /* ── Spring-like button press feedback (Response §1) ── */
-button, .preview-mode-btn, .toggle-btn, .theme-card, .ai-chip, .ai-action-btn, .settings-nav-item, .settings-save-btn, .menu-btn, [role="button"], input[type="checkbox"], input[type="radio"] {
+button, .preview-mode-btn, .toggle-btn, .theme-card, .settings-nav-item, .settings-save-btn, .menu-btn, [role="button"], input[type="checkbox"], input[type="radio"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -103,7 +103,7 @@ select:focus-visible {
 
 /* ── Reduced transparency ── */
 @media (prefers-reduced-transparency: reduce)  {
-  .toolbar, .ai-panel, .settings-dialog, .export-dialog,
+  .toolbar, .settings-dialog, .export-dialog,
   .language-selector, .lf-select-dropdown, .toolbar-dropdown,
   .toolbar-submenu {
     backdrop-filter: none !important;

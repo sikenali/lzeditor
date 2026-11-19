@@ -36,7 +36,7 @@ export const LeftNav: React.FC = () => {
   const openAI = useCallback(() => {
     const s = useAIStore.getState()
     if (s.panelVisible) s.hidePanel()
-    else s.showPanel('question', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
+    else s.showPanel('write', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
   }, [])
 
   const togglePanel = useCallback((key: 'library' | 'outline' | 'search') => {

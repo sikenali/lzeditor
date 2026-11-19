@@ -78,7 +78,7 @@ export const Toolbar: React.FC = () => {
       if (!range || range.from >= range.to) return ''
       return facade.getText().slice(range.from, range.to)
     })() : ''
-    s.showPanel('question', sel, { x: Math.max(8, window.innerWidth - 380), y: 120 })
+    s.showPanel('write', sel, { x: Math.max(8, window.innerWidth - 380), y: 120 })
   }, [])
 
   const onMenuAction = (action: string) => {

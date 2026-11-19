@@ -92,8 +92,9 @@ assert.match(selectFocus, /box-shadow:\s*0 0 0 3px var\(--accent-a10\)/, 'select
 const layout = read('src/styles/layout.css')
 const panels = read('src/styles/panels.css')
 const floating = read('src/styles/floating.css')
+const aiChat = read('src/styles/ai-chat.css')
 // 悬浮表面阴影走主题感知 token
-for (const [file, sel] of [[layout, /\.toolbar-submenu\s*\{/],[layout, /\.sidebar-outline\s*\{/],[layout, /\.sidebar-preview-wrapper\s*\{/],[floating, /\.ai-panel\s*\{/],[floating, /\.slash-command\s*\{/]]) {
+for (const [file, sel] of [[layout, /\.toolbar-submenu\s*\{/],[layout, /\.sidebar-outline\s*\{/],[layout, /\.sidebar-preview-wrapper\s*\{/],[aiChat, /\.ai-chat-panel\s*\{/],[floating, /\.slash-command\s*\{/]]) {
   const block = file.match(new RegExp(sel.source + '[^}]*\\}'))?.[0] || ''
   assert.match(block, /var\(--color-popover-shadow\)/, `${sel} 悬浮表面阴影必须 var(--color-popover-shadow)`)
 }
