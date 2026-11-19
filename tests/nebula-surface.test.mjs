@@ -49,3 +49,24 @@ assert.doesNotMatch(dialog, /u\('accentColor',\s*'vermilion'\)/, '重置不得�
 assert.match(dialog, /u\('accentColor',\s*'cyan'\)/, '重置必须写默认 cyan')
 
 console.log('nebula surface ok')
+
+// G2/G3/G4/G15/G16 玻璃 + 0.6px 发丝（Nebula）
+const aiChat = read('src/styles/ai-chat.css')
+const leftNav = layout.match(/\.app-left-nav\s*\{[^}]*\}/)?.[0] || ''
+assert.match(leftNav, /backdrop-filter:\s*blur\(12px\)/, '左 rail 必须玻璃 blur(12px)（G2）')
+const ai = aiChat.match(/\.ai-chat-panel\s*\{[^}]*\}/)?.[0] || ''
+assert.match(ai, /backdrop-filter:\s*blur\(12px\)/, 'AI 聊天面板必须玻璃 blur(12px)（G4）')
+assert.match(ai, /border-left:\s*0\.6px/, 'AI 聊天面板左边必须 0.6px 发丝（G4）')
+const footer = layout.match(/^\.app-footer\s*\{[^}]*\}/m)?.[0] || ''
+assert.match(footer, /backdrop-filter:\s*blur\(12px\)/, '页脚必须玻璃 blur(12px)（G15）')
+const outline = layout.match(/\.sidebar-outline\s*\{[^}]*\}/)?.[0] || ''
+assert.match(outline, /backdrop-filter:\s*blur\(12px\)/, '侧栏 outline 必须玻璃 blur(12px)（G3）')
+assert.match(outline, /border-right:\s*0\.6px/, '侧栏 outline 右边必须 0.6px（G3）')
+const library = layout.match(/\.sidebar-library\s*\{[^}]*\}/)?.[0] || ''
+assert.match(library, /border-right:\s*0\.6px/, '侧栏 library 右边必须 0.6px（G3）')
+const preview = layout.match(/\.sidebar-preview-wrapper\s*\{[^}]*\}/)?.[0] || ''
+assert.match(preview, /backdrop-filter:\s*blur\(12px\)/, '预览面板必须玻璃 blur(12px)（G3）')
+const readMode = read('src/styles/read-mode.css')
+const floatNav = readMode.match(/^\.main-nav-float\s*\{[^}]*\}/m)?.[0] || ''
+assert.match(floatNav, /backdrop-filter:\s*blur\(12px\)/, '阅读浮航容器必须玻璃 blur(12px)（G16）')
+assert.match(floatNav, /border-radius:\s*8px/, '阅读浮航容器必须 8px 圆角（G16）')

@@ -235,6 +235,10 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
+  background: rgba(var(--bg-rgb), 0.72);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 0.6px solid var(--color-border-soft);
+  border-radius: 8px;
   padding: 16px 0;
   z-index: 100;
   visibility: visible;
@@ -253,7 +257,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 0.7px solid rgba(204, 204, 204, 0.35);
+  border: 0.6px solid rgba(204, 204, 204, 0.35);
   cursor: pointer;
   display: flex;
   align-items: center;

@@ -11,8 +11,9 @@
   width: min(420px, 92vw);
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-white);
-  border-left: 1px solid var(--color-border-soft);
+  background: rgba(var(--bg-rgb), 0.72);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-left: 0.6px solid var(--color-border-soft);
   box-shadow: var(--color-popover-shadow);
   font-family: var(--font-family);
   z-index: 100;
