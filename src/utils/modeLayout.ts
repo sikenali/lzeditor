@@ -15,11 +15,7 @@ export function shouldShowRightPreview(opts: {
   appMode: string
 }): boolean {
   const { showPreview, appMode } = opts
-  return showPreview
-    && appMode !== 'code'
-    && appMode !== 'history'
-    && appMode !== 'style'
-    && appMode !== 'read'
+  return showPreview && (appMode === 'edit' || appMode === 'code')
 }
 
 /**

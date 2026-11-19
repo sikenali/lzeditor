@@ -12,8 +12,14 @@ assert.equal(
   true,
   '编辑模式 + 预览开启 → 显示预览（正常分屏）'
 )
-// 各 appMode 都不得显示预览
-for (const m of ['code', 'history', 'style', 'read']) {
+// 预览分屏：左栏可为代码（CM6），右栏仍显示预览
+assert.equal(
+  shouldShowRightPreview({ showPreview: true, appMode: 'code' }),
+  true,
+  '代码模式 + 预览开启 → 显示预览（分屏左栏 CM6、右栏预览）'
+)
+// 排版/阅读/历史独占全区域，不显示预览
+for (const m of ['history', 'style', 'read']) {
   assert.equal(
     shouldShowRightPreview({ showPreview: true, appMode: m }),
     false,

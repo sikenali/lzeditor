@@ -26,7 +26,7 @@ assert.match(sidebarPreview, /useScrollSync/, '分屏预览必须接滚动同步
 assert.match(app, /class="style-mode-stack">|className="style-mode-stack"/, '排版模式必须把样式面板装进右栏')
 assert.match(app, /app-right-panel--style/, '排版模式右栏必须有专属宽度')
 // 代码/历史/阅读不给右栏留位的排除逻辑集中在 modeLayout.shouldShowRightPreview/shouldShowRightPanel
-assert.match(modeLayout, /appMode !== 'code'/, '代码模式必须不给右栏留位')
+assert.match(modeLayout, /appMode === 'edit' \|\| appMode === 'code'/, '预览分屏左栏可为编辑或代码')
 
 // 两种导航布局下点「样式」都得有面板承载：只把预览藏掉而面板不出现，用户看到的就是点了没反应
 const topLayout = app.match(/const topLayout = \([\s\S]*?<\/>\n  \)/)?.[0] ?? ''
