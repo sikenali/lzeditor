@@ -522,6 +522,18 @@
 }
 .sidebar-header-icon  { font-size: 15px; color: var(--accent-primary); }
 .sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; font-family: var(--font-display); }
+/* 分区标题前 4×16px 青发光条（lzc2vsdx title-bar） */
+.sidebar-header-title::before  {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  box-shadow: 0 0 6px rgba(var(--tech-cyan-rgb), 0.35);
+  margin-right: 8px;
+}
 .sidebar-close-btn  {
   width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
   border-radius: 6px; color: var(--text-muted); border: none; background: none;
@@ -596,6 +608,18 @@
 }
 .sidebar-preview .sidebar-header-icon  { font-size: 15px; color: var(--accent-primary); }
 .sidebar-preview .sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; font-family: var(--font-display); }
+/* 分区标题前 4×16px 青发光条（lzc2vsdx title-bar） */
+.sidebar-header-title::before  {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  box-shadow: 0 0 6px rgba(var(--tech-cyan-rgb), 0.35);
+  margin-right: 8px;
+}
 .sidebar-preview .sidebar-scroll  { flex: 1; overflow-y: auto; padding: 16px; }
 /* 字号 / 行高 / 字体由 read-mode.css 的 --read-* 变量统一控制（同一组变量
    同时管预览和阅读模式），这里只留预览面板专属的色值和字距。 */
@@ -834,6 +858,18 @@
 .library-folder-rename-input:focus  { border-color: var(--color-primary); background: var(--color-bg-white); }
 .library-docs-section  { flex: 1; min-height: 0; padding: 10px; overflow: auto; }
 .library-section-title  { font-size: 11px; color: var(--text-muted); padding: 4px 2px 8px; }
+/* 库分区标题前 4×16px 青发光条（lzc2vsdx title-bar） */
+.library-section-title::before  {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  box-shadow: 0 0 6px rgba(var(--tech-cyan-rgb), 0.35);
+  margin-right: 8px;
+}
 .library-sidebar-footer  { padding: 10px; border-top: 0.7px solid var(--border-subtle); }
 .library-add-folder-btn  {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -1589,6 +1625,9 @@
   background: var(--color-primary-soft);
   color: var(--color-primary);
 }
+/* 弹簧微交互（lzc2vsdx）：悬停抬起 + 按下缩放（active 不抬起） */
+.rail-btn:hover:not(.active)  { transform: translateY(-1px); transition: transform var(--t-base) var(--ease-spring); }
+.rail-btn:active  { transform: scale(0.97); transition: transform var(--t-snap) var(--ease-spring); }
 /* 图标与子菜单点共处一个定位容器：点位锚定图标盒本身而非按钮，
    故任意按钮尺寸档下间距恒定 2px，无需为每档单独换算 */
 .rail-icon-wrap  {
