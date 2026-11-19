@@ -52,4 +52,9 @@ assert.match(readMode, /pageOfLine\(/, '目录跳转必须靠行号定位页码'
 assert.match(readMode, /OWN_ACTION/, '点击翻页必须放过链接和按钮')
 assert.match(readMode, /SpreadHtml|spreadHtml/, '阅读模式必须按页对渲染')
 
+// ── 默认进入编辑模式（所见即所得），而非代码模式 ──
+const store = read('src/store/editorStore.ts')
+assert.match(store, /appMode: 'edit' as const/, '默认必须进入编辑模式（WYSIWYG）而非代码模式')
+assert.doesNotMatch(store, /appMode: 'code' as const/, '默认不得再是代码模式')
+
 console.log('mode boundary checks passed')
