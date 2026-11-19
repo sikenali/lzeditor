@@ -62,14 +62,16 @@ export const TABLE_ITEMS: MenuItem[] = [
   { icon: 'ri-delete-bin-line', label: '删除表格', action: 'delete', disabled: true },
 ]
 
-export const MODE_ITEMS: MenuItem[] = [
-  { icon: 'ri-eye-2-line', label: '预览模式', action: 'preview' },
-  // Milkdown 默认（edit）后，CM6 独立成「代码/源码模式」——恢复被旧架构
-  // （默认即代码模式）删掉的入口，满足「点击切换」要求。
-  { icon: 'ri-code-s-line', label: '代码模式', action: 'code' },
-  { icon: 'ri-palette-line', label: '排版模式', action: 'style' },
-  { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
-]
+/** 模式菜单项：文案随 appMode 动态翻转（代码模式态显示「编辑模式」供切回）。
+ *  预览/代码(编辑)/排版/阅读 四项。预览分屏左栏编辑器类型 = 当前 appMode。 */
+export function getModeItems(appMode: string): MenuItem[] {
+  return [
+    { icon: 'ri-eye-2-line', label: '预览模式', action: 'preview' },
+    { icon: 'ri-code-s-line', label: appMode === 'code' ? '编辑模式' : '代码模式', action: 'code' },
+    { icon: 'ri-palette-line', label: '排版模式', action: 'style' },
+    { icon: 'ri-book-open-line', label: '阅读模式', action: 'read' },
+  ]
+}
 
 /**
  * 表格工具项的置灰只和「光标是否在表格内」有关，两个入口共用同一份。
@@ -255,17 +257,24 @@ export function useEditorActions() {
     facade.execCommand(yeliId)
   }, [setInsertPanel])
 
-  // 三模式：预览（左源码 + 右分屏预览，双向滚动同步）/ 代码（全宽源码）/ 排版（样式面板独占全宽，左侧源码隐藏）
+  // 模式：预览（左编辑/代码 + 右分屏预览）/ 代码↔编辑（同项翻转）/ 排版 / 阅读。
   const modeAction = useCallback((action: string) => {
     const st = useEditorStore.getState()
     if (action === 'preview') {
       const next = !st.showPreview
       st.setShowPreview(next)
-      if (next && st.appMode !== 'edit') st.setAppMode('edit')
+      // 左栏编辑器类型 = 当前 appMode；仅当处于非编辑/代码视图时归位到编辑。
+      if (next && st.appMode !== 'edit' && st.appMode !== 'code') st.setAppMode('edit')
       return
     }
-    if (action === 'code' || action === 'style' || action === 'read') {
+    if (action === 'code') {
+      // 代码/编辑同一项：代码模式下切回编辑，否则进代码。保留 showPreview（预览分屏内切换左栏）。
+      st.setAppMode(st.appMode === 'code' ? 'edit' : 'code')
+      return
+    }
+    if (action === 'style' || action === 'read') {
       st.setAppMode(st.appMode === action ? 'edit' : action)
+      st.setShowPreview(false)
     }
   }, [])
 

@@ -4,7 +4,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
 import { UiTip } from '../ui/UiTip'
 import {
-  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, MODE_ITEMS, applyTableItems,
+  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, getModeItems, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
 } from './editorActions'
 
@@ -159,7 +159,7 @@ export const LeftNav: React.FC = () => {
             : flyout.key === 'format' ? FORMAT_ITEMS
             : flyout.key === 'table' ? applyTableItems(tableActive)
             : flyout.key === 'insert' ? INSERT_ITEMS
-            : MODE_ITEMS
+            : getModeItems(appMode)
           }
           onAction={onMenuAction}
         />

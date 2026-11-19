@@ -9,9 +9,10 @@ const sidebarPreview = read('src/components/sidebar/SidebarPreview.tsx')
 const appCss = read('src/styles/app.css')
 const modeLayout = read('src/utils/modeLayout.ts')
 
-// ── 模式菜单四项：预览/代码/排版/阅读（Milkdown 默认 edit，CM6 独立成代码模式）──
+// ── 模式菜单四项：预览/代码(编辑)/排版/阅读（Milkdown 默认 edit，CM6 独立成代码模式）──
 assert.match(actions, /label: '预览模式', action: 'preview'/, '模式菜单必须有预览模式')
-assert.match(actions, /label: '代码模式', action: 'code'/, '模式菜单必须有代码模式（Milkdown 默认后 CM6 独立成源码模式）')
+assert.match(actions, /label: appMode === 'code' \? '编辑模式' : '代码模式'/, '代码/编辑同一菜单项：文案随状态翻转')
+assert.match(actions, /export function getModeItems\(appMode: string\)/, '模式菜单项必须是 getModeItems(appMode) 函数（动态文案）')
 assert.match(actions, /label: '排版模式', action: 'style'/, '模式菜单必须有排版模式')
 assert.match(actions, /label: '阅读模式', action: 'read'/, '阅读模式必须在模式菜单里')
 
@@ -19,8 +20,17 @@ assert.match(actions, /label: '阅读模式', action: 'read'/, '阅读模式必�
 const modeBlock = actions.match(/const modeAction[\s\S]*?\n  \}, \[\]\)/)?.[0] ?? ''
 assert.match(modeBlock, /st\.setShowPreview\(next\)/, '预览模式必须驱动右栏分屏预览')
 assert.doesNotMatch(modeBlock, /setOpenPanel\(/, '模式动作不应再弹模态预览面板')
-assert.match(modeBlock, /st\.appMode === action \? 'edit' : action/, '代码/排版模式必须可切换回来')
+assert.match(modeBlock, /st\.appMode !== 'edit' && st\.appMode !== 'code'/, '预览开时左栏不锁编辑：仅非编辑/代码视图归位到编辑')
+assert.match(modeBlock, /action === 'code'/, '代码模式动作必须存在')
+assert.match(modeBlock, /st\.setShowPreview\(false\)/, '样式/阅读模式必须关分屏预览（独占全区域）')
+assert.match(modeBlock, /st\.appMode === action \? 'edit' : action/, '样式/阅读模式必须可切换回来')
 assert.match(sidebarPreview, /useScrollSync/, '分屏预览必须接滚动同步')
+
+// ── Toolbar/LeftNav 用 getModeItems(appMode)（动态文案翻转）──
+const toolbar = read('src/components/layout/Toolbar.tsx')
+const leftNav = read('src/components/layout/LeftNav.tsx')
+assert.match(toolbar, /getModeItems\(appMode\)/, '顶栏模式菜单必须用 getModeItems(appMode)')
+assert.match(leftNav, /getModeItems\(appMode\)/, '左侧导航模式菜单必须用 getModeItems(appMode)')
 
 // ── 排版模式：左源码 + 右栏样式面板，样式面板不独占内容区 ──
 assert.match(app, /class="style-mode-stack">|className="style-mode-stack"/, '排版模式必须把样式面板装进右栏')
