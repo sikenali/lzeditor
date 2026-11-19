@@ -221,7 +221,7 @@ test('Milkdown 完整链冒烟：挂载 + 顶栏格式/表格/模式切换/面�
   // 10. 顶栏「AI 助手」面板打开（AI 回写依赖 facade.getSelection）
   await page.locator('.toolbar-btn', { has: page.locator('.ri-openai-fill') }).click()
   await sleep(500)
-  const aiOpen = await page.locator('.ai-panel, .ui-modal-overlay').count()
+  const aiOpen = await page.locator('.ai-chat-panel').count()
   check('顶栏 AI：面板打开', aiOpen > 0, `open=${aiOpen}`)
 
   check('冒烟全部通过：Milkdown 完整链挂载 + 顶栏命令真实生效', true)
