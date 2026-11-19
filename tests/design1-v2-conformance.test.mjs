@@ -31,7 +31,7 @@ assert.match(tokens, /--color-system-blue:\s*#007AFF/)
 
 // §8.1 弹框：UiModal 默认圆角 14px（lzc2vsdx），阴影必须走主题感知 token
 const modal = read('src/components/ui/UiModal.tsx')
-assert.match(modal, /radius = 14/, 'UiModal 默认圆角必须 14px（lzc2vsdx UiModal 默认）')
+assert.match(modal, /radius = 12/, 'UiModal 默认圆角必须 12px（§8.1）')
 const uiCss = read('src/styles/ui.css')
 assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-modal-shadow\)/, '弹框阴影必须主题感知 var(--color-modal-shadow)（§8.1）')
 

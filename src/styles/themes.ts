@@ -287,10 +287,6 @@ export const themeTokens: Record<ThemeType, Record<string, string>> = {
     '--color-modal-shadow': '0 8px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(0,212,170,0.08)',
     '--color-popover-shadow': '0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(0,212,170,0.05)',
     '--color-inset-highlight': 'rgba(255,255,255,0.05)',
-    // 深色玻璃弹窗（lzc2vsdx UiModal 深空毛玻璃；CSS 用 var(--x, fallback) 回退，浅色不设 → 不透明）
-    '--modal-glass-bg': 'rgba(10, 22, 40, 0.95)',
-    '--modal-glass-border': 'rgba(0, 212, 170, 0.12)',
-    '--modal-glass-inset': 'rgba(0, 212, 170, 0.06)',
 
     // ── Component-level variants — dark counterparts of the parchment set above. ──
     '--t-veil-2':  'rgba(255,255,255,0.02)',
