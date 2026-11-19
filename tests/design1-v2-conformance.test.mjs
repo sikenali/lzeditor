@@ -129,9 +129,9 @@ assert.match(panels, /\.insert-nav-item\.active[^{]*\{[^}]*var\(--color-inset-hi
 assert.match(panels, /\.export-body-redesigned \.insert-nav-item\.active[^{]*\{[^}]*var\(--color-inset-highlight\)/, '.export-body-redesigned .insert-nav-item.active 内描高光必须 var(--color-inset-highlight)')
 
 // ── DESIGN-1.md §2.1 毛玻璃顶栏/页脚 + --bg-rgb 主题 token（方案 A 严格合规）──
-assert.match(tokens, /--bg-rgb:\s*250,\s*247,\s*242/, '浅色 --bg-rgb 必须 = #FAF7F2（§1 羊皮纸基底）')
-assert.match(block('parchment'), /'--bg-rgb':\s*'250,\s*247,\s*242'/, 'parchment 主题必须含 --bg-rgb=#FAF7F2')
-assert.match(block('dark'), /'--bg-rgb':\s*'23,\s*23,\s*26'/, 'dark 主题必须含 --bg-rgb=#17171A')
+assert.match(tokens, /--bg-rgb:\s*244,\s*247,\s*250/, '浅色 --bg-rgb 必须 = #F4F7FA（Nebula 冷科技基底）')
+assert.match(block('parchment'), /'--bg-rgb':\s*'244,\s*247,\s*250'/, 'parchment 主题必须含 --bg-rgb=#F4F7FA')
+assert.match(block('dark'), /'--bg-rgb':\s*'15,\s*22,\s*35'/, 'dark 主题必须含 --bg-rgb=#0F1623')
 const toolbarRule = layout.match(/\.toolbar\s*\{[^}]*\}/)?.[0] || ''
 assert.match(toolbarRule, /rgba\(var\(--bg-rgb\),\s*0\.82\)/, '顶栏背景必须毛玻璃 rgba(var(--bg-rgb),0.82)（§2.1）')
 assert.match(toolbarRule, /backdrop-filter:\s*blur\(16px\)/, '顶栏必须 backdrop-filter blur(16px)（§2.1）')

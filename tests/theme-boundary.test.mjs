@@ -29,7 +29,7 @@ assert.doesNotMatch(colorTokens, /\[data-theme=/, 'color-tokens.css must not kee
 const settingsStore = read('src/store/settingsStore.ts')
 assert.match(settingsStore, /theme: 'parchment'/, 'default theme must be parchment')
 assert.doesNotMatch(settingsStore, /ACCEPT_PRESETS|id: 'red'/, 'legacy accent ids must be gone')
-assert.match(settingsStore, /vermilion/, 'new accent presets must be used')
+assert.match(settingsStore, /accentColor: 'cyan'/, 'default accent must be 电光青 (Nebula)')
 
 const layout1 = read('src/styles/layout.css')
 assert.match(layout1, /\.toolbar\s*\{[\s\S]*height:\s*56px/, 'toolbar must be 56px tall (2026-11-17 收窄，小圆点不被遮挡)')

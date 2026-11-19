@@ -30,8 +30,8 @@ const block = (css, sel) => {
 
 test('§8.2 依赖的 token 值本身是对的', () => {
   assert.match(tokensCss, /--radius-md:\s*12px/, '圆角 12px 由 --radius-md 提供')
-  assert.match(tokensCss, /--color-border:\s*#E5DFD3/, '§8.2 的边框色')
-  assert.match(tokensCss, /--color-bg-secondary:\s*#F7F3EA/, '§8.2 的底色')
+  assert.match(tokensCss, /--color-border:\s*#D4DEEB/, '§8.2 的边框色（Nebula）')
+  assert.match(tokensCss, /--color-bg-secondary:\s*#EEF2F7/, '§8.2 的底色（Nebula）')
   assert.match(tokensCss, /--color-bg-white:\s*#FFFFFF/, '§8.2 的 focus 底色')
 })
 

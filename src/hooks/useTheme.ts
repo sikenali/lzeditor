@@ -61,15 +61,10 @@ function relativeLuminance(hex: string): number {
 const DARK_ACCENT_FLOOR_LUM = relativeLuminance('#E05050')
 
 /** Legacy accent ids → new preset colors */
+// Nebula 迁移：旧强调色 id（vermilion/jade/cloud/ink/red/teal）已不存在于新色板。
+// 清空该映射，使这些持久化的旧 id 经 resolveAccent 落到 ACCENT_PRESETS[0]（电光青）。
+// gold/green 仍在新色板，直接由 ACCENT_PRESETS 解析为新色值。自定义 hex 不受影响。
 const LEGACY_ACCENTS: Record<string, string> = {
-  red: '#C0392B',
-  vermilion: '#C0392B',
-  gold: '#D3A93F',
-  green: '#3E8C6E',
-  jade: '#3E8C6E',
-  teal: '#4A72A8',
-  cloud: '#4A72A8',
-  ink: '#2F3640',
 }
 
 /** Dark-mode boost: if the resolved accent is dimmer than the design floor
@@ -140,10 +135,10 @@ export function applyTheme(theme: string, accent?: string): void {
   }
 
   // ── Accent colour overrides the theme default primary ──
-  // In dark mode, DESIGN.md §1 requires accent ≥ #E05050 for contrast. If the
-  // user picked an accent that is dimmer than that floor, lift it (keep hue)
-  // instead of painting the whole UI with a dim colour like 黛墨.
-  let hex = resolveAccent(accent)
+  // 深色下：若命中 Nebula 预设，用其 dark 变体（如青 #00F5C8，忠实 lzc2vsdx）；
+  // 否则保色相提亮自定义 hex 到亮度地板（DESIGN.md §1/§7 对比度）。
+  const preset = ACCENT_PRESETS.find(a => a.id === resolveAccentId(accent))
+  let hex = type === 'dark' && preset ? preset.dark : resolveAccent(accent)
   if (type === 'dark') {
     hex = ensureDarkAccent(hex)
   }
@@ -167,10 +162,10 @@ export function applyTheme(theme: string, accent?: string): void {
 }
 
 function resolveAccentId(accent?: string): string {
-  if (!accent) return 'vermilion'
+  if (!accent) return 'cyan'
   const trimmed = accent.trim()
   if (trimmed.startsWith('#')) {
-    return ACCENT_PRESETS.find(a => a.color.toLowerCase() === trimmed.toLowerCase())?.id ?? 'vermilion'
+    return ACCENT_PRESETS.find(a => a.color.toLowerCase() === trimmed.toLowerCase())?.id ?? 'cyan'
   }
   return trimmed
 }

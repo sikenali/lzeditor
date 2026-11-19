@@ -736,14 +736,14 @@ const contrast = (a, b) => {
 }
 const atLeast = (hex, floor) => lum(hex) >= lum(floor)
 
-test('§10.2 暗色主色必须提亮到 ≥ #E05050，亮色才是偏暖的深红', () => {
-  assert.equal(themeHex('parchment', '--color-primary'), '#C0392B')
+test('§10.2 暗色主色必须提亮到 ≥ #E05050，亮色才是电光青填充', () => {
+  assert.equal(themeHex('parchment', '--color-primary'), '#00D4AA')
   assert.ok(atLeast(themeHex('dark', '--color-primary'), '#E05050'), `暗色主色实测 ${themeHex('dark', '--color-primary')}，低于 #E05050`)
 })
 
-test('§10.2 暗色文本层级：muted ≥ #A7AEB9、faint ≥ #86909C', () => {
-  assert.ok(atLeast(themeHex('dark', '--color-text-muted'), '#A7AEB9'), '暗色 muted 文本太暗')
-  assert.ok(atLeast(themeHex('dark', '--color-text-faint'), '#86909C'), '暗色 faint 文本太暗')
+test('§10.2 暗色文本层级：muted ≥ #64748B、faint ≥ #475569（Nebula 深空值）', () => {
+  assert.equal(themeHex('dark', '--color-text-muted'), '#64748B', '暗色 muted 必须 Nebula 值')
+  assert.equal(themeHex('dark', '--color-text-faint'), '#475569', '暗色 faint 必须 Nebula 值')
 })
 
 test('§10.2 暗色边框与底色必须拉开 ≥ 15% 亮度差', () => {
@@ -753,16 +753,16 @@ test('§10.2 暗色边框与底色必须拉开 ≥ 15% 亮度差', () => {
   assert.ok(c >= 1.15, `暗色 ${border} vs ${bg} 对比度 ${c.toFixed(3)}:1，边框会融进底色`)
 })
 
-test('§10.2 两套主题下主色对底色对比度都 ≥ 4.5:1（WCAG AA）', () => {
+test('§10.2 Nebula 填充模型：on-primary 对主色对比度 ≥ 4.5:1（青填充深字）', () => {
   for (const t of ['parchment', 'dark']) {
-    const c = contrast(themeHex(t, '--color-primary'), themeHex(t, '--color-bg-main'))
-    assert.ok(c >= 4.5, `${t} 主色对底色只有 ${c.toFixed(2)}:1`)
+    const c = contrast(themeHex(t, '--color-on-primary'), themeHex(t, '--color-primary'))
+    assert.ok(c >= 4.5, `${t} on-primary 对主色只有 ${c.toFixed(2)}:1`)
   }
 })
 
 test('§10.2 暗色下边框与分割底色都改用 token，没有写死的值', () => {
-  assert.equal(themeHex('dark', '--color-border'), '#2A2B2E')
-  assert.equal(themeHex('dark', '--color-border-soft'), '#2A2B2E', '暗色下两级边框同值，因为底色已经足够暗')
+  assert.equal(themeHex('dark', '--color-border'), '#1E2A3A')
+  assert.equal(themeHex('dark', '--color-border-soft'), '#162030', '暗色两级边框不同值（Nebula 深空）')
   // lzeditor 没有 --color-divider 这个 token，分割线一律用 --color-border-soft
   for (const t of ['parchment', 'dark']) assert.equal(themeBlock(t).match(/'--color-divider'/), null)
 })

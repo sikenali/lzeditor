@@ -63,7 +63,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   apiKeys: DEFAULT_API_KEYS,
   selectedModelId: 'anthropic-claude',
   theme: 'parchment',
-  accentColor: 'vermilion',
+  accentColor: 'cyan',
   activeGroup: 'theme',
   subTab: '',
   exportFormat: 'pdf',
@@ -186,7 +186,7 @@ window.addEventListener('beforeunload', () => {
 /** Resolve the effective accent color for a given preset id (or a raw hex). */
 export function getAccentColor(presetId: string): string {
   if (presetId && /^#[0-9a-fA-F]{6}$/.test(presetId)) return presetId
-  return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#C0392B'
+  return ACCENT_PRESETS.find(p => p.id === presetId)?.color ?? '#00D4AA'
 }
 
 export function saveSettingsToStorage(settings: Partial<SettingsState>) {
