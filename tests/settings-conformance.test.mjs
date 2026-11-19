@@ -37,4 +37,8 @@ assert.match(css, /\.theme-preview-thumb\s*\{[\s\S]{0,300}?height:\s*100px;/, '�
 assert.match(css, /\.accent-circle\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;/, '色盘必须 64px（lzc2vsdx）')
 assert.match(css, /\.accent-check-icon\s*\{[^}]*font-size:\s*20px;/, '✓ 徽标必须 20px（lzc2vsdx）')
 
+// 选中色盘青晕（lzc2vsdx .accent-swatch.active）：预设圆盘选中必须挂 current class，且 .current/.active 有青晕
+assert.match(dialog, /className=\{`accent-circle\$\{accent === p\.id \? ' current' : ''\}`\}/, '预设色盘选中必须挂 current class')
+assert.match(css, /\.accent-circle\.current,\s*\.accent-circle-custom\.active\s*\{[^}]*box-shadow:\s*0 0 0 3px rgba\(var\(--tech-cyan-rgb\),\s*0\.2\)/, '选中色盘（预设+自定义）必须青色光晕')
+
 console.log('settings conformance ok')

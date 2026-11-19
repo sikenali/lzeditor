@@ -242,7 +242,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
               className="accent-item"
               onClick={() => u('accentColor', p.id)}
             >
-              <div className="accent-circle" style={{ backgroundColor: p.color }}>
+              <div className={`accent-circle${accent === p.id ? ' current' : ''}`} style={{ backgroundColor: p.color }}>
                 {accent === p.id && <span className="remix accent-check-icon ri-check-line"></span>}
               </div>
               <div className={`accent-name${accent === p.id ? ' current' : ''}`}>{p.name}</div>

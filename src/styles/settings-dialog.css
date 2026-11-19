@@ -891,9 +891,10 @@
   justify-content: center;
   transition: transform var(--t-base) var(--ease-spring), box-shadow var(--t-base) var(--ease);
 }
-/* 光晕 + 悬停抬起（lzc2vsdx） */
+/* 光晕 + 悬停抬起（lzc2vsdx）：预设 + 自定义选中均有青晕 */
 .accent-item:hover .accent-circle  { transform: translateY(-2px); }
-.accent-circle.current  {
+.accent-circle.current,
+.accent-circle-custom.active  {
   box-shadow: 0 0 0 3px rgba(var(--tech-cyan-rgb), 0.2), 0 0 16px rgba(var(--tech-cyan-rgb), 0.4);
 }
 .accent-check-icon  { font-size: 20px; color: var(--color-on-primary); }
