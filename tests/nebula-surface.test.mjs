@@ -25,4 +25,27 @@ assert.match(read('src/styles/welcome-screen.css'), /\.welcome-btn--primary[^{]*
 const panels = read('src/styles/panels.css')
 assert.doesNotMatch(panels, /background[^;]*var\(--color-primary\)[^}]*color:\s*#fff/, '主色填充不得白字')
 
+// 5. 评审 Important #2：强调色/主色填充上的文字必须 on-primary / accent-foreground，
+//    禁止 #fff 白字压亮青底（白字对青底仅 ~1.9:1）。逐个核对评审列出的 5 处。
+const settingsDialog = read('src/styles/settings-dialog.css')
+for (const [file, sel] of [
+  [layout, /\.app-footer-btn:hover[^{]*\{[^}]*color:\s*#fff/],
+  [settingsDialog, /\.config-tab\.active[^{]*\{[^}]*color:\s*#fff/],
+  [settingsDialog, /\.lf-checkbox\.checked[^{]*\{[^}]*color:\s*#fff/],
+  [panels, /\.lf-checkbox\.checked[^{]*\{[^}]*color:\s*#fff/],
+  [settingsDialog, /\.accent-check-icon[^{]*\{[^}]*color:\s*#fff/],
+]) {
+  assert.doesNotMatch(file, sel, '强调色/主色填充不得白字（用 --accent-foreground/--color-on-primary）')
+}
+// 全站：同规则内 accent/primary 填充 + color:#fff 一律禁止
+const fillWhite = /(background|border-color)[^;]*var\(--(?:color-primary|accent-primary)\)[^}]*color:\s*#fff|color:\s*#fff[^}]*background[^;]*var\(--(?:color-primary|accent-primary)\)/
+for (const f of cssFiles) {
+  assert.doesNotMatch(read(`src/styles/${f}`), fillWhite, `${f} 主色/强调色填充不得白字`)
+}
+
+// 6. 评审 Important #4：重置强调色必须写新默认 id 'cyan'（旧 'vermilion' 落回青但色块不选中）
+const dialog = read('src/components/panels/SettingsDialog.tsx')
+assert.doesNotMatch(dialog, /u\('accentColor',\s*'vermilion'\)/, '重置不得写旧 vermilion id')
+assert.match(dialog, /u\('accentColor',\s*'cyan'\)/, '重置必须写默认 cyan')
+
 console.log('nebula surface ok')

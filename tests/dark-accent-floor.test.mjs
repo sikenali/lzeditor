@@ -16,6 +16,12 @@ assert.match(theme, /ensureDarkAccent|lightenToFloor|darkAccentBoost/i, '必须�
 assert.match(theme, /hexToHsl|relativeLuminance|hslToHex/, '必须实现 HSL/亮度转换（保色相提亮而非混白褪色）')
 
 // ── 深色分支必须调用通用提亮而非只查两个红色的映射 ──
-assert.match(theme, /if \(type === 'dark'\)[\s\S]{0,120}ensureDarkAccent|ensureDarkAccent[\s\S]{0,80}type === 'dark'/, '深色分支必须调用通用提亮函数')
+assert.match(theme, /type === 'dark'[\s\S]{0,400}ensureDarkAccent/, '深色分支必须调用通用提亮函数')
+
+// ── 评审 Critical #1 回归：深色下仅真命中 Nebula 预设（id/色值）才用 dark 变体；
+//    自定义 hex / 旧 id 落回默认时，必须走 ensureDarkAccent 保色相提亮，不得被预设吞掉 ──
+assert.match(theme, /resolveAccentPreset/, '必须实现「仅真预设命中」判定')
+assert.match(theme, /accentPreset\s*\?\s*accentPreset\.dark/, '深色下仅真预设用 dark 变体')
+assert.match(theme, /ensureDarkAccent\(hex\)/, '自定义 hex 必须走保色相提亮')
 
 console.log('dark accent floor ok')

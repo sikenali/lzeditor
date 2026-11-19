@@ -40,7 +40,7 @@
   --glow-md: 0 8px 32px rgba(var(--tech-cyan-rgb), 0.18);
   --glow-lg: 0 12px 48px rgba(var(--tech-cyan-rgb), 0.25);
   --btn-shadow: rgba(0, 212, 170, 0.28);
-  --color-focus-ring: #007AFF;
+  --color-focus-ring: rgba(var(--tech-cyan-rgb), 0.4);
   --color-modal-shadow: 0 4px 20px rgba(0,0,0,0.06);
   --color-popover-shadow: 0 4px 24px rgba(0,0,0,0.10);
   --color-inset-highlight: rgba(255,255,255,0.55);

@@ -135,12 +135,14 @@ export function applyTheme(theme: string, accent?: string): void {
   }
 
   // ── Accent colour overrides the theme default primary ──
-  // 深色下：若命中 Nebula 预设，用其 dark 变体（如青 #00F5C8，忠实 lzc2vsdx）；
-  // 否则保色相提亮自定义 hex 到亮度地板（DESIGN.md §1/§7 对比度）。
-  const preset = ACCENT_PRESETS.find(a => a.id === resolveAccentId(accent))
-  let hex = type === 'dark' && preset ? preset.dark : resolveAccent(accent)
+  // 深色下：仅当 accent 真命中 Nebula 预设（id 或色值）才用其 dark 变体（如青 #00F5C8）；
+  // 否则（自定义 hex，或旧 id 落回默认色）保色相提亮到亮度地板（DESIGN.md §1/§7 对比度）。
+  // 评审 Critical #1：不得让 resolveAccentId 的 ?? 'cyan' 回退把自定义 hex 误判成预设而吞掉。
+  const accentPreset = resolveAccentPreset(accent)
+  let hex = resolveAccent(accent)
   if (type === 'dark') {
-    hex = ensureDarkAccent(hex)
+    const byColor = ACCENT_PRESETS.find(a => a.color === hex || a.dark === hex)
+    hex = accentPreset ? accentPreset.dark : byColor ? byColor.dark : ensureDarkAccent(hex)
   }
   const rgb = hexToRgb(hex)
   s.setProperty('--color-primary', hex)
@@ -168,6 +170,18 @@ function resolveAccentId(accent?: string): string {
     return ACCENT_PRESETS.find(a => a.color.toLowerCase() === trimmed.toLowerCase())?.id ?? 'cyan'
   }
   return trimmed
+}
+
+/** 判断 accent 是否真命中 Nebula 预设（按 id 或色值）；自定义 hex / 旧 id 返回 null。
+ *  与 resolveAccentId 不同：resolveAccentId 会把未知值回退成 'cyan'（供 data-accent 调试属性），
+ *  此函数严格判定，防止深色下把自定义 hex 误判成预设而用其 dark 变体吞掉原色相。 */
+function resolveAccentPreset(accent: string | undefined | null): { dark: string } | null {
+  if (!accent) return ACCENT_PRESETS[0]
+  const trimmed = accent.trim()
+  if (trimmed.startsWith('#')) {
+    return ACCENT_PRESETS.find(a => a.color.toLowerCase() === trimmed.toLowerCase()) ?? null
+  }
+  return ACCENT_PRESETS.find(a => a.id === trimmed) ?? null
 }
 
 export function useTheme() {

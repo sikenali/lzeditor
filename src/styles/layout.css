@@ -1447,7 +1447,7 @@
 }
 .app-footer-btn:hover  {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   transform: translateY(-2px);
 }
 .app-footer-btn .remix  { font-size: 14px; }

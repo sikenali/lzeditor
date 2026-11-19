@@ -466,7 +466,7 @@
 .emoji-dialog .ud-right-content  { padding: 12px; }
 .config-tab.active  {
   background: var(--accent-primary);
-  color: #fff;
+  color: var(--accent-foreground);
 }
 .api-key-item.active  {
   border-color: var(--accent-primary) !important;
@@ -517,7 +517,7 @@
 .lf-checkbox.checked .lf-checkbox-box  {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: #fff;
+  color: var(--accent-foreground);
   box-shadow: 0 0 0 3px var(--accent-a15);
 }
 .lf-checkbox.checked .lf-checkbox-box .remix  {
@@ -930,7 +930,7 @@
   align-items: center;
   justify-content: center;
 }
-.accent-check-icon  { font-size: 30px; color: #fff; }
+.accent-check-icon  { font-size: 30px; color: var(--color-on-primary); }
 .accent-name  {
   font-size: 15px;
   color: var(--color-text-body);

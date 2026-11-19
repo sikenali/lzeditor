@@ -168,7 +168,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
 
   const resetAll = () => {
     u('theme', 'parchment')
-    u('accentColor', 'vermilion')
+    u('accentColor', 'cyan')
     u('navMode', 'top')
     toast('已恢复默认')
   }

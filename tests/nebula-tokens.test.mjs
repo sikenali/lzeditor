@@ -24,4 +24,9 @@ assert.match(tokens, /--t-slow:\s*280ms/, 't-slow 必须 280ms')
 // ── glow 体系引用 tech-cyan-rgb ──
 assert.match(tokens, /--glow-sm:\s*0 4px 20px rgba\(var\(--tech-cyan-rgb\),\s*0\.12\)/, 'glow-sm 必须引用 tech-cyan-rgb')
 
+// ── 评审 Important #3：焦点环必须 Nebula 电光青（替代系统蓝 #007AFF，设计 §3.5）──
+const themes = read('src/styles/themes.ts')
+assert.match(tokens, /--color-focus-ring:\s*rgba\(var\(--tech-cyan-rgb\),\s*0\.4\)/, 'tokens.css 焦点环必须 Nebula 电光青')
+assert.equal((themes.match(/'--color-focus-ring':\s*'rgba\(var\(--tech-cyan-rgb\),\s*0\.4\)'/g) || []).length, 2, 'themes.ts 浅/深焦点环都必须 Nebula 电光青')
+
 console.log('nebula tokens ok')

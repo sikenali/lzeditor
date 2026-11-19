@@ -846,6 +846,7 @@
 /* ACKS 渲染宿主：不设额外排版，样式由 ACKS 渲染器/主题决定（不在 LZ_HOST_SELECTORS，避免 token CSS 泄漏） */
 .style-read-acks  {
   max-width: 100%;
+  line-height: 27.33px;
 }
 
 .style-panel  {
@@ -962,7 +963,7 @@
   color: var(--text-secondary); line-height: 1.2;
   user-select: none; white-space: nowrap;
 }
-.lf-checkbox.checked  { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; box-shadow: 0 0 0 3px var(--accent-a15); }
+.lf-checkbox.checked  { background: var(--accent-primary); border-color: var(--accent-primary); color: var(--accent-foreground); box-shadow: 0 0 0 3px var(--accent-a15); }
 .lf-checkbox-box .remix  { font-size: 11px; line-height: 1; opacity: 0; transform: scale(0.6); transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast) var(--ease); }
 .lf-checkbox.checked .lf-checkbox-box .remix  { opacity: 1; transform: scale(1); }
 
