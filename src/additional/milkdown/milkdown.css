@@ -34,7 +34,7 @@
 .textus-editor-shell .milkdown {
   height: 100%;
   overflow: auto;
-  background: transparent;
+  background: var(--doc-bg);
 }
 
 /* The content column: mirrors .cm-content in code-editor.css — the same

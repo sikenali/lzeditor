@@ -90,6 +90,7 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
   const shellRef = useRef<HTMLDivElement | null>(null)
   const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
   const lineHeight = useSettingsStore((s) => s.lineHeight)
+  const contentWidth = useSettingsStore((s) => s.contentWidth)
 
   // 编辑设置里的字号 / 行高同样作用于 WYSIWYG，否则两种编辑模式正文尺度不一致。
   useEffect(() => {
@@ -98,6 +99,12 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
     shell.style.setProperty('--cm-font-size', `${defaultFontSize}px`)
     shell.style.setProperty('--cm-line-height', lineHeight || '1.8')
   }, [defaultFontSize, lineHeight])
+  // 内容列宽跟随编辑设置（G14）：默认 760px，用户可调 960/1024/1200/1280
+  useEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+    shell.style.setProperty("--document-width", `${contentWidth}px`)
+  }, [contentWidth])
   const getScroller = useCallback(
     () => shellRef.current?.querySelector<HTMLElement>('.milkdown') ?? null,
     [],
