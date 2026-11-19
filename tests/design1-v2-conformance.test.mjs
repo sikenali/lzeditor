@@ -35,23 +35,25 @@ assert.match(modal, /radius = 14/, 'UiModal 默认圆角必须 14px（lzc2vsdx U
 const uiCss = read('src/styles/ui.css')
 assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-modal-shadow\)/, '弹框阴影必须主题感知 var(--color-modal-shadow)（§8.1）')
 
-// §5.1/§5.3 设置中心：960px 上限（2026-11-18 更紧凑，原 1280），导航 180px/44px，系统蓝激活
+// lzc2vsdx 设置中心：1100px 上限（88vw/max-1100/86vh），导航 200px/42px，青色发光激活
 const settings = read('src/components/panels/SettingsDialog.tsx')
-assert.match(settings, /PANEL_MAX_WIDTH = 1280/, '设置弹框最大宽必须 1280px（§5.1）')
+assert.match(settings, /PANEL_MAX_WIDTH = 1100/, '设置弹框最大宽必须 1100px（lzc2vsdx）')
 const sdlg = read('src/styles/settings-dialog.css')
 const navList = sdlg.match(/\.settings-nav-list\s*\{[^}]*\}/)?.[0] || ''
-assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3）')
+assert.match(navList, /width:\s*200px/, '设置导航侧栏必须 200px（lzc2vsdx）')
 const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
-assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
+assert.match(navRow, /height:\s*42px/, '设置导航条目必须 42px（lzc2vsdx）')
 const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
-assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须系统蓝浅底')
-// 3px 左条是独立伪元素规则（.settings-nav-row.active::before），不能嵌在 .active 块里，单独断言
+assert.match(navActive, /var\(--color-primary-soft\)/, '激活态必须主色浅底（lzc2vsdx）')
+// 3×22px 青发光左条是独立伪元素规则（.settings-nav-row.active::before），不能嵌在 .active 块里，单独断言
 const navBefore = sdlg.match(/\.settings-nav-row\.active::before\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navBefore, /width:\s*3px/, '激活态必须 3px 左条（::before）')
-assert.match(navBefore, /var\(--color-system-blue\)/, '左条必须系统蓝')
+assert.match(navBefore, /height:\s*22px/, '激活态左条必须 22px 高（lzc2vsdx）')
+assert.match(navBefore, /var\(--color-primary\)/, '左条必须主色青（lzc2vsdx）')
+assert.match(navBefore, /box-shadow:\s*0 0 8px rgba\(var\(--tech-cyan-rgb\),\s*0\.5\)/, '左条必须青色发光（lzc2vsdx）')
 // 激活态文字/图标颜色在各自子规则（.settings-nav-row.active .settings-nav-ico/.txt），单独断言
-assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须系统蓝')
-assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须系统蓝')
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-primary\)/, '激活态图标必须主色青')
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-primary\)/, '激活态文字必须主色青')
 
 // §8.2/§10.2 键盘焦点环统一系统蓝，但输入框 focus 边框与外发光保持主色
 const uiCss4 = read('src/styles/ui.css')

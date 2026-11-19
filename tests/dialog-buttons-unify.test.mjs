@@ -12,7 +12,7 @@ assert.match(colorTokens, /--accent-hover:\s*color-mix\(in srgb,\s*var\(--accent
 // 主按钮文字/背景/线框统一走 accent token，禁硬编码白字
 assert.match(settingsDialog, /\.ud-btn--primary\s*\{[^}]*color:\s*var\(--accent-foreground\)/, '.ud-btn--primary 文字必须走 accent-foreground')
 assert.doesNotMatch(settingsDialog, /\.ud-btn--primary\s*\{[^}]*color:\s*(white|#fff)\b/, '.ud-btn--primary 不得硬编码白字')
-assert.match(settingsDialog, /\.settings-save-btn\s*\{[^}]*border:\s*0\.7px solid var\(--accent-primary\)/, '.settings-save-btn 必须有统一线框')
+assert.match(settingsDialog, /\.settings-save-btn\s*\{[^}]*border:\s*0\.6px solid var\(--accent-primary\)/, '.settings-save-btn 必须有统一线框')
 
 // .ui-btn--primary 缺 base 规则（静止无底=不显示），必须补 accent 实底 + accent-foreground 字
 assert.match(uiCss, /\.ui-btn--primary\s*\{[^}]*background:\s*var\(--accent-primary\)/, '.ui-btn--primary 必须补 accent 实底 base')
@@ -30,7 +30,7 @@ assert.doesNotMatch(welcomeCss, /\.welcome-btn--ghost\s*\{[^}]*color:\s*(white|#
 // 最终审查补漏：.btn-save（ModelSettingsTab 保存）必须走 accent token，不得硬编码白字/绕过 accent
 assert.match(settingsDialog, /\.btn-save\s*\{[^}]*background:\s*var\(--accent-primary\)/, '.btn-save 背景必须走 accent-primary')
 assert.match(settingsDialog, /\.btn-save\s*\{[^}]*color:\s*var\(--accent-foreground\)/, '.btn-save 文字必须走 accent-foreground')
-assert.match(settingsDialog, /\.btn-save\s*\{[^}]*border:\s*0\.7px solid var\(--accent-primary\)/, '.btn-save 必须有统一线框')
+assert.match(settingsDialog, /\.btn-save\s*\{[^}]*border:\s*0\.6px solid var\(--accent-primary\)/, '.btn-save 必须有统一线框')
 assert.doesNotMatch(settingsDialog, /\.btn-save\s*\{[^}]*color:\s*(white|#fff)\b/, '.btn-save 不得硬编码白字')
 // .search-btn--primary 静止态文字也必须走 accent-foreground（panels.css 两处定义）
 const panelsCss = read('src/styles/panels.css')
