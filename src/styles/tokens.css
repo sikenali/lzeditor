@@ -32,6 +32,14 @@
   --color-system-blue: #007AFF;
   --color-system-blue-soft: rgba(0,122,255,0.10);
   --color-glow: #00D4AA;
+  /* Nebula 强调色与 glow 光晕体系（随强调色 rgb 变量） */
+  --tech-cyan: #00D4AA;
+  --tech-cyan-rgb: 0, 212, 170;
+  --glow-xs: 0 2px 8px rgba(var(--tech-cyan-rgb), 0.08);
+  --glow-sm: 0 4px 20px rgba(var(--tech-cyan-rgb), 0.12);
+  --glow-md: 0 8px 32px rgba(var(--tech-cyan-rgb), 0.18);
+  --glow-lg: 0 12px 48px rgba(var(--tech-cyan-rgb), 0.25);
+  --btn-shadow: rgba(0, 212, 170, 0.28);
   --color-focus-ring: #007AFF;
   --color-modal-shadow: 0 4px 20px rgba(0,0,0,0.06);
   --color-popover-shadow: 0 4px 24px rgba(0,0,0,0.10);
@@ -40,6 +48,7 @@
   /* 自托管：Inter 负责拉丁，思源黑体负责中文（盒子零系统字体，不能靠系统栈） */
   --font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --font-family-cn: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
 
   --text-xs: 12px; --text-sm: 13px; --text-md: 14px; --text-lg: 15px;
   --text-xl: 16px; --text-2xl: 18px; --text-3xl: 20px; --text-4xl: 24px;
@@ -71,10 +80,11 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
   --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
 
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* 入场 / 离场：起步快，落在最后一刻 */
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* 屏幕内的位移与旋转：两端收住 */
-  --t-fast: 150ms; --t-base: 200ms; --t-slow: 300ms;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* 轻触微弹（DESIGN-1 v2 默认缓动 cubic-bezier(0.4,0,0.2,1)） */
+  --t-snap: 80ms; --t-fast: 120ms; --t-base: 180ms; --t-slow: 280ms;
   --transition-fast: var(--t-fast) var(--ease);
   --transition-base: var(--t-base) var(--ease); --transition-slow: var(--t-slow) var(--ease);
 
