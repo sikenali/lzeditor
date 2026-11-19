@@ -105,6 +105,27 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
     if (!shell) return
     shell.style.setProperty("--document-width", `${contentWidth}px`)
   }, [contentWidth])
+  // G13 纸面必须跟随 app 亮/暗，不能跟 OS prefers-color-scheme。vendored
+  // content-themes.css 的 [data-content-theme="paper"] 只按 shell 上的 data-theme
+  // 或 OS 媒体查询选纸面 token，所以壳必须镜像 app data-theme（同 TextusPreview）。
+  // 同时把 --doc-bg 钉死在壳 inline 上，覆盖 vendored 的暗纸 #1f1b16，命中 plan 的
+  // 字面 #1C1C1F（:root 上 applyTheme 已按当前主题写好 inline --doc-bg）。
+  useEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+    const root = document.documentElement
+    const apply = () => {
+      const theme = root.getAttribute('data-theme')
+      if (theme === 'dark' || theme === 'light') shell.setAttribute("data-theme", theme)
+      else shell.removeAttribute('data-theme')
+      const bg = root.style.getPropertyValue('--doc-bg')
+      if (bg) shell.style.setProperty("--doc-bg", bg)
+    }
+    apply()
+    const observer = new MutationObserver(apply)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
   const getScroller = useCallback(
     () => shellRef.current?.querySelector<HTMLElement>('.milkdown') ?? null,
     [],
