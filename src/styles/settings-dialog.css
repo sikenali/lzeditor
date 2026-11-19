@@ -687,6 +687,15 @@
 }
 .settings-content .settings-section  { margin-bottom: 0; }
 
+/* 主题视图：.theme-settings-view 是 .settings-content 的唯一 flex 子项，
+   gap:20px 需在此层重建，否则 3 个 .settings-section（外观主题/强调色/导航布局）
+   紧贴无间距（L688 已清 margin-bottom）。与 .settings-content 的 gap:20px 全站一致。 */
+.theme-settings-view  {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 /* Section card chrome (DESIGN.md §5.4 / bid-maker .section-card)
    padding 对齐 lzmail 卡片（24px 28px），让各区块清晰分开显示 */
 .settings-section  {
