@@ -558,12 +558,12 @@
 
 /* 导航侧栏（lzc2vsdx：200px 软底 / 条目 42px / 青色发光激活条） */
 .settings-nav-list  {
-  width: 200px;
+  width: 180px;
   flex-shrink: 0;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--color-bg-secondary);
+  background: var(--color-bg-white);
   border: 0.6px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   padding: 8px;
@@ -577,7 +577,7 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 42px;
+  height: 44px;
   padding: 0 12px;
   border: none;
   border-radius: var(--radius-sm);
@@ -592,19 +592,7 @@
 /* 弹簧微交互（lzc2vsdx）：悬停抬起 + 按下缩放 */
 .settings-nav-row:hover  { background: var(--color-bg-secondary); transform: translateY(-1px); }
 .settings-nav-row:active  { transform: scale(0.97); transition: transform var(--t-snap) var(--ease-spring); }
-.settings-nav-row.active  { background: var(--color-primary-soft); }
-.settings-nav-row.active::before  {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 22px;
-  border-radius: 2px;
-  background: var(--color-primary);
-  box-shadow: 0 0 8px rgba(var(--tech-cyan-rgb), 0.5);
-}
+.settings-nav-row.active  { background: var(--color-system-blue-soft); }
 
 .settings-nav-ico  {
   width: 20px;
@@ -616,7 +604,7 @@
   flex-shrink: 0;
   transition: color var(--t-base) var(--ease);
 }
-.settings-nav-row.active .settings-nav-ico  { color: var(--color-primary); }
+.settings-nav-row.active .settings-nav-ico  { color: var(--color-system-blue); }
 
 .settings-nav-txt  {
   font-size: 14px;
@@ -626,7 +614,7 @@
   text-overflow: ellipsis;
 }
 .settings-nav-row.active .settings-nav-txt  {
-  color: var(--color-primary);
+  color: var(--color-system-blue);
   font-weight: 600;
 }
 

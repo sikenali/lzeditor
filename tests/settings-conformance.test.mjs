@@ -11,18 +11,19 @@ assert.match(dialog, /previewBg:\s*'#0A0F18'/, '深色预览卡必须 Nebula 深
 assert.match(dialog, /name:\s*'浅色主题 · 冷科技'/, '浅色主题名必须冷科技')
 assert.match(dialog, /name:\s*'深色主题 · 深空'/, '深色主题名必须深空')
 
-// lzc2vsdx 弹窗尺寸（88vw / max 1100 / 86vh）
-assert.match(dialog, /PANEL_WIDTH = '88vw'/, '弹窗宽必须 88vw（lzc2vsdx）')
-assert.match(dialog, /PANEL_MAX_WIDTH = 1100/, '弹窗最大宽必须 1100（lzc2vsdx）')
-assert.match(dialog, /PANEL_HEIGHT = '86vh'/, '弹窗高必须 86vh（lzc2vsdx）')
+// DESIGN-1 §5.1 弹窗尺寸（92vw / max 1280 / 92vh）
+assert.match(dialog, /PANEL_WIDTH = '92vw'/, '弹窗宽必须 92vw（DESIGN-1 §5.1）')
+assert.match(dialog, /PANEL_MAX_WIDTH = 1280/, '弹窗最大宽必须 1280（DESIGN-1 §5.1）')
+assert.match(dialog, /PANEL_HEIGHT = '92vh'/, '弹窗高必须 92vh（DESIGN-1 §5.1）')
 
-// lzc2vsdx 导航：200px 软底 / 条目 42px / 激活青色发光条 / 弹簧
-assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,240}width:\s*200px;/, '设置导航侧栏必须 200px（lzc2vsdx）')
-assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,320}background:\s*var\(--color-bg-secondary\)/, '设置导航侧栏必须软底（lzc2vsdx）')
-assert.match(css, /\.settings-nav-row\s*\{[\s\S]{0,240}height:\s*42px;/, '导航条目必须 42px（lzc2vsdx）')
-assert.match(css, /\.settings-nav-row\.active::before\s*\{[^}]*width:\s*3px;[^}]*height:\s*22px;/, '激活左条必须 3×22px（lzc2vsdx）')
-assert.match(css, /\.settings-nav-row\.active::before\s*\{[^}]*box-shadow:\s*0 0 8px rgba\(var\(--tech-cyan-rgb\),\s*0\.5\)/, '激活左条必须青色发光')
-assert.match(css, /\.settings-nav-row\.active::before\s*\{[^}]*background:\s*var\(--color-primary\)/, '激活左条必须主色青')
+// DESIGN-1 §5.3 导航：180px 白底 / 条目 44px / 激活 system-blue（无左条）/ 弹簧
+assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,240}width:\s*180px;/, '设置导航侧栏必须 180px（§5.3）')
+assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,320}background:\s*var\(--color-bg-white\)/, '设置导航侧栏必须白底（§5.3）')
+assert.match(css, /\.settings-nav-row\s*\{[\s\S]{0,240}height:\s*44px;/, '导航条目必须 44px（§5.3）')
+assert.doesNotMatch(css, /\.settings-nav-row\.active::before\s*\{[^}]*width:\s*3px;/, '§5.3 无激活左条')
+assert.match(css, /\.settings-nav-row\.active\s*\{[^}]*var\(--color-system-blue-soft\)/, '激活态必须 system-blue-soft 底（§7）')
+assert.match(css, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须 system-blue（§7）')
+assert.match(css, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须 system-blue（§7）')
 assert.match(css, /\.settings-nav-row:hover[^{]*\{[^}]*transform:\s*translateY\(-1px\)/, '导航悬停抬起（lzc2vsdx 弹簧）')
 
 // 选中名称 Bold（§6.3 保留）
