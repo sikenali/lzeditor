@@ -20,9 +20,9 @@ assert.doesNotMatch(codeEditor, /<textarea/, 'CM6 编辑器不套裸 textarea')
 assert.match(codeEditor, /createCM6EditorFacade/, 'CodeEditor 必须经 CM6 facade 构建')
 assert.match(codeEditor, /styles\/code-editor\.css/, 'code-editor.css 必须被引入')
 
-// ── 代码模式不占右栏：shouldShowRightPreview 显式排除 code/history/style/read（逻辑在 modeLayout.ts）──
+// ── 代码模式在预览分屏里作为左栏：shouldShowRightPreview 允许 edit/code（逻辑在 modeLayout.ts）──
 const modeLayout = read('src/utils/modeLayout.ts')
-assert.match(modeLayout, /appMode !== 'code'/, '代码模式自己的右栏不占 App 的右面板')
+assert.match(modeLayout, /appMode === 'edit' \|\| appMode === 'code'/, '预览分屏左栏可为编辑或代码')
 assert.match(modeLayout, /appMode !== 'history'/, '历史模式不给右栏留位')
 assert.match(modeLayout, /appMode !== 'style'/, '排版模式不给右栏留位')
 assert.match(modeLayout, /appMode !== 'read'/, '阅读模式不给右栏留位')
