@@ -37,12 +37,12 @@ assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-mod
 
 // §5.1/§5.3 设置中心：960px 上限（2026-11-18 更紧凑，原 1280），导航 180px/44px，系统蓝激活
 const settings = read('src/components/panels/SettingsDialog.tsx')
-assert.match(settings, /PANEL_MAX_WIDTH = 960/, '设置弹框最大宽必须 960px（2026-11-18 紧凑化，原 §5.1 1280）')
+assert.match(settings, /PANEL_MAX_WIDTH = 1280/, '设置弹框最大宽必须 1280px（§5.1）')
 const sdlg = read('src/styles/settings-dialog.css')
 const navList = sdlg.match(/\.settings-nav-list\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3）')
 const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
-assert.match(navRow, /height:\s*38px/, '设置导航条目必须 38px（2026-11-18 紧凑化，原 44px）')
+assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
 const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须系统蓝浅底')
 // 3px 左条是独立伪元素规则（.settings-nav-row.active::before），不能嵌在 .active 块里，单独断言

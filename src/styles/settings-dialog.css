@@ -572,7 +572,7 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 38px;
+  height: 44px;
   padding: 0 12px;
   border: none;
   border-radius: 8px;
@@ -718,61 +718,6 @@
   align-items: center;
   gap: 8px;
 }
-/* ═══════════════════════════════════════════
-   主题管理界面优化 —— section 标题加小圆点 + 布局更紧凑
-   （仅作用于 .theme-settings-view 内的主题设置视图）
-═══════════════════════════════════════════ */
-.theme-settings-view .settings-section-title > span:first-child::before  {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  flex-shrink: 0;
-}
-.theme-settings-view .settings-section  {
-  /* 移除紧凑覆写：继承基线的 lzmail 卡片内边距（24px 28px），与其它标签一致 */
-  padding: 24px 28px;
-}
-.theme-settings-view .settings-section-title  {
-  margin-bottom: 8px;
-  font-size: 15px;
-}
-.theme-settings-view .theme-group,
-.theme-settings-view .layout-group  {
-  margin-top: 12px;
-  gap: 16px;
-}
-.theme-settings-view .accent-group  {
-  margin-top: 14px;
-  gap: 28px;
-}
-.theme-settings-view .theme-preview-card,
-.theme-settings-view .layout-card  {
-  padding: 14px;
-  gap: 14px;
-}
-.theme-settings-view .theme-preview-thumb  {
-  height: 112px;
-  padding: 12px;
-}
-.theme-settings-view .layout-preview  {
-  height: 130px;
-  padding: 12px;
-}
-.theme-settings-view .theme-preview-desc,
-.theme-settings-view .layout-desc  {
-  margin-top: 4px;
-}
-.theme-settings-view .accent-item  {
-  gap: 10px;
-}
-.theme-settings-view .accent-circle  {
-  width: 60px;
-  height: 60px;
-}
-.theme-settings-view .accent-check-icon  { font-size: 22px; }
-.theme-settings-view .accent-plus-icon  { font-size: 20px; }
 /* ═══════════════════════════════════════════
    主题设置 — DESIGN.md §4 / bid-maker ThemeSettingsView.vue
 ═════════════════════════════════════════════ */
@@ -937,7 +882,7 @@
 }
 .accent-name.current  {
   color: var(--color-text-primary);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 /* 自定义色盘：虚线外框 + 隐藏的取色控件铺满圆面 */

@@ -35,8 +35,8 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
 
 /* 面板长宽：bid-typesetting SettingsModal.vue —— 92vw / 上限 960px / min(680px,86vh) */
 const PANEL_WIDTH = '92vw'
-const PANEL_HEIGHT = 'min(680px, 86vh)'
-const PANEL_MAX_WIDTH = 960
+const PANEL_HEIGHT = '92vh'
+const PANEL_MAX_WIDTH = 1280
 
 export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const settings = useSettingsStore()
@@ -143,14 +143,14 @@ export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) =
 ══════════════════════════════════════════════ */
 const THEME_OPTIONS = [
   {
-    id: 'parchment', name: '浅色主题 · 羊皮纸',
+    id: 'parchment', name: '浅色主题 · 冷科技',
     desc: '当前默认，长时间阅读不易疲劳',
-    skin: '#FAF7F2', topbar: '#FFFFFF', content: '#E1DCD1', previewBg: '#F7EED4',
+    skin: '#F4F7FA', topbar: '#FFFFFF', content: '#D4DEEB', previewBg: '#F4F7FA',
   },
   {
-    id: 'dark', name: '深色主题 · 墨夜',
+    id: 'dark', name: '深色主题 · 深空',
     desc: '夜间或暗光环境编辑作业更护眼',
-    skin: '#333A45', topbar: '#404955', content: '#8E939A', previewBg: '#17171A',
+    skin: '#0A0F18', topbar: '#151D2C', content: '#1E2A3A', previewBg: '#0A0F18',
   },
 ] as const
 
