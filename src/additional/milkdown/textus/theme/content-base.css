@@ -114,6 +114,16 @@
     text-align: var(--read-text-align, left);
   }
 
+  /* 编辑设置里的「当前行」「专注模式」在 WYSIWYG 里的呈现。 */
+  .textus-editor-shell .milkdown .md-current-line {
+    background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+    border-radius: 4px;
+  }
+  .textus-editor-shell .milkdown .md-focus-dim {
+    opacity: 0.35;
+    transition: opacity 160ms ease;
+  }
+
   .textus-editor-shell .milkdown blockquote {
     margin: var(--doc-gap-box) 0;
     padding: 0 1em;

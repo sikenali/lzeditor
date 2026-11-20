@@ -56,6 +56,7 @@ import { createMdSpanAutopairPlugin } from "./marks/md-span-autopair-plugin";
 import { createColorSwatchPlugin } from "./marks/color-swatch-plugin";
 import { emojiShortcodePlugin } from "./emoji/emoji-shortcode-plugin";
 import { createBracketAutopairPlugin } from "./keys/bracket-autopair-plugin";
+import { createWritingModePlugin } from "./modes/writing-mode-plugin";
 import { formatShortcutPlugin } from "./keys/format-shortcut-plugin";
 import { selectAllKeyPlugin } from "./keys/select-all";
 import { enclosurePlugin } from "./marks/enclosure";
@@ -188,6 +189,9 @@ export function withEditorCore(
     docPath: { readonly current: string | null };
     /** Only read, every syntax drawn (the split view's preview). */
     preview?: boolean;
+    /** 编辑设置里的当前行/专注模式（Milkdown 也生效）；默认关。 */
+    currentLine?: () => boolean;
+    focusMode?: () => boolean;
   } & (
     | {
         /** A pasted image failed to save to disk: the localized message for a
@@ -324,6 +328,13 @@ export function withEditorCore(
         }),
       )
       .use(formatShortcutPlugin)
+      .use(
+        createWritingModePlugin({
+          currentLine: options.currentLine ?? (() => false),
+          focusMode: options.focusMode ?? (() => false),
+          typewriterMode: () => options.settings.current.typewriterMode === true,
+        }),
+      )
       .use(selectAllKeyPlugin)
       .use(enclosurePlugin)
       .use(

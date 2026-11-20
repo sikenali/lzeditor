@@ -100,6 +100,8 @@ function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps
       {
         settings: settingsRef,
         docPath: docPathRef,
+        currentLine: () => useSettingsStore.getState().currentLine !== false,
+        focusMode: () => useSettingsStore.getState().focusMode === true,
         // 无磁盘后端：noDiskImages 为 no-op 插件，关闭 disk 图片/链接管线
         noDiskImages: () => () => {},
       },
