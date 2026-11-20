@@ -8,13 +8,10 @@ const milkdownEditor = read('src/components/editor/MilkdownEditor.tsx')
 const milkdownCss = read('src/additional/milkdown/milkdown.css')
 const symbolTab = read('src/components/panels/settings/SymbolSpellSettingsTab.tsx')
 
-// ── #13 插入标签：INSERT_ITEMS 含「标签」，insertAction 有 action==='tag' 特判包 <mark> ──
-assert.match(actions, /label: '标签', action: 'tag'/, '插入菜单含「标签」项（#13）')
-assert.match(actions, /action === 'tag'/, 'insertAction 特判 action==="tag"（#13）')
-assert.match(actions, /<mark>/, '标签特判插入 <mark>（#13）')
-// 选区包裹：选中文本用 <mark>text</mark>；无选区插入 <mark></mark>
-assert.match(actions, /`<mark>\$\{selected\}<\/mark>`/, '选中文本包 <mark>（#13）')
-assert.match(actions, /'<mark><\/mark>'/, '无选区插入 <mark></mark>（#13）')
+// #13 已按用户拍板改为「插入表情」：插入菜单不提供「标签」(HTML <mark>)，无 tag 特判
+assert.doesNotMatch(actions, /label: '标签'/, '插入菜单不再提供「标签」HTML 标签项（#13 为表情插入）')
+assert.doesNotMatch(actions, /action === 'tag'/, 'insertAction 无 tag 特判（#13 为表情插入）')
+assert.doesNotMatch(actions, /<mark>/, '不再插入 <mark>（#13 为表情插入）')
 
 // ── #28 编辑模式行号：开关在「符号拼写」子tab，Milkdown 渲染行号栏 ──
 assert.match(symbolTab, /label="显示行号"/, '设置含「显示行号」开关（#28）')
@@ -26,4 +23,4 @@ assert.match(milkdownEditor, /MilkdownLineGutter/, 'MilkdownEditor 挂载 Milkdo
 assert.match(milkdownEditor, /setEditorContentRef/, 'Milkdown 把 .milkdown 交给 store 供滚动同步（#28 依赖 #9）')
 assert.match(milkdownCss, /\.milkdown-line-gutter/, 'milkdown.css 定义行号栏样式（#28）')
 
-console.log('insert-tag + line-gutter conformance ok')
+console.log('line-gutter conformance ok (tag 已移除, #13 为表情插入)')

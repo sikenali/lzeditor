@@ -38,7 +38,6 @@ export const FORMAT_ITEMS: MenuItem[] = [
 ]
 
 export const INSERT_ITEMS: MenuItem[] = [
-  { icon: 'ri-price-tag-3-line', label: '标签', action: 'tag' },
   { icon: 'ri-double-quotes-l', label: '引言', action: 'intro' },
   { icon: 'ri-double-quotes-r', label: '引用', action: 'blockquote' },
   { icon: 'ri-emotion-line', label: '表情', action: 'emoji' },
@@ -256,19 +255,6 @@ export function useEditorActions() {
 
   const insertAction = useCallback((action: string) => {
     if (PANEL_ACTIONS.has(action)) { openInsertPanel(action); return }
-    // 内联 HTML 标签（优化 #13）：选中文本包 <mark>，无选区插入 <mark></mark>。
-    if (action === 'tag') {
-      const facade = getEditorFacade()
-      if (!facade) return
-      const sel = facade.getSelection()
-      if (sel && sel.to > sel.from) {
-        const selected = facade.getText().slice(sel.from, sel.to)
-        facade.insertText(`<mark>${selected}</mark>`, sel)
-      } else {
-        facade.insertText('<mark></mark>')
-      }
-      return
-    }
     runMapped(action, INSERT_MAP)
   }, [openInsertPanel, runMapped])
 
