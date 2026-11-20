@@ -21,20 +21,17 @@ function renderContentSection(s: any, u: any) {
     <>
       <div className="settings-section">
         <div className="settings-section-title"><span>内容排版</span></div>
-        <div className="setting-row" style={{ marginBottom: 16 }}>
-          <div className="setting-label"><span>默认字体</span><span className="setting-hint">编辑区默认字体族</span></div>
-          <UiSelect value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ flex: 1, maxWidth: 280 }} />
-        </div>
-        <div className="setting-row" style={{ marginBottom: 16 }}>
-          <div className="setting-label"><span>默认字号</span><span className="setting-hint">编辑区默认字体大小</span></div>
+        <UDSettingRow icon="ri-text" label="默认字体" desc="编辑区默认字体族">
+          <UiSelect value={s.editorFont || 'sans-serif'} onChange={v => u('editorFont', v)} options={FONT_OPTIONS.map(o => ({ value: o.value, label: o.label }))} style={{ maxWidth: 280 }} />
+        </UDSettingRow>
+        <UDSettingRow icon="ri-font-size" label="默认字号" desc="编辑区默认字体大小">
           <div className="font-size-segmented">
             {FONT_SIZE_OPTIONS.map(sz => (
               <button key={sz} className={`font-size-btn ${(s.defaultFontSize || 16) === sz ? 'active' : ''}`} onClick={() => u('defaultFontSize', sz)}>{sz}</button>
             ))}
           </div>
-        </div>
-        <div className="setting-row" style={{ marginBottom: 16 }}>
-          <div className="setting-label"><span>行高</span><span className="setting-hint">段落行间距</span></div>
+        </UDSettingRow>
+        <UDSettingRow icon="ri-line-height" label="行高" desc="段落行间距">
           <div className="segmented-control">
             {LINE_HEIGHT_OPTIONS.map(o => (
               <button key={o.value} className={`segmented-btn ${(s.lineHeight || '1.7') === o.value ? 'active' : ''}`} onClick={() => u('lineHeight', o.value)}>
@@ -42,15 +39,14 @@ function renderContentSection(s: any, u: any) {
               </button>
             ))}
           </div>
-        </div>
-        <div className="setting-row">
-          <div className="setting-label"><span>内容宽度</span><span className="setting-hint">编辑区最大宽度</span></div>
+        </UDSettingRow>
+        <UDSettingRow icon="ri-layout-column-line" label="内容宽度" desc="编辑区最大宽度">
           <div className="content-width-segmented">
             {CONTENT_WIDTH_OPTIONS.map(w => (
               <button key={w} className={`content-width-btn ${(s.contentWidth || '1024') === w ? 'active' : ''}`} onClick={() => u('contentWidth', w)}>{w}</button>
             ))}
           </div>
-        </div>
+        </UDSettingRow>
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>段落排版</span></div>

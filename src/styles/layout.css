@@ -182,8 +182,9 @@
 .toolbar-btn  { position: relative; }
 .toolbar-btn.menu-open .toolbar-menu-dot  { opacity: 1; background: var(--chrome-toolbar-active); }
 @keyframes dd-in  {
-  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  /* 从上往下的平滑滑入（task 8：去 scale，位移略增，丝滑柔和） */
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .toolbar-dropdown-item .remix  { font-size: 18px; color: var(--text-muted); line-height: 1; }
 .toolbar-dropdown-item:hover .remix  { color: var(--text-primary); }
@@ -213,7 +214,7 @@
   box-shadow: var(--color-popover-shadow);
   padding: 6px;
   display: flex; flex-direction: column; gap: 2px;
-  animation: dd-in var(--t-fast) var(--ease);
+  animation: dd-in var(--t-base) var(--ease);
 }
 .toolbar-submenu-item  {
   display: flex; align-items: center; gap: 10px;
@@ -1478,6 +1479,31 @@
   transform: translateY(-2px);
 }
 .app-footer-btn .remix  { font-size: 14px; }
+/* 底部中间按钮 hover 提示（与 statusbar-action 统一，task 10） */
+.app-footer-btn[data-title]  {
+  position: relative;
+}
+.app-footer-btn[data-title]:hover::after  {
+  content: attr(data-title);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  background: var(--chrome-tooltip-bg, rgba(30,30,35,0.95));
+  color: var(--chrome-tooltip-text, #f5f0e6);
+  border: 0.7px solid var(--chrome-tooltip-border, rgba(255,255,255,0.1));
+  box-shadow: var(--color-popover-shadow);
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  font-family: var(--font-sans);
+}
 .app-footer-right  {
   justify-self: end;
   display: flex;

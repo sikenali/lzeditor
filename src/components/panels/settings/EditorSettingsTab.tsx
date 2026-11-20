@@ -20,8 +20,7 @@ function renderKernelSection(s: any, u: any) {
         <UiSwitch size="sm" checked={ s.autoPair !== false } onChange={ v => u('autoPair', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
-      <div className="setting-row">
-        <div className="setting-label"><span>缩进大小</span><span className="setting-hint">Tab 键与空格的宽度</span></div>
+      <UDSettingRow icon="ri-space" label="缩进大小" desc="Tab 键与空格的宽度">
         <div className="segmented-control">
           {TAB_SIZES.map(n => (
             <button key={n} className={`segmented-btn ${(s.tabSize || 2) === n ? 'active' : ''}`} onClick={() => u('tabSize', n)}>
@@ -29,7 +28,7 @@ function renderKernelSection(s: any, u: any) {
             </button>
           ))}
         </div>
-      </div>
+      </UDSettingRow>
     </div>
   )
 }

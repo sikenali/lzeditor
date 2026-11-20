@@ -6,8 +6,9 @@
 .ai-chat-panel  {
   position: fixed;
   right: 0;
-  top: 0;
-  bottom: 0;
+  /* 不覆盖顶栏（.toolbar 56px）与底栏（.app-footer 58px）——与预览界面一致（task 7） */
+  top: 56px;
+  bottom: 58px;
   width: min(420px, 92vw);
   display: flex;
   flex-direction: column;
@@ -17,6 +18,8 @@
   box-shadow: var(--color-popover-shadow);
   font-family: var(--font-family);
   z-index: 100;
+  /* 从右往左滑入（与预览一致，task 8） */
+  animation: slideInRight var(--t-slow) var(--ease);
 }
 
 /* ── 头部：标题 + 关闭 ── */

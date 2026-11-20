@@ -14,6 +14,7 @@ import { MilkdownLineGutter } from './MilkdownLineGutter'
 import { markersFromPreviewDom } from '../../utils/railMarkers'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useEditorStore } from '../../store/editorStore'
+import { lineColFromSource } from '../../utils/textStats'
 import '../../additional/milkdown/milkdown.css'
 import '@milkdown/kit/prose/view/style/prosemirror.css'
 import '../../additional/milkdown/textus/theme/content-base.css'
@@ -58,7 +59,15 @@ function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps
     facadeRef.current = facade
     registerEditorFacade(facade)
     onReady?.(facade)
+    // 光标行列跟踪 → cursorPosition（task 9）：Milkdown 不更新，恒 行1列1。
+    // 与 CodeEditor 同构：onSelectionChange 传 ProseMirror 源偏移，换算 1-based 行列。
+    const unsubscribeCursor = facade.onSelectionChange((sel) => {
+      if (!sel) return
+      const { line, column } = lineColFromSource(facade.getText(), sel.from)
+      useEditorStore.getState().setCursorPosition({ line, column })
+    })
     return () => {
+      unsubscribeCursor()
       if (getEditorFacade() === facade) registerEditorFacade(null)
       facadeRef.current = null
     }

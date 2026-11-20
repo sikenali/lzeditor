@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } fro
 import { mdToHtml } from './utils/mdToHtml'
 import { shouldShowRightPreview, shouldShowRightPanel, shouldShowCenterColumn } from './utils/modeLayout'
 import { countLineDiff, formatTimeTs } from './utils/historyTimeline'
+import { countWords, countChars } from './utils/textStats'
 import { nextVersionId } from './utils/versionId'
 import { recordVersion } from './services/versionApi'
 import { Toolbar } from './components/layout/Toolbar'
@@ -440,6 +441,9 @@ function App() {
   const handleEditorChange = useCallback((md: string) => {
     const es = useEditorStore.getState()
     es.setMdContent(md)
+    // 真实字数/字符数统计（task 9）：此前 setWordCount/setCharCount 从未被调用，恒为 0。
+    es.setWordCount(countWords(md))
+    es.setCharCount(countChars(md))
     const docId = es.activeDocId
     if (!docId) return
     // 立即保存 md：关文档/切文档不丢最新内容（html 由 debounce 补算）

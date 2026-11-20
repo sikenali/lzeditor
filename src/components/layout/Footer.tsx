@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
   const setShowSearch  = useEditorStore(s => s.setShowSearch)
   const activeDocId    = useEditorStore(s => s.activeDocId)
 
-  const readTime = Math.max(1, Math.ceil(wordCount / 200))
+  const readTime = wordCount === 0 ? 0 : Math.max(1, Math.ceil(wordCount / 200))
   const toggleSearch = () => setShowSearch(!showSearch)
 
   return (
