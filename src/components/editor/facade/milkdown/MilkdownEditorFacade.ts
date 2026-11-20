@@ -37,6 +37,7 @@ import {
 } from "../../../../additional/milkdown/textus/editor/keys/format-shortcut-plugin";
 import { LINK } from "../../../../additional/milkdown/textus/editor/markdown/link-source";
 import { createSearchSession } from "../cm6/cm6-search";
+import { applySourceCommand } from "../source-commands";
 
 /**
  * The Milkdown-backed {@link EditorFacade}.
@@ -559,6 +560,12 @@ export function createMilkdownEditorFacade(
     },
 
     execCommand(name: string, args?: Record<string, unknown>): unknown {
+      // Sup/sub, introduction, TOC and footnote are pure Markdown-source edits
+      // shared with the CM6 facade (see source-commands). They round-trip
+      // through the serializer/parser, so the result is the same in WYSIWYG.
+      const sourceResult = applySourceCommand(facade, name);
+      if (sourceResult !== null) return sourceResult;
+
       return pm(runner, (ctx) => {
         const v = ctx.get(editorViewCtx);
         const { schema } = v.state;

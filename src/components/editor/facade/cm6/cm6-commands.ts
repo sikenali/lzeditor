@@ -1,4 +1,5 @@
 import type { EditorFacade } from "../EditorFacade";
+import { applySourceCommand } from "../source-commands";
 
 /**
  * Maps the command ids the app already calls (previously the yeli
@@ -206,6 +207,11 @@ export function applyEditorCommand(
 ): unknown {
   if (name === "document.undo" || name === "undo") return facade.undo();
   if (name === "document.redo" || name === "redo") return facade.redo();
+
+  // Sup/sub, introduction, TOC and footnote are pure Markdown-source edits
+  // shared with the Milkdown facade (see source-commands).
+  const sourceResult = applySourceCommand(facade, name);
+  if (sourceResult !== null) return sourceResult;
 
   if (name.startsWith("selection.")) {
     const sel = facade.getSelection();

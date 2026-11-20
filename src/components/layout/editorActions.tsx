@@ -33,16 +33,19 @@ export const FORMAT_ITEMS: MenuItem[] = [
   { icon: 'ri-list-ordered', label: '有序列表', action: 'ol' },
   { icon: 'ri-list-unordered', label: '无序列表', action: 'ul' },
   { icon: 'ri-task-line', label: '任务列表', action: 'task' },
-  // 上标/下标 markdown 无法在 yeli 表达，不提供（见 B3）。
+  { icon: 'ri-superscript', label: '上标', action: 'sup' },
+  { icon: 'ri-subscript', label: '下标', action: 'sub' },
 ]
 
 export const INSERT_ITEMS: MenuItem[] = [
+  { icon: 'ri-double-quotes-l', label: '引言', action: 'intro' },
   { icon: 'ri-double-quotes-r', label: '引用', action: 'blockquote' },
   { icon: 'ri-emotion-line', label: '表情', action: 'emoji' },
   { icon: 'ri-code-box-line', label: '代码块', action: 'code' },
   { icon: 'ri-function-fill', label: '数学公式', action: 'formula' },
   { icon: 'ri-bar-chart-2-line', label: '图表', action: 'chart' },
-  // 目录/脚注 yeli 无插入命令，不提供（见 B3）。
+  { icon: 'ri-menu-line', label: '目录', action: 'toc' },
+  { icon: 'ri-footprint-line', label: '脚注', action: 'footnote' },
 ]
 
 export const TABLE_ITEMS: MenuItem[] = [
@@ -162,20 +165,19 @@ const FORMAT_MAP: Record<string, FormatCommand> = {
   h1: 'heading-1', h2: 'heading-2', h3: 'heading-3', h4: 'heading-4', h5: 'heading-5', h6: 'heading-6',
   clear: 'clear', hr: 'rule', ol: 'numbered-list', ul: 'bullet-list', task: 'task-list',
   quote: 'quote', link: 'link', image: 'image',
-  // 上标/下标/目录/脚注 yeli 无命令，菜单项已移除（见 B3）。
+  sup: 'sup', sub: 'sub',
 }
 
 const INSERT_MAP: Record<string, FormatCommand> = {
-  blockquote: 'quote', hr: 'rule',
-  // 目录/脚注 yeli 无插入命令，菜单项已移除（见 B3）。引言与块引用合并为「引用」。
+  intro: 'intro', blockquote: 'quote', hr: 'rule',
+  toc: 'toc', footnote: 'footnote',
 }
 
 const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'formula', 'chart', 'emoji', 'table'])
 
 /**
- * 命令名 → yeli command-registry id。只有 yeli 有对应语义的命令才映射；
- * underline/highlight/sup/sub/toc/footnote 等 markdown 无法在 yeli 表达的命令
- * 不映射（对应按钮/菜单项已在 B3 移除，不再出现「点击无反应」入口）。
+ * 命令名 → yeli command-registry id。只有 facade 有对应语义的命令才映射；
+ * underline/highlight 等 markdown 无法表达的命令不映射。
  */
 const YELI_COMMAND: Partial<Record<FormatCommand, string>> = {
   bold: 'selection.bold',
@@ -184,6 +186,11 @@ const YELI_COMMAND: Partial<Record<FormatCommand, string>> = {
   code: 'selection.code',
   link: 'selection.link',
   clear: 'selection.clear',
+  sup: 'selection.sup',
+  sub: 'selection.sub',
+  intro: 'insert.intro',
+  toc: 'insert.toc',
+  footnote: 'insert.footnote',
   quote: 'insert.quote',
   'bullet-list': 'insert.bullet-list',
   'numbered-list': 'insert.numbered-list',
