@@ -37,9 +37,8 @@ export const FORMAT_ITEMS: MenuItem[] = [
 ]
 
 export const INSERT_ITEMS: MenuItem[] = [
-  { icon: 'ri-double-quotes-l', label: '引言', action: 'quote' },
+  { icon: 'ri-double-quotes-r', label: '引用', action: 'blockquote' },
   { icon: 'ri-emotion-line', label: '表情', action: 'emoji' },
-  { icon: 'ri-double-quotes-r', label: '块引用', action: 'blockquote' },
   { icon: 'ri-code-box-line', label: '代码块', action: 'code' },
   { icon: 'ri-function-fill', label: '数学公式', action: 'formula' },
   { icon: 'ri-bar-chart-2-line', label: '图表', action: 'chart' },
@@ -167,8 +166,8 @@ const FORMAT_MAP: Record<string, FormatCommand> = {
 }
 
 const INSERT_MAP: Record<string, FormatCommand> = {
-  quote: 'quote', blockquote: 'quote', hr: 'rule',
-  // 目录/脚注 yeli 无插入命令，菜单项已移除（见 B3）。
+  blockquote: 'quote', hr: 'rule',
+  // 目录/脚注 yeli 无插入命令，菜单项已移除（见 B3）。引言与块引用合并为「引用」。
 }
 
 const PANEL_ACTIONS = new Set(['link', 'image', 'code', 'formula', 'chart', 'emoji', 'table'])
@@ -234,18 +233,26 @@ export function useEditorActions() {
     runMapped(cmd, CMD_MAP)
   }, [runMapped])
 
+  // 打开插入/格式面板：非编辑/代码模式下 getEditorFacade() 为 null，插入会静默失败。
+  // 先切回编辑模式（默认 WYSIWYG）再开面板，保证 facade 存在、插入生效。
+  const openInsertPanel = useCallback((action: string) => {
+    const st = useEditorStore.getState()
+    if (st.appMode !== 'edit' && st.appMode !== 'code') st.setAppMode('edit')
+    setInsertPanel(action)
+  }, [setInsertPanel])
+
   const formatAction = useCallback((action: string) => {
-    if (PANEL_ACTIONS.has(action)) { setInsertPanel(action); return }
+    if (PANEL_ACTIONS.has(action)) { openInsertPanel(action); return }
     runMapped(action, FORMAT_MAP)
-  }, [setInsertPanel, runMapped])
+  }, [openInsertPanel, runMapped])
 
   const insertAction = useCallback((action: string) => {
-    if (PANEL_ACTIONS.has(action)) { setInsertPanel(action); return }
+    if (PANEL_ACTIONS.has(action)) { openInsertPanel(action); return }
     runMapped(action, INSERT_MAP)
-  }, [setInsertPanel, runMapped])
+  }, [openInsertPanel, runMapped])
 
   const tableAction = useCallback((action: string) => {
-    if (action === 'insert') { setInsertPanel('table'); return }
+    if (action === 'insert') { openInsertPanel('table'); return }
     const facade = getEditorFacade()
     if (!facade) return
     const yeliId = TABLE_OP_TO_YELI[action]
