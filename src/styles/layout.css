@@ -359,18 +359,6 @@
 }
 
 /* ── Sidebar outline — backtickle 式：H 级徽标 + 深度过滤 + 当前节跟随光标 ── */
-.sidebar-outline .outline-count  {
-  flex: 0 0 auto;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--glass-bg);
-  border: 0.7px solid var(--glass-border);
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 .sidebar-outline .outline-list  {
   list-style: none;
   margin: 0;
@@ -605,6 +593,7 @@
   display: flex; align-items: center; gap: 8px;
   padding: 12px 14px; border-bottom: 0.7px solid var(--glass-border); flex-shrink: 0;
   background: var(--chrome-surface);
+  justify-content: space-between;
 }
 .sidebar-preview .sidebar-header-icon  { font-size: 15px; color: var(--accent-primary); }
 .sidebar-preview .sidebar-header-title  { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; font-family: var(--font-display); }

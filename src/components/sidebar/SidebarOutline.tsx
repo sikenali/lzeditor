@@ -6,7 +6,7 @@ import { parseMdOutline, resolveOutlineMd, type MdOutlineItem } from '../../util
 import { getDocMd } from '../../utils/docSource'
 import {
   OUTLINE_DEPTHS, currentSectionIndex, depthLabel, filterByDepth,
-  rovingIndex, sectionCountLabel, shownCurrent, type OutlineDepth,
+  rovingIndex, shownCurrent, type OutlineDepth,
 } from '../../utils/outline'
 
 /** 标题级别到徽标样式类：只有两级视觉差异，4/5/6 共用第三级。 */
@@ -103,9 +103,6 @@ export const SidebarOutline: React.FC = () => {
       <div className="sidebar-header">
         <span className="remix sidebar-header-icon ri-list-unordered"></span>
         <span className="sidebar-header-title">目录</span>
-        {items.length > 0 && (
-          <span className="outline-count" title="当前显示 / 全部标题">{sectionCountLabel(entries.length, items.length)}</span>
-        )}
         <button className="sidebar-close-btn" onClick={() => setShowOutline(false)}>
           <span className="remix ri-close-line"></span>
         </button>

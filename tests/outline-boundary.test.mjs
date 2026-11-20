@@ -68,7 +68,7 @@ test('rovingIndex 回绕、四方向都移动，与 backtickle 一致', () => {
 test('大纲接在源码编辑器上，跳转走字符偏移', () => {
   assert.match(sidebar, /currentSectionIndex/, '当前节必须用纯模型算')
   assert.match(sidebar, /filterByDepth/, '深度过滤必须走纯模型')
-  assert.match(sidebar, /sectionCountLabel/, '头部要显示节数')
+  assert.doesNotMatch(sidebar, /sectionCountLabel/, '节数徽章已移除（outline-count 去掉）')
   assert.match(sidebar, /getEditorFacade\(\)/, '点击标题必须经 facade 跳到源码位置')
   assert.match(sidebar, /setSelection\(item\.pos/, '跳转必须选中标题源码区间')
 })
@@ -86,7 +86,8 @@ test('样式落在 backtickle 式的高亮与深度按钮上，旧折叠样式�
   assert.match(outlineCss, /outline-jump-btn\.current/, '当前项有专门高亮')
   assert.match(outlineCss, /outline-badge\.l1/, 'H1/H2/H3 徽标分级')
   assert.match(outlineCss, /outline-depth-btn\.active/, '层级按钮有选中态')
-  assert.match(outlineCss, /outline-count/, '头部有节数徽章')
+  // 节数徽章已移除（用户要求去掉 outline-count）
+  assert.doesNotMatch(outlineCss, /outline-count/, '节数徽章已移除')
   // 活动项背景统一 read-toc 风格（accent-a5 浅底 + 强调色字 + 强调色左边框）
   assert.match(outlineCss, /outline-jump-btn\.current\s*\{[^}]*background:\s*var\(--accent-a5\)/, '当前项背景必须是 read-toc 的 accent-a5 浅底')
   assert.match(outlineCss, /outline-jump-btn\.current\s*\{[^}]*color:\s*var\(--accent-primary\)/, '当前项文字必须是强调色')

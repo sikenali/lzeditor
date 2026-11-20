@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { mdToHtml } from '../../utils/mdToHtml'
 import { useEditorStore } from '../../store/editorStore'
 import { useScrollSync, lineBridgeOf } from '../../hooks/scrollSync'
-import { copyRichText } from '../../clipboard'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { DEFAULT_TYPOGRAPHY_THEME } from '../../styles/acks-mapping'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -47,12 +46,6 @@ export const SidebarPreview: React.FC = () => {
   const previewElRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    return () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current) }
-  }, [])
 
   const effectiveMd = useMemo(() => getEffectiveMd(activeDocId, mdContent, docsMd), [activeDocId, mdContent, docsMd])
 
@@ -127,31 +120,11 @@ export const SidebarPreview: React.FC = () => {
     }
   }, [dragging, setPreviewWidth])
 
-  // ── Copy as WeChat rich text
-  const handleCopyWechat = async () => {
-    const previewEl = previewElRef.current
-    if (!previewEl) return
-    const html = previewEl.innerHTML
-    const ok = await copyRichText(html)
-    if (ok) {
-      setCopied(true)
-      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
   return (
     <div className="sidebar-preview-wrapper" style={{ width: previewWidth }}>
       <div className="sidebar-preview preview-pane">
         <div className="sidebar-header">
           <span className="remix sidebar-header-icon ri-eye-2-fill"></span>
-          <button
-            className="sidebar-wechat-btn"
-            onClick={handleCopyWechat}
-            title="一键复制为公众号可用富文本"
-          >
-            <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
-            {copied ? '已复制' : '公众号'}
-          </button>
           <button className="sidebar-close-btn" onClick={() => setShowPreview(false)}>
             <span className="remix ri-close-line"></span>
           </button>

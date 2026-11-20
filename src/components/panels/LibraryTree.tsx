@@ -47,13 +47,12 @@ export const LibraryTree: React.FC<{
   expandedFolders: Record<string, boolean>
   onToggleFolder: (id: string) => void
   onSelectDoc?: (id: string) => void
-  onResetDoc?: (id: string) => void
   renameTargetKey?: string | null
   onRenameFolder?: (node: DocNode) => void
   onRenameCommit?: (key: string, newName: string) => void
   renameableTitles?: string[]
   searchActive?: boolean
-}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, onResetDoc, renameTargetKey, onRenameFolder, onRenameCommit, renameableTitles, searchActive }) => {
+}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, renameTargetKey, onRenameFolder, onRenameCommit, renameableTitles, searchActive }) => {
   const activeDocId = useEditorStore((s) => s.activeDocId)
 
   const renderNode = (node: DocNode, depth: number): React.ReactNode => {
@@ -126,18 +125,6 @@ export const LibraryTree: React.FC<{
         <span className={`remix ${node.isFromGit ? 'ri-git-repository-line' : 'ri-file-text-line'} tree-icon`}></span>
         <span className="tree-label">{node.title}</span>
         {node.isFromGit && <span className="tree-git-badge">git</span>}
-        {/* readme 不在 system 里（它要留在 Default 库、
-            也要出现在打开的文档标签上），但它是内置文档，改了也该能还原。 */}
-        {(node.system || node.id === 'readme') && onResetDoc && (
-          <button
-            type="button"
-            className="tree-reset-btn"
-            title="还原为出厂内容"
-            onClick={(e) => { e.stopPropagation(); onResetDoc(node.id) }}
-          >
-            <span className="remix ri-restart-line"></span>
-          </button>
-        )}
       </div>
     )
   }
