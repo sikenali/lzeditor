@@ -35,9 +35,8 @@ export const StyleMainPanel: React.FC = () => {
   const [page, setPage] = useState(() => themePageOf(activeStyle))
   const totalPages = Math.ceil(ACKS_THEME_IDS.length / PAGE_SIZE)
   const pageItems = ACKS_THEME_IDS.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
-  const [previewVisible, setPreviewVisible] = useState(true)
-  // 浮导航（上一章/下一章/回到顶部/全屏）默认隐藏，点内容区才显示
-  const [navVisible, setNavVisible] = useState(false)
+  // 卡片墙默认折叠（#23）；「显示预览」展开卡片并显示浮导航（#25）
+  const [previewVisible, setPreviewVisible] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [styleMenuOpen, setStyleMenuOpen] = useState(false)
@@ -148,7 +147,7 @@ export const StyleMainPanel: React.FC = () => {
       <div className="style-main-panel">
         <div className="read-mode-body" style={{ flex: 1, minHeight: 0, display: 'flex', position: 'relative' }}>
         {/* ── Read content area ── */}
-        <div ref={bodyRef} className="style-read-scroll" onClick={() => setNavVisible(true)}>
+        <div ref={bodyRef} className="style-read-scroll">
           <div className="style-read-article">
             <div className="main-read-header">
               <div className="main-read-tags">
@@ -162,8 +161,8 @@ export const StyleMainPanel: React.FC = () => {
             <div ref={articleBodyRef} className="style-read-acks" />
           </div>
         </div>
-        {/* 浮导航：锚在阅读区底部（工具栏「显示/隐藏」按钮正上方），悬浮于内容之上 */}
-        <div className={`main-nav-float${navVisible ? '' : ' nav-hidden'}`}>
+        {/* 浮导航：由「显示预览」控制（#25），默认隐藏、隐藏预览时不可见 */}
+        <div className={`main-nav-float${previewVisible ? '' : ' nav-hidden'}`}>
           <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
             <span className="remix ri-arrow-left-s-line"></span>
           </button>
@@ -187,7 +186,6 @@ export const StyleMainPanel: React.FC = () => {
                 <div className="style-select-wrap">
                   <button className="style-select-btn" onClick={() => setStyleMenuOpen(v => !v)}>
                     <span>{activeStyleData.name}</span>
-                    <span className="remix ri-arrow-down-s-line"></span>
                   </button>
                   {styleMenuOpen && (
                     <>

@@ -15,11 +15,10 @@ function renderSpellCheckSection(s: any, u: any) {
         <UDSettingRow icon="ri-english-input" label="启动拼写检查" desc="拼写错误时显示波浪线提示">
         <UiSwitch size="sm" checked={ s.enableSpellCheck !== false } onChange={ v => u('enableSpellCheck', v) } />
       </UDSettingRow>
-        <div style={{ padding: '8px 0 0 44px', marginBottom: 8 }}>
-          <div className="setting-row" style={{ marginBottom: 0 }}>
-            <div className="setting-label" style={{ minWidth: 80 }}><span>检查语言</span></div>
+        <div style={{ padding: '8px 0 0 0', marginBottom: 8 }}>
+          <UDSettingRow icon="ri-global-line" label="检查语言" desc="拼写检查使用的语言">
             <UiSelect value={s.spellCheckLang || 'zh-CN'} onChange={v => u('spellCheckLang', v)} options={SPELL_CHECK_LANGS.map(l => ({ value: l.value, label: l.label }))} style={{ maxWidth: 200 }} />
-          </div>
+          </UDSettingRow>
         </div>
       </div>
       <div className="settings-section">
