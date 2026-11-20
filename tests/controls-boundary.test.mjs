@@ -197,7 +197,7 @@ assert.doesNotMatch(mainTs, /accelerator: 'CmdOrCtrl\+R'/, '不能给窗口重�
 assert.match(mainTs, /role: 'selectall'/, '全选必须走标准角色，让浏览器默认行为生效')
 
 // Ctrl+Shift+O 有实现，快捷键表不能漏
-assert.match(shortcutTab, /row\('打开文件夹批量导入', `\$\{mod\}\+\$\{shift\}\+O`\)/, 'Ctrl+Shift+O 必须在快捷键表里')
-assert.match(shortcutTab, /row\('退出应用', `\$\{mod\}\+Q`, '仅桌面端'\)/, 'Ctrl+Q 只在 Electron 生效，必须标注')
+assert.match(shortcutTab, /row\('ri-folder-transfer-line', '打开文件夹批量导入', `\$\{mod\}\+\$\{shift\}\+O`\)/, 'Ctrl+Shift+O 必须在快捷键表里')
+assert.match(shortcutTab, /row\('ri-logout-box-r-line', '退出应用', `\$\{mod\}\+Q`, '仅桌面端'\)/, 'Ctrl+Q 只在 Electron 生效，必须标注')
 assert.doesNotMatch(shortcutTab, /重新加载窗口/, '窗口重新加载的加速器已移除，不能再列成快捷键')
 
