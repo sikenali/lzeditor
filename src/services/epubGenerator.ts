@@ -17,6 +17,8 @@ export interface EpubOptions {
   lineHeight?: string
   textIndent?: boolean
   textJustify?: boolean
+  /** highlight.js 主题 CSS，附在章节样式后让代码块保留语法色。 */
+  codeCSS?: string
 }
 
 export class EPUBGenerator {
@@ -144,6 +146,7 @@ ${this.options.chapters.map((ch, i) => `      <li><a href="chapter${i + 1}.xhtml
     a { color: #39FF9E; text-decoration: none; }
     a:hover { text-decoration: underline; }
     img { max-width: 100%; height: auto; border-radius: 4px; }
+    ${this.options.codeCSS || ''}
   </style>
 </head>
 <body>

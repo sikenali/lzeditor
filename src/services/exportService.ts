@@ -542,6 +542,7 @@ async function exportEPUB(title: string, content: string, opts: any): Promise<vo
   const { generateEPUB } = await import('./epubGenerator')
   // 之前硬编码单章，epubGenerator 的多章能力完全闲置；这里按 h1/h2 真正拆章。
   const chapters = splitChapters(processed, '正文')
+  const codeCSS = await loadCodeThemeCSS(opts.codeTheme || 'atom-one-dark')
   const blob = await generateEPUB({
     title,
     author: 'lzeditor',
@@ -552,6 +553,7 @@ async function exportEPUB(title: string, content: string, opts: any): Promise<vo
     lineHeight: opts.lineHeight,
     textIndent: opts.textIndent,
     textJustify: opts.textJustify,
+    codeCSS,
   })
 
   const url = URL.createObjectURL(blob)
