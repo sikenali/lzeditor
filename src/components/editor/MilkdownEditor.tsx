@@ -12,6 +12,7 @@ import type { EditorFacade } from './facade/EditorFacade'
 import { ScrollRail } from '../ui/ScrollRail'
 import { markersFromPreviewDom } from '../../utils/railMarkers'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useEditorStore } from '../../store/editorStore'
 import '../../additional/milkdown/milkdown.css'
 import '@milkdown/kit/prose/view/style/prosemirror.css'
 import '../../additional/milkdown/textus/theme/content-base.css'
@@ -93,6 +94,28 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
   const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
   const lineHeight = useSettingsStore((s) => s.lineHeight)
   const contentWidth = useSettingsStore((s) => s.contentWidth)
+
+  // 预览滚动同步需要编辑器滚动容器（优化 #9）：把 .milkdown 交给 store，
+  // ScrollSync 在 CM6 桥缺失（Milkdown 是 ProseMirror）时按比例回退同步。
+  // .milkdown 由 MilkdownProvider 异步挂载，用 MutationObserver 等它出现。
+  useEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+    let scroller: HTMLDivElement | null = null
+    const bind = () => {
+      if (!scroller) {
+        scroller = shell.querySelector<HTMLDivElement>('.milkdown')
+        if (scroller) useEditorStore.getState().setEditorContentRef(scroller)
+      }
+    }
+    bind()
+    const obs = new MutationObserver(bind)
+    obs.observe(shell, { childList: true, subtree: true })
+    return () => {
+      obs.disconnect()
+      useEditorStore.getState().setEditorContentRef(null)
+    }
+  }, [])
 
   // 编辑设置里的字号 / 行高同样作用于 WYSIWYG，否则两种编辑模式正文尺度不一致。
   useEffect(() => {

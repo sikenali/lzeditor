@@ -10,9 +10,12 @@ function renderAppSettings(s: any, u: any) {
         <UiSwitch size="sm" checked={ s.enableTabs !== false } onChange={ v => u('enableTabs', v) } />
       </UDSettingRow>
       <div className="setting-divider" />
-      <UDSettingRow icon="ri-notification-3-line" label="显示托盘图标" desc="在系统托盘显示应用图标">
-        <UiSwitch size="sm" checked={ s.showTrayIcon !== false } onChange={ v => u('showTrayIcon', v) } />
-      </UDSettingRow>
+      {/* 托盘图标仅客户端生效（主进程有托盘）；lpk/网页端无托盘，不显示该设置（优化 #29） */}
+      {!!window.electronAPI && (
+        <UDSettingRow icon="ri-notification-3-line" label="显示托盘图标" desc="在系统托盘显示应用图标">
+          <UiSwitch size="sm" checked={ s.showTrayIcon === true } onChange={ v => u('showTrayIcon', v) } />
+        </UDSettingRow>
+      )}
       <div className="setting-divider" />
       <UDSettingRow icon="ri-file-list-3-fill" label="下次启动时自动打开最后编辑的文档" desc="记住上次编辑的文档，下次启动自动打开">
         <UiSwitch size="sm" checked={ s.reopenLastDoc !== false } onChange={ v => u('reopenLastDoc', v) } />

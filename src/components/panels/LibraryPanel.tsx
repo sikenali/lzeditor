@@ -12,19 +12,21 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
   const docs = useEditorStore((s) => s.docs)
   const docLibraries = useEditorStore((s: any) => s.docLibraries)
-  const activeLibraryId = useEditorStore((s: any) => s.activeLibraryId)
   const createLibrary = useEditorStore((s: any) => s.createLibrary)
-  const setActiveLibrary = useEditorStore((s: any) => s.setActiveLibrary)
   const renameLibrary = useEditorStore((s: any) => s.renameLibrary)
   const [renameTarget, setRenameTarget] = useState<{ key: string; title: string } | null>(null)
-  const [category, setCategory] = useState('url')
+  // 弹框默认「文档库」标签（优化 #4）：侧栏「添加文档库」按钮 setCategory 作用于侧栏实例，
+  // 弹框是独立实例，其初始 category 由这里决定，故默认 docs。
+  const [category, setCategory] = useState('docs')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>(() => {
-    // 内置文档（readme）的分组默认展开，否则藏在两层折叠里等于不存在
+    // 默认全部展开（优化 #4）：文档库弹框按文件管理器方式显示文件夹→md 文件，不折叠。
     const init: Record<string, boolean> = {}
-    for (const d of useEditorStore.getState().docs) {
-      const path = (d as any).path || ''
-      if (path) init[`folder-${path.replace(/\//g, '-')}`] = true
+    const collect = (nodes: any[]): void => {
+      for (const n of nodes) {
+        if (n.children) { init[n.id] = true; collect(n.children) }
+      }
     }
+    collect(buildTree(useEditorStore.getState().docs))
     return init
   })
   const [searchText, setSearchText] = useState('')
@@ -42,7 +44,8 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
   }
 
   const handleOpenLibraryDialog = () => {
-    setCategory('url')
+    // 弹框默认显示「文档库」标签（优化 #4），右侧按文件管理器显示文件夹→md 文件。
+    setCategory('docs')
     setOpenPanel('library')
   }
 
@@ -92,7 +95,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     input.click()
   }
 
-  // URL 在线导入：拉取 .md 直链并新建文档（错误由 ImportButtons catch 提示）。
+  // 在线导入：拉取 .md 直链并新建文档（错误由 ImportButtons catch 提示）。
   const handleImportUrl = async (url: string) => {
     const { title, md } = await fetchMarkdownFromUrl(url)
     openMarkdownDoc(title, md)
@@ -176,25 +179,22 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {category === 'docs' && (
         <UDSection label="文档库">
-          {docLibraries.length === 0 ? (
+          {tree.length === 0 ? (
             <div className="library-empty-state">
               <span className="remix ri-folder-open-line library-empty-icon"></span>
-              <div className="library-empty-title">暂无文档库</div>
-              <div className="library-empty-desc">点击右下角"新建文档库"开始组织文档</div>
+              <div className="library-empty-title">暂无文档</div>
+              <div className="library-empty-desc">点击"本地导入"添加 Markdown 文档</div>
             </div>
           ) : (
-            <div className="library-list">
-              {docLibraries.map((lib: any) => (
-                <button key={lib.id} className={`library-doc-item${activeLibraryId === lib.id ? 'active' : ''}`}
-                  onClick={() => { setActiveLibrary(lib.id); setShowLibrary(true); handleClose() }}>
-                  <span className="remix ri-folder-fill library-doc-icon"></span>
-                  <div className="library-doc-info">
-                    <div className="library-doc-name">{lib.name}</div>
-                    <div className="library-doc-meta">{docs.filter((doc: any) => (doc.libraryId || 'default') === lib.id && !doc.system).length} 个文档</div>
-                  </div>
-                  <span className="remix ri-arrow-right-s-line library-doc-arrow"></span>
-                </button>
-              ))}
+            // 文件管理器方式：先显示文件夹列表，再显示文件夹下包含的 md 文件，默认全部展开（优化 #4）
+            <div className="library-tree">
+              <LibraryTree
+                nodes={tree}
+                expandedFolders={expandedFolders}
+                onToggleFolder={toggleFolder}
+                onSelectDoc={(id) => { useEditorStore.getState().switchDoc(id); handleClose() }}
+                searchActive={!!searchText}
+              />
             </div>
           )}
         </UDSection>

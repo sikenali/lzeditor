@@ -273,7 +273,7 @@ export class ScrollSync {
   /** 预览滚到编辑器可视区顶端那一行。已经在了返回 true */
   private followEditor(): boolean {
     const bridge = lineBridgeOf(this.options.editor)
-    if (!bridge) return true
+    if (!bridge) return this.followEditorByRatio()
     const { scroller } = this.options
     const maxPreview = scroller.scrollHeight - scroller.clientHeight
     if (maxPreview <= EPSILON_PX) return true
@@ -302,7 +302,7 @@ export class ScrollSync {
   /** 编辑器滚到预览顶端那一行。已经在了返回 true */
   private followPreview(): boolean {
     const bridge = lineBridgeOf(this.options.editor)
-    if (!bridge) return true
+    if (!bridge) return this.followPreviewByRatio()
     const { scroller } = this.options
     const maxEditor = bridge.scroller.scrollHeight - bridge.scroller.clientHeight
 
@@ -323,6 +323,36 @@ export class ScrollSync {
     if (editorLine !== null && Math.abs(editorLine - 1 - line) < EPSILON_LINES) return true
     this.guard.lead('preview', this.now())
     bridge.scrollToLine(line + 1)
+    return false
+  }
+
+  /** CM6 桥缺失（Milkdown 是 ProseMirror）时按滚动比例回退同步（优化 #9）。
+   *  this.options.editor 是编辑器滚动容器（.milkdown / CM6 scrollDOM）。 */
+  private followEditorByRatio(): boolean {
+    const { scroller } = this.options
+    const editor = this.options.editor
+    const maxPreview = scroller.scrollHeight - scroller.clientHeight
+    const maxEditor = editor.scrollHeight - editor.clientHeight
+    if (maxPreview <= EPSILON_PX || maxEditor <= EPSILON_PX) return true
+    const ratio = editor.scrollTop / maxEditor
+    const target = ratio * maxPreview
+    if (Math.abs(scroller.scrollTop - target) < EPSILON_PX) return true
+    this.guard.lead('editor', this.now())
+    scroller.scrollTop = target
+    return false
+  }
+
+  private followPreviewByRatio(): boolean {
+    const { scroller } = this.options
+    const editor = this.options.editor
+    const maxPreview = scroller.scrollHeight - scroller.clientHeight
+    const maxEditor = editor.scrollHeight - editor.clientHeight
+    if (maxPreview <= EPSILON_PX || maxEditor <= EPSILON_PX) return true
+    const ratio = scroller.scrollTop / maxPreview
+    const target = ratio * maxEditor
+    if (Math.abs(editor.scrollTop - target) < EPSILON_PX) return true
+    this.guard.lead('preview', this.now())
+    editor.scrollTop = target
     return false
   }
 

@@ -17,5 +17,5 @@ assert.match(layout, /\.app-footer-right\s*\{[^}]*font-size:\s*1[01]px/, '.app-f
 
 // ── 设置窗口：更紧凑 + 固定尺寸 ──
 const settings = read('src/components/panels/SettingsDialog.tsx')
-assert.match(settings, /PANEL_MAX_WIDTH\s*=\s*1280/, '设置窗口 maxWidth 必须 1280（DESIGN-1 §5.1）')
-assert.match(settings, /PANEL_HEIGHT\s*=\s*'92vh'/, '设置窗口 height 必须 92vh（DESIGN-1 §5.1）')
+assert.match(settings, /PANEL_MAX_WIDTH\s*=\s*1040/, '设置窗口 maxWidth 必须 1040（优化 #30 紧凑化）')
+assert.match(settings, /PANEL_HEIGHT\s*=\s*'82vh'/, '设置窗口 height 必须 82vh（优化 #30 紧凑化）')

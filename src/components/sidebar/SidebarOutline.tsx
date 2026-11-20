@@ -71,6 +71,9 @@ export const SidebarOutline: React.FC = () => {
     if (!facade) return
     facade.setSelection(item.pos, item.pos + item.text.length)
     facade.focus()
+    // 点击后同步当前节：Milkdown 不回报 cursorPosition，这里直接写 store，
+    // 大纲 active 高亮随点击立即切换（优化 #3）。
+    useEditorStore.getState().setCursorPosition({ line: item.line, column: 1 })
     // 点击后让该项滚入视口并保持 current 高亮：即使光标未跨节（shownIndex 不变，
     // 上面的 shownIndex effect 不触发），点击的项也要留在大纲视口内。
     const btns = listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn')

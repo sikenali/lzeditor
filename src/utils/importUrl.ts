@@ -1,5 +1,5 @@
 /**
- * 文档库「URL 在线导入」：仅支持纯 .md 直链（raw.githubusercontent.com / gist 等）。
+ * 文档库「在线导入」：仅支持纯 .md 直链（raw.githubusercontent.com / gist 等）。
  *
  * 用户决策「仅 .md 直链」：不提取 HTML（博客/GitBook 页面返回 HTML 时报错提示），
  * 不做 Git 仓库文件列表，不新增后端/代理/IPC——raw/gist 带 CORS 头，渲染进程 fetch 可行。

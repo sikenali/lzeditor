@@ -7,7 +7,7 @@ const buttons = read('src/components/panels/ImportButtons.tsx')
 assert.ok(!buttons.includes("label: 'Git 仓库'"))
 assert.ok(!buttons.includes("label: '博客'"))
 assert.ok(!buttons.includes("label: 'GitBook'"))
-assert.match(buttons, /label: 'URL 在线导入'/)
+assert.match(buttons, /label: '在线导入'/)
 assert.match(buttons, /label: '本地导入'/)
 
 // props 改为 onImportUrl/onImportLocal

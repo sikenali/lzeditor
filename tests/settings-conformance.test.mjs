@@ -11,10 +11,10 @@ assert.match(dialog, /previewBg:\s*'#0A0F18'/, '深色预览卡必须 Nebula 深
 assert.match(dialog, /name:\s*'浅色主题 · 冷科技'/, '浅色主题名必须冷科技')
 assert.match(dialog, /name:\s*'深色主题 · 深空'/, '深色主题名必须深空')
 
-// DESIGN-1 §5.1 弹窗尺寸（92vw / max 1280 / 92vh）
-assert.match(dialog, /PANEL_WIDTH = '92vw'/, '弹窗宽必须 92vw（DESIGN-1 §5.1）')
-assert.match(dialog, /PANEL_MAX_WIDTH = 1280/, '弹窗最大宽必须 1280（DESIGN-1 §5.1）')
-assert.match(dialog, /PANEL_HEIGHT = '92vh'/, '弹窗高必须 92vh（DESIGN-1 §5.1）')
+// DESIGN-1 §5.1 弹窗尺寸（74vw / max 1040 / 82vh，优化 #30 紧凑化）
+assert.match(dialog, /PANEL_WIDTH = '74vw'/, '弹窗宽必须 74vw（优化 #30 紧凑化）')
+assert.match(dialog, /PANEL_MAX_WIDTH = 1040/, '弹窗最大宽必须 1040（优化 #30 紧凑化）')
+assert.match(dialog, /PANEL_HEIGHT = '82vh'/, '弹窗高必须 82vh（优化 #30 紧凑化）')
 
 // DESIGN-1 §5.3 导航：180px 白底 / 条目 44px / 激活 system-blue（无左条）/ 弹簧
 assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,240}width:\s*180px;/, '设置导航侧栏必须 180px（§5.3）')

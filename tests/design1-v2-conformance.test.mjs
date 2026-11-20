@@ -37,7 +37,7 @@ assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-mod
 
 // DESIGN-1 §5.1 设置中心：1280px 上限（92vw/max-1280/92vh），§5.3 导航 180px/44px，§7 system-blue 激活（无左条）
 const settings = read('src/components/panels/SettingsDialog.tsx')
-assert.match(settings, /PANEL_MAX_WIDTH = 1280/, '设置弹框最大宽必须 1280px（§5.1）')
+assert.match(settings, /PANEL_MAX_WIDTH = 1040/, '设置弹框最大宽必须 1040px（优化 #30 紧凑化）')
 const sdlg = read('src/styles/settings-dialog.css')
 const navList = sdlg.match(/\.settings-nav-list\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3）')

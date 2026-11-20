@@ -91,8 +91,9 @@ test('样式落在 backtickle 式的高亮与深度按钮上，旧折叠样式�
   // 活动项背景统一 read-toc 风格（accent-a5 浅底 + 强调色字 + 强调色左边框）
   assert.match(outlineCss, /outline-jump-btn\.current\s*\{[^}]*background:\s*var\(--accent-a5\)/, '当前项背景必须是 read-toc 的 accent-a5 浅底')
   assert.match(outlineCss, /outline-jump-btn\.current\s*\{[^}]*color:\s*var\(--accent-primary\)/, '当前项文字必须是强调色')
-  // 活动项徽标随 active：非活动项徽标统一中性灰（H1 不再恒红），活动项徽标强调色
-  assert.match(outlineCss, /outline-badge\.l1[^}]*background:\s*#55524C/, '非活动项徽标统一中性灰')
+  // 活动项徽标随 active：非活动项 H1/H2 用强调色浅底分级（浅色，明暗主题清晰），活动项徽标实底强调色
+  assert.match(outlineCss, /outline-badge\.l1[^}]*background:\s*var\(--accent-a15\)/, '非活动项 H1 徽标用强调色浅底（浅色分级）')
+  assert.match(outlineCss, /outline-badge\.l2[^}]*background:\s*var\(--accent-a10\)/, '非活动项 H2 徽标用较淡强调色浅底')
   assert.match(outlineCss, /outline-jump-btn\.current \.outline-badge[^}]*background:\s*var\(--accent-primary\)/, '活动项徽标强调色，随 active')
   for (const dead of ['outline-toggle-btn', 'outline-content-btn', 'outline-number', 'outline-node', 'outline-toggle-placeholder']) {
     assert.doesNotMatch(outlineCss, new RegExp(dead), `${dead} 是折叠版大纲的残留，不该再留在 CSS 里`)

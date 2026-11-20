@@ -10,7 +10,7 @@ const emoji = read('src/components/panels/EmojiDialog.tsx')
 const chart = read('src/components/panels/ChartDialog.tsx')
 const table = read('src/components/panels/TableDropdown.tsx')
 
-assert.match(lib, /useState\('url'\)/, '文档库默认 URL 在线导入标签')
+assert.match(lib, /useState\('docs'\)/, '文档库弹框默认「文档库」标签（优化 #4）')
 assert.match(lib, /height=\{600\}/, '文档库弹框固定高度 600')
 // 插入/图片/链接 等弹框统一固定高度
 for (const [name, src] of [['图片', img], ['链接', link], ['代码', code], ['公式', formula], ['表情', emoji], ['图表', chart], ['表格', table]]) {

@@ -96,7 +96,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   showToolbarLabels: true,
   // ── Startup / app behavior defaults ──
   enableTabs: true,
-  showTrayIcon: true,
+  showTrayIcon: false, // 优化 #29：托盘图标默认关闭；lpk（网页端无主进程托盘）不显示该设置行
   reopenLastDoc: true,
   openInNewWindow: false,
   quitWhenAllWindowsClosed: true,

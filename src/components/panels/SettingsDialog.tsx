@@ -33,10 +33,10 @@ const NAV_GROUPS: { id: SettingsGroup; label: string; icon: string; subs: SubTab
   { id: 'about', label: '关于', icon: 'ri-information-line', subs: [] },
 ]
 
-/* 面板长宽：bid-typesetting SettingsModal.vue —— 92vw / 上限 960px / min(680px,86vh) */
-const PANEL_WIDTH = '92vw'
-const PANEL_HEIGHT = '92vh'
-const PANEL_MAX_WIDTH = 1280
+/* 面板长宽：紧凑化（优化 #30）—— 更小的窗口，字体/间距在 settings-dialog.css 统一收紧 */
+const PANEL_WIDTH = '74vw'
+const PANEL_HEIGHT = '82vh'
+const PANEL_MAX_WIDTH = 1040
 
 export const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const settings = useSettingsStore()
