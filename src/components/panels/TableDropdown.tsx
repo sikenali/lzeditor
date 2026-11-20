@@ -155,8 +155,9 @@ export const TableDropdown: React.FC<TableDropdownProps> = ({ open, onToggle, on
 
   const handleChangeTableType = useCallback((type: 'with-header' | 'without-header') => {
     setTableType(type)
-    setCells(makeCells(rows, cols, type === 'with-header'))
-  }, [rows, cols])
+    // 保留已填的单元格内容，只切换首行是否按标题渲染；之前这里重建整个
+    // 表格，用户输入的内容会被清空。
+  }, [])
 
   if (!open) return null
 

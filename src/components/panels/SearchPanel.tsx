@@ -56,7 +56,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   }, [runSearch])
 
   const handleReplace = useCallback(() => {
-    if (!searchTerm.trim() || !replaceTerm) return
+    if (!searchTerm.trim()) return
     const facade = getEditorFacade()
     if (!facade) return
     try {
@@ -72,7 +72,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   }, [searchTerm, replaceTerm, buildOptions])
 
   const handleReplaceAll = useCallback(() => {
-    if (!searchTerm.trim() || !replaceTerm) return
+    if (!searchTerm.trim()) return
     const facade = getEditorFacade()
     if (!facade) return
     try {
@@ -172,8 +172,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleReplace() } }}
               />
             </div>
-            <button className="search-btn" onClick={handleReplace} disabled={!searchTerm.trim() || !replaceTerm}>替换</button>
-            <button className="search-btn" onClick={handleReplaceAll} disabled={!searchTerm.trim() || !replaceTerm}>全部替换</button>
+            <button className="search-btn" onClick={handleReplace} disabled={!searchTerm.trim()}>替换</button>
+            <button className="search-btn" onClick={handleReplaceAll} disabled={!searchTerm.trim()}>全部替换</button>
           </div>
         </div>
         {searchTerm && (

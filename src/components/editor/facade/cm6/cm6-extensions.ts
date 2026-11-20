@@ -22,6 +22,27 @@ import {
 } from "@codemirror/autocomplete";
 import { smartPasteExtension, headingShortcutKeymap, backspacePairKeymap } from "./cm6-assist";
 import { buildInputTransformExtension } from "./cm6-input-transform";
+import { wrapSelection } from "./cm6-commands";
+
+/** Inline-format shortcut for source mode (Mod-B/Mod-I/Mod-Shift-X). Wraps the
+ *  selection with the same delimiters as the toolbar; collapsed selection opens
+ *  an empty pair with the caret inside. */
+function wrapShortcut(name: string) {
+  return (view: EditorView): boolean => {
+    const { from, to } = view.state.selection.main;
+    const selected = view.state.sliceDoc(from, to);
+    const wrapped = wrapSelection(selected, name);
+    if (!wrapped) return false;
+    const inner = wrapped.indexOf(selected);
+    const anchor = from + (selected ? inner : Math.floor(wrapped.length / 2));
+    view.dispatch({
+      changes: { from, to, insert: wrapped },
+      selection: { anchor, head: anchor + selected.length },
+      scrollIntoView: true,
+    });
+    return true;
+  };
+}
 
 /**
  * Editor settings that the CM6 source editor reads (settings panel switches).
@@ -66,6 +87,9 @@ export function buildCM6Core(): Extension[] {
     headingShortcutKeymap(),
     backspacePairKeymap(),
     keymap.of([
+      { key: "Mod-b", run: wrapShortcut("selection.bold") },
+      { key: "Mod-i", run: wrapShortcut("selection.italic") },
+      { key: "Mod-Shift-x", run: wrapShortcut("selection.strike") },
       ...defaultKeymap,
       ...historyKeymap,
       ...searchKeymap,

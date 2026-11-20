@@ -125,8 +125,8 @@ export const LeftNav: React.FC = () => {
         {/* 组 2：编辑 */}
         <div className="rail-group">
           {menu('format', formatBtnRef, 'ri-text-wrap', '格式')}
-          {btn('ri-image-line', '图片', () => useEditorStore.getState().setInsertPanel('image'))}
-          {btn('ri-link', '链接', () => useEditorStore.getState().setInsertPanel('link'))}
+          {btn('ri-image-line', '图片', () => formatAction('image'))}
+          {btn('ri-link', '链接', () => formatAction('link'))}
           {menu('table', tableBtnRef, 'ri-table-2', '表格')}
           {menu('insert', insertBtnRef, 'ri-add-circle-line', '插入')}
         </div>

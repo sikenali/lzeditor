@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { openMarkdownDoc } from '../../utils/docImport'
-import { getDiskPath } from '../../utils/filePath'
+import { openMarkdownDoc, importFolderFiles } from '../../utils/docImport'
 import { fetchMarkdownFromUrl } from '../../utils/importUrl'
 import { UiModal, UDSection } from '../ui'
 import { LibraryTree, buildTree } from './LibraryTree'
@@ -72,25 +71,35 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
 
   const tree = useMemo(() => buildTree(flatDocs), [flatDocs])
 
-  // 本地导入：打开本地 Markdown 文件选择器（.md/.markdown/.txt，多选）。
+  // 导入后新文件夹默认展开：初始化快照只在挂载时跑一次，新出现的文件夹
+  // 不在快照里会被当成折叠，看起来像导入没反应。
+  useEffect(() => {
+    setExpandedFolders(prev => {
+      const next = { ...prev }
+      let changed = false
+      const collect = (nodes: any[]): void => {
+        for (const n of nodes) {
+          if (n.children) {
+            if (!(n.id in next)) { next[n.id] = true; changed = true }
+            collect(n.children)
+          }
+        }
+      }
+      collect(tree)
+      return changed ? next : prev
+    })
+  }, [tree])
+
+  // 本地导入：复用 docImport 的扩展名/大小/数量校验与磁盘路径授权。
   const handleImportLocal = () => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = '.md,.markdown,.txt'
+    input.accept = '.md,.markdown,.mdown,.mkd,.txt'
     input.multiple = true
     input.onchange = (e: any) => {
       const files: File[] = Array.from(e.target.files || [])
       if (!files.length) return
-      files.forEach(file => {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          const text = ev.target?.result as string
-          const disk = getDiskPath(file)
-          openMarkdownDoc(file.name, text, file.name.replace(/\.\w+$/, ''), disk)
-          window.electronAPI?.gitAuthorize?.(disk)
-        }
-        reader.readAsText(file)
-      })
+      void importFolderFiles(files)
     }
     input.click()
   }
@@ -193,6 +202,14 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
                 expandedFolders={expandedFolders}
                 onToggleFolder={toggleFolder}
                 onSelectDoc={(id) => { useEditorStore.getState().switchDoc(id); handleClose() }}
+                renameTargetKey={renameTarget?.key ?? null}
+                renameableTitles={docLibraries.map((l: any) => l.name)}
+                onRenameFolder={(node) => setRenameTarget({ key: node.id, title: node.title })}
+                onRenameCommit={(_key, newName) => {
+                  const lib = docLibraries.find((l: any) => l.name === renameTarget?.title)
+                  if (lib) renameLibrary(lib.id, newName)
+                  setRenameTarget(null)
+                }}
                 searchActive={!!searchText}
               />
             </div>

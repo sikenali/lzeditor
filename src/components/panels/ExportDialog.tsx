@@ -4,7 +4,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { getTypographyTheme } from '../../styles/typography-themes'
 import { DEFAULT_TYPOGRAPHY_THEME } from '../../styles/acks-mapping'
 import { mdToHtml } from '../../utils/mdToHtml'
-import { UDSection, UDSettingRow, UDPreviewCard, UiModal, UiSelect, UiSwitch } from '../ui'
+import { UDSection, UDSettingRow, UDPreviewCard, UiModal, UiSelect, UiSwitch, UiInput } from '../ui'
 import { getDocMd } from '../../utils/docSource'
 import { toast } from '../../utils/toast'
 
@@ -72,6 +72,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
   const [paperSize, setPaperSize] = useState(exportPaperSize || 'a4')
   const [orientation, setOrientation] = useState(exportOrientation || 'portrait')
   const [exporting, setExporting] = useState(false)
+  const [fileName, setFileName] = useState(() => (docTitle || 'document').replace(/\.[^.]+$/, ''))
 
   const selected = EXPORT_FORMATS.find(f => f.id === format)!
   const isPrintFormat = ['pdf', 'docx', 'html', 'epub'].includes(format)
@@ -108,7 +109,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
     // 否则内置手册/新开未编辑文档会导出成 <h1>Empty</h1>。
     const html = docHTML || previewHtml || '<h1>Empty</h1>'
     const mdSource = effectiveMd || mdContent || ''
-    const safeTitle = (docTitle || 'document').replace(/\.[^.]+$/, '')
+    const safeTitle = (fileName.trim() || docTitle || 'document').replace(/\.[^.]+$/, '')
     // 失败不关弹窗：保留用户已选的格式和排版项，能直接重试。
     // 之前是无条件 onClose()，失败和成功一个样，用户以为文件已经导出了。
     let failed = false
@@ -118,7 +119,7 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
       await exportDocument({
         title: safeTitle, content: format === 'md' ? mdSource : html, format,
           options: isPrintFormat ? {
-            typographyTheme: typographyTheme || DEFAULT_TYPOGRAPHY_THEME, codeTheme: codeTheme || 'atom-one-dark',
+            typographyTheme: styleId || typographyTheme || DEFAULT_TYPOGRAPHY_THEME, codeTheme: codeTheme || 'atom-one-dark',
             macCodeBlock: macCodeBlock || false, includeTOC: includeTOC !== false,
             includeLineNumbers: includeLineNumbers || false, includePageNumbers: includePageNumbers || false,
             paperSize, orientation, fontSize: defaultFontSize, lineHeight: lineHeight,
@@ -156,6 +157,9 @@ export const ExportDialog: React.FC<{ onClose: () => void; styleId?: string }> =
 
   const rightTop = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <UDSection label="文件名">
+        <UiInput value={fileName} onChange={setFileName} placeholder="导出文件名（不含扩展名）" clearable />
+      </UDSection>
       {isPrintFormat && (
         <>
           <UDSection label="样式选项">

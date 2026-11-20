@@ -109,6 +109,9 @@
 
   .textus-editor-shell .milkdown p {
     margin: var(--doc-gap) 0;
+    /* 「首行缩进」「两端对齐」与阅读/预览同一套变量（applyTypographyOverrides 写 :root）。 */
+    text-indent: var(--read-text-indent, 0);
+    text-align: var(--read-text-align, left);
   }
 
   .textus-editor-shell .milkdown blockquote {

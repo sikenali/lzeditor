@@ -149,10 +149,10 @@ export const Toolbar: React.FC = () => {
             </button>
           </div>
 
-          <button className="toolbar-btn" aria-label="图片" onClick={() => useEditorStore.getState().setInsertPanel('image')}>
+          <button className="toolbar-btn" aria-label="图片" onClick={() => formatAction('image')}>
             <span className="remix toolbar-icon ri-image-line"></span><span className="toolbar-label">图片</span>
           </button>
-          <button className="toolbar-btn" aria-label="链接" onClick={() => useEditorStore.getState().setInsertPanel('link')}>
+          <button className="toolbar-btn" aria-label="链接" onClick={() => formatAction('link')}>
             <span className="remix toolbar-icon ri-link"></span><span className="toolbar-label">链接</span>
           </button>
 

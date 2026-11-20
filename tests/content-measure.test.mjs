@@ -32,14 +32,10 @@ test('正文行高 27.33px（编辑内容，精确命中规格）', () => {
   assert.match(read('src/additional/milkdown/textus/theme/content-themes.css'), /data-content-theme="paper"[\s\S]{0,200}--doc-line-height: 27\.33px/, 'paper 正文行高 27.33px')
 })
 
-test('预览/阅读正文行高也统一 27.33px（与编辑一致，避免非默认设置下分叉）', () => {
+test('预览/阅读正文行高跟随设置（默认回退 27.33px）', () => {
   const readCss = read('src/styles/read-mode.css')
-  // 既有 --read-line-height 消费规则之后，须有 27.33px 覆盖（保持 var 被消费 + 固定测度）
-  const lhIdx = readCss.indexOf('line-height: 27.33px')
-  assert.ok(lhIdx > 0, 'read-mode.css 必须有 27.33px 行高覆盖（read/preview 正文）')
-  const varIdx = readCss.indexOf('var(--read-line-height')
-  assert.ok(varIdx > 0, '--read-line-height 消费规则仍在（不能写成死变量）')
-  assert.ok(lhIdx > varIdx, '27.33px 覆盖必须在 --read-line-height 消费规则之后（级联生效）')
+  // 行高必须消费 --read-line-height（设置才能生效），默认回退 27.33px。
+  assert.match(readCss, /line-height:\s*var\(--read-line-height,\s*27\.33px\)/, 'read-mode.css 行高必须消费设置变量并回退 27.33px')
 })
 
 test('设置中心内容宽度选项 + 新默认回退', () => {

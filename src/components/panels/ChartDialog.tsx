@@ -45,6 +45,15 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstanceRef = useRef<any>(null)
 
+  const rawData = dataStr.split(',').map(s => s.trim())
+  const rawLabels = labelsStr.split(',').map(s => s.trim())
+  const chartError =
+    rawData.some(v => v === '' || !Number.isFinite(Number(v))) ? '数据值必须是数字，用逗号分隔'
+    : rawLabels.some(v => v === '') ? '标签不能为空，用逗号分隔'
+    : rawData.length !== rawLabels.length ? '数据值与标签数量必须一致'
+    : ''
+  const chartValid = chartError === ''
+
   useEffect(() => {
     if (!chartRef.current) return
     if (chartInstanceRef.current) {
@@ -53,8 +62,8 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string
     }
     const chart = echarts.init(chartRef.current)
     chartInstanceRef.current = chart
-    const data = dataStr.split(',').map(Number)
-    const labels = labelsStr.split(',').map(s => s.trim())
+    const data = rawData.map(v => Number.isFinite(Number(v)) ? Number(v) : 0)
+    const labels = rawLabels.map(s => s || '—')
 
     const option: any = {
       title: { text: title, left: 'center', textStyle: { fontSize: 13, color: 'var(--text-secondary)' } },
@@ -100,7 +109,7 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
-          <UiButton onClick={handleInsert}>插入图表</UiButton>
+          <UiButton onClick={handleInsert} disabled={!chartValid}>插入图表</UiButton>
         </>
       }
     >
@@ -132,6 +141,9 @@ export const ChartDialog: React.FC<{ onClose: () => void; onInsert: (src: string
                   <UiInput value={labelsStr} onChange={setLabelsStr} placeholder="A,B,C,D" />
                 </div>
               </div>
+              {chartError && (
+                <div style={{ fontSize: 11, color: 'var(--color-error)' }}>{chartError}</div>
+              )}
             </div>
           </UDSection>
           <UDSettingRow icon="ri-eye-line" label="显示图例" desc="在图表底部显示数据系列图例">

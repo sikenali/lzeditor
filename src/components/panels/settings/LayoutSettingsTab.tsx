@@ -60,10 +60,14 @@ function renderContentSection(s: any, u: any) {
       </div>
       <div className="settings-section">
         <div className="settings-section-title"><span>工具栏</span></div>
-        <UDSettingRow icon="ri-apps-2-fill" label="显示常用格式按钮" desc="在工具栏上显示常用的样式菜单，开启后全部显示">
-        <UiSwitch size="sm" checked={ s.quickFormatButtons !== false } onChange={ v => u('quickFormatButtons', v) } />
-      </UDSettingRow>
-        <div className="setting-divider" />
+        {s.navMode !== 'left' && (
+          <>
+            <UDSettingRow icon="ri-apps-2-fill" label="显示常用格式按钮" desc="在工具栏上显示常用的样式菜单，开启后全部显示">
+            <UiSwitch size="sm" checked={ s.quickFormatButtons !== false } onChange={ v => u('quickFormatButtons', v) } />
+          </UDSettingRow>
+            <div className="setting-divider" />
+          </>
+        )}
         <UDSettingRow icon="ri-text" label="显示工具栏按钮标题" desc="在图标下方显示文字标签">
         <UiSwitch size="sm" checked={ s.showToolbarLabels !== false } onChange={ v => u('showToolbarLabels', v) } />
       </UDSettingRow>

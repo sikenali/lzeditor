@@ -5,6 +5,7 @@ import {
   type Transaction,
 } from "@milkdown/kit/prose/state";
 import type { Node as ProseNode } from "@milkdown/kit/prose/model";
+import { setBlockType } from "@milkdown/kit/prose/commands";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import { $prose } from "@milkdown/kit/utils";
 import { isEnclosureName } from "../marks/enclosure";
@@ -351,6 +352,17 @@ export const formatShortcutPlugin = $prose(
               : toggleCodeSpan(view);
             if (done) event.preventDefault();
             return done;
+          }
+          // Cmd/Ctrl+Alt+1..6 headings, matching the code-mode keymap.
+          if ((event.metaKey || event.ctrlKey) && event.altKey) {
+            const level = Number(event.key);
+            if (level >= 1 && level <= 6) {
+              const heading = view.state.schema.nodes.heading;
+              if (!heading) return false;
+              const done = setBlockType(heading, { level })(view.state, view.dispatch);
+              if (done) event.preventDefault();
+              return done;
+            }
           }
           if (!(event.metaKey || event.ctrlKey) || event.altKey) return false;
           if (event.key.toLowerCase() === "k" && !event.shiftKey) {

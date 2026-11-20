@@ -59,6 +59,24 @@ export interface ElectronAPI {
   gitShow: (filePath: string, oid: string) => Promise<GitShowResult>
   /** 文件选择器导入后登记磁盘路径进主进程授权集合。 */
   gitAuthorize: (filePath: string) => Promise<{ ok: boolean }>
+
+  // ── Ctrl+S 保存历史（Electron 打包态 file:// 无法走 /api 代理，改 IPC 落盘）──
+  versionsSave: (payload: { docId: string; md: string; html: string; changes: number }) => Promise<{
+    ok: boolean
+    version?: {
+      id: string; docId: string; md: string; html: string; changes: number
+      ts: number; date: string; time: string; desc: string; source: 'local'
+    }
+    error?: string
+  }>
+  versionsList: (docId: string) => Promise<{
+    ok: boolean
+    versions?: Array<{
+      id: string; docId: string; md: string; html: string; changes: number
+      ts: number; date: string; time: string; desc: string; source: 'local'
+    }>
+    error?: string
+  }>
   /** File 对象 → 真实磁盘路径（webUtils.getPathForFile，File.path 已弃用）。 */
   getPathForFile: (file: File) => string
 

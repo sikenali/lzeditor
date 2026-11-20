@@ -17,6 +17,6 @@ assert.ok(!panel.includes('onImportGitbook'))
 
 // 本地选择器仍保留（.md 多选）
 assert.match(panel, /type = 'file'/)
-assert.match(panel, /accept = '\.md,\.markdown,\.txt'/)
+assert.match(panel, /accept = '\.md,\.markdown,\.mdown,\.mkd,\.txt'/)
 
 console.log('library import wiring ok')

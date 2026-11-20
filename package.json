@@ -14,7 +14,7 @@
     "test:e2e": "npm run build && node --import tsx --test tests/e2e/e2e.test.mjs tests/e2e/editor-interactions.spec.ts tests/e2e/milkdown-smoke.test.mjs",
     "e2e:run": "node --test tests/e2e/e2e.test.mjs",
     "server:start": "tsx server/src/index.ts",
-    "electron:dev": "concurrently \"npm run dev:web\" \"wait-on http://localhost:5173 && tsc -p electron/tsconfig.json && electron .\"",
+    "electron:dev": "concurrently \"npm run dev:web\" \"npm run dev:server\" \"wait-on http://localhost:5173 && tsc -p electron/tsconfig.json && electron .\"",
     "electron:build": "npm run build && tsc -p electron/tsconfig.json && electron-builder",
     "electron:build:mac": "npm run build && tsc -p electron/tsconfig.json && electron-builder --mac",
     "electron:build:win": "npm run build && tsc -p electron/tsconfig.json && electron-builder --win",

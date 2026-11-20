@@ -136,7 +136,7 @@ export const ReadMode: React.FC = () => {
     // 页会拉伸到场景高度，减掉页内边距就是块能用的净高
     const pageHeight = scene.clientHeight - PAGE_PAD * 2
     setPages(paginate(blocks, pageHeight > 0 ? pageHeight : 0))
-  }, [html, pageW])
+  }, [html, pageW, readFontSize])
 
   useLayoutEffect(() => {
     syncPageW()

@@ -1386,6 +1386,24 @@
 .saved-key-test .remix.success  { color: var(--color-success); }
 .saved-key-test .remix.failed  { color: var(--color-error); }
 
+.model-refresh-btn  {
+  height: 24px;
+  padding: 0 8px;
+  border: 0.6px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-white);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+.model-refresh-btn:hover  { background: var(--color-bg-secondary); }
+.model-refresh-btn:disabled  { opacity: 0.5; cursor: not-allowed; }
+.model-refresh-btn .remix  { font-size: 13px; line-height: 1; }
+.model-refresh-btn .remix.spinning  { animation: lz-spin 1s linear infinite; }
+
 .test-error-msg  {
   margin-top: 8px;
   font-size: 12px;

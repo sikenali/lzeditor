@@ -50,6 +50,7 @@ export const INSERT_ITEMS: MenuItem[] = [
   { icon: 'ri-bar-chart-2-line', label: '图表', action: 'chart' },
   { icon: 'ri-menu-line', label: '目录', action: 'toc' },
   { icon: 'ri-footprint-line', label: '脚注', action: 'footnote' },
+  { icon: 'ri-separator', label: '分割线', action: 'hr' },
 ]
 
 export const TABLE_ITEMS: MenuItem[] = [
@@ -227,8 +228,6 @@ export function useEditorActions() {
 
   // 无映射的动作不静默失败：插入类改为打开对应面板
   const runMapped = useCallback((action: string, map: Record<string, FormatCommand>): boolean => {
-    const facade = getEditorFacade()
-    if (!facade) return false
     const fc = map[action]
     if (!fc) {
       if (PANEL_ACTIONS.has(action)) setInsertPanel(action)
@@ -236,8 +235,28 @@ export function useEditorActions() {
     }
     const yeliId = YELI_COMMAND[fc]
     if (!yeliId) return false
-    facade.execCommand(yeliId)
-    return true
+
+    // 阅读/排版/历史模式下没有 facade：先切回编辑模式，等编辑器挂载后执行，
+    // 而不是静默 no-op。最多等 2 秒（编辑器挂载 + facade 注册）。
+    const exec = (): boolean => {
+      const facade = getEditorFacade()
+      if (!facade) return false
+      facade.execCommand(yeliId)
+      return true
+    }
+    if (exec()) return true
+    const st = useEditorStore.getState()
+    if (st.appMode !== 'edit' && st.appMode !== 'code') {
+      st.setAppMode('edit')
+      let tries = 0
+      const tick = () => {
+        if (exec()) return
+        if (++tries < 20) setTimeout(tick, 100)
+      }
+      setTimeout(tick, 100)
+      return true
+    }
+    return false
   }, [setInsertPanel])
 
   const applyCmd = useCallback((cmd: string) => {

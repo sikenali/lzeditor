@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import hljs from 'highlight.js'
 import { CODE_THEMES } from '../../styles/code-themes'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -63,6 +63,16 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   const [code, setCode] = useState(DEFAULTS.python)
   const [themeId, setThemeId] = useState(useSettingsStore.getState().codeTheme || 'atom-one-dark')
   const [macStyle, setMacStyle] = useState(useSettingsStore.getState().macCodeBlock || false)
+  // 打开时的设置快照：主题/Mac 样式在弹窗里点击就写入全局，取消时要还原，
+  // 否则只是预览一下也会永久改掉所有代码块的外观。
+  const initialThemeRef = useRef(themeId)
+  const initialMacRef = useRef(macStyle)
+
+  const handleCancel = () => {
+    useSettingsStore.getState().updateSetting('codeTheme', initialThemeRef.current)
+    useSettingsStore.getState().updateSetting('macCodeBlock', initialMacRef.current)
+    onClose()
+  }
 
   useEffect(() => {
     const link = document.querySelector('link[data-code-dialog-theme]') as HTMLLinkElement | null
@@ -90,7 +100,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
   return (
     <UiModal
       open
-      onClose={onClose}
+      onClose={handleCancel}
       icon="ri-code-box-line"
       title="插入代码块"
       subtitle={`${language} · ${THEME_OPTIONS.find(t => t.id === themeId)?.name || ''}`}
@@ -98,7 +108,7 @@ export const CodeDialog: React.FC<CodeDialogProps> = ({ onClose, onInsert }) => 
       height={520}
       footer={
         <>
-          <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
+          <UiButton variant="ghost" onClick={handleCancel}>取消</UiButton>
           <UiButton onClick={handleInsert} disabled={!code.trim()}>插入代码块</UiButton>
         </>
       }

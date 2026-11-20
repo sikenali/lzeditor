@@ -46,7 +46,8 @@ for (const f of cssFiles) {
 // 6. 评审 Important #4：重置强调色必须写新默认 id 'cyan'（旧 'vermilion' 落回青但色块不选中）
 const dialog = read('src/components/panels/SettingsDialog.tsx')
 assert.doesNotMatch(dialog, /u\('accentColor',\s*'vermilion'\)/, '重置不得写旧 vermilion id')
-assert.match(dialog, /u\('accentColor',\s*'cyan'\)/, '重置必须写默认 cyan')
+assert.match(dialog, /resetSettings\(\)/, '重置必须走 resetSettings（含强调色 cyan）')
+assert.match(read('src/store/settingsStore.ts'), /accentColor:\s*'cyan'/, '默认强调色必须是 cyan')
 
 console.log('nebula surface ok')
 

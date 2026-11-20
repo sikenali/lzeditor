@@ -11,8 +11,7 @@ assert.match(fp, /\.path/)             // File.path fallback
 assert.match(di, /openMarkdownDoc\(title: string, md: string, path = '', diskPath\?: string\)/)
 assert.match(di, /getDiskPath\(/)
 assert.match(di, /gitAuthorize/)
-assert.match(panel, /getDiskPath\(/)
-assert.match(panel, /openMarkdownDoc\(file\.name, text, file\.name\.replace\([^)]*\), disk\)/)
-assert.match(panel, /gitAuthorize/)
+assert.match(panel, /importFolderFiles\(/)
+assert.match(panel, /handleImportLocal/)
 
 console.log('filepath wiring ok')

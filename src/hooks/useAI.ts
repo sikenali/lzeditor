@@ -5,6 +5,7 @@ import { getEditorFacade } from '../components/editor/facade/registry'
 import type { EditorFacade } from '../components/editor/facade/EditorFacade'
 import { parseMdOutline, outlineToMarkdownTree } from '../utils/mdOutline'
 import { buildPrompt } from '../services/promptTemplate'
+import { resolveApiUrl } from '../utils/apiUrl'
 import { planApply, type AIStreamState } from './aiApply'
 import { AI_MODES } from '../shared/aiModes'
 import type { AIAction, ChatMessage } from '../shared/types'
@@ -66,12 +67,12 @@ export function useAI() {
 
   /** 把一段流式文本写入文档：首个 chunk 定位 anchor 并替换选区，后续在 anchor 后追加；
    *  revision 不匹配（用户中途编辑）则丢弃该 chunk 并停止实时插入，绝不覆盖最新内容。 */
-  const streamIntoDoc = useCallback((facade: EditorFacade, delta: string) => {
+  const streamIntoDoc = useCallback((facade: EditorFacade, delta: string, anchorOverride?: { from: number; to: number } | null) => {
     const s = streamRef.current
     if (!delta || s.stale) return
     try {
       if (!s.active || !s.anchor) {
-        const sel = facade.getSelection()
+        const sel = anchorOverride ?? facade.getSelection()
         s.anchor = sel ?? { from: facade.getText().length, to: facade.getText().length }
         s.originalText = facade.getText().slice(s.anchor.from, s.anchor.to)
         s.insertStart = s.anchor.from
@@ -103,7 +104,8 @@ export function useAI() {
 
     const settings = useSettingsStore.getState()
     const { apiKeys, selectedModelId, temperature, maxTokens } = settings
-    const activeKey = (apiKeys || []).find(k => k.id === selectedModelId) || (apiKeys || []).find(k => k.enabled)
+    const usable = (apiKeys || []).filter(k => k.enabled && k.key)
+    const activeKey = usable.find(k => k.id === selectedModelId) || usable[0]
 
     // 流式进行中的重复触发一律忽略（包括此时恰好没有 Key 的情况，避免误插 error 卡片）。
     if (abortRef.current) return
@@ -141,6 +143,13 @@ export function useAI() {
       vars.user_instruction = input
       vars.context_before = selectedText
     }
+    // 续写是「接在选区之后」，不是覆盖选区：首个 chunk 的 anchor 取选区末尾。
+    const continueAnchor = effAction === 'continue'
+      ? (() => {
+          const sel = facade?.getSelection()
+          return sel ? { from: sel.to, to: sel.to } : null
+        })()
+      : null
     if (effAction === 'translate') vars.target = input || '中文'
     if (effAction === 'question') vars.user_instruction = input
 
@@ -150,8 +159,7 @@ export function useAI() {
 
     try {
       if (activeKey.format === 'anthropic') {
-        const base = (activeKey.endpoint || 'https://api.anthropic.com').replace(/\/v1$/, '').replace(/\/$/, '')
-        const url = `${base}/v1/messages`
+        const url = resolveApiUrl(activeKey.endpoint || 'https://api.anthropic.com/v1', 'messages')
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'x-api-key': activeKey.key,
@@ -165,8 +173,7 @@ export function useAI() {
         if (accumulated) useAIStore.getState().appendStreamToMessage(aid, accumulated)
         useAIStore.getState().setPanelStatus('result')
       } else {
-        const base = (activeKey.endpoint || 'https://api.openai.com').replace(/\/v1$/, '').replace(/\/$/, '')
-        const url = `${base}/v1/chat/completions`
+        const url = resolveApiUrl(activeKey.endpoint || 'https://api.openai.com/v1', 'chat/completions')
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${activeKey.key}`,
@@ -208,7 +215,7 @@ export function useAI() {
             const delta = accumulated.slice(prevLen)
             if (delta) useAIStore.getState().appendStreamToMessage(aid, delta)
             // 逐 chunk 事务：把新到增量写入文档（stale 时自动丢弃，不覆盖用户编辑）
-            if (facade) streamIntoDoc(facade, delta)
+            if (facade) streamIntoDoc(facade, delta, continueAnchor)
           }
         }
         if (buffer.trim()) {
@@ -216,7 +223,7 @@ export function useAI() {
           accumulated = extractSSEText(buffer, accumulated).acc
           const delta = accumulated.slice(prevLen)
           if (delta) useAIStore.getState().appendStreamToMessage(aid, delta)
-          if (facade) streamIntoDoc(facade, delta)
+          if (facade) streamIntoDoc(facade, delta, continueAnchor)
         }
         useAIStore.getState().setPanelStatus(signal.aborted ? (accumulated ? 'result' : 'idle') : 'result')
       }

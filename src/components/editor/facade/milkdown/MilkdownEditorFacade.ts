@@ -237,6 +237,20 @@ function buildTable(
   return schema.nodes.table.create(null, [header, ...body]);
 }
 
+/** The top-level block containing the caret: its doc offsets and node. */
+function topBlockAt(view: EditorView): { start: number; end: number; node: ProseNode } | null {
+  const doc = view.state.doc;
+  const from = view.state.selection.from;
+  let offset = 0;
+  for (let i = 0; i < doc.childCount; i++) {
+    const node = doc.child(i);
+    const end = offset + node.nodeSize;
+    if (from >= offset && from <= end) return { start: offset, end, node };
+    offset = end;
+  }
+  return null;
+}
+
 /** Inserts a block-level node at the caret. */
 function insertNode(view: EditorView, node: ProseNode): boolean {
   view.dispatch(view.state.tr.replaceSelectionWith(node).scrollIntoView());
@@ -669,6 +683,8 @@ export function createMilkdownEditorFacade(
         if (name.startsWith("block.")) {
           switch (name) {
             case "block.convert.heading":
+            case "block.convert.heading2":
+              return convertBlock(v, "heading", { level: 2 });
             case "block.convert.heading1":
               return convertBlock(v, "heading", { level: 1 });
             case "block.convert.heading3":
@@ -693,6 +709,22 @@ export function createMilkdownEditorFacade(
               return wrapInListOf(v, "ordered_list");
             case "block.convert.task":
               return turnIntoTask(v);
+            case "block.duplicate": {
+              const r = topBlockAt(v);
+              if (!r) return false;
+              v.dispatch(v.state.tr.insert(r.end, r.node.copy(r.node.content)));
+              return true;
+            }
+            case "block.insert-below": {
+              const r = topBlockAt(v);
+              const p = schema.nodes.paragraph?.createAndFill();
+              if (!r || !p) return false;
+              const tr = v.state.tr.insert(r.end, p);
+              v.dispatch(
+                tr.setSelection(TextSelection.create(tr.doc, r.end + 1)).scrollIntoView(),
+              );
+              return true;
+            }
             default:
               return null;
           }

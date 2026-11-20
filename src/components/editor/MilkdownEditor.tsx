@@ -45,7 +45,17 @@ interface MilkdownEditorProps {
 
 function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps & { shellRef: React.RefObject<HTMLDivElement | null> }) {
   const { settings, t } = useSettings()
-  const settingsRef = useLatest(settings)
+  const autoPair = useSettingsStore((s) => s.autoPair)
+  const autoCompleteMarkdownPairs = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
+  const showLineNumbers = useSettingsStore((s) => s.showLineNumbers)
+  // 把设置中心里的自动配对/自动补全/代码行号接到 Textus 的 settings 上：
+  // 这些插件通过 `() => settings.current.*` 实时读取，所以切换开关即时生效。
+  const settingsRef = useLatest({
+    ...settings,
+    autoCloseBrackets: autoPair !== false,
+    autoCloseMarks: autoCompleteMarkdownPairs !== false,
+    codeLineNumbers: showLineNumbers === true,
+  })
   const docPathRef = useLatest<string | null>(null)
   const labelRef = useLatest(t.splitPreview)
   const onChangeRef = useLatest(onChange)
@@ -104,6 +114,10 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
   const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
   const lineHeight = useSettingsStore((s) => s.lineHeight)
   const contentWidth = useSettingsStore((s) => s.contentWidth)
+  const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck)
+  const spellCheckLang = useSettingsStore((s) => s.spellCheckLang)
+  const tabSize = useSettingsStore((s) => s.tabSize)
+  const softWrap = useSettingsStore((s) => s.softWrap)
 
   // 预览滚动同步需要编辑器滚动容器（优化 #9）：把 .milkdown 交给 store，
   // ScrollSync 在 CM6 桥缺失（Milkdown 是 ProseMirror）时按比例回退同步。
@@ -134,6 +148,24 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
     shell.style.setProperty('--cm-font-size', `${defaultFontSize}px`)
     shell.style.setProperty('--cm-line-height', lineHeight || '1.8')
   }, [defaultFontSize, lineHeight])
+  // 拼写检查 / tab 宽度 / 软换行：Milkdown 的 ProseMirror DOM 挂载后才存在，
+  // 用 MutationObserver 在出现时应用（与上面拿滚动容器的做法一致）。
+  useEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+    const apply = () => {
+      const pm = shell.querySelector<HTMLElement>('.ProseMirror')
+      if (!pm) return
+      pm.spellcheck = enableSpellCheck !== false
+      pm.setAttribute('lang', spellCheckLang || 'zh-CN')
+      pm.style.tabSize = String(tabSize || 2)
+      pm.style.whiteSpace = softWrap === false ? 'pre' : ''
+    }
+    apply()
+    const obs = new MutationObserver(apply)
+    obs.observe(shell, { childList: true, subtree: true })
+    return () => obs.disconnect()
+  }, [enableSpellCheck, spellCheckLang, tabSize, softWrap])
   // 内容列宽跟随编辑设置（G14）：默认 760px，用户可调 960/1024/1200/1280
   useEffect(() => {
     const shell = shellRef.current

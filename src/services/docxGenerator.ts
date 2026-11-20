@@ -26,6 +26,16 @@ const escXml = (s: string) =>
 const HEADING_SIZE: Record<string, number> = { h1: 22, h2: 17, h3: 15, h4: 14, h5: 13, h6: 12 }
 const BODY_PT = 12
 
+/** 当前导出使用的排版参数（generateDOCX 开始时设置，供各 XML 生成器读取）。 */
+const docxStyle = {
+  bodyPt: BODY_PT,
+  font: 'Calibri',
+  eastAsia: 'SimSun',
+  line: 360,
+  indent: false,
+  justify: false,
+}
+
 interface RunSpec {
   text?: string
   bold?: boolean
@@ -52,7 +62,7 @@ function toAARRGGBB(color: string | null | undefined): string | null {
   return null
 }
 
-function runXml(spec: RunSpec, baseSize = BODY_PT): string {
+function runXml(spec: RunSpec, baseSize = docxStyle.bodyPt): string {
   if (!spec.text) return ''
   const rPr: string[] = []
   if (spec.bold) rPr.push('<w:b/>', '<w:bCs/>')
@@ -99,13 +109,20 @@ function paragraphXml(runs: RunSpec[], opts: { heading?: number; indent?: number
   } else if (opts.indent) {
     pPr.push(`<w:ind w:left="${opts.indent}" w:start="${opts.indent}"/>`)
   }
-  if (opts.spaceBefore != null) pPr.push(`<w:spacing w:before="${opts.spaceBefore}"/>`)
-  if (opts.spaceAfter != null) pPr.push(`<w:spacing w:after="${opts.spaceAfter}"/>`)
+  if (opts.style !== 'quote' && opts.style !== 'code' && docxStyle.indent) {
+    pPr.push('<w:ind w:firstLine="480" w:firstLineChars="200"/>')
+  }
+  if (docxStyle.justify) pPr.push('<w:jc w:val="both"/>')
+  const spacing: string[] = []
+  if (opts.spaceBefore != null) spacing.push(`w:before="${opts.spaceBefore}"`)
+  if (opts.spaceAfter != null) spacing.push(`w:after="${opts.spaceAfter}"`)
+  if (docxStyle.line !== 360) spacing.push(`w:line="${docxStyle.line}" w:lineRule="auto"`)
+  if (spacing.length) pPr.push(`<w:spacing ${spacing.join(' ')}/>`)
 
   return `<w:p>${pPr.length ? `<w:pPr>${pPr.join('')}</w:pPr>` : ''}${runs.map(r => runXml(r)).join('')}</w:p>`
 }
 
-function bulletRun(mark: string, size = BODY_PT): RunSpec {
+function bulletRun(mark: string, size = docxStyle.bodyPt): RunSpec {
   return { text: mark, size }
 }
 
@@ -239,7 +256,7 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
     switch (tag) {
       case 'h1': case 'h2': case 'h3': case 'h4': case 'h5': case 'h6': {
         const level = Number(tag[1])
-        const size = HEADING_SIZE[tag] || BODY_PT
+        const size = HEADING_SIZE[tag] || docxStyle.bodyPt
         const runs: RunSpec[] = []
         el.childNodes.forEach(c => collectRuns(c, runs, doc.rels, size))
         doc.body.push(paragraphXml(runs.map(r => ({ ...r, size })), { heading: level, spaceBefore: 240, spaceAfter: 120 }))
@@ -247,7 +264,7 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
       }
       case 'p': {
         const runs: RunSpec[] = []
-        el.childNodes.forEach(c => collectRuns(c, runs, doc.rels, BODY_PT))
+        el.childNodes.forEach(c => collectRuns(c, runs, doc.rels, docxStyle.bodyPt))
         const style = el.getAttribute('class') === 'footnote-def' ? 'quote' : undefined
         doc.body.push(paragraphXml(runs, { style, spaceAfter: 160 }))
         break
@@ -259,7 +276,7 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
         break
       case 'blockquote': {
         const runs: RunSpec[] = []
-        el.childNodes.forEach(c => collectRuns(c, runs, doc.rels, BODY_PT))
+        el.childNodes.forEach(c => collectRuns(c, runs, doc.rels, docxStyle.bodyPt))
         doc.body.push(paragraphXml(runs, { style: 'quote', spaceAfter: 160 }))
         break
       }
@@ -268,14 +285,25 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
         for (const li of Array.from(el.children).filter(n => n.tagName.toLowerCase() === 'li')) {
           i += 1
           const runs: RunSpec[] = []
-          ;(li as HTMLElement).childNodes.forEach(c => collectRuns(c, runs, doc.rels, BODY_PT))
+          ;(li as HTMLElement).childNodes.forEach(c => collectRuns(c, runs, doc.rels, docxStyle.bodyPt))
           const mark = tag === 'ol' ? `${i}. ` : '• '
-          doc.body.push(paragraphXml([bulletRun(mark, BODY_PT), ...runs], { indent: 720, spaceAfter: 80 }))
+          doc.body.push(paragraphXml([bulletRun(mark, docxStyle.bodyPt), ...runs], { indent: 720, spaceAfter: 80 }))
         }
         break
       }
       case 'pre': {
-        const code = decodeEntities(el.textContent || '')
+        // 代码行号导出成 <span class="ln">1</span><span class="lc">…</span>；
+        // 直接 textContent 会得到 "1code"。有 .lc 时按行拼回（保留行号），
+        // 否则去掉 .ln 再取正文。
+        const lcs = Array.from(el.querySelectorAll<HTMLElement>('.lc'))
+        let code: string
+        if (lcs.length) {
+          code = lcs.map((lc, i) => `${i + 1} ${decodeEntities(lc.textContent || '')}`).join('\n')
+        } else {
+          const clone = el.cloneNode(true) as HTMLElement
+          clone.querySelectorAll('.ln').forEach(n => n.remove())
+          code = decodeEntities(clone.textContent || '')
+        }
         code.split('\n').forEach(line => {
           doc.body.push(paragraphXml([{ text: line || ' ', mono: true, size: 10 }], { style: 'code', spaceAfter: 0 }))
         })
@@ -290,7 +318,7 @@ async function buildBlocks(node: ParentNode, doc: { body: string[]; rels: Set<st
           tbl += '<w:tr>'
           for (const cell of Array.from(tr.children).filter(n => /^(TD|TH)$/.test(n.tagName))) {
             const runs: RunSpec[] = []
-            ;(cell as HTMLElement).childNodes.forEach(c => collectRuns(c, runs, doc.rels, BODY_PT))
+            ;(cell as HTMLElement).childNodes.forEach(c => collectRuns(c, runs, doc.rels, docxStyle.bodyPt))
             const bold = (cell as HTMLElement).tagName.toLowerCase() === 'th'
             const cells = runs.map(r => ({ ...r, bold: bold || r.bold }))
             tbl += `<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/></w:tcPr>${paragraphXml(cells, { spaceAfter: 40 })}</w:tc>`
@@ -345,9 +373,30 @@ export interface DocxOptions {
   content: string
   /** 追加一段页脚文字（例如“Generated by lzeditor”）。 */
   footer?: string
+  /** 正文字号（pt）；默认 12。 */
+  fontSize?: number
+  /** 字体族（可传 CSS 字体栈，取第一个家族）。 */
+  fontFamily?: string
+  /** 行高倍数（如 1.7）；默认 1.5。 */
+  lineHeight?: string
+  /** 段落首行缩进 2 字符。 */
+  textIndent?: boolean
+  /** 段落两端对齐。 */
+  textJustify?: boolean
+  /** 纸张尺寸（毫米）；默认 A4 纵向。 */
+  pageSize?: { widthMm: number; heightMm: number }
 }
 
-export async function generateDOCX({ title, content, footer }: DocxOptions): Promise<Blob> {
+export async function generateDOCX({ title, content, footer, fontSize, fontFamily, lineHeight, textIndent, textJustify, pageSize }: DocxOptions): Promise<Blob> {
+  const font = (fontFamily || 'Calibri').split(',')[0].replace(/["']/g, '').trim() || 'Calibri'
+  docxStyle.bodyPt = fontSize ?? BODY_PT
+  docxStyle.font = font
+  docxStyle.eastAsia = font
+  docxStyle.line = Math.round((parseFloat(lineHeight || '1.5') || 1.5) * 240)
+  docxStyle.indent = !!textIndent
+  docxStyle.justify = !!textJustify
+  const pageWTwips = Math.round((pageSize?.widthMm ?? 210) * 56.6929)
+  const pageHTwips = Math.round((pageSize?.heightMm ?? 297) * 56.6929)
   const root = document.createElement('div')
   root.innerHTML = content
 
@@ -403,7 +452,7 @@ ${relFiles.join('\n')}
 
   zip.file('word/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="${XML_NS}">
-<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="SimSun"/><w:sz w:val="${pt(BODY_PT)}"/><w:szCs w:val="${pt(BODY_PT)}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:widowControl w:val="0"/><w:spacing w:after="${pt(6)}" w:line="360" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="${docxStyle.font}" w:hAnsi="${docxStyle.font}" w:eastAsia="${docxStyle.eastAsia}"/><w:sz w:val="${pt(docxStyle.bodyPt)}"/><w:szCs w:val="${pt(docxStyle.bodyPt)}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:widowControl w:val="0"/><w:spacing w:after="${pt(6)}" w:line="${docxStyle.line}" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
 ${[1, 2, 3, 4, 5, 6].map(l => `<w:style w:type="paragraph" w:styleId="Heading${l}"><w:name w:val="heading ${l}"/><w:basedOn w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val="${pt(HEADING_SIZE[`h${l}`])}"/><w:szCs w:val="${pt(HEADING_SIZE[`h${l}`])}"/></w:rPr></w:style>`).join('\n')}
 <w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/><w:tblPr><w:tblBorders><w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr></w:style>
 </w:styles>`)
@@ -412,7 +461,7 @@ ${[1, 2, 3, 4, 5, 6].map(l => `<w:style w:type="paragraph" w:styleId="Heading${l
 <w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
 <w:body>
 ${doc.body.join('\n')}
-<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>
+<w:sectPr><w:pgSz w:w="${pageWTwips}" w:h="${pageHTwips}"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>
 </w:body>
 </w:document>`)
 

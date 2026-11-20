@@ -144,6 +144,36 @@ function lineBounds(source: string, offset: number): { from: number; to: number 
   return { from, to };
 }
 
+/** 插入类标题/列表/引用：改写当前行前缀（与 Milkdown 的 convertBlock 对齐），
+ *  空行则直接得到前缀，不会把 `# `/`- ` 插到行中间。 */
+const INSERT_BLOCK_PREFIX: Record<string, string> = {
+  "insert.heading1": "# ",
+  "insert.heading2": "## ",
+  "insert.section": "## ",
+  "insert.heading3": "### ",
+  "insert.heading4": "#### ",
+  "insert.heading5": "##### ",
+  "insert.heading6": "###### ",
+  "insert.paragraph": "",
+  "insert.quote": "> ",
+  "insert.bullet-list": "- ",
+  "insert.numbered-list": "1. ",
+  "insert.task": "- [ ] ",
+};
+
+/** 块级插入：必须落在行首，否则 `---` / 表格 / 代码围栏会被当成行内文本。 */
+const BLOCK_LEVEL_INSERT = new Set(["insert.divider", "insert.code-block", "insert.table"]);
+
+function insertBlockPrefix(facade: EditorFacade, name: string): boolean {
+  const source = facade.getText();
+  const sel = facade.getSelection();
+  const offset = sel ? sel.from : source.length;
+  const { from, to } = lineBounds(source, offset);
+  const line = source.slice(from, to);
+  facade.replaceRange(from, to, applyBlockConvert(line, INSERT_BLOCK_PREFIX[name]).text);
+  return true;
+}
+
 function insertCommand(
   facade: EditorFacade,
   name: string,
@@ -151,6 +181,18 @@ function insertCommand(
 ): unknown {
   const md = INSERT_MD[name]?.(args) ?? "";
   const sel = facade.getSelection();
+  if (sel && sel.from < sel.to) {
+    facade.insertText(md, sel);
+    return true;
+  }
+  if (BLOCK_LEVEL_INSERT.has(name)) {
+    const src = facade.getText();
+    const at = sel ? sel.from : src.length;
+    const lineStart = src.lastIndexOf("\n", at - 1) + 1;
+    const prefix = at > lineStart && src.slice(lineStart, at).trim() !== "" ? "\n" : "";
+    facade.insertText(prefix + md, { from: at, to: at });
+    return true;
+  }
   if (sel) facade.insertText(md, sel);
   else facade.insertBlock(md);
   return true;
@@ -226,6 +268,9 @@ export function applyEditorCommand(
 
   // Source mode has no block/table-cell context → fall back to inserting a table.
   if (name.startsWith("table.")) return insertCommand(facade, "insert.table", args);
+
+  // Heading/list/quote inserts convert the current line in source mode.
+  if (name in INSERT_BLOCK_PREFIX) return insertBlockPrefix(facade, name);
 
   if (name.startsWith("insert.") || name === "template.meeting-notes") {
     return insertCommand(facade, name, args);

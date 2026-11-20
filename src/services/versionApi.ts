@@ -44,6 +44,16 @@ export async function recordVersion(
   html: string,
   changes: number,
 ): Promise<DocVersion | null> {
+  // Electron 打包态没有 /api 代理：优先走 IPC 本地历史。
+  const api = window.electronAPI
+  if (api?.versionsSave) {
+    try {
+      const data = await api.versionsSave({ docId, md, html, changes })
+      return data?.ok && data.version ? toDocVersion(data.version) : null
+    } catch {
+      return null
+    }
+  }
   try {
     const res = await fetch('/api/versions', {
       method: 'POST',
@@ -60,6 +70,15 @@ export async function recordVersion(
 
 /** 拉取最近 10 次后端 Ctrl+S 保存；失败返回 null（调用方回退本地缓存）。 */
 export async function fetchVersions(docId: string): Promise<DocVersion[] | null> {
+  const api = window.electronAPI
+  if (api?.versionsList) {
+    try {
+      const data = await api.versionsList(docId)
+      return data?.ok && Array.isArray(data.versions) ? data.versions.map(toDocVersion) : null
+    } catch {
+      return null
+    }
+  }
   try {
     const res = await fetch(`/api/versions?docId=${encodeURIComponent(docId)}`)
     if (!res.ok) return null

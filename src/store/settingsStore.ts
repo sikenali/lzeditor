@@ -135,6 +135,8 @@ type SettingsStore = SettingsState & {
   removeApiKey: (id: string) => void
   toggleApiKey: (id: string) => void
   setSelectedModelId: (id: string) => void
+  /** 恢复默认：重置除 API Key / 当前选中模型外的全部设置。 */
+  resetSettings: () => void
 }
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
@@ -152,11 +154,28 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
     return { apiKeys: remaining, selectedModelId: nextSelected }
   }),
 
-  toggleApiKey: (id) => set((state) => ({
-    apiKeys: state.apiKeys.map((k) => k.id === id ? { ...k, enabled: !k.enabled } : k),
-  })),
+  toggleApiKey: (id) => set((state) => {
+    const apiKeys = state.apiKeys.map((k) => k.id === id ? { ...k, enabled: !k.enabled } : k)
+    // 关闭当前选中的 Key 时，自动改选下一个「已启用且填了 Key」的条目；
+    // 否则 useAI 会继续按 selectedModelId 使用一个已被关掉的 Key。
+    let selectedModelId = state.selectedModelId
+    const toggled = apiKeys.find((k) => k.id === id)
+    if (toggled && !toggled.enabled && state.selectedModelId === id) {
+      selectedModelId = apiKeys.find((k) => k.enabled && k.key)?.id ?? ''
+    }
+    return { apiKeys, selectedModelId }
+  }),
 
   setSelectedModelId: (id) => set({ selectedModelId: id }),
+
+  resetSettings: () => set((state) => ({
+    ...DEFAULT_SETTINGS,
+    // 密钥和当前模型是用户数据，恢复默认外观/编辑器设置时不能清掉。
+    apiKeys: state.apiKeys,
+    selectedModelId: state.selectedModelId,
+    activeGroup: state.activeGroup,
+    subTab: state.subTab,
+  })),
 }))
 
 // 落盘不能绑在 SettingsDialog 的生命周期上：ExportDialog、CodeDialog、

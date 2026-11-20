@@ -41,7 +41,7 @@ assert.equal(applyBlockConvert('- [ ] todo', '## ').text, '## todo')
 assert.equal(applyBlockConvert('> quote', '- ').text, '- quote')
 assert.equal(applyBlockConvert('plain', '- [ ] ').text, '- [ ] plain')
 
-// ── behavior: insert.section (H2 按钮) 必须产出 `## `，不能静默 no-op ──
+// ── behavior: insert.section (H2 按钮) 必须改写当前行前缀，不能把 `## ` 插到行中 ──
 let isSource = 'hello'
 const insertSectionFacade = {
   getText: () => isSource,
@@ -59,9 +59,23 @@ const insertSectionFacade = {
   redo: () => false,
 }
 applyEditorCommand(insertSectionFacade, 'insert.section')
-assert.equal(isSource, 'hello## ', 'H2 必须插入 `## ` 前缀（不吞掉 H2 按钮）')
+assert.equal(isSource, '## hello', 'H2 按钮必须把当前行改成 H2（不是行中插 `## `）')
 applyEditorCommand(insertSectionFacade, 'insert.heading2')
-assert.equal(isSource, 'hello## ## ', 'insert.heading2 也必须产出 `## `')
+assert.equal(isSource, '## hello', 'insert.heading2 也改写当前行前缀')
+// 光标在行中同样改写整行，而不是产生 `abc# `
+let midSource = 'abc'
+const midFacade = {
+  getText: () => midSource,
+  getSelection: () => ({ from: 1, to: 1 }),
+  setSelection: () => {},
+  replaceRange: (from, to, text) => { midSource = midSource.slice(0, from) + text + midSource.slice(to) },
+  insertText: () => {},
+  insertBlock: () => {},
+  undo: () => false,
+  redo: () => false,
+}
+applyEditorCommand(midFacade, 'insert.heading1')
+assert.equal(midSource, '# abc', '行中按 H1 改写整行')
 
 // ── behavior: block.delete 末行必须连同前一换行一起删（不能空删） ──
 let dlSource = 'a\nb'

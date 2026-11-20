@@ -10,6 +10,13 @@ export interface EpubOptions {
   cover?: string
   language?: string
   description?: string
+  /** 是否生成 nav.xhtml（目录）；默认 true。 */
+  includeTOC?: boolean
+  fontSize?: number
+  fontFamily?: string
+  lineHeight?: string
+  textIndent?: boolean
+  textJustify?: boolean
 }
 
 export class EPUBGenerator {
@@ -55,13 +62,17 @@ export class EPUBGenerator {
 `
     })
 
+    const includeTOC = this.options.includeTOC !== false
+
     if (this.options.cover) {
       manifest += `    <item id="cover" href="cover.jpg" media-type="image/jpeg"/>
 `
     }
 
-    manifest += `    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+    if (includeTOC) {
+      manifest += `    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
 `
+    }
 
     const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uid" version="3.0">
@@ -75,12 +86,13 @@ export class EPUBGenerator {
   </metadata>
   <manifest>
 ${manifest}  </manifest>
-  <spine toc="nav">
+  <spine${includeTOC ? ' toc="nav"' : ''}>
 ${spine}  </spine>
 </package>`
     oebps.file('content.opf', contentOpf)
 
-    const navXhtml = `<?xml version="1.0" encoding="UTF-8"?>
+    if (includeTOC) {
+      const navXhtml = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
 <head>
@@ -96,26 +108,33 @@ ${this.options.chapters.map((ch, i) => `      <li><a href="chapter${i + 1}.xhtml
   </nav>
 </body>
 </html>`
-    oebps.file('nav.xhtml', navXhtml)
+      oebps.file('nav.xhtml', navXhtml)
+    }
 
     return await this.zip.generateAsync({ type: 'blob' })
   }
 
   private createChapterXHTML(title: string, content: string): string {
+    const font = this.options.fontFamily || '"PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif'
+    const fontSize = this.options.fontSize ? `${this.options.fontSize}px` : '1em'
+    const lineHeight = this.options.lineHeight || '1.8'
+    const indent = this.options.textIndent ? '2em' : '0'
+    const align = this.options.textJustify ? 'justify' : 'left'
     return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>${this.escapeXml(title)}</title>
   <style>
-    body { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif; line-height: 1.8; padding: 1em; color: #333; }
+    body { font-family: ${font}; font-size: ${fontSize}; line-height: ${lineHeight}; padding: 1em; color: #333; }
     h1 { font-size: 1.8em; color: #1a1a1a; border-bottom: 2px solid #39FF9E; padding-bottom: 0.3em; margin-top: 0; }
     h2 { font-size: 1.4em; color: #333; margin-top: 1.5em; }
     h3 { font-size: 1.2em; color: #444; margin-top: 1.2em; }
-    p { margin: 1em 0; text-align: justify; }
+    p { margin: 1em 0; text-align: ${align}; text-indent: ${indent}; }
     code { background: #f4f4f4; padding: 0.15em 0.4em; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
     pre { background: #f4f4f4; padding: 1em; overflow-x: auto; border-radius: 5px; margin: 1em 0; }
     pre code { background: none; padding: 0; }
+    .ln { color: #999; margin-right: 0.8em; display: inline-block; width: 2em; text-align: right; user-select: none; }
     blockquote { border-left: 4px solid #39FF9E; margin: 1em 0; padding-left: 1em; color: #666; font-style: italic; }
     table { border-collapse: collapse; width: 100%; margin: 1em 0; }
     th, td { border: 1px solid #ddd; padding: 0.6em; text-align: left; }

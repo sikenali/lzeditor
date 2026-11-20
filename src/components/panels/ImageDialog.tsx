@@ -26,6 +26,19 @@ const ALIGN_OPTIONS = [
   { id: 'right', label: '右对齐', icon: 'ri-align-right' },
 ] as const
 
+/** 图片 URL 校验：允许 http(s)、data:image/、相对路径；拒绝空值、未知协议、空格。 */
+function validateImageUrl(raw: string): string {
+  const v = raw.trim()
+  if (!v) return '请输入图片 URL'
+  if (/\s/.test(v)) return 'URL 不能包含空格'
+  if (/^data:/i.test(v)) return /^data:image\//i.test(v) ? '' : '仅支持 data:image/ 内嵌图片'
+  if (/^[a-z][a-z0-9+.-]*:/i.test(v)) {
+    if (!/^https?:/i.test(v)) return '仅支持 http(s)、data:image/ 或相对路径'
+    if (!/^https?:\/\/[^\s]+/i.test(v)) return 'http(s) 地址格式不正确'
+  }
+  return ''
+}
+
 export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) => {
   const [url, setUrl] = useState('')
   const [alt, setAlt] = useState('')
@@ -36,9 +49,11 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
   // 上传到第三方图床会把图片 base64 明文 POST 给 imgant.com。
   // 之前点按钮就直接发出去了，用户完全不知情；现在必须先显式勾选。
   const [remoteConsent, setRemoteConsent] = useState(false)
+  const imageUrlError = useUrl && url.trim() ? validateImageUrl(url) : ''
+  const imageUrlValid = validateImageUrl(url) === ''
 
   const handleInsert = () => {
-    if (useUrl && url.trim()) {
+    if (useUrl && url.trim() && imageUrlValid) {
       onInsert(url.trim(), alt.trim() || 'image', align)
       onClose()
     } else if (!useUrl && uploadFile) {
@@ -92,7 +107,7 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
-          <UiButton onClick={handleInsert} disabled={useUrl ? !url.trim() : !uploadFile}>
+          <UiButton onClick={handleInsert} disabled={useUrl ? !imageUrlValid : !uploadFile}>
             插入图片
           </UiButton>
         </>
@@ -186,6 +201,9 @@ export const ImageDialog: React.FC<Props> = ({ onClose, onInsert, onUpload }) =>
                       onChange={setUrl}
                       placeholder="https://..."
                     />
+                    {imageUrlError && (
+                      <div style={{ fontSize: 11, color: 'var(--color-error)', marginTop: 4 }}>{imageUrlError}</div>
+                    )}
                   </div>
                   <button
                     className="ud-btn"

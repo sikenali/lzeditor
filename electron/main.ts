@@ -12,9 +12,31 @@ let mainWindow: BrowserWindow | null = null
 // 注：UI 里没有自由输入路径的入口（文件打开走系统选择器，路径由 OS 给出），所以不需要对话框发放授权。
 const allowedPaths = new Set<string>()
 
-const ALLOWED_FILE_EXT = ['.md', '.markdown', '.txt']
+const ALLOWED_FILE_EXT = ['.md', '.markdown', '.mdown', '.mkd', '.txt']
 const isAllowedPath = (filePath: string): boolean =>
   ALLOWED_FILE_EXT.includes(path.extname(filePath).toLowerCase()) && allowedPaths.has(path.resolve(filePath))
+
+/**
+ * 处理操作系统文件关联（双击 .md / 命令行参数 / macOS open-file）。
+ * 必须先登记授权再读：allowedPaths 初始为空，先 isAllowedPath 再 add 会让
+ * 第一次打开永远被拒。
+ */
+function openAssociatedFile(file: string): void {
+  const p = path.resolve(String(file || ''))
+  if (!ALLOWED_FILE_EXT.includes(path.extname(p).toLowerCase())) return
+  if (!fs.existsSync(p)) return
+  allowedPaths.add(p)
+  const win = BrowserWindow.getAllWindows().slice(-1)[0]
+  if (win) win.webContents.send('menu-open-file', p)
+}
+
+/** macOS 在 app ready 前就可能发 open-file；先排队，ready 后再开。 */
+let pendingOpenFile: string | null = null
+app.on('open-file', (event, file) => {
+  event.preventDefault()
+  if (app.isReady()) openAssociatedFile(file)
+  else pendingOpenFile = file
+})
 
 const isDev = !app.isPackaged
 
@@ -83,6 +105,17 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow()
+
+  // 首启通过命令行参数带来的文件（Windows/Linux 双击关联），以及 macOS 在
+  // ready 前排队等着的 open-file。
+  const launchArg = process.argv.slice(1).find((a) =>
+    ALLOWED_FILE_EXT.includes(path.extname(String(a)).toLowerCase()) && fs.existsSync(path.resolve(String(a))),
+  )
+  if (launchArg) openAssociatedFile(launchArg)
+  else if (pendingOpenFile) {
+    openAssociatedFile(pendingOpenFile)
+    pendingOpenFile = null
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -168,16 +201,12 @@ ipcMain.on('app:settings', (_event, settings: Record<string, unknown>) => {
   applyTray()
 })
 
-// 文件关联：从资源管理器双击 .md/.markdown/.txt 打开
+// 文件关联：从资源管理器双击 .md/.markdown/.mdown/.mkd/.txt 打开
 app.on('second-instance', (_event, argv) => {
   const file = argv.slice(1).pop()
   if (!file) return
-  if (!isAllowedPath(file)) return
-  allowedPaths.add(path.resolve(file))
-  if (getSetting('openInNewWindow', false) === true) {
-    createWindow()
-  }
-  BrowserWindow.getAllWindows().slice(-1)[0]?.webContents.send('menu-open-file', file)
+  if (getSetting('openInNewWindow', false) === true) createWindow()
+  openAssociatedFile(file)
 })
 
 // 读取本地文件（供「打开文档」使用，返回文本内容）
@@ -222,6 +251,90 @@ ipcMain.handle('git:show', async (_event, filePath: string, oid: string) => {
     return { ok: false, error: 'path not allowed' }
   }
   return getGitShow(String(filePath), String(oid || ''))
+})
+
+/* ── Ctrl+S 保存历史 ──────────────────────────────────────────────
+ * 打包态窗口用 file:// 加载，相对 `/api/versions` 解析成 file:///api/versions，
+ * 永远打不到本地服务。所以 Electron 下改走 IPC，把快照存到 userData；
+ * 浏览器 / LPK 仍走 HTTP。两者字段与 server 的 StoredVersion 一致。 */
+interface StoredVersion {
+  id: string
+  docId: string
+  md: string
+  html: string
+  changes: number
+  ts: number
+  date: string
+  time: string
+  desc: string
+  source: 'local'
+}
+
+const MAX_SAVES = 10
+let versionStore: Record<string, StoredVersion[]> | null = null
+
+function versionsFilePath(): string {
+  return path.join(app.getPath('userData'), 'versions.json')
+}
+
+function loadVersionStore(): Record<string, StoredVersion[]> {
+  if (versionStore) return versionStore
+  let loaded: Record<string, StoredVersion[]> = {}
+  try {
+    const parsed = JSON.parse(fs.readFileSync(versionsFilePath(), 'utf8'))
+    if (parsed && typeof parsed === 'object') loaded = parsed
+  } catch { /* 损坏则从空开始 */ }
+  versionStore = loaded
+  return loaded
+}
+
+function persistVersionStore(): void {
+  try {
+    fs.writeFileSync(versionsFilePath(), JSON.stringify(loadVersionStore()))
+  } catch { /* 持久化失败不阻塞保存 */ }
+}
+
+function pad2(n: number): string { return String(n).padStart(2, '0') }
+
+function recordVersionIPC(docId: string, data: { md: string; html: string; changes: number }): StoredVersion {
+  const store = loadVersionStore()
+  const ts = Date.now()
+  const d = new Date(ts)
+  const version: StoredVersion = {
+    id: `${ts}-${Math.random().toString(36).slice(2, 8)}`,
+    docId,
+    md: data.md ?? '',
+    html: data.html ?? '',
+    changes: Number(data.changes) || 0,
+    ts,
+    date: `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`,
+    time: `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`,
+    desc: 'ctrl+s 保存',
+    source: 'local',
+  }
+  const list = store[docId] || []
+  const last = list[0]
+  if (last && last.md === version.md) return last
+  store[docId] = [version, ...list].slice(0, MAX_SAVES)
+  persistVersionStore()
+  return version
+}
+
+ipcMain.handle('versions:save', (_event, payload: { docId?: string; md?: string; html?: string; changes?: number }) => {
+  const docId = String(payload?.docId || '')
+  if (!docId) return { ok: false, error: 'docId required' }
+  const version = recordVersionIPC(docId, {
+    md: String(payload.md ?? ''),
+    html: String(payload.html ?? ''),
+    changes: Number(payload.changes) || 0,
+  })
+  return { ok: true, version }
+})
+
+ipcMain.handle('versions:list', (_event, docId: string) => {
+  const id = String(docId || '')
+  if (!id) return { ok: false, error: 'docId required' }
+  return { ok: true, versions: (loadVersionStore()[id] || []).slice(0, MAX_SAVES) }
 })
 
 // Menu

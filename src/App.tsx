@@ -370,7 +370,7 @@ function App() {
     const anchor = facade.getSelection() ?? undefined
     if (newTab) {
       // markdown 链接无法表达 target，落 HTML（消毒白名单放行 target 属性）
-      facade.insertText(`<a href="${escAttr(url)}" target="_blank" rel="noopener">${label}</a>`, anchor)
+      facade.insertText(`<a href="${escAttr(url)}" target="_blank" rel="noopener">${escAttr(label)}</a>`, anchor)
     } else {
       facade.insertText(`[${label}](${url})`, anchor)
     }

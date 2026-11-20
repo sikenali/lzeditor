@@ -20,6 +20,18 @@ interface Props {
   onInsertMarkdown?: (md: string) => void
 }
 
+/** 外部链接校验：允许 http(s)/mailto/tel 与相对路径；拒绝空值、未知协议、含空格。 */
+function validateExternalUrl(raw: string): string {
+  const v = raw.trim()
+  if (!v) return '请输入 URL 地址'
+  if (/\s/.test(v)) return 'URL 不能包含空格'
+  if (/^[a-z][a-z0-9+.-]*:/i.test(v)) {
+    if (!/^(https?|mailto|tel):/i.test(v)) return '仅支持 http(s)、mailto、tel 或相对路径'
+    if (/^https?:/i.test(v) && !/^https?:\/\/[^\s]+/i.test(v)) return 'http(s) 地址格式不正确'
+  }
+  return ''
+}
+
 export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   const [linkType, setLinkType] = useState<'external' | 'internal'>('external')
   const [text, setText] = useState('')
@@ -27,6 +39,8 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   const [newTab, setNewTab] = useState(true)
   const [docSource, setDocSource] = useState('')
   const [chapterRef, setChapterRef] = useState('')
+  const externalError = linkType === 'external' && url.trim() ? validateExternalUrl(url) : ''
+  const externalValid = validateExternalUrl(url) === ''
 
   const docs = useEditorStore((s) => s.docs)
   const activeDocId = useEditorStore((s) => s.activeDocId)
@@ -49,7 +63,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
 
   const handleInsert = () => {
     if (linkType === 'external') {
-      if (!url.trim()) return
+      if (!externalValid) return
       onInsert(text.trim() || url.trim(), url.trim(), newTab)
     } else {
       if (!docSource) return
@@ -76,7 +90,7 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
       footer={
         <>
           <UiButton variant="ghost" onClick={onClose}>取消</UiButton>
-          <UiButton onClick={handleInsert} disabled={linkType === 'external' ? !url.trim() : !docSource}>
+          <UiButton onClick={handleInsert} disabled={linkType === 'external' ? !externalValid : !docSource}>
             插入链接
           </UiButton>
         </>
@@ -124,6 +138,9 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
                         onChange={setUrl}
                         placeholder="https://..."
                       />
+                      {externalError && (
+                        <div style={{ fontSize: 11, color: 'var(--color-error)', marginTop: 4 }}>{externalError}</div>
+                      )}
                     </div>
                   </div>
                 </div>

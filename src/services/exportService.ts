@@ -2,6 +2,8 @@ import { silentError } from '../utils/silentError'
 import { getCodeTheme } from '../styles/code-themes'
 import { acksThemeToLzTokens, DEFAULT_TYPOGRAPHY_THEME } from '../styles/acks-mapping'
 import { getAcksTheme } from '../styles/acks-themes'
+import { renderMermaidBlocks } from '../utils/markdown/mermaid'
+import { renderEchartsBlocks } from '../utils/markdown/echarts'
 export interface ExportOptions {
   title: string
   author?: string
@@ -103,42 +105,47 @@ function getCSSVars(typographyThemeId: string): string {
 
 function buildTOC(html: string): string {
   const headings: { level: number; text: string; id: string }[] = []
-  const re = /<(h[1-6])[^>]*>([\s\S]*?)<\/h\1>/gi
-  let match
-  while ((match = re.exec(html)) !== null) {
-    const level = parseInt(match[1][1])
-    const text = match[2].replace(/<[^>]+>/g, '').trim()
-    if (text) {
-      const id = `toc-${headings.length}`
-      headings.push({ level, text, id })
-    }
-  }
-  if (headings.length === 0) return html
+  const re = /<(h[1-6])([^>]*)>([\s\S]*?)<\/\1>/gi
+  // 给标题注入/复用 id，目录链接必须指向正文真实锚点；之前生成的 `#toc-N`
+  // 与渲染器的 headingIdGen 不一致，所有目录链接都是死链。
+  const withIds = html.replace(re, (full: string, tag: string, attrs: string, inner: string) => {
+    const text = inner.replace(/<[^>]+>/g, '').trim()
+    if (!text) return full
+    const existing = /\bid="([^"]+)"/i.exec(attrs)?.[1]
+    const id = existing || `toc-${headings.length}`
+    headings.push({ level: parseInt(tag[1]), text, id })
+    return existing ? full : `<${tag}${attrs} id="${id}">${inner}</${tag}>`
+  })
+  if (headings.length === 0) return withIds
   const tocItems = headings.map(h =>
     `<li style="margin-left:${(h.level - 1) * 16}px"><a href="#${h.id}" style="color:var(--text-secondary);text-decoration:none;font-size:13px">${h.text}</a></li>`
   ).join('\n')
   const tocHTML = `<nav style="margin-bottom:32px;padding:16px 20px;background:var(--bg-code);border-left:3px solid var(--accent-primary);border-radius:0 8px 8px 0"><h2 style="margin:0 0 12px;font-size:16px;color:var(--text-heading)">目录</h2><ul style="margin:0;padding:0;list-style:none">${tocItems}</ul></nav>`
-  return tocHTML + html
+  return tocHTML + withIds
 }
 
 function addPageNumbers(html: string, paperSize: string, orientation: string): string {
   const pageW = PAPER_SIZES[paperSize] || '210mm'
   const pageH = PAPER_HEIGHTS[paperSize] || '297mm'
   const isLandscape = orientation === 'landscape'
+  // 真正的页码：打印引擎支持 @page 边距框时输出 counter(page)；不支持时
+  // 至少纸张尺寸/方向是真实的（之前只改了 max-width，@page 完全没写）。
+  const pageSize = isLandscape ? `${pageH} ${pageW}` : `${pageW} ${pageH}`
   const extraCSS = `
+    @page {
+      size: ${pageSize};
+      margin: 15mm 10mm 18mm;
+      @bottom-center { content: counter(page) " / " counter(pages); font-size: 9pt; color: #888; }
+    }
     @media print {
-      body { padding: 15mm 10mm; }
-      .page-footer {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        text-align: center; font-size: 10pt; color: #888;
-        border-top: 1px solid #ddd; padding: 6px;
-      }
+      body { padding: 0; max-width: none; }
       h1, h2, h3 { page-break-after: avoid; }
       pre, table, blockquote { page-break-inside: avoid; }
     }
+    .page-footer { display: none; }
   `
   return html.replace('</body>', `
-    <div class="page-footer">— ${isLandscape ? pageH : pageW} · ${orientation === 'portrait' ? '纵向' : '横向'} —</div>
+    <div class="page-footer">— ${paperSize.toUpperCase()} · ${orientation === 'portrait' ? '纵向' : '横向'} —</div>
   </body>`).replace('</style>', `${extraCSS}</style>`)
 }
 
@@ -214,7 +221,36 @@ function buildStyledHTML(title: string, content: string, opts: any): string {
   const headingCSS = opts.headingStyles ? generateHeadingCSS(opts.headingStyles, v.primary, fsPx) : ''
   const linkCSS = opts.linkColor ? `a{color:${opts.linkColor};text-decoration:none}` : ''
   const bqCSS = opts.blockquoteBackground ? `blockquote{background:${opts.blockquoteBackground}}` : ''
-  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:${ffVal};font-size:${fsPx}px;line-height:${lhVal};max-width:${opts.orientation==='landscape'?pageH:pageW};margin:0 auto;padding:20px;background:${v.overlay};color:${v.text}}h1,h2,h3,h4{font-weight:600;line-height:1.3}h1{font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em}h2{font-size:1.5em;margin:0.83em 0}h3{font-size:1.17em;margin:1em 0}p{margin:0.5em 0${pStyle ? `;${pStyle}` : ''}}code{font-family:"JetBrains Mono",monospace;background:${v.code};padding:2px 6px;border-radius:4px;font-size:0.88em}pre{background:${v.code};padding:16px;overflow-x:auto;border-radius:8px;border:1px solid ${v.border};margin:12px 0}pre code{background:none;padding:0}blockquote{border-left:3px solid ${v.primary};padding:8px 16px;margin:16px 0;background:${accentA5};border-radius:0 8px 8px 0}${bqCSS}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid ${v.border};padding:8px 12px}th{background:${v.code}}ul,ol{padding-left:24px;margin:8px 0}li{margin:4px 0}hr{border:none;height:1px;background:${v.border};margin:24px 0}a{color:${v.primary};text-decoration:none}a:hover{text-decoration:underline}${linkCSS}img{max-width:100%;height:auto;border-radius:8px}@media print{body{padding:10mm}}${headingCSS}${opts.extraCSS || ''}</style></head><body class="${opts.macCodeBlock ? 'mac-code' : ''}">${innerHTML}</body></html>`
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:${ffVal};font-size:${fsPx}px;line-height:${lhVal};max-width:${opts.orientation==='landscape'?pageH:pageW};margin:0 auto;padding:20px;background:${v.overlay};color:${v.text}}h1,h2,h3,h4{font-weight:600;line-height:1.3}h1{font-size:2em;margin:0.67em 0;border-bottom:2px solid ${v.primary};padding-bottom:0.3em}h2{font-size:1.5em;margin:0.83em 0}h3{font-size:1.17em;margin:1em 0}p{margin:0.5em 0${pStyle ? `;${pStyle}` : ''}}code{font-family:"JetBrains Mono",monospace;background:${v.code};padding:2px 6px;border-radius:4px;font-size:0.88em}pre{background:${v.code};padding:16px;overflow-x:auto;border-radius:8px;border:1px solid ${v.border};margin:12px 0}pre code{background:none;padding:0}pre .ln{color:#999;margin-right:12px;display:inline-block;width:24px;text-align:right;user-select:none}blockquote{border-left:3px solid ${v.primary};padding:8px 16px;margin:16px 0;background:${accentA5};border-radius:0 8px 8px 0}${bqCSS}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid ${v.border};padding:8px 12px}th{background:${v.code}}ul,ol{padding-left:24px;margin:8px 0}li{margin:4px 0}hr{border:none;height:1px;background:${v.border};margin:24px 0}a{color:${v.primary};text-decoration:none}a:hover{text-decoration:underline}${linkCSS}img{max-width:100%;height:auto;border-radius:8px}@media print{body{padding:10mm}}${headingCSS}${opts.extraCSS || ''}</style></head><body class="${opts.macCodeBlock ? 'mac-code' : ''}">${innerHTML}</body></html>`
+}
+
+/** 把 Mermaid/ECharts 代码块渲染成静态 SVG/图片后再导出；导出件是独立
+ *  HTML，不会跑预览里的增强管线，之前图表只能以源码形式出现。 */
+async function renderDiagrams(html: string): Promise<string> {
+  if (!/language-(mermaid|echarts)/.test(html)) return html
+  const host = document.createElement('div')
+  host.style.cssText = 'position:fixed;left:-99999px;top:0;width:900px;background:#fff'
+  host.innerHTML = html
+  document.body.appendChild(host)
+  try {
+    await renderMermaidBlocks(host, false)
+    await renderEchartsBlocks(host)
+    // ECharts 画在 canvas 上，innerHTML 拿不到像素，转成 img 才能被导出。
+    host.querySelectorAll('canvas').forEach((canvas) => {
+      try {
+        const img = document.createElement('img')
+        img.src = (canvas as HTMLCanvasElement).toDataURL('image/png')
+        img.alt = 'chart'
+        img.style.maxWidth = '100%'
+        canvas.replaceWith(img)
+      } catch { /* 单张失败不影响其它图 */ }
+    })
+    return host.innerHTML
+  } catch {
+    return host.innerHTML || html
+  } finally {
+    document.body.removeChild(host)
+  }
 }
 
 export async function exportDocument(options: ExportOptions): Promise<void> {
@@ -240,28 +276,32 @@ export async function exportDocument(options: ExportOptions): Promise<void> {
     macCodeBlock: expOpts.macCodeBlock,
   }
 
+  const renderedContent = ['md', 'xlsx', 'drawio'].includes(format)
+    ? content
+    : await renderDiagrams(content)
+
   switch (format) {
     case 'html':
-      await exportHTML(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
+      await exportHTML(title, renderedContent, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'md':
       exportMarkdown(title, content)
       break
     case 'pdf':
       // 直接生成 PDF 文件下载（优化 #22），不再走浏览器打印对话框
-      await renderPdfAndDownload(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
+      await renderPdfAndDownload(title, renderedContent, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'docx':
-      await exportDOCX(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
+      await exportDOCX(title, renderedContent, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'epub':
-      await exportEPUB(title, content, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
+      await exportEPUB(title, renderedContent, { cssVars, includeTOC, includeLineNumbers, includePageNumbers, paperSize, orientation, ...typoOpts })
       break
     case 'png':
-      exportPNG(title, content, typoOpts)
+      exportPNG(title, renderedContent, typoOpts)
       break
     case 'svg':
-      exportSVG(title, content, typoOpts)
+      exportSVG(title, renderedContent, typoOpts)
       break
     case 'xlsx':
       await exportXLSX(title, content)
@@ -290,14 +330,16 @@ async function exportHTML(title: string, content: string, opts: any): Promise<vo
 }
 
 function exportMarkdown(title: string, content: string): void {
-  const md = `# ${title}
+  // 源文件已有 H1 时不要再前置一个标题，否则导出件出现两个 H1。
+  const hasH1 = /^\s*#\s+\S/.test(content)
+  const md = hasH1 ? content : `# ${title}
 
-${content}
+${content}`
+  const blob = new Blob([`${md}
 
 ---
 Generated by lzeditor
-`
-  const blob = new Blob([md], { type: 'text/markdown' })
+`], { type: 'text/markdown' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -410,12 +452,22 @@ async function renderPdfAndDownload(title: string, content: string, opts: any): 
   // 内容超出一页时逐页拼接（jsPDF 的 addImage 超出页高的部分会被裁掉，需 offset 重绘）
   let heightLeft = imgH
   let position = 0
+  let pageNo = 1
+  const stampPage = () => {
+    if (!opts.includePageNumbers) return
+    pdf.setFontSize(9)
+    pdf.setTextColor(136)
+    pdf.text(String(pageNo), pdfW / 2, pdfH - 5, { align: 'center' })
+  }
   pdf.addImage(imgData, 'PNG', 0, position, pdfW, imgH)
+  stampPage()
   heightLeft -= pdfH
   while (heightLeft > 0) {
     position = heightLeft - imgH
     pdf.addPage()
     pdf.addImage(imgData, 'PNG', 0, position, pdfW, imgH)
+    pageNo += 1
+    stampPage()
     heightLeft -= pdfH
   }
 
@@ -433,7 +485,19 @@ async function exportDOCX(title: string, content: string, opts: any): Promise<vo
   const pageH = PAPER_HEIGHTS[opts.paperSize] || '297mm'
   const footer = `Generated by lzeditor · ${opts.paperSize.toUpperCase()} ${opts.orientation === 'landscape' ? '横向' : '纵向'} · ${pageW}×${pageH}`
 
-  const blob = await generateDOCX({ title, content: processed, footer })
+  const blob = await generateDOCX({
+    title,
+    content: processed,
+    footer,
+    fontSize: opts.fontSize,
+    fontFamily: opts.fontFamily,
+    lineHeight: opts.lineHeight,
+    textIndent: opts.textIndent,
+    textJustify: opts.textJustify,
+    pageSize: opts.orientation === 'landscape'
+      ? { widthMm: parseFloat(pageH), heightMm: parseFloat(pageW) }
+      : { widthMm: parseFloat(pageW), heightMm: parseFloat(pageH) },
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -478,7 +542,17 @@ async function exportEPUB(title: string, content: string, opts: any): Promise<vo
   const { generateEPUB } = await import('./epubGenerator')
   // 之前硬编码单章，epubGenerator 的多章能力完全闲置；这里按 h1/h2 真正拆章。
   const chapters = splitChapters(processed, '正文')
-  const blob = await generateEPUB({ title, author: 'lzeditor', chapters })
+  const blob = await generateEPUB({
+    title,
+    author: 'lzeditor',
+    chapters,
+    includeTOC: opts.includeTOC !== false,
+    fontSize: opts.fontSize,
+    fontFamily: opts.fontFamily,
+    lineHeight: opts.lineHeight,
+    textIndent: opts.textIndent,
+    textJustify: opts.textJustify,
+  })
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

@@ -167,9 +167,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
   const isCustomAccent = /^#[0-9a-fA-F]{6}$/.test(String(accent))
 
   const resetAll = () => {
-    u('theme', 'parchment')
-    u('accentColor', 'cyan')
-    u('navMode', 'top')
+    useSettingsStore.getState().resetSettings()
     toast('已恢复默认')
   }
 

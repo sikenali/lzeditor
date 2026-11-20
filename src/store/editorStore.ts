@@ -265,7 +265,11 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   /** 用后端返回的 Ctrl+S 保存历史覆写（后端最新在前，这里转成时间升序并落盘缓存）。 */
   setDocVersions: (docId: string, versions: DocVersion[]) => {
     const byDoc = get().versionsByDoc || {}
-    const sorted = [...versions].sort((a, b) => a.ts - b.ts).slice(-MAX_VERSIONS)
+    // 与本地缓存合并，而不是整包替换：后端丢数据/被 cap 时不能抹掉本地快照。
+    const existing = byDoc[docId] ?? loadVersions(docId)
+    const merged = new Map<string, DocVersion>()
+    for (const v of [...existing, ...versions]) merged.set(v.id, v)
+    const sorted = [...merged.values()].sort((a, b) => a.ts - b.ts).slice(-MAX_VERSIONS)
     set({ versionsByDoc: { ...byDoc, [docId]: sorted } })
     saveVersions(docId, sorted)
   },
@@ -312,6 +316,10 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       docPath: doc.path || '',
       activeLibraryId: doc.libraryId || s.activeLibraryId,
       lastEditTime: Date.now(),
+      // 切换后立即清掉上一文档的编辑缓冲，避免预览 / Ctrl+S 在编辑器首次
+      // emit 前读到旧内容；目标文档有已存 md 时用它播种。
+      mdContent: s.docsMd?.[id] ?? '',
+      docHTML: '',
     })
     try { localStorage.setItem('lzeditor-last-doc', id) } catch {}
   },
@@ -330,6 +338,8 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
       activeDocId: nextActiveId,
       ...(nextDoc ? { docTitle: nextDoc.title, docPath: nextDoc.path || '', activeLibraryId: nextDoc.libraryId || get().activeLibraryId } : {}),
     })
+    // 关文档时一并清掉正文存档，避免留下孤儿 lzeditor-doc-{id}。
+    try { localStorage.removeItem('lzeditor-doc-' + id) } catch {}
     saveCatalog()
   },
   resetDocContent: (id: string) => {

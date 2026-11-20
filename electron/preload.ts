@@ -26,6 +26,10 @@ const api: ElectronAPI = {
   gitHistory: (filePath: string) => ipcRenderer.invoke('git:history', filePath),
   gitShow: (filePath: string, oid: string) => ipcRenderer.invoke('git:show', filePath, oid),
   gitAuthorize: (filePath: string) => ipcRenderer.invoke('git:authorize', filePath),
+  // Ctrl+S 保存历史：Electron 打包态没有 /api 代理，走 IPC 存到 userData。
+  versionsSave: (payload: { docId: string; md: string; html: string; changes: number }) =>
+    ipcRenderer.invoke('versions:save', payload),
+  versionsList: (docId: string) => ipcRenderer.invoke('versions:list', docId),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   offMenuNew: (callback: () => void) => ipcRenderer.removeListener('menu-new', callback),
   offMenuOpen: (callback: () => void) => ipcRenderer.removeListener('menu-open', callback),

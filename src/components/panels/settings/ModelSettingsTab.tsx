@@ -3,6 +3,7 @@ import { useSettingsStore } from '../../../store/settingsStore'
 import type { ApiKeyEntry } from '../../../shared/types'
 import { UiSelect, UiSelectCard, UiInput, UiButton, UiTip, UiModal, UiSwitch } from '../../ui'
 import { toast } from '../../../utils/toast'
+import { resolveApiUrl } from '../../../utils/apiUrl'
 
 /* ── 内置服务商模型（bid-typesetting ModelSettingsView.vue providerModelsMap） ── */
 const PROVIDER_MODELS: Record<string, string[]> = {
@@ -109,8 +110,15 @@ export const ModelSettingsTab: React.FC = () => {
   const [testSuccess, setTestSuccess] = useState<Record<string, boolean>>({})
   const [testFailed, setTestFailed] = useState<Record<string, boolean>>({})
   const [testError, setTestError] = useState<Record<string, string>>({})
+  // 从服务商 /models 动态拉到的模型，与内置列表合并；只在本会话内保留。
+  const [remoteModels, setRemoteModels] = useState<Record<string, string[]>>({})
+  const [refreshingModels, setRefreshingModels] = useState(false)
 
-  const currentModels = (selectedProvider ? (PROVIDER_MODELS[selectedProvider] || []) : [])
+  const currentModels = [
+    ...(selectedProvider ? (PROVIDER_MODELS[selectedProvider] || []) : []),
+    ...(selectedProvider ? (remoteModels[selectedProvider] || []) : []),
+  ]
+    .filter((m, i, all) => all.indexOf(m) === i)
     .map(m => ({ value: m, label: m }))
 
   // 表单草稿同步写回 store：关掉设置面板再打开还能看到上次选的服务商 / 模型 / 自定义地址。
@@ -221,19 +229,22 @@ export const ModelSettingsTab: React.FC = () => {
   // 连通性测试：OpenAI 兼容口有 GET /v1/models，Anthropic 没有这个端点，
   // 只能发一个 max_tokens:1 的真实请求探活。
   const handleTest = async (key: ApiKeyEntry) => {
+    if (testingKey) return
     setTestingKey(key.id)
     setTestSuccess(p => ({ ...p, [key.id]: false }))
     setTestFailed(p => ({ ...p, [key.id]: false }))
     setTestError(p => ({ ...p, [key.id]: '' }))
     try {
-      const base = (key.endpoint || 'https://api.openai.com/v1').replace(/\/v1$/, '').replace(/\/$/, '')
+      const endpoint = key.endpoint
+        || PROVIDER_ENDPOINTS[key.provider]?.endpoint
+        || (key.format === 'anthropic' ? 'https://api.anthropic.com/v1' : 'https://api.openai.com/v1')
       let resp: Response
       if (key.format === 'anthropic') {
         const body = JSON.stringify({
           model: key.model, max_tokens: 1,
           messages: [{ role: 'user', content: 'ping' }],
         })
-        resp = await fetch(`${base}/v1/messages`, {
+        resp = await fetch(resolveApiUrl(endpoint, 'messages'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -243,7 +254,7 @@ export const ModelSettingsTab: React.FC = () => {
           body,
         })
       } else {
-        resp = await fetch(`${base}/v1/models`, {
+        resp = await fetch(resolveApiUrl(endpoint, 'models'), {
           headers: { 'Authorization': `Bearer ${key.key}` },
         })
       }
@@ -265,6 +276,9 @@ export const ModelSettingsTab: React.FC = () => {
 
   const startEdit = (key: ApiKeyEntry) => {
     setEditingId(key.id)
+    setTestSuccess(p => ({ ...p, [key.id]: false }))
+    setTestFailed(p => ({ ...p, [key.id]: false }))
+    setTestError(p => ({ ...p, [key.id]: '' }))
     if (key.endpoint) {
       setConfigTab('custom')
       setCustomApiFormat(key.format || 'openai')
@@ -279,6 +293,34 @@ export const ModelSettingsTab: React.FC = () => {
   }
 
   const testErrorMsg = Object.values(testError).find(v => v)
+
+  // 从服务商的 /models 拉真实模型列表（需要 Key）；失败保留内置列表，不阻塞保存。
+  const handleRefreshModels = async () => {
+    if (!selectedProvider) { toast('请先选择服务商'); return }
+    if (refreshingModels) return
+    const endpoint = PROVIDER_ENDPOINTS[selectedProvider]?.endpoint || 'https://api.openai.com/v1'
+    const saved = editingId ? apiKeys.find(k => k.id === editingId) : undefined
+    const key = keyInput.trim() || saved?.key || ''
+    if (!key) { toast('请先填写 API Key 再刷新模型'); return }
+    setRefreshingModels(true)
+    try {
+      const resp = await fetch(resolveApiUrl(endpoint, 'models'), {
+        headers: { 'Authorization': `Bearer ${key}` },
+      })
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      const data = await resp.json()
+      const list = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
+        .map((m: any) => typeof m === 'string' ? m : (m?.id || m?.name || ''))
+        .filter(Boolean)
+      if (!list.length) throw new Error('empty')
+      setRemoteModels(p => ({ ...p, [selectedProvider]: list }))
+      toast(`已刷新 ${list.length} 个模型`)
+    } catch {
+      toast('模型列表刷新失败，已保留内置列表', { type: 'error' })
+    } finally {
+      setRefreshingModels(false)
+    }
+  }
 
   return (
     <div className="model-view">
@@ -340,7 +382,18 @@ export const ModelSettingsTab: React.FC = () => {
                 />
               </div>
               <div className="form-field">
-                <label className="form-label">模型</label>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>模型</span>
+                  <button
+                    type="button"
+                    className="model-refresh-btn"
+                    onClick={handleRefreshModels}
+                    disabled={refreshingModels}
+                  >
+                    <span className={`remix ${refreshingModels ? 'spinning ri-loader-4-line' : 'ri-refresh-line'}`}></span>
+                    {refreshingModels ? '刷新中' : '刷新模型'}
+                  </button>
+                </label>
                 <UiSelect
                   value={selectedModelName}
                   onChange={setModel}
@@ -432,7 +485,7 @@ export const ModelSettingsTab: React.FC = () => {
                     type="button"
                     className="saved-key-test"
                     onClick={e => { e.stopPropagation(); handleTest(key) }}
-                    disabled={testingKey === key.id}
+                    disabled={!!testingKey}
                   >
                     {testingKey === key.id
                       ? <span className="remix spinning ri-loader-4-line"></span>

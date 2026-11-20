@@ -58,7 +58,7 @@ assert.match(docx, /图片无法加载/, '拉图失败必须留可见提示，�
 
 // ── 批次 C：AI 前端直连，后端不再中转 ─────────────────────────────────
 
-assert.match(modelTab, /key\.format === 'anthropic'[\s\S]{0,300}\/v1\/messages/, 'Anthropic 探活必须请求 /v1/messages，不能打 /v1/models')
+assert.match(modelTab, /key\.format === 'anthropic'[\s\S]{0,400}resolveApiUrl\(endpoint, 'messages'\)/, 'Anthropic 探活必须请求 messages 接口，不能打 models')
 assert.match(modelTab, /key\.format === 'anthropic'[\s\S]{0,500}x-api-key/, 'Anthropic 探活必须带 x-api-key')
 assert.match(modelTab, /key\.format === 'anthropic'[\s\S]{0,500}max_tokens: 1/, 'Anthropic 探活要用极小请求')
 assert.doesNotMatch(modelTab, /gpt-5\.6-sol|claude-fable-5|qwen3\.7-max/, '模型列表不能留不存在的型号')

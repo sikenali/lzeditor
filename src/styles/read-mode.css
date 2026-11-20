@@ -48,7 +48,7 @@
    不写成死变量），使预览/阅读正文与编辑内容测度一致、非默认设置下不分叉。 */
 .read-article-body,
 .preview-doc  {
-  line-height: 27.33px;
+  line-height: var(--read-line-height, 27.33px);
 }
 .read-article-body h1  {
   font-size: 28px; font-weight: 700; color: var(--text-heading);
