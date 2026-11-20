@@ -455,6 +455,10 @@ function App() {
     }, 180)
   }, [])
 
+  // 预览分屏：编辑区（编辑/代码模式）与预览同时可见时，隐藏编辑区自身的导航 rail，
+  // 只保留预览 rail，避免双份 rail 重复（优化 #6）。在 centerContent 之前计算。
+  const splitPreviewActive = showPreview && (appMode === 'edit' || appMode === 'code')
+
   // ── 中心内容 ──
   const centerContent = (() => {
     // 首次启动：欢迎页替代编辑区，不再默认展开 welcome/README 文档
@@ -473,9 +477,9 @@ function App() {
     // 编辑 / 代码 两种模式挂编辑器：edit（默认）→ Milkdown WYSIWYG，
     // code → CM6 源码视图。切换经 store.setAppMode 保真（不丢 markdown）。
     if (appMode === 'code') {
-      return <CodeEditor md={editorMd} onChange={handleEditorChange} />
+      return <CodeEditor md={editorMd} onChange={handleEditorChange} hideRail={splitPreviewActive} />
     }
-    return <MilkdownEditor md={editorMd} onChange={handleEditorChange} />
+    return <MilkdownEditor md={editorMd} onChange={handleEditorChange} hideRail={splitPreviewActive} />
   })()
 
   // 右侧预览只在编辑模式下显示：代码/排版/历史/阅读模式都有自己独立的右栏或全宽内容

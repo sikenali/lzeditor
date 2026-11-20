@@ -36,6 +36,8 @@ interface MilkdownEditorProps {
   onChange: (md: string) => void
   /** 挂载就绪后提供已注册的 facade（可选，App 一般不直接用）。 */
   onReady?: (facade: EditorFacade) => void
+  /** 预览分屏时隐藏编辑区导航 rail（避免与预览 rail 重复，优化 #6）。 */
+  hideRail?: boolean
 }
 
 function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps & { shellRef: React.RefObject<HTMLDivElement | null> }) {
@@ -144,12 +146,14 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
       <MilkdownProvider>
         <EditableEditor {...props} shellRef={shellRef} />
       </MilkdownProvider>
-      <ScrollRail
-        getScroller={getScroller}
-        getMarkers={getMarkers}
-        version={props.md}
-        ariaLabel="编辑区文档导航"
-      />
+      {!props.hideRail && (
+        <ScrollRail
+          getScroller={getScroller}
+          getMarkers={getMarkers}
+          version={props.md}
+          ariaLabel="编辑区文档导航"
+        />
+      )}
     </div>
   )
 }

@@ -21,8 +21,9 @@ assert.match(panel, /registerOutlineJumper\(/, '挂载时注册大纲跳转')
 assert.match(panel, /clearOutlineJumper/, '卸载时清理大纲跳转')
 assert.match(panel, /scrollToChapter\(id\)/, '跳转经 scrollToChapter（内部 scrollIntoView）')
 
-// 浮导航默认隐藏，点内容区显示（不再绑 previewVisible）
-assert.match(panel, /navVisible/, '浮导航默认隐藏，由 navVisible 控制')
-assert.match(panel, /setNavVisible\(true\)/, '点内容区显示浮导航')
+// 浮导航默认隐藏，由「显示预览」previewVisible 控制（#25）：隐藏预览时 nav-hidden
+assert.doesNotMatch(panel, /navVisible/, '浮导航不再由 navVisible 控制（改由 previewVisible）')
+assert.doesNotMatch(panel, /setNavVisible\(true\)/, '不再点内容区显示浮导航')
+assert.match(panel, /previewVisible \? '' : ' nav-hidden'/, '浮导航由「显示预览」previewVisible 控制，默认隐藏')
 
 console.log('style-panel outline checks passed')

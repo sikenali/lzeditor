@@ -36,10 +36,12 @@ interface CodeEditorProps {
   md: string;
   /** Emitted with fidelity markdown after every committed edit. */
   onChange: (markdown: string) => void;
+  /** 预览分屏时隐藏编辑区导航 rail（避免与预览 rail 重复，优化 #6）。 */
+  hideRail?: boolean;
 }
 
 export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
-  function CodeEditor({ md, onChange }, ref) {
+  function CodeEditor({ md, onChange, hideRail }, ref) {
     const shellRef = useRef<HTMLDivElement>(null);
     const handleRef = useRef<{ facade: EditorFacade; view: EditorView; destroy: () => void } | null>(null);
     const onChangeRef = useRef(onChange);
@@ -180,12 +182,14 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
 
     return (
       <div className="code-editor-shell" ref={shellRef}>
-        <ScrollRail
-          getScroller={getScroller}
-          getMarkers={getMarkers}
-          version={md}
-          ariaLabel="编辑区文档导航"
-        />
+        {!hideRail && (
+          <ScrollRail
+            getScroller={getScroller}
+            getMarkers={getMarkers}
+            version={md}
+            ariaLabel="编辑区文档导航"
+          />
+        )}
       </div>
     );
   },
