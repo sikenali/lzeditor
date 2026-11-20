@@ -4,7 +4,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useAIStore } from '../../store/aiStore'
 import { getEditorFacade } from '../editor/facade/registry'
 import {
-  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, getModeItems, applyTableItems,
+  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, SUP_SUB_ITEMS, getModeItems, applyTableItems,
   useEditorActions, useFlyout, useTableActive, ActionMenu,
 } from './editorActions'
 
@@ -64,6 +64,7 @@ export const Toolbar: React.FC = () => {
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
   const formatBtnRef = useRef<HTMLButtonElement>(null)
+  const supSubBtnRef = useRef<HTMLButtonElement>(null)
   const tableBtnRef = useRef<HTMLButtonElement>(null)
   const insertBtnRef = useRef<HTMLButtonElement>(null)
   const modeBtnRef = useRef<HTMLButtonElement>(null)
@@ -89,6 +90,7 @@ export const Toolbar: React.FC = () => {
       else if (action === 'openFolder') void openFolderDialog()
     }
     else if (key === 'format') formatAction(action)
+    else if (key === 'sup-sub') formatAction(action)
     else if (key === 'table') tableAction(action)
     else if (key === 'insert') insertAction(action)
     else if (key === 'mode') modeAction(action)
@@ -135,6 +137,14 @@ export const Toolbar: React.FC = () => {
             <button ref={formatBtnRef} aria-label="格式" className={`toolbar-btn format-btn ${flyout.isOpen('format') ? 'menu-open' : ''}`}>
               <span className="remix toolbar-icon ri-text-wrap"></span>
               <span className="toolbar-label">格式</span>
+              <span className="toolbar-menu-dot"></span>
+            </button>
+          </div>
+
+          <div className="toolbar-menu-btn" onClick={() => flyout.open('sup-sub', supSubBtnRef.current)}>
+            <button ref={supSubBtnRef} aria-label="上标/下标" className={`toolbar-btn ${flyout.isOpen('sup-sub') ? 'menu-open' : ''}`}>
+              <span className="remix toolbar-icon ri-superscript"></span>
+              <span className="toolbar-label">上标/下标</span>
               <span className="toolbar-menu-dot"></span>
             </button>
           </div>
@@ -206,6 +216,7 @@ export const Toolbar: React.FC = () => {
           items={
             flyout.key === 'new' ? NEW_ITEMS
             : flyout.key === 'format' ? FORMAT_ITEMS
+            : flyout.key === 'sup-sub' ? SUP_SUB_ITEMS
             : flyout.key === 'table' ? applyTableItems(tableActive)
             : flyout.key === 'insert' ? INSERT_ITEMS
             : getModeItems(appMode)

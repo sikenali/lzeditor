@@ -16,14 +16,16 @@ assert.match(dialog, /PANEL_WIDTH = '74vw'/, '弹窗宽必须 74vw（优化 #30 
 assert.match(dialog, /PANEL_MAX_WIDTH = 1040/, '弹窗最大宽必须 1040（优化 #30 紧凑化）')
 assert.match(dialog, /PANEL_HEIGHT = '82vh'/, '弹窗高必须 82vh（优化 #30 紧凑化）')
 
-// DESIGN-1 §5.3 导航：180px 白底 / 条目 44px / 激活 system-blue（无左条）/ 弹簧
+// DESIGN-1 §5.3 导航：180px 白底 / 条目 44px / 激活随强调色（无左条）/ 弹簧
 assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,240}width:\s*180px;/, '设置导航侧栏必须 180px（§5.3）')
 assert.match(css, /\.settings-nav-list\s*\{[\s\S]{0,320}background:\s*var\(--color-bg-white\)/, '设置导航侧栏必须白底（§5.3）')
 assert.match(css, /\.settings-nav-row\s*\{[\s\S]{0,240}height:\s*44px;/, '导航条目必须 44px（§5.3）')
 assert.doesNotMatch(css, /\.settings-nav-row\.active::before\s*\{[^}]*width:\s*3px;/, '§5.3 无激活左条')
-assert.match(css, /\.settings-nav-row\.active\s*\{[^}]*var\(--color-system-blue-soft\)/, '激活态必须 system-blue-soft 底（§7）')
-assert.match(css, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须 system-blue（§7）')
-assert.match(css, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须 system-blue（§7）')
+// 2026-11-20 用户要求：设置标签随强调色变化，激活态由固定 system-blue 改为强调色 token
+assert.match(css, /\.settings-nav-row\.active\s*\{[^}]*var\(--accent-a10\)/, '激活态必须强调色 10% 底（随强调色）')
+assert.doesNotMatch(css, /\.settings-nav-row\.active\s*\{[^}]*var\(--color-system-blue-soft\)/, '激活态不得再用固定 system-blue 底（须随强调色）')
+assert.match(css, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--accent-primary\)/, '激活态图标必须强调色（随强调色）')
+assert.match(css, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--accent-primary\)/, '激活态文字必须强调色（随强调色）')
 assert.match(css, /\.settings-nav-row:hover[^{]*\{[^}]*transform:\s*translateY\(-1px\)/, '导航悬停抬起（lzc2vsdx 弹簧）')
 
 // 选中名称 Bold（§6.3 保留）

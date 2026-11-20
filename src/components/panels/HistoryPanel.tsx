@@ -199,7 +199,9 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
           <div className="history-timeline">
             {merged.map((v, i) => {
               const isActive = i === currentIndex
-              const barH = Math.max((v.changes / maxChanges) * 56, 4)
+              // 优化 #③：柱高按修改量线性映射（修改越多越高），保留 8px 最小高度；
+              // 量程 8→72px，不同修改量映射到不同柱高，形成层次感。
+              const barH = Math.max(8, 8 + (v.changes / maxChanges) * 64)
               return (
                 <div
                   key={v.id}

@@ -35,7 +35,8 @@ assert.match(modal, /radius = 12/, 'UiModal 默认圆角必须 12px（§8.1）')
 const uiCss = read('src/styles/ui.css')
 assert.match(uiCss, /\.ui-modal\s*\{[\s\S]{0,400}?box-shadow:\s*var\(--color-modal-shadow\)/, '弹框阴影必须主题感知 var(--color-modal-shadow)（§8.1）')
 
-// DESIGN-1 §5.1 设置中心：1280px 上限（92vw/max-1280/92vh），§5.3 导航 180px/44px，§7 system-blue 激活（无左条）
+// DESIGN-1 §5.1 设置中心：1280px 上限（92vw/max-1280/92vh），§5.3 导航 180px/44px
+// 2026-11-20 用户要求：设置左侧 4 个标签随强调色变化，激活态由固定 system-blue 改为强调色 token
 const settings = read('src/components/panels/SettingsDialog.tsx')
 assert.match(settings, /PANEL_MAX_WIDTH = 1040/, '设置弹框最大宽必须 1040px（优化 #30 紧凑化）')
 const sdlg = read('src/styles/settings-dialog.css')
@@ -44,12 +45,17 @@ assert.match(navList, /width:\s*180px/, '设置导航侧栏必须 180px（§5.3�
 const navRow = sdlg.match(/\.settings-nav-row\s*\{[^}]*\}/)?.[0] || ''
 assert.match(navRow, /height:\s*44px/, '设置导航条目必须 44px（§5.3）')
 const navActive = sdlg.match(/\.settings-nav-row\.active\s*\{[^}]*\}/)?.[0] || ''
-assert.match(navActive, /var\(--color-system-blue-soft\)/, '激活态必须 system-blue-soft 底（§7）')
+// 2026-11-20 用户要求：设置标签随强调色变化，激活底由固定 system-blue-soft 改为强调色 10%
+assert.match(navActive, /var\(--accent-a10\)/, '激活态必须强调色 10% 底（随强调色）')
+assert.doesNotMatch(navActive, /var\(--color-system-blue-soft\)/, '激活态不得再用固定 system-blue 底（须随强调色）')
 // §5.3/§7 无激活左条（伪元素规则不得残留 3px 左条）
 assert.doesNotMatch(sdlg, /\.settings-nav-row\.active::before\s*\{[^}]*width:\s*3px;/, '§5.3 无激活左条')
 // 激活态文字/图标颜色在各自子规则（.settings-nav-row.active .settings-nav-ico/.txt），单独断言
-assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--color-system-blue\)/, '激活态图标必须 system-blue（§7）')
-assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--color-system-blue\)/, '激活态文字必须 system-blue（§7）')
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-ico[^}]*var\(--accent-primary\)/, '激活态图标必须强调色（随强调色）')
+assert.match(sdlg, /\.settings-nav-row\.active\s+\.settings-nav-txt[^}]*var\(--accent-primary\)/, '激活态文字必须强调色（随强调色）')
+// 子标签（个性设置下的 5 个）同为设置标签，激活态同样随强调色
+assert.match(sdlg, /\.settings-subtab\.active\s*\{[^}]*var\(--accent-a10\)/, '子标签激活态必须强调色 10% 底（随强调色）')
+assert.match(sdlg, /\.settings-subtab\.active\s*\{[^}]*var\(--accent-primary\)/, '子标签激活态文字必须强调色（随强调色）')
 
 // §8.2/§10.2 键盘焦点环统一系统蓝，但输入框 focus 边框与外发光保持主色
 const uiCss4 = read('src/styles/ui.css')

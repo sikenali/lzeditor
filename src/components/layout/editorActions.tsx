@@ -33,6 +33,10 @@ export const FORMAT_ITEMS: MenuItem[] = [
   { icon: 'ri-list-ordered', label: '有序列表', action: 'ol' },
   { icon: 'ri-list-unordered', label: '无序列表', action: 'ul' },
   { icon: 'ri-task-line', label: '任务列表', action: 'task' },
+]
+
+/** 顶栏「上标/下标」单图标 → 2 子菜单（用户要求，替代格式菜单里的两个独立项）。 */
+export const SUP_SUB_ITEMS: MenuItem[] = [
   { icon: 'ri-superscript', label: '上标', action: 'sup' },
   { icon: 'ri-subscript', label: '下标', action: 'sub' },
 ]
