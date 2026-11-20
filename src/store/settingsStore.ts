@@ -50,14 +50,18 @@ export function migrateApiKey(entry: ApiKeyEntry): ApiKeyEntry {
  *   否则老用户升级后右侧预览仍然显示。
  * - v3：contentWidth 默认改为 '1280'（铺满编辑区，.app 限宽 1280px）。升级时把老存档的
  *   '1024'（旧默认值）迁移为 '1280'，否则老用户升级后文本仍不铺满。
+ * - v5：contentWidth 默认改为 '1024'（宽屏内容列，用户拍板改窄→宽）。升级时把老存档的
+ *   '760'（v4 旧默认值）迁移为 '1024'，否则老用户升级后内容列仍窄。
  */
-export const SETTINGS_VERSION = 4
+export const SETTINGS_VERSION = 5
 /** v1→v2：previewModeEnabled 默认 true（分屏）→ false（仅源码编辑器）。 */
 export const PREVIEW_MODE_OFF_VERSION = 2
 /** v2→v3：contentWidth 默认 '1024' → '1280'（铺满编辑区）。 */
 export const CONTENT_WIDTH_FULL_VERSION = 3
 /** v3→v4：内容测度统一 760px——contentWidth 默认 '1280' → '760'。 */
 export const CONTENT_WIDTH_MEASURE_VERSION = 4
+/** v4→v5：宽屏内容列 1024px——contentWidth 默认 '760' → '1024'。 */
+export const CONTENT_WIDTH_DEFAULT_WIDE_VERSION = 5
 
 export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
@@ -81,7 +85,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   editorFont: 'sans-serif',
   defaultFontSize: 16,
   lineHeight: '1.7',
-  contentWidth: '760',
+  contentWidth: '1024',
   typewriterMode: false,
   focusMode: false,
   previewModeEnabled: false,
@@ -226,6 +230,11 @@ export function loadSettingsFromStorage(): Partial<SettingsState> {
       // 并非用户显式开启，按新默认统一迁移为 '760'。
       if (version < CONTENT_WIDTH_MEASURE_VERSION && (raw?.contentWidth === '1280' || raw?.contentWidth === '1024')) {
         raw.contentWidth = '760'
+      }
+      // 迁移 v4→v5：宽屏内容列 1024px——老存档 '760' 是 v4 旧默认值全量落盘，
+      // 并非用户显式开启，按新默认迁移为 '1024'（用户拍板改窄→宽）。
+      if (version < CONTENT_WIDTH_DEFAULT_WIDE_VERSION && raw?.contentWidth === '760') {
+        raw.contentWidth = '1024'
       }
       Object.assign(parsed, raw)
     }

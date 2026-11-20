@@ -12,7 +12,7 @@
   min-width: 0;
   overflow: hidden;
   --document-gutter: 96px;
-  --document-width: 760px;
+  --document-width: 1024px;
 }
 
 .code-editor-shell .cm-editor {

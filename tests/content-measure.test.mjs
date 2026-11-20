@@ -14,17 +14,18 @@ import { readFileSync } from 'node:fs'
  */
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 
-test('settings 默认内容宽 760，旧存档迁移到 760', () => {
+test('settings 默认内容宽 1024，旧存档迁移到 1024', () => {
   const s = read('src/store/settingsStore.ts')
-  assert.match(s, /contentWidth: '760'/, 'contentWidth 默认必须 760px（统一内容测度）')
-  assert.match(s, /SETTINGS_VERSION = 4/, 'settings 版本升到 4（迁移触发）')
+  assert.match(s, /contentWidth: '1024'/, 'contentWidth 默认必须 1024px（宽屏内容列，用户拍板）')
+  assert.match(s, /SETTINGS_VERSION = 5/, 'settings 版本升到 5（迁移触发）')
   assert.match(s, /raw\?\.contentWidth === '1280'[\s\S]{0,120}raw\.contentWidth = '760'/, '旧 1280 必须迁移到 760')
   assert.match(s, /raw\?\.contentWidth === '1024'[\s\S]{0,120}raw\.contentWidth = '760'/, '旧 1024 必须迁移到 760')
+  assert.match(s, /raw\?\.contentWidth === '760'[\s\S]{0,120}raw\.contentWidth = '1024'/, '旧 760（v4 默认）必须迁移到 1024')
 })
 
-test('WYSIWYG/CM6 内容列 760px', () => {
-  assert.match(read('src/additional/milkdown/milkdown.css'), /--document-width: 760px/, 'WYSIWYG 内容列 760px')
-  assert.match(read('src/styles/code-editor.css'), /--document-width: 760px/, 'CM6 内容列 760px')
+test('WYSIWYG/CM6 内容列 1024px', () => {
+  assert.match(read('src/additional/milkdown/milkdown.css'), /--document-width: 1024px/, 'WYSIWYG 内容列 1024px')
+  assert.match(read('src/styles/code-editor.css'), /--document-width: 1024px/, 'CM6 内容列 1024px')
 })
 
 test('正文行高 27.33px（编辑内容，精确命中规格）', () => {
@@ -41,8 +42,8 @@ test('预览/阅读正文行高也统一 27.33px（与编辑一致，避免非�
   assert.ok(lhIdx > varIdx, '27.33px 覆盖必须在 --read-line-height 消费规则之后（级联生效）')
 })
 
-test('设置中心内容宽度选项包含新的 760 默认', () => {
+test('设置中心内容宽度选项 + 新默认回退', () => {
   const tab = read('src/components/panels/settings/LayoutSettingsTab.tsx')
-  assert.match(tab, /CONTENT_WIDTH_OPTIONS = \['760', '960', '1024', '1200', '1280'\]/, '内容宽度选项必须含 760（新默认可选）')
-  assert.match(tab, /s\.contentWidth \|\| '760'/, '活动高亮回退必须用 760（默认态高亮）')
+  assert.match(tab, /CONTENT_WIDTH_OPTIONS = \['760', '960', '1024', '1200', '1280'\]/, '内容宽度选项保留 760 可选手动')
+  assert.match(tab, /s\.contentWidth \|\| '1024'/, '活动高亮回退必须用新默认 1024')
 })

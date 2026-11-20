@@ -18,7 +18,7 @@
   flex: 1 1 auto;
   min-height: 0;
   --document-gutter: 96px;
-  --document-width: 760px;
+  --document-width: 1024px;
   /* 正文尺度跟随编辑设置；默认按 Textus 的阅读尺度（16px/1.8），
      而不是把文档钉死在 14px——14px 在 690px 行宽下过小、标题也显得没层级。 */
   --doc-font-size: var(--cm-font-size, 16px);

@@ -47,7 +47,7 @@ function renderContentSection(s: any, u: any) {
           <div className="setting-label"><span>内容宽度</span><span className="setting-hint">编辑区最大宽度</span></div>
           <div className="content-width-segmented">
             {CONTENT_WIDTH_OPTIONS.map(w => (
-              <button key={w} className={`content-width-btn ${(s.contentWidth || '760') === w ? 'active' : ''}`} onClick={() => u('contentWidth', w)}>{w}</button>
+              <button key={w} className={`content-width-btn ${(s.contentWidth || '1024') === w ? 'active' : ''}`} onClick={() => u('contentWidth', w)}>{w}</button>
             ))}
           </div>
         </div>
