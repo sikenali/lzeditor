@@ -31,6 +31,32 @@
   min-height: 0;
 }
 
+/* ── WYSIWYG 行号栏（优化 #28）：编辑器壳左缘的近似源码行号 ── */
+.milkdown-line-gutter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 34px;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.milkdown-line-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: right;
+  padding-right: 7px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  opacity: 0.72;
+}
+
 .textus-editor-shell .milkdown {
   height: 100%;
   overflow: auto;

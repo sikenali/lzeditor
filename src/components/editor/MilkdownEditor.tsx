@@ -10,6 +10,7 @@ import { createMilkdownEditorFacade } from './facade/milkdown/MilkdownEditorFaca
 import { getEditorFacade, registerEditorFacade } from './facade/registry'
 import type { EditorFacade } from './facade/EditorFacade'
 import { ScrollRail } from '../ui/ScrollRail'
+import { MilkdownLineGutter } from './MilkdownLineGutter'
 import { markersFromPreviewDom } from '../../utils/railMarkers'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useEditorStore } from '../../store/editorStore'
@@ -169,6 +170,8 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
       <MilkdownProvider>
         <EditableEditor {...props} shellRef={shellRef} />
       </MilkdownProvider>
+      {/* WYSIWYG 行号栏（优化 #28）：绝对定位兄弟，不触碰 Milkdown DOM */}
+      <MilkdownLineGutter md={props.md} getScroller={getScroller} />
       {!props.hideRail && (
         <ScrollRail
           getScroller={getScroller}
