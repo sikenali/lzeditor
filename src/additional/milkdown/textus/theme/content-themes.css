@@ -3,7 +3,8 @@
    is three blocks: the light base, dark for "follow system", and dark
    pinned. The two dark blocks are identical. */
 
-/* Paper - warm, cream, serif-leaning */
+/* Paper - warm, cream, sans (Inter) 正文 —— 用户拍板字体系统 Inter/Space Grotesk/JetBrains Mono，
+   正文由衬线改无衬线 Inter，与全站 UI 统一 */
 
 .textus-editor-shell[data-content-theme="paper"] {
   --doc-bg: #faf6ee;
@@ -15,16 +16,17 @@
   --doc-quote-border: #b5652f;
   --doc-accent: #9a5628;
   --doc-code-bg: #f1e9d8;
-  /* The CJK faces follow <html lang>. */
+  /* 无衬线 Inter 正文（用户拍板，由衬线改）：与界面 --font-sans 一套。
+     The CJK faces follow <html lang>. */
   --doc-font:
-    var(--font-cjk-punct-serif), Georgia, var(--font-cjk-serif), serif;
+    var(--font-text-sans), sans-serif;
 }
 
 /* --doc-font 的 var() 链在 lzeditor 里解析不可靠（getComputedStyle 返回空，
    整条 font-family 会失效、主题字体不生效）。这里给 paper 的文档显式兜底为
-   衬线栈，确保 Textus 的暖纸张衬线渲染真正落地（scoped 测试钉死 .textus-editor-shell 前缀）。 */
+   无衬线 Inter 栈，确保 Textus 暖纸张的正文真正落地（scoped 测试钉死 .textus-editor-shell 前缀）。 */
 .textus-editor-shell[data-content-theme="paper"] .milkdown {
-  font-family: var(--font-cjk-punct-serif), Georgia, var(--font-cjk-serif), serif;
+  font-family: var(--font-text-sans), sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
