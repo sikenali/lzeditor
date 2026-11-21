@@ -1283,7 +1283,11 @@
   font-size: 18px;
   color: var(--color-text-muted);
 }
-.form-key-toggle:hover .remix  { color: var(--color-text-secondary); }
+/* hover 给可见的主题色 pill 底（浅/深主题均非黑、对比清晰），避免「hover 看不清」（task 2） */
+.form-key-toggle:hover  {
+  background: var(--color-bg-secondary);
+}
+.form-key-toggle:hover .remix  { color: var(--color-text-primary); }
 
 .form-actions  {
   margin-top: 20px;
