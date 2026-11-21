@@ -14,8 +14,10 @@ assert.match(toolbar, /\{quickFormatButtons && \(\s*<button[\s\S]{0,260}aria-lab
 // 粗体/斜体/删除线包在格式 quickFormat 块
 const fmtBlock = toolbar.match(/\{quickFormatButtons && <>([\s\S]*?)<\/>\}/)?.[1] || ''
 assert.ok(fmtBlock.includes('粗体') && fmtBlock.includes('斜体') && fmtBlock.includes('删除线'), '粗体/斜体/删除线包在格式 quickFormat 块')
-// 恰好 3 个 quickFormatButtons 守卫（查找 / 格式组 / AI）
-assert.equal((toolbar.match(/quickFormatButtons &&/g) || []).length, 3, '应有 3 个 quickFormatButtons 守卫')
+// 上标/下标包在 quickFormatButtons 块（关闭「显示常用格式按钮」后隐藏，用户拍板）
+assert.match(toolbar, /quickFormatButtons && \(\s*<div className="toolbar-menu-btn"[\s\S]*?flyout\.open\('sup-sub'/, '上标/下标按钮包在 quickFormatButtons 块')
+// 恰好 4 个 quickFormatButtons 守卫（查找 / 格式组 / AI / 上标下标）
+assert.equal((toolbar.match(/quickFormatButtons &&/g) || []).length, 4, '应有 4 个 quickFormatButtons 守卫')
 
 // desc 文案更新
 assert.match(settings, /在工具栏上显示常用的样式菜单，开启后全部显示/, 'desc 文案已更新')

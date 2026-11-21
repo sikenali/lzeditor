@@ -158,9 +158,9 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
-  background: var(--chrome-tooltip-bg, rgba(30,30,35,0.95));
-  color: var(--chrome-tooltip-text, #f5f0e6);
-  border: 0.7px solid var(--chrome-tooltip-border, rgba(255,255,255,0.1));
+  background: var(--chrome-tooltip-bg, var(--color-bg-card));
+  color: var(--chrome-tooltip-text, var(--color-text-body));
+  border: 0.7px solid var(--chrome-tooltip-border, var(--color-border));
   box-shadow: var(--color-popover-shadow);
   backdrop-filter: blur(8px);
   letter-spacing: 0.01em;
@@ -349,9 +349,9 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
-  background: var(--chrome-tooltip-bg, rgba(30,30,35,0.95));
-  color: var(--chrome-tooltip-text, #f5f0e6);
-  border: 0.7px solid var(--chrome-tooltip-border, rgba(255,255,255,0.1));
+  background: var(--chrome-tooltip-bg, var(--color-bg-card));
+  color: var(--chrome-tooltip-text, var(--color-text-body));
+  border: 0.7px solid var(--chrome-tooltip-border, var(--color-border));
   box-shadow: var(--color-popover-shadow);
   backdrop-filter: blur(10px);
   letter-spacing: 0.02em;
@@ -1495,9 +1495,9 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
-  background: var(--chrome-tooltip-bg, rgba(30,30,35,0.95));
-  color: var(--chrome-tooltip-text, #f5f0e6);
-  border: 0.7px solid var(--chrome-tooltip-border, rgba(255,255,255,0.1));
+  background: var(--chrome-tooltip-bg, var(--color-bg-card));
+  color: var(--chrome-tooltip-text, var(--color-text-body));
+  border: 0.7px solid var(--chrome-tooltip-border, var(--color-border));
   box-shadow: var(--color-popover-shadow);
   backdrop-filter: blur(10px);
   letter-spacing: 0.02em;

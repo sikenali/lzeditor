@@ -141,13 +141,15 @@ export const Toolbar: React.FC = () => {
             </button>
           </div>
 
-          <div className="toolbar-menu-btn" onClick={() => flyout.open('sup-sub', supSubBtnRef.current)}>
-            <button ref={supSubBtnRef} aria-label="上标/下标" className={`toolbar-btn ${flyout.isOpen('sup-sub') ? 'menu-open' : ''}`}>
-              <span className="remix toolbar-icon ri-superscript"></span>
-              <span className="toolbar-label">上标/下标</span>
-              <span className="toolbar-menu-dot"></span>
-            </button>
-          </div>
+          {quickFormatButtons && (
+            <div className="toolbar-menu-btn" onClick={() => flyout.open('sup-sub', supSubBtnRef.current)}>
+              <button ref={supSubBtnRef} aria-label="上标/下标" className={`toolbar-btn ${flyout.isOpen('sup-sub') ? 'menu-open' : ''}`}>
+                <span className="remix toolbar-icon ri-superscript"></span>
+                <span className="toolbar-label">上标/下标</span>
+                <span className="toolbar-menu-dot"></span>
+              </button>
+            </div>
+          )}
 
           <button className="toolbar-btn" aria-label="图片" onClick={() => formatAction('image')}>
             <span className="remix toolbar-icon ri-image-line"></span><span className="toolbar-label">图片</span>

@@ -110,14 +110,8 @@ export const ModelSettingsTab: React.FC = () => {
   const [testSuccess, setTestSuccess] = useState<Record<string, boolean>>({})
   const [testFailed, setTestFailed] = useState<Record<string, boolean>>({})
   const [testError, setTestError] = useState<Record<string, string>>({})
-  // 从服务商 /models 动态拉到的模型，与内置列表合并；只在本会话内保留。
-  const [remoteModels, setRemoteModels] = useState<Record<string, string[]>>({})
-  const [refreshingModels, setRefreshingModels] = useState(false)
-
-  const currentModels = [
-    ...(selectedProvider ? (PROVIDER_MODELS[selectedProvider] || []) : []),
-    ...(selectedProvider ? (remoteModels[selectedProvider] || []) : []),
-  ]
+  // 模型下拉只列内置列表；远程 /models 拉取按钮已按用户要求移除。
+  const currentModels = (selectedProvider ? (PROVIDER_MODELS[selectedProvider] || []) : [])
     .filter((m, i, all) => all.indexOf(m) === i)
     .map(m => ({ value: m, label: m }))
 
@@ -294,34 +288,6 @@ export const ModelSettingsTab: React.FC = () => {
 
   const testErrorMsg = Object.values(testError).find(v => v)
 
-  // 从服务商的 /models 拉真实模型列表（需要 Key）；失败保留内置列表，不阻塞保存。
-  const handleRefreshModels = async () => {
-    if (!selectedProvider) { toast('请先选择服务商'); return }
-    if (refreshingModels) return
-    const endpoint = PROVIDER_ENDPOINTS[selectedProvider]?.endpoint || 'https://api.openai.com/v1'
-    const saved = editingId ? apiKeys.find(k => k.id === editingId) : undefined
-    const key = keyInput.trim() || saved?.key || ''
-    if (!key) { toast('请先填写 API Key 再刷新模型'); return }
-    setRefreshingModels(true)
-    try {
-      const resp = await fetch(resolveApiUrl(endpoint, 'models'), {
-        headers: { 'Authorization': `Bearer ${key}` },
-      })
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-      const data = await resp.json()
-      const list = (Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [])
-        .map((m: any) => typeof m === 'string' ? m : (m?.id || m?.name || ''))
-        .filter(Boolean)
-      if (!list.length) throw new Error('empty')
-      setRemoteModels(p => ({ ...p, [selectedProvider]: list }))
-      toast(`已刷新 ${list.length} 个模型`)
-    } catch {
-      toast('模型列表刷新失败，已保留内置列表', { type: 'error' })
-    } finally {
-      setRefreshingModels(false)
-    }
-  }
-
   return (
     <div className="model-view">
       {/* 页面头部卡片（modal 内已按 bid 隐藏，保留 JSX 供回退） */}
@@ -382,18 +348,7 @@ export const ModelSettingsTab: React.FC = () => {
                 />
               </div>
               <div className="form-field">
-                <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>模型</span>
-                  <button
-                    type="button"
-                    className="model-refresh-btn"
-                    onClick={handleRefreshModels}
-                    disabled={refreshingModels}
-                  >
-                    <span className={`remix ${refreshingModels ? 'spinning ri-loader-4-line' : 'ri-refresh-line'}`}></span>
-                    {refreshingModels ? '刷新中' : '刷新模型'}
-                  </button>
-                </label>
+                                <label className="form-label">模型</label>
                 <UiSelect
                   value={selectedModelName}
                   onChange={setModel}

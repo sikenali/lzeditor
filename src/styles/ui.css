@@ -372,8 +372,10 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: var(--z-tooltip);
-  background: rgba(28, 28, 30, 0.92);
-  color: var(--color-on-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  border: 0.7px solid var(--color-border);
+  box-shadow: var(--color-popover-shadow);
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
