@@ -1547,9 +1547,6 @@
   overflow: visible;
   z-index: 50;
 }
-/* 开启「显示工具栏按钮标题」：侧边栏标签常显，rail 加宽以容纳图标+文字 */
-.app-left-nav:has(.rail-nav--labels)  { width: auto; min-width: 76px; }
-
 .rail-nav  {
   --rail-btn-size: 40px;
   --rail-btn-radius: 11px;
@@ -1664,22 +1661,35 @@
   justify-content: center;
 }
 .rail-icon  { font-size: 20px; line-height: 1; flex-shrink: 0; }
-/* 文字不渲染，仅作 UiTip 提示内容与 aria-label 来源 */
+/* 文字不渲染，仅作 hover 展开的内联标签与 aria-label 来源 */
 .rail-label  { display: none; }
-/* 开启「显示工具栏按钮标题」：侧边栏标签常显，rail 加宽（图标 + 文字） */
-.rail-nav--labels .rail-btn  {
-  width: auto;
-  min-width: 132px;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 0 12px;
+
+/* ── 图标模式（showToolbarLabels 关闭）下 rail 默认纯图标，hover 展开显示内联标签 ──
+   宽度协调过渡：rail 与容器（.app-left-nav）同步加宽，标签随展开浮现。
+   标签常显模式（.rail-nav--labels）不匹配这些 :not() 规则，保持上方行为。 */
+.rail-nav  {
+  width: 76px;
+  transition: width var(--t-base) var(--ease);
 }
-.rail-nav--labels .rail-label  {
+.rail-nav:hover  {
+  width: 168px;
+}
+.rail-nav:hover .rail-label  {
   display: block;
   font-size: 12px;
   color: inherit;
   white-space: nowrap;
 }
+.rail-nav:hover .rail-btn  {
+  width: 132px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+}
+.rail-nav .rail-btn  { transition: background var(--transition-fast), color var(--transition-fast), width var(--t-base) var(--ease); }
+/* 容器随 rail 展开（边框跟随），宽度协调过渡 */
+.app-left-nav  { transition: width var(--t-base) var(--ease); }
+.app-left-nav:has(.rail-nav:hover)  { width: auto; }
 
 /* 子菜单指示点：图标正右方 2px。独立元素，不依赖标签文字存在 */
 .rail-menu-dot  {

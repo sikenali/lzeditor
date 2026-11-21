@@ -21,7 +21,7 @@ export const LeftNav: React.FC = () => {
   const showOutline = useEditorStore((s: any) => s.showOutline)
   const showSearch = useEditorStore((s: any) => s.showSearch)
   const aiPanelVisible = useAIStore((s) => s.panelVisible)
-  const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
+  const quickFormatButtons = useSettingsStore((s) => s.quickFormatButtons !== false)
 
   const flyout = useFlyout()
   const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
@@ -77,10 +77,9 @@ export const LeftNav: React.FC = () => {
     else if (key === 'mode') modeAction(action)
   }
 
-  // 开启显示工具栏按钮标题时：标签常显（rail-nav--labels），不再包 UiTip（避免 hover 双重提示）；
-  // 关闭时：纯图标，UiTip 右侧浅色卡片提示
-  const tip = (label: string, node: React.ReactNode, tipText?: string) =>
-    showToolbarLabels ? node : <UiTip text={tipText || label} placement="right">{node}</UiTip>
+  // 图标模式（showToolbarLabels 关闭）下 rail 由 CSS 做 hover 展开、内联显示标签，
+  // 不再包 UiTip（避免浮动卡与内联标签双重提示）；aria-label 已承载无障碍文本。
+  const tip = (_label: string, node: React.ReactNode) => node
 
   const menu = (key: string, ref: React.RefObject<HTMLButtonElement | null>, icon: string, label: string) =>
     tip(label, (
@@ -95,16 +94,16 @@ export const LeftNav: React.FC = () => {
       </div>
     ))
 
-  const btn = (icon: string, label: string, onClick: () => void, active?: boolean, disabled?: boolean, tipText?: string) =>
+  const btn = (icon: string, label: string, onClick: () => void, active?: boolean, disabled?: boolean) =>
     tip(label, (
       <button className={`rail-btn${active ? ' active' : ''}`} onClick={onClick} aria-label={label} disabled={disabled}>
         <span className={`remix rail-icon ${icon}`} aria-hidden="true"></span>
         <span className="rail-label">{label}</span>
       </button>
-    ), tipText)
+    ))
 
   return (
-    <aside className={`rail-nav${showToolbarLabels ? ' rail-nav--labels' : ''}`}>
+    <aside className="rail-nav">
       <div className="rail-top">
         <UiTip text="LZEditor" placement="right">
           <button className="rail-logo" aria-label="LZEditor">
@@ -119,7 +118,7 @@ export const LeftNav: React.FC = () => {
           {btn('ri-archive-2-line', '文档库', () => togglePanel('library'), showLibrary)}
           {menu('new', newBtnRef, 'ri-file-add-line', '新建')}
           {btn('ri-list-unordered', '大纲', () => togglePanel('outline'), showOutline)}
-          {btn('ri-search-line', '查找', () => togglePanel('search'), showSearch)}
+          {quickFormatButtons && btn('ri-search-line', '查找', () => togglePanel('search'), showSearch)}
         </div>
 
         {/* 组 2：编辑 */}
@@ -133,7 +132,7 @@ export const LeftNav: React.FC = () => {
 
         {/* 组 3：应用 */}
         <div className="rail-group">
-          {btn('ri-openai-fill', 'AI', openAI, aiPanelVisible)}
+          {quickFormatButtons && btn('ri-openai-fill', 'AI', openAI, aiPanelVisible)}
           {menu('mode', modeBtnRef, 'ri-eye-2-fill', '模式')}
           {btn('ri-history-fill', '历史', () => toggleMode('history'), appMode === 'history')}
           {btn('ri-download-2-line', '导出', () => toggleDialog('export'), openPanel === 'export')}

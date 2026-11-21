@@ -31,10 +31,12 @@
   min-height: 0;
 }
 
-/* ── WYSIWYG 行号栏（优化 #28）：编辑器壳左缘的近似源码行号 ── */
+/* ── WYSIWYG 行号栏（优化 #28）：挨着内容列左缘的源码行号 ──
+   内容列（.ProseMirror）居中 max-width:1024px + 左右 96px gutter；行号栏
+   定位到「内容文本左缘 - 34px 宽 - 7px 间隙」，与 CM6 gutter 对齐基线一致。 */
 .milkdown-line-gutter {
   position: absolute;
-  left: 0;
+  left: calc(50% - var(--document-width) / 2 + var(--document-gutter) - 41px);
   top: 0;
   bottom: 0;
   width: 34px;
