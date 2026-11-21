@@ -21,9 +21,9 @@ assert.match(panel, /animation:\s*slideInRight var\(--t-slow\) var\(--ease\)/, '
 const ddIn = layout.match(/@keyframes dd-in\s*\{[\s\S]*?\n\}/)?.[0] || ''
 const ddTransform = (ddIn.match(/transform:\s*[^;]+;/g) || []).join('')
 assert.ok(!ddTransform.includes('scale'), 'dd-in 不得再有 scale（task 8 平滑）')
-assert.match(ddIn, /translateY\(-10px\)/, 'dd-in 必须从上往下位移（translateY -10px）')
+assert.match(ddIn, /translateY\(-14px\)/, 'dd-in 必须从上往下位移（translateY -14px）')
 const submenu = layout.match(/\.toolbar-submenu\s*\{[^}]*animation:[^;]+;/)?.[0] || ''
-assert.match(submenu, /animation:\s*dd-in var\(--t-base\) var\(--ease\)/, '下拉弹框必须 dd-in 用 --t-base + --ease（丝滑柔和）')
+assert.match(submenu, /animation:\s*dd-in 200ms var\(--ease-out\)/, '下拉弹框必须 dd-in 用 200ms + --ease-out（丝滑柔和）')
 
 // 文档库/大纲 从左到右、预览 从右到左、查找 从下往上 —— 方向统一（task 8 基线）
 assert.match(layout, /\.sidebar-library\s*\{[^}]*animation:\s*slideInLeft var\(--t-base\) var\(--ease\)/, '文档库必须 slideInLeft（从左到右）')

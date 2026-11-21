@@ -12,7 +12,7 @@
   justify-content: center;
    z-index: var(--z-modal-backdrop);
    opacity: 0;
-   animation: ui-fade-in 0.25s var(--ease) forwards;
+   animation: ui-fade-in 0.25s var(--ease-out) forwards;
    padding: 20px;
  }
  @keyframes ui-fade-in  { from { opacity: 0; } to { opacity: 1; } }
@@ -26,22 +26,28 @@
    background: var(--color-bg-secondary);
    border: 0.6px solid var(--color-border-soft);
    box-shadow: var(--color-modal-shadow);
-   animation: ui-pop-in var(--t-slow) var(--ease) forwards;
+   animation: ui-pop-in 240ms var(--ease-out) forwards;
  }
 @keyframes ui-pop-in  {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  from { opacity: 0; transform: translateY(-22px) scale(0.985); }
   to { opacity: 1; transform: none; }
 }
 /* DESIGN.md §8.1：弹框离开也要有动画（open→false 时 ui-modal-overlay.closing 触发） */
 @keyframes ui-pop-out  {
   from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 0; transform: translateY(-22px) scale(0.985); }
 }
 .ui-modal-overlay.closing .ui-modal  {
-  animation: ui-pop-out var(--t-slow) var(--ease) forwards;
+  animation: ui-pop-out 240ms var(--ease-out) forwards;
 }
 .ui-modal-overlay.closing  {
-  animation: ui-fade-out var(--t-slow) var(--ease) forwards;
+  animation: ui-fade-out var(--t-slow) var(--ease-out) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-modal-overlay { animation: ui-fade-in 200ms ease forwards; }
+  .ui-modal { animation: ui-fade-in 200ms ease forwards; }
+  .ui-modal-overlay.closing .ui-modal,
+  .ui-modal-overlay.closing { animation: ui-fade-out 200ms ease forwards; }
 }
 @keyframes ui-fade-out  {
   from { opacity: 1; }

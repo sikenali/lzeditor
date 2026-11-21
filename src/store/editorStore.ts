@@ -124,6 +124,8 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
   showRightPanel: false,
   statusbarCollapsed: initialLayout.statusbarCollapsed,
   showSearch: false,
+  /** 打开查找面板时要聚焦哪个输入框：Mod+F 聚焦查找，Mod+Shift+H 聚焦替换。 */
+  searchFocus: 'query' as 'query' | 'replace',
   codeMode: false,
   codeModeCursor: 0,
   appMode: 'edit' as const,
@@ -182,6 +184,7 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     saveLayoutState({ showPreview })
   },
   setShowSearch: (showSearch: boolean) => set({ showSearch }),
+  setSearchFocus: (searchFocus: 'query' | 'replace') => set({ searchFocus }),
   setShowRightPanel: (showRightPanel: boolean) => set({ showRightPanel }),
   setShowLibrary: (showLibrary: boolean) => {
     set({ showLibrary })

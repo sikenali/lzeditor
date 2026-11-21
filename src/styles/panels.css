@@ -1154,8 +1154,10 @@
   align-items: center;
   gap: 5px;
   cursor: pointer;
-  flex: 1;
-  max-width: 10px;
+  flex: 0 0 auto;
+  /* 比原来 10px 宽约 1/3（26px → 34px），柱体不再细成一条线。 */
+  width: 34px;
+  max-width: none;
   transition: transform var(--t-fast) var(--ease);
 }
 .history-bar:hover  {

@@ -168,12 +168,28 @@ function App() {
   // 全局快捷键（与「快捷键设置」页列出的组合一致）
   useEffect(() => {
     const mod = (e: KeyboardEvent) => e.ctrlKey || e.metaKey
-    const ed = () => getEditorFacade()
 
     const toggleAI = () => {
       const s = useAIStore.getState()
       if (s.panelVisible) s.hidePanel()
       else s.showPanel('write', '', { x: Math.max(8, window.innerWidth - 380), y: 120 })
+    }
+
+    /** 执行编辑器命令；不在编辑/代码模式时先切回编辑并等 facade 挂载。 */
+    const runCommand = (name: string) => {
+      const facade = getEditorFacade()
+      if (facade) { facade.execCommand(name); return }
+      const st = useEditorStore.getState()
+      if (st.appMode !== 'edit' && st.appMode !== 'code') {
+        st.setAppMode('edit')
+        let tries = 0
+        const tick = () => {
+          const f = getEditorFacade()
+          if (f) { f.execCommand(name); return }
+          if (++tries < 20) setTimeout(tick, 100)
+        }
+        setTimeout(tick, 100)
+      }
     }
 
     const onKey = (e: KeyboardEvent) => {
@@ -197,9 +213,9 @@ function App() {
       } else if (e.key === ',') {
         e.preventDefault(); dismissWelcome(); es.setOpenPanel('settings')
       } else if (key === 'f' && !e.shiftKey) {
-        e.preventDefault(); es.setShowSearch(true)
+        e.preventDefault(); es.setSearchFocus('query'); es.setShowSearch(true)
       } else if (key === 'h' && e.shiftKey) {
-        e.preventDefault(); es.setShowSearch(true)
+        e.preventDefault(); es.setSearchFocus('replace'); es.setShowSearch(true)
       } else if (key === 'f' && e.shiftKey) {
         e.preventDefault()
         if (document.fullscreenElement) document.exitFullscreen?.()
@@ -211,16 +227,16 @@ function App() {
         e.preventDefault(); es.setAppMode(es.appMode === 'read' ? 'edit' : 'read')
       } else if (e.key === '/') {
         e.preventDefault(); toggleAI()
-      } else if (e.altKey && key === 'c') {
-        e.preventDefault(); ed()?.execCommand('insert.code-block')
-      } else if (key === '8' && e.shiftKey) {
-        e.preventDefault(); ed()?.execCommand('insert.bullet-list')
-      } else if (key === '7' && e.shiftKey) {
-        e.preventDefault(); ed()?.execCommand('insert.numbered-list')
-      } else if (key === '9' && e.shiftKey) {
-        e.preventDefault(); ed()?.execCommand('insert.task')
-      } else if (key === 'b' && e.shiftKey) {
-        e.preventDefault(); ed()?.execCommand('insert.quote')
+      } else if (e.altKey && e.code === 'KeyC') {
+        e.preventDefault(); runCommand('insert.code-block')
+      } else if (e.shiftKey && e.code === 'Digit8') {
+        e.preventDefault(); runCommand('insert.bullet-list')
+      } else if (e.shiftKey && e.code === 'Digit7') {
+        e.preventDefault(); runCommand('insert.numbered-list')
+      } else if (e.shiftKey && e.code === 'Digit9') {
+        e.preventDefault(); runCommand('insert.task')
+      } else if (e.shiftKey && e.code === 'KeyB') {
+        e.preventDefault(); runCommand('insert.quote')
       }
     }
 

@@ -27,7 +27,7 @@ const SHORTCUTS: Record<string, FormatSpec> = {
 /** Highlight, `==text==`: Format › Highlight and Cmd/Ctrl+Shift+H, as in
  *  Typora. */
 export const HIGHLIGHT: FormatSpec = { delim: "=", rung: 2 };
-const SHIFT_SHORTCUTS: Record<string, FormatSpec> = { h: HIGHLIGHT };
+const SHIFT_SHORTCUTS: Record<string, FormatSpec> = {};
 /** Strikethrough, `~~text~~`: Format › Strikethrough and Ctrl+Shift+`. */
 export const STRIKETHROUGH: FormatSpec = { delim: "~", rung: 2 };
 
@@ -352,6 +352,14 @@ export const formatShortcutPlugin = $prose(
               : toggleCodeSpan(view);
             if (done) event.preventDefault();
             return done;
+          }
+          // Cmd/Ctrl+Alt+H：高亮。Mod+Shift+H 留给应用层的「替换文本」，
+          // 避免同一次按键既高亮又打开查找面板。
+          if ((event.metaKey || event.ctrlKey) && event.altKey && event.key.toLowerCase() === "h") {
+            if (isImeKeyEvent(view, event)) return false;
+            if (!toggleFormat(view, HIGHLIGHT)) return false;
+            event.preventDefault();
+            return true;
           }
           // Cmd/Ctrl+Alt+1..6 headings, matching the code-mode keymap.
           if ((event.metaKey || event.ctrlKey) && event.altKey) {

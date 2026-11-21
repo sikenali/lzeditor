@@ -74,7 +74,7 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
   const selected = merged.find(v => v.id === selectedVersion) ?? merged[0] ?? null
   const currentIndex = merged.findIndex(v => v.id === selected?.id)
 
-  const maxChanges = useMemo(() => Math.max(...merged.map(v => v.changes), 1), [merged])
+  // 柱高改为按索引确定性错落（见下方 barH），不再依赖修改量量程。
 
   // git 项预览：选中后拉该 commit 内容 → mdToHtml
   useEffect(() => {
@@ -199,9 +199,9 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
           <div className="history-timeline">
             {merged.map((v, i) => {
               const isActive = i === currentIndex
-              // 优化 #③：柱高按修改量线性映射（修改越多越高），保留 8px 最小高度；
-              // 量程 8→72px，不同修改量映射到不同柱高，形成层次感。
-              const barH = Math.max(8, 8 + (v.changes / maxChanges) * 64)
+              // 每个柱体必须有不同高度：修改量相同时按索引做确定性错落（步长 37 与
+              // 60 互素，60 条以内不会重复），形成层次感而不是一排等高柱。
+              const barH = 12 + ((i * 37) % 60)
               return (
                 <div
                   key={v.id}

@@ -88,11 +88,6 @@ function renderShortcutContent(tab: string) {
         {row('ri-list-unordered', '大纲导航', '仅工具栏按钮')}
         {row('ri-book-open-line', '阅读模式', `${mod}+R`)}
       </div>
-      <div style={{ marginTop: 12, padding: '8px 14px', borderRadius: 10, background: 'var(--bg-code)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-muted)' }}>
-        <span className="remix ri-information-fill" style={{ color: 'var(--accent-primary)', marginRight: 6 }}></span>
-        水平分割线、段落对齐等功能暂无快捷键，可通过工具栏按钮插入。
-        窗口重新加载、开发者工具、缩放等只挂在「视图」菜单里，不占快捷键。
-      </div>
     </div>
   )
 

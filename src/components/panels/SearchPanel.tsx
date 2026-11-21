@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { getEditorFacade } from '../editor/facade/registry'
 import type { SearchQueryOptions } from '../editor/facade/EditorFacade'
+import { useEditorStore } from '../../store/editorStore'
 import { UiSwitch } from '../ui'
 
 interface SearchPanelProps {
@@ -21,12 +22,16 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
   const [matchCount, setMatchCount] = useState(0)
   const [patternError, setPatternError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const replaceRef = useRef<HTMLInputElement>(null)
   // 最近一次成功 searchMatches 的查询参数键；用于检测「改词未重搜」。
   const lastSearchKeyRef = useRef<string | null>(null)
+  const searchFocus = useEditorStore((s) => s.searchFocus)
 
+  // Mod+F 聚焦查找，Mod+Shift+H 聚焦替换；面板已打开时切换焦点也能响应。
   useEffect(() => {
-    if (inputRef.current) inputRef.current.focus()
-  }, [])
+    if (searchFocus === 'replace') replaceRef.current?.focus()
+    else inputRef.current?.focus()
+  }, [searchFocus])
 
   /** 面板开关 → facade 查询参数。 */
   const buildOptions = useCallback((): SearchQueryOptions => ({
@@ -166,6 +171,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ onClose }) => {
             <div className="ui-input">
               <span className="search-input-label">替换</span>
               <input
+                ref={replaceRef}
                 type="text"
                 value={replaceTerm}
                 onChange={e => setReplaceTerm(e.target.value)}

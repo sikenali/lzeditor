@@ -76,6 +76,7 @@ export interface EditorStoreState {
   showRightPanel: boolean
   statusbarCollapsed: boolean
    showSearch: boolean
+   searchFocus: 'query' | 'replace'
   codeMode: boolean
   appMode: 'edit' | 'code' | 'style' | 'history' | 'read'
   codeModeCursor: number
@@ -102,6 +103,7 @@ export interface EditorStoreState {
    setShowLibrary: (showLibrary: boolean) => void
   setShowRightPanel: (showRightPanel: boolean) => void
   setShowSearch: (showSearch: boolean) => void
+  setSearchFocus: (searchFocus: 'query' | 'replace') => void
   setStatusbarCollapsed: (statusbarCollapsed: boolean) => void
   setCodeMode: (codeMode: boolean) => void
   setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void

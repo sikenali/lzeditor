@@ -15,27 +15,25 @@ const blocks = (css, selector) => {
 /** 取 live（非深色覆写）的最后一条规则块。 */
 const last = (css, selector) => blocks(css, selector).filter((b) => !b.startsWith('[data-theme')).at(-1) || ''
 
-// ── 优化 #③：历史柱状图宽度收窄（含 active），高度按修改量映射且保最小高度 ──
+// ── 历史柱状图：宽度加宽约 1/3，高度按索引确定性错落（每条都不同） ──
 
-// 柱宽：live .history-bar 必须收窄到 10px（旧 22px 移除）；live active 柱体同宽（width:100%），
-// 不再放大到旧 30px —— active 仅靠强调色/描边区分，宽度同样收窄。
-const barLive = blocks(panels, '.history-bar').filter((b) => b.includes('flex: 1')).at(-1) || ''
-assert.match(barLive, /max-width:\s*10px/, '.history-bar live 柱宽必须收窄到 10px（优化 #③）')
-assert.ok(!barLive.includes('22px'), '.history-bar live 不得再是 22px 宽（优化 #③ 收窄）')
+// 柱宽：live .history-bar 从 10px 加宽到 34px（约 1/3 宽），不再用 max-width 压成细线。
+const barLive = blocks(panels, '.history-bar').filter((b) => b.includes('width: 34px') || b.includes('flex: 0 0 auto')).at(-1) || ''
+assert.match(barLive, /width:\s*34px/, '.history-bar live 柱宽必须加宽到 34px')
+assert.ok(!barLive.includes('max-width: 10px'), '.history-bar live 不得再压到 10px')
 
 const barActiveBody = last(panels, '.history-bar.active .history-bar-body')
 assert.match(barActiveBody, /width:\s*100%/, '.history-bar.active .history-bar-body live 必须 width:100%（与普通柱同宽）')
-assert.ok(!barActiveBody.includes('30px'), '.history-bar.active .history-bar-body 不得再放大到 30px（优化 #③ active 收窄）')
 
-// 柱高：线性映射（修改越多越高）+ 8px 最小高度，量程 8→72 拉开层次感
+// 柱高：索引确定性错落（步长 37 与 60 互素，保证每条高度不同），不再是一排等高柱。
 assert.match(
   history,
-  /const barH = Math\.max\(8,\s*8\s*\+\s*\(v\.changes\s*\/\s*maxChanges\)\s*\*\s*64\)/,
-  'HistoryPanel 柱高必须按修改量线性映射（8 + 比例*64），保留 8px 最小高度（优化 #③）',
+  /const barH = 12 \+ \(\(i \* 37\) % 60\)/,
+  'HistoryPanel 柱高必须按索引确定性错落（12 + (i*37)%60）',
 )
 
-// 柱体容器 live 允许 8px 最小高度（与 barH 下限一致，防被旧 4px 压制）
+// 柱体容器 live 允许 8px 最小高度（防被旧 4px 压制）
 const bodyLive = blocks(panels, '.history-bar-body').filter((b) => b.includes('min-height')).at(-1) || ''
-assert.match(bodyLive, /min-height:\s*8px/, '.history-bar-body live 最小高度必须 8px（优化 #③）')
+assert.match(bodyLive, /min-height:\s*8px/, '.history-bar-body live 最小高度必须 8px')
 
 console.log('history bar chart ok')

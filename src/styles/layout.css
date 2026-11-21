@@ -182,9 +182,13 @@
 .toolbar-btn  { position: relative; }
 .toolbar-btn.menu-open .toolbar-menu-dot  { opacity: 1; background: var(--chrome-toolbar-active); }
 @keyframes dd-in  {
-  /* 从上往下的平滑滑入（task 8：去 scale，位移略增，丝滑柔和） */
-  from { opacity: 0; transform: translateY(-10px); }
+  /* 从上往下的平滑滑入（顶栏图片/链接/表格/插入下拉统一走这条）。 */
+  from { opacity: 0; transform: translateY(-14px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes dd-fade-in  {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 .toolbar-dropdown-item .remix  { font-size: 18px; color: var(--text-muted); line-height: 1; }
 .toolbar-dropdown-item:hover .remix  { color: var(--text-primary); }
@@ -214,7 +218,12 @@
   box-shadow: var(--color-popover-shadow);
   padding: 6px;
   display: flex; flex-direction: column; gap: 2px;
-  animation: dd-in var(--t-base) var(--ease);
+  transform-origin: top center;
+  animation: dd-in 200ms var(--ease-out);
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toolbar-submenu { animation: dd-fade-in 180ms var(--ease-out); }
 }
 .toolbar-submenu-item  {
   display: flex; align-items: center; gap: 10px;
