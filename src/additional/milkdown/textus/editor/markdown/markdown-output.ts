@@ -331,8 +331,42 @@ const closingHashGuard: Unsafe = {
   after: "[ \\t]*(?:[\\r\\n]|$)",
 };
 
+/** mdast 容器节点类型（有 children 语义）。Milkdown 把空块（如键入 `# ` 得到的
+ *  空标题、`Enter` 得到的空段落）转成 mdast 时可能**不设** children（undefined），
+ *  mdast-util-to-markdown 的 containerPhrasing 会访问 node.children.length 崩溃
+ *  （runtime 走 index.js，无 `parent.children || []` 兜底，与 lib 源码不一致）。
+ *  这里在序列化前给所有容器补空数组，保证空块不崩。 */
+const CONTAINER_TYPES = new Set([
+  "root",
+  "paragraph",
+  "heading",
+  "blockquote",
+  "list",
+  "listItem",
+  "table",
+  "tableRow",
+  "tableCell",
+  "delete",
+  "emphasis",
+  "strong",
+  "link",
+  "linkReference",
+  "footnoteDefinition",
+  "definition",
+]);
+
+/** 递归给 mdast 容器节点补 children=[]（undefined 时），空块不崩。 */
+function ensureBlockChildren(node: unknown): void {
+  if (!node || typeof node !== "object") return
+  const n = node as { type?: string; children?: unknown[] }
+  if (n.type && CONTAINER_TYPES.has(n.type) && n.children === undefined) n.children = []
+  const kids = n.children
+  if (Array.isArray(kids)) for (const k of kids) ensureBlockChildren(k)
+}
+
 /** Set up per serialization, before any node is written. */
 const root: Handle = (node, parent, state, info) => {
+  ensureBlockChildren(node);
   joinAdjacent(node as Phrasing);
   underscoresAtWordEdges(node as Phrasing);
   alternateNestedMarkers(node as Phrasing);
