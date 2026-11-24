@@ -1,0 +1,235 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useEditorStore } from '../../store/editorStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { useAIStore } from '../../store/aiStore'
+import { getEditorFacade } from '../editor/facade/registry'
+import {
+  NEW_ITEMS, FORMAT_ITEMS, INSERT_ITEMS, SUP_SUB_ITEMS, getModeItems, applyTableItems,
+  useEditorActions, useFlyout, useTableActive, ActionMenu,
+} from './editorActions'
+
+/**
+ * Electron 自绘窗口按钮。
+ *
+ * main.ts 用 frame: false 创建无边框窗口，操作系统标题栏（含 macOS 红绿灯）一律不出现，
+ * 不自绘的话窗口就无法最小化 / 最大化 / 关闭。浏览器里没有 electronAPI，直接不渲染。
+ */
+const ElectronWindowControls: React.FC = () => {
+  const api = window.electronAPI
+  const [maximized, setMaximized] = useState(false)
+
+  useEffect(() => {
+    if (!api?.isMaximized) return
+    let alive = true
+    const sync = () => { void api.isMaximized().then((v: boolean) => { if (alive) setMaximized(v) }) }
+    sync()
+    window.addEventListener('resize', sync)
+    return () => { alive = false; window.removeEventListener('resize', sync) }
+  }, [api])
+
+  if (!api) return null
+
+  return (
+    <div className="win-controls" aria-label="窗口控制">
+      <button className="win-ctrl" onClick={() => api.minimize?.()} title="最小化" aria-label="最小化">
+        <span className="remix ri-subtract-line"></span>
+      </button>
+      <button className="win-ctrl" onClick={() => api.maximize?.()} title={maximized ? '还原' : '最大化'} aria-label={maximized ? '还原' : '最大化'}>
+        <span className={`remix ${maximized ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line'}`}></span>
+      </button>
+      <button className="win-ctrl win-ctrl--close" onClick={() => api.close?.()} title="关闭" aria-label="关闭">
+        <span className="remix ri-close-line"></span>
+      </button>
+    </div>
+  )
+}
+
+export const Toolbar: React.FC = () => {
+  const appMode = useEditorStore((s: any) => s.appMode)
+  const openPanel = useEditorStore((s: any) => s.openPanel)
+  const showOutline = useEditorStore((s: any) => s.showOutline)
+  const showLibrary = useEditorStore((s: any) => s.showLibrary)
+  const showSearch = useEditorStore((s: any) => s.showSearch)
+  const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
+  const setShowOutline = useEditorStore((s: any) => s.setShowOutline)
+  const setShowLibrary = useEditorStore((s: any) => s.setShowLibrary)
+  const setShowSearch = useEditorStore((s: any) => s.setShowSearch)
+  const activeDocId = useEditorStore((s: any) => s.activeDocId)
+  const showWelcome = useEditorStore((s: any) => s.showWelcome)
+  const noDoc = showWelcome || activeDocId == null
+  const quickFormatButtons = useSettingsStore((s) => s.quickFormatButtons !== false)
+  const showToolbarLabels = useSettingsStore((s) => s.showToolbarLabels)
+  const aiPanelVisible = useAIStore((s) => s.panelVisible)
+
+  const flyout = useFlyout()
+  const { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
+  const tableActive = useTableActive()
+
+  const newBtnRef = useRef<HTMLButtonElement>(null)
+  const formatBtnRef = useRef<HTMLButtonElement>(null)
+  const supSubBtnRef = useRef<HTMLButtonElement>(null)
+  const tableBtnRef = useRef<HTMLButtonElement>(null)
+  const insertBtnRef = useRef<HTMLButtonElement>(null)
+  const modeBtnRef = useRef<HTMLButtonElement>(null)
+
+  const openAI = useCallback(() => {
+    const s = useAIStore.getState()
+    if (s.panelVisible) { s.hidePanel(); return }
+    // 带上当前选区作为上下文，AI 面板据此判断润色/改写范围
+    const facade = getEditorFacade()
+    const sel = facade ? (() => {
+      const range = facade.getSelection()
+      if (!range || range.from >= range.to) return ''
+      return facade.getText().slice(range.from, range.to)
+    })() : ''
+    s.showPanel('write', sel, { x: Math.max(8, window.innerWidth - 380), y: 120 })
+  }, [])
+
+  const onMenuAction = (action: string) => {
+    const key = flyout.key
+    flyout.close()
+    if (key === 'new') {
+      if (action === 'new') newDocument()
+      else if (action === 'openFolder') void openFolderDialog()
+    }
+    else if (key === 'format') formatAction(action)
+    else if (key === 'sup-sub') formatAction(action)
+    else if (key === 'table') tableAction(action)
+    else if (key === 'insert') insertAction(action)
+    else if (key === 'mode') modeAction(action)
+  }
+
+  return (
+    <>
+      <div className={`navtop toolbar${showToolbarLabels ? '' : ' toolbar-icon-only toolbar-hover-labels'}`}>
+        {/* ── Left ── */}
+        <div className="toolbar-group">
+          <button className="toolbar-btn" aria-label="文档库" onClick={() => setShowLibrary(!showLibrary)}>
+            <span className="remix toolbar-icon ri-archive-2-line"></span>
+            <span className="toolbar-label">文档库</span>
+          </button>
+          <div className="toolbar-menu-btn" onClick={() => flyout.open('new', newBtnRef.current)}>
+            <button ref={newBtnRef} aria-label="新建" className={`toolbar-btn ${flyout.isOpen('new') ? 'menu-open' : ''}`}>
+              <span className="remix toolbar-icon ri-file-add-line"></span>
+              <span className="toolbar-label">新建</span>
+              <span className="toolbar-menu-dot"></span>
+            </button>
+          </div>
+          <button className="toolbar-btn" aria-label="大纲" onClick={() => setShowOutline(!showOutline)}>
+            <span className="remix toolbar-icon ri-list-unordered"></span>
+            <span className="toolbar-label">大纲</span>
+          </button>
+          {quickFormatButtons && (
+            <button className="toolbar-btn" aria-label="查找" onClick={() => setShowSearch(!showSearch)}>
+              <span className="remix toolbar-icon ri-search-line"></span>
+              <span className="toolbar-label">查找</span>
+            </button>
+          )}
+        </div>
+
+        {/* ── Middle ── */}
+        <div className="toolbar-group toolbar-group--middle">
+          {quickFormatButtons && <>
+            <button className="toolbar-btn" aria-label="粗体" onClick={() => applyCmd('bold')}><span className="remix toolbar-icon ri-bold"></span><span className="toolbar-label">粗体</span></button>
+            <button className="toolbar-btn" aria-label="斜体" onClick={() => applyCmd('italic')}><span className="remix toolbar-icon ri-italic"></span><span className="toolbar-label">斜体</span></button>
+            <button className="toolbar-btn" aria-label="删除线" onClick={() => applyCmd('strikeThrough')}><span className="remix toolbar-icon ri-strikethrough"></span><span className="toolbar-label">删除线</span></button>
+            {/* 下划线/高亮 markdown 无法在 yeli 表达，按钮已移除（见 B3）。 */}
+          </>}
+
+          <div className="toolbar-menu-btn" onClick={() => flyout.open('format', formatBtnRef.current)}>
+            <button ref={formatBtnRef} aria-label="格式" className={`toolbar-btn format-btn ${flyout.isOpen('format') ? 'menu-open' : ''}`}>
+              <span className="remix toolbar-icon ri-text-wrap"></span>
+              <span className="toolbar-label">格式</span>
+              <span className="toolbar-menu-dot"></span>
+            </button>
+          </div>
+
+          <button className="toolbar-btn" aria-label="图片" onClick={() => formatAction('image')}>
+            <span className="remix toolbar-icon ri-image-line"></span><span className="toolbar-label">图片</span>
+          </button>
+          <button className="toolbar-btn" aria-label="链接" onClick={() => formatAction('link')}>
+            <span className="remix toolbar-icon ri-link"></span><span className="toolbar-label">链接</span>
+          </button>
+
+          <div className="toolbar-menu-btn" onClick={() => flyout.open('table', tableBtnRef.current)}>
+            <button ref={tableBtnRef} aria-label="表格" className={`toolbar-btn ${flyout.isOpen('table') ? 'menu-open' : ''}`}>
+              <span className="remix toolbar-icon ri-table-2"></span>
+              <span className="toolbar-label">表格</span>
+              <span className="toolbar-menu-dot"></span>
+            </button>
+          </div>
+
+          <div className="toolbar-menu-btn" onClick={() => flyout.open('insert', insertBtnRef.current)}>
+            <button ref={insertBtnRef} aria-label="插入" className={`toolbar-btn ${flyout.isOpen('insert') ? 'menu-open' : ''}`}>
+              <span className="remix toolbar-icon ri-add-circle-line"></span>
+              <span className="toolbar-label">插入</span>
+              <span className="toolbar-menu-dot"></span>
+            </button>
+          </div>
+
+          {/* 角标（上标/下标）放在「插入」右侧。 */}
+          {quickFormatButtons && (
+            <div className="toolbar-menu-btn" onClick={() => flyout.open('sup-sub', supSubBtnRef.current)}>
+              <button ref={supSubBtnRef} aria-label="角标" className={`toolbar-btn ${flyout.isOpen('sup-sub') ? 'menu-open' : ''}`}>
+                <span className="remix toolbar-icon ri-superscript"></span>
+                <span className="toolbar-label">角标</span>
+                <span className="toolbar-menu-dot"></span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Right ── */}
+        <div className="toolbar-group">
+          {quickFormatButtons && (
+            <button
+              className={`toolbar-btn${aiPanelVisible ? ' toolbar-btn--active' : ''}`}
+              onClick={openAI}
+              aria-label="AI 助手"
+            >
+              <span className="remix toolbar-icon ri-openai-fill"></span>
+              <span className="toolbar-label">AI</span>
+            </button>
+          )}
+          <div className="toolbar-menu-btn" onClick={() => flyout.open('mode', modeBtnRef.current)}>
+            <button ref={modeBtnRef} aria-label="模式" className={`toolbar-btn ${flyout.isOpen('mode') ? 'menu-open' : ''}`}>
+              <span className="remix toolbar-icon ri-eye-2-fill"></span>
+              <span className="toolbar-label">模式</span>
+              <span className="toolbar-menu-dot"></span>
+            </button>
+          </div>
+          <button className="toolbar-btn" aria-label="历史" onClick={() => useEditorStore.getState().setAppMode(appMode === 'history' ? 'edit' : 'history')} aria-current={appMode === 'history' ? 'page' : undefined}>
+            <span className="remix toolbar-icon ri-history-fill"></span>
+            <span className="toolbar-label">历史</span>
+          </button>
+          <button className="toolbar-btn" aria-label="导出" disabled={noDoc} onClick={() => setOpenPanel(openPanel === 'export' ? 'none' : 'export')}>
+            <span className="remix toolbar-icon ri-download-2-line"></span>
+            <span className="toolbar-label">导出</span>
+          </button>
+          <button className="toolbar-btn" aria-label="设置" onClick={() => setOpenPanel(openPanel === 'settings' ? 'none' : 'settings')}>
+            <span className="remix toolbar-icon ri-settings-3-fill"></span>
+            <span className="toolbar-label">设置</span>
+          </button>
+          <ElectronWindowControls />
+        </div>
+      </div>
+
+      {flyout.key && (
+        <ActionMenu
+          refEl={flyout.menuRef}
+          anchor={flyout.rect}
+          align="below"
+          items={
+            flyout.key === 'new' ? NEW_ITEMS
+            : flyout.key === 'format' ? FORMAT_ITEMS
+            : flyout.key === 'sup-sub' ? SUP_SUB_ITEMS
+            : flyout.key === 'table' ? applyTableItems(tableActive)
+            : flyout.key === 'insert' ? INSERT_ITEMS
+            : getModeItems(appMode)
+          }
+          onAction={onMenuAction}
+        />
+      )}
+    </>
+  )
+}

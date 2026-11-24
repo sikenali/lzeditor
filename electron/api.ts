@@ -1,0 +1,92 @@
+/**
+ * preload.ts 通过 contextBridge 暴露到 window.electronAPI 的接口。
+ *
+ * 放成 electron/ 下的 .ts（不是 .d.ts——electron/*.d.ts 是 tsc 的编译产物，被 gitignore 掉），
+ * 两边共用一份定义：渲染侧靠它消掉 (window as any).electronAPI，preload.ts 靠它
+ * 保证暴露出来的方法名没打错。改这里必须同步 preload.ts 暴露的字段。
+ */
+
+export interface ReadLocalFileResult {
+  ok: boolean
+  text?: string
+  name?: string
+  error?: string
+}
+
+export interface GitCommitInfo {
+  oid: string
+  message: string
+  author: string
+  /** epoch ms */
+  ts: number
+  changes: number
+}
+
+export interface GitHistoryResult {
+  ok: boolean
+  repoRoot?: string
+  gitPath?: string
+  commits?: GitCommitInfo[]
+  error?: string
+}
+
+export interface GitShowResult {
+  ok: boolean
+  text?: string
+  error?: string
+}
+
+export interface ElectronAPI {
+  // ── 无边框窗口的自绘标题栏用 ──
+  minimize: () => void
+  maximize: () => void
+  close: () => void
+  isMaximized: () => Promise<boolean>
+
+  // ── 菜单事件：ipcRenderer.on 的包装。渲染侧订阅后必须调 offMenu* 成对解绑，
+  // 否则 StrictMode 重挂会叠出重复监听。onMenu* 的返回值不用。 ──
+  onMenuNew: (callback: () => void) => void
+  onMenuOpen: (callback: () => void) => void
+  onMenuExport: (callback: () => void) => void
+  onMenuOpenFile: (callback: (filePath: string) => void) => () => void
+  offMenuNew: (callback: () => void) => void
+  offMenuOpen: (callback: () => void) => void
+  offMenuExport: (callback: () => void) => void
+  readLocalFile: (filePath: string) => Promise<ReadLocalFileResult>
+
+  // ── Git 历史（isomorphic-git，跑主进程；授权复用 file:read 的 isAllowedPath）──
+  gitHistory: (filePath: string) => Promise<GitHistoryResult>
+  gitShow: (filePath: string, oid: string) => Promise<GitShowResult>
+  /** 文件选择器导入后登记磁盘路径进主进程授权集合。 */
+  gitAuthorize: (filePath: string) => Promise<{ ok: boolean }>
+
+  // ── Ctrl+S 保存历史（Electron 打包态 file:// 无法走 /api 代理，改 IPC 落盘）──
+  versionsSave: (payload: { docId: string; md: string; html: string; changes: number }) => Promise<{
+    ok: boolean
+    version?: {
+      id: string; docId: string; md: string; html: string; changes: number
+      ts: number; date: string; time: string; desc: string; source: 'local'
+    }
+    error?: string
+  }>
+  versionsList: (docId: string) => Promise<{
+    ok: boolean
+    versions?: Array<{
+      id: string; docId: string; md: string; html: string; changes: number
+      ts: number; date: string; time: string; desc: string; source: 'local'
+    }>
+    error?: string
+  }>
+  /** File 对象 → 真实磁盘路径（webUtils.getPathForFile，File.path 已弃用）。 */
+  getPathForFile: (file: File) => string
+
+  // ── 把渲染侧的行为设置同步给主进程（托盘图标、关窗即退）──
+  sendSettings: (settings: Record<string, unknown>) => void
+
+  // ── 插件托盘项（纯增量：渲染侧登记插件菜单项，主进程追加到托盘菜单）──
+  setPluginTrayItems: (items: Array<{ id: string; label: string }>) => void
+  /** 托盘插件项被点击：回调收到插件项 id，返回解绑函数。 */
+  onPluginTrayItem: (callback: (id: string) => void) => () => void
+
+  platform: NodeJS.Platform
+}

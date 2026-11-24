@@ -1,0 +1,154 @@
+import React from 'react'
+import { useEditorStore } from '../../store/editorStore'
+
+interface DocNode {
+  id: string
+  title: string
+  path: string
+  libraryId?: string
+  children?: DocNode[]
+  gitPath?: string
+  isFromGit?: boolean
+  isDoc?: boolean
+  system?: boolean
+}
+
+function buildTree(docs: any[]): DocNode[] {
+  const root: Record<string, DocNode> = {}
+  const result: DocNode[] = []
+  for (const doc of docs) {
+    const parts = (doc.path || '').split('/').filter(Boolean)
+    let currentArr = result
+    let currentKey = ''
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+      const key = i === 0 ? part : `${currentKey}/${part}`
+      let node = root[key]
+      if (!node) {
+        node = { id: `folder-${key.replace(/\//g, '-')}`, title: part, path: parts.slice(0, i + 1).join('/'), children: [] }
+        root[key] = node
+        currentArr.push(node)
+      }
+      currentKey = key
+      currentArr = node.children!
+    }
+    const docNode: DocNode = {
+      id: doc.id, title: doc.title, path: doc.path,
+      libraryId: doc.libraryId, gitPath: doc.gitPath, isFromGit: doc.isFromGit,
+      isDoc: true, system: doc.system,
+    }
+    currentArr.push(docNode)
+  }
+  return result
+}
+
+export const LibraryTree: React.FC<{
+  nodes: DocNode[]
+  expandedFolders: Record<string, boolean>
+  onToggleFolder: (id: string) => void
+  onSelectDoc?: (id: string) => void
+  renameTargetKey?: string | null
+  onRenameFolder?: (node: DocNode) => void
+  onRenameCommit?: (key: string, newName: string) => void
+  renameableTitles?: string[]
+  searchActive?: boolean
+}> = ({ nodes, expandedFolders, onToggleFolder, onSelectDoc, renameTargetKey, onRenameFolder, onRenameCommit, renameableTitles, searchActive }) => {
+  const activeDocId = useEditorStore((s) => s.activeDocId)
+
+  const renderNode = (node: DocNode, depth: number): React.ReactNode => {
+    // 不能只靠 id 前缀判断：内置文档（readme）的 id 不是 doc- 开头，
+    // 会被误判成文件夹而点开就没了。
+    const isFolder = !(node.isDoc || node.id.startsWith('doc-'))
+    const hasChildren = isFolder && node.children && node.children.length > 0
+    const isExpanded = expandedFolders[node.id]
+    // 之前写成 node.id === docs.find(d => d.id === node.id)?.id，右边永远等于 node.id，
+    // 于是每个文档都亮成"当前打开"，用户在树里根本看不出自己看的是哪篇。
+    const isActive = !isFolder && node.id === activeDocId
+
+    if (isFolder) {
+      // 文件夹条目镜像文档条目的 div 结构——里面要嵌重命名按钮，
+      // button 里不能再套 button
+      const isRenaming = renameTargetKey === node.id
+      return (
+        <div key={node.id}>
+          <div
+            className={`library-tree-item ${isExpanded ? 'expanded' : ''}`}
+            style={{ paddingLeft: `${depth * 16 + 12}px` }}
+            onClick={() => onToggleFolder(node.id)}
+          >
+            <span className={`remix ${isExpanded ? 'ri-arrow-down-s-line' : 'ri-arrow-right-s-line'} tree-arrow`}></span>
+            <span className={`remix ${isExpanded ? 'ri-folder-open-fill' : 'ri-folder-fill'} tree-icon`}></span>
+            {isRenaming ? (
+              <input
+                className="library-folder-rename-input"
+                defaultValue={node.title}
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  const name = e.target.value.trim()
+                  onRenameCommit?.(node.id, name || node.title)
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+              />
+            ) : (
+              <>
+                <span className="tree-label">{node.title}</span>
+                {/* 只有标题能映射到文档库的文件夹（顶层路径分组）才可重命名——
+                    嵌套子文件夹不显示按钮，否则点了没反应 */}
+                {onRenameFolder && renameableTitles?.includes(node.title) && (
+                  <button
+                    type="button"
+                    className="tree-rename-btn"
+                    title="重命名"
+                    onClick={(e) => { e.stopPropagation(); onRenameFolder(node) }}
+                  >
+                    <span className="remix ri-edit-line"></span>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+          {isExpanded && hasChildren && (
+            <div className="tree-children">{node.children!.map(c => renderNode(c, depth + 1))}</div>
+          )}
+        </div>
+      )
+    }
+    return (
+      <div
+        key={node.id}
+        className={`library-tree-item doc-item${isActive ? ' active' : ''}`}
+        style={{ paddingLeft: `${depth * 16 + 28}px` }}
+        onClick={() => onSelectDoc?.(node.id)}
+      >
+        <span className="tree-dot"></span>
+        <span className={`remix ${node.isFromGit ? 'ri-git-repository-line' : 'ri-file-text-line'} tree-icon`}></span>
+        <span className="tree-label">{node.title}</span>
+        {node.isFromGit && <span className="tree-git-badge">git</span>}
+      </div>
+    )
+  }
+
+  if (searchActive && nodes.length === 0) {
+    return (
+      <div className="library-empty-state compact">
+        <span className="remix ri-file-text-line library-empty-icon"></span>
+        <div className="library-empty-title">暂无搜索结果</div>
+      </div>
+    )
+  }
+
+  if (!searchActive && nodes.length === 0) {
+    return (
+      <div className="library-empty-state compact">
+        <span className="remix ri-file-text-line library-empty-icon"></span>
+        <div className="library-empty-title">暂无文档</div>
+      </div>
+    )
+  }
+
+  return <>{nodes.map(n => renderNode(n, 0))}</>
+}
+
+export { buildTree }
+export type { DocNode }

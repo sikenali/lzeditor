@@ -1,0 +1,74 @@
+/* CodeMirror 6 source editor theme, scoped to .code-editor-shell.
+   Colors come from the app token system (tokens.css --color-*), so the editor
+   follows parchment/dark themes via hooks/useTheme.ts. The shell mirrors the
+   old yeli canvas layout vars (--document-width set inline by CodeEditor.tsx). */
+
+.code-editor-shell {
+  height: 100%;
+  /* 作为 .app-main（display:flex）的子项必须撑满剩余宽度，否则按内容（--document-width）
+     收缩，滚动条停在 1024px 边界、右侧留白，看起来像多了一个「滚动区域」。
+     min-width:0 让分屏（编辑器+预览）时编辑器能收缩到 1024px 以内。 */
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  --document-gutter: 96px;
+  --document-width: 1024px;
+}
+
+.code-editor-shell .cm-editor {
+  height: 100%;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.code-editor-shell .cm-scroller {
+  overflow: auto;
+  font-family: var(--cm-font-family, var(--font-mono, ui-monospace, monospace));
+  font-size: var(--cm-font-size, 14px);
+  line-height: var(--cm-line-height, 1.7);
+}
+
+.code-editor-shell .cm-content {
+  padding: 24px var(--document-gutter);
+  max-width: var(--document-width);
+  margin: 0 auto;
+  caret-color: var(--color-text-primary);
+}
+
+.code-editor-shell .cm-line {
+  text-indent: var(--cm-text-indent, 0);
+  text-align: var(--cm-text-justify, start);
+}
+
+.code-editor-shell .cm-gutters {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-right: 1px solid var(--color-border-soft, var(--color-border));
+  /* 视觉上平移到正文左缘（偏移由 CodeEditor 按内容列宽计算）；只做 transform，
+     不改 CM6 的 flex 布局，行号仍随文档垂直滚动。 */
+  transform: translateX(var(--cm-gutter-shift, 0px));
+}
+
+.code-editor-shell .cm-activeLine {
+  background: var(--color-bg-secondary, transparent);
+}
+
+.code-editor-shell .cm-cursor {
+  border-left-color: var(--color-primary);
+}
+
+.code-editor-shell .cm-selectionBackground,
+.code-editor-shell .cm-content ::selection {
+  background: var(--color-primary-soft, var(--color-primary));
+}
+
+/* Focus mode: dim every line except the active one (highlightActiveLine()).
+   Only applies while the editor has focus (focusout clears the class). */
+.code-editor-shell .cm-editor.cm-focus-mode .cm-line:not(.cm-activeLine) {
+  opacity: 0.4;
+}
+
+/* Markdown syntax tokens (lezer-highlight default style mapped to tokens). */
+.code-editor-shell .cm-line {
+  color: var(--color-text-primary);
+}

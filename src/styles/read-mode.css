@@ -1,0 +1,485 @@
+
+.read-mode-label  {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+/* ── Article body ── */
+.read-mode-body  {
+  flex: 1; overflow: hidden;
+  display: flex; flex-direction: row;
+  background: var(--bg-primary);
+}
+.read-article  {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ── Article header ── */
+.read-tag  {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+}
+.read-tag-tech  {
+  background: var(--success-bg);
+  color: var(--accent-primary);
+  border: 0.7px solid var(--success-border);
+}
+
+/* ── Article body content ── */
+/* 字号 / 行高 / 字体由 applyTypographyOverrides 折算成 --read-* 写进 :root，
+   编辑区、侧栏预览、阅读模式、导出四处共用同一组变量。回退值统一用无衬线栈。 */
+.read-article-body  {
+  margin-top: 32px;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.read-article-body,
+.preview-doc  {
+  font-size: var(--read-font-size, inherit);
+  line-height: var(--read-line-height, 1.7);
+  font-family: var(--read-font-family, var(--font-sans));
+}
+/* 模式显示重构：正文行高统一 27.33px，覆盖设置管线（上一规则仍消费 --read-line-height，
+   不写成死变量），使预览/阅读正文与编辑内容测度一致、非默认设置下不分叉。 */
+.read-article-body,
+.preview-doc  {
+  line-height: var(--read-line-height, 27.33px);
+}
+.read-article-body h1  {
+  font-size: 28px; font-weight: 700; color: var(--text-heading);
+  margin: 0 0 20px 0; padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-subtle);
+}
+.read-article-body h2  {
+  font-size: 22px; font-weight: 600; color: var(--text-heading-2);
+  margin: 36px 0 12px 0;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-sans);
+}
+.read-article-body h2::before  {
+  content: '';
+  width: 31px; height: 3px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.read-article-body h3  {
+  font-size: 18px; font-weight: 600; color: var(--text-heading-2);
+  margin: 28px 0 12px 0;
+  font-family: var(--font-sans);
+}
+.read-article-body p  { margin: 0 0 18px; color: var(--text-secondary); }
+/* 「首行缩进」「两端对齐」由 applyTypographyOverrides 写入 :root，此前没有任何规则消费 */
+.read-article-body p,
+.preview-doc p  {
+  text-indent: var(--read-text-indent, 0);
+  text-align: var(--read-text-align, left);
+}
+.read-article-body ul,
+.read-article-body ol  { margin: 0 0 18px; padding-left: 24px; }
+.read-article-body li  { margin: 6px 0; color: var(--text-secondary); }
+.read-article-body a  { color: var(--accent-primary); text-decoration: none; }
+.read-article-body a:hover  { text-decoration: underline; }
+.read-article-body img  { max-width: 100%; border-radius: 10px; margin: 16px 0; }
+.read-article-body hr  {
+  border: none; height: 1px;
+  background: var(--border-subtle);
+  margin: 28px 0;
+}
+.read-article-body strong  { color: var(--text-primary); }
+.read-article-body em  { color: var(--text-secondary); }
+
+/* Blockquote */
+.read-article-body blockquote  {
+  display: flex; align-items: flex-start; gap: 16px;
+  background: var(--background-quote);
+  border-left: 3px solid var(--accent-primary);
+  padding: 20px 24px;
+  border-radius: 0 12px 12px 0;
+  margin: 24px 0;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-family: var(--read-font-family, var(--font-sans));
+  line-height: 1.7;
+}
+.read-article-body blockquote::before  {
+  content: '\f143';
+  font-family: 'remixicon';
+  font-size: 20px;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Code */
+.read-article-body code  {
+  background: var(--background-code);
+  padding: 2px 8px; border-radius: 5px;
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--accent-primary);
+  border: 0.7px solid var(--border-subtle);
+}
+.read-article-body pre  {
+  background: var(--background-code);
+  border: 0.7px solid var(--border-subtle);
+  border-radius: 10px;
+  margin: 24px 0;
+  overflow: hidden;
+}
+.read-article-body pre code  {
+  background: none; padding: 0; border: none;
+  color: var(--text-primary); font-size: 13px;
+  display: block; padding: 16px 20px;
+  overflow-x: auto;
+}
+.read-article-body pre .read-code-lang-label  {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 0.7px solid var(--border-subtle);
+  font-size: 12px; color: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+/* Table */
+.read-article-body table  {
+  width: 100%; border-collapse: collapse; margin: 20px 0;
+  border-radius: 8px; overflow: hidden;
+  border: 0.7px solid var(--border-input);
+}
+.read-article-body th  {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  font-weight: 600; padding: 10px 14px;
+  border: 0.7px solid var(--border-input);
+  text-align: left; font-size: 13px;
+}
+.read-article-body td  {
+  padding: 10px 14px;
+  border: 0.7px solid var(--border-input);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.read-article-body tr:hover td  { background: var(--accent-a5); }
+
+/* Strikethrough */
+.read-article-body s, .read-article-body del  { color: var(--text-muted); }
+
+/* ── Tool buttons ── */
+.read-tool-btn  {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 8px;
+  border: 0.7px solid var(--border-subtle);
+  background: var(--background-elevated); color: var(--text-secondary);
+  font-size: 12px; cursor: pointer; transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast);
+  font-family: var(--font-sans);
+}
+.read-tool-btn:hover  { border-color: var(--accent-primary); color: var(--accent-primary); }
+.read-tool-btn.active  { background: var(--accent-a10); border-color: var(--accent-primary); color: var(--accent-primary); }
+.font-size-value  {
+  font-size: 11px; color: var(--text-muted);
+  min-width: 22px; text-align: center;
+  font-family: var(--font-mono);
+  user-select: none;
+}
+.read-edit-now-btn .remix  { font-size: 14px; }
+
+.read-mode-body  {
+  background: var(--bg-primary);
+}
+
+@keyframes version-panel-in  {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.version-action-btn .remix  { font-size: 18px; color: rgba(51, 51, 51, 1); line-height: 1; }
+.version-action-btn:hover .remix  { color: rgba(51, 51, 51, 1); }
+.version-bar.active .version-bar-body  {
+  width: 30px;
+  border-color: rgba(26, 115, 232, 1);
+  border-width: 2px;
+  background: rgba(255, 255, 255, 1);
+}
+.version-bar.active .version-bar-base  {
+  background: rgba(26, 115, 232, 1);
+}
+.version-bar.active .version-bar-label  {
+  color: rgba(26, 115, 232, 1);
+  font-weight: 400;
+}
+.version-meta-item .remix  {
+  font-size: 12px;
+  color: var(--accent-primary);
+}
+
+.main-read-header  {
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+/* ── Floating Nav Buttons ── */
+.main-nav-float  {
+  /* 浮导航：绝对悬浮于阅读区底部（工具栏「显示/隐藏」按钮正上方）、水平居中，
+     悬浮在阅读内容之上（不占 flex 流，隐藏时无空隙）。read-mode-body 是定位上下文。 */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(var(--bg-rgb), 0.72);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 0.6px solid var(--color-border-soft);
+  border-radius: 8px;
+  padding: 16px 0;
+  z-index: 100;
+  visibility: visible;
+  transition: opacity var(--t-base) var(--ease), visibility 0s;
+}
+.main-nav-float.nav-hidden  {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* visibility 延迟到 opacity 淡出结束后再翻 hidden：既保留淡出动画，
+     又彻底停掉 nav-float-btn 的 backdrop-filter 白雾泄漏（opacity 压不住它）。 */
+  transition: opacity var(--t-base) var(--ease), visibility 0s linear var(--t-base);
+}
+
+.nav-float-btn  {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0.6px solid rgba(204, 204, 204, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: transparent;
+  color: rgba(51, 51, 51, 0.72);
+  box-shadow: none;
+  transition: background-color, color, border-color, box-shadow, opacity, transform var(--t-fast) var(--ease);
+}
+.nav-float-btn:hover  {
+  transform: translateY(-2px) scale(1.08);
+  background: transparent;
+  border-color: rgba(204, 204, 204, 0.55);
+  color: rgba(51, 51, 51, 0.95);
+  box-shadow: var(--color-popover-shadow);
+}
+.nav-float-btn:active  { transform: translateY(0) scale(0.96); }
+@keyframes main-version-in  {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.main-version-btn .remix  { font-size: 14px; color: var(--text-muted); }
+.main-version-btn:hover .remix  { color: var(--text-secondary); }
+.main-version-bar.active .main-version-bar-body  {
+  width: 30px;
+  border-color: var(--accent-primary);
+  background: #fff;
+}
+.main-version-bar.active .main-version-bar-base  {
+  background: var(--accent-primary);
+}
+.main-version-bar.active .main-version-bar-label  {
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+.main-version-meta .remix  {
+  font-size: 12px;
+  color: var(--accent-primary);
+}
+
+/* ── Inline read mode enhancements ── */
+.read-mode-inline  {
+  animation: readSlideIn var(--t-slow) var(--ease);
+}
+@keyframes readSlideIn  {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Read Mode Code textarea (used in code-mode layout) ── */
+
+/* ===== 由 [data-theme] 覆写迁移而来（见 AGENT.md §7） ===== */
+.inline-preview-wrapper  {
+  background: var(--t-bg-24);
+}
+
+.version-action-btn .remix  {
+  color: var(--t-fg-14);
+}
+
+.version-bar.active .version-bar-body  {
+  background: var(--t-bg-28);
+}
+
+.nav-float-btn  {
+  border-color: var(--t-bd-13); color: var(--t-fg-20); box-shadow: none;
+}
+
+.nav-float-btn:hover  {
+  border-color: var(--t-bd-14); color: var(--t-fg-21); box-shadow: var(--t-sh-9);
+}
+
+/* ── 双联页阅读模式 ──────────────────────────────────────────── */
+
+.read-book  {
+  flex: 1; min-height: 0; min-width: 0;
+  display: flex; flex-direction: column;
+  padding: 12px 20px 6px;
+  background: var(--bg-primary);
+}
+
+.read-book-scene  {
+  flex: 1; min-height: 0;
+  position: relative;
+  display: flex;
+  perspective: 1400px;
+  overflow: hidden;
+}
+
+/* 整版固定宽，不用 1fr：测量容器的宽度必须跟渲染出来的宽度是同一个数 */
+.read-spread  {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-columns: var(--read-page-w, 400px) 24px var(--read-page-w, 400px);
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+.read-page  {
+  box-sizing: border-box;
+  padding: 28px;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--background-elevated);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+.read-page--left  { border-radius: 4px 2px 2px 4px; }
+.read-page--right  { border-radius: 2px 4px 4px 2px; }
+
+/* 书脊：两页中间一道渐隐的缝 */
+.read-spine  { position: relative; }
+.read-spine::before  {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 24px; transform: translateX(-12px);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--border-default) 45%,
+    var(--border-default) 55%,
+    transparent 100%);
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* 页内容沿用文章排版；margin 归零，否则页高要减掉这段 */
+.read-page > .read-article-body  { margin: 0; }
+
+/* 测量容器：吃同一套排版类、同一个净宽，量出的槽位高就是渲染出来的高 */
+.read-measure-probe  {
+  position: absolute;
+  left: -10000px; top: 0;
+  margin: 0; padding: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 翻页动画：只动 transform 和 opacity，两个都在合成层。
+   时长走 token；leaving 节点靠 animationend 摘除，JS 不需要同步一份计时。 */
+.read-spread--enter  { animation: read-spread-in-right var(--t-slow) var(--ease-out) both; }
+/* 翻起的页必须压在下面那版上面，否则半透明的新页会盖住它，翻着看是双重像 */
+.read-spread--leaving  { pointer-events: none; z-index: 1; }
+/* 新页绕书脊边转，和刚才翻走的那页在同一个轴上 */
+.read-spread--enter.r-from-right  { animation-name: read-spread-in-right; transform-origin: left center; }
+.read-spread--enter.r-from-left  { animation-name: read-spread-in-left; transform-origin: right center; }
+
+.read-spread--leaving.r-dir-1 .read-page--right  {
+  animation: read-turn-out-left var(--t-slow) var(--ease-in-out) both;
+  transform-origin: left center;
+}
+.read-spread--leaving.r-dir-neg1 .read-page--left  {
+  animation: read-turn-out-right var(--t-slow) var(--ease-in-out) both;
+  transform-origin: right center;
+}
+/* 留守页和书脊先让位：跟翻页同时跑完会跟它抢注意力 */
+.read-spread--leaving.r-dir-1 .read-page--left,
+.read-spread--leaving.r-dir-neg1 .read-page--right  {
+  animation: read-fade-out var(--t-fast) var(--ease-out) both;
+}
+.read-spread--leaving .read-spine  {
+  animation: read-fade-out var(--t-fast) var(--ease-out) both;
+}
+
+/* 残留的旋角沿用翻页那一条的符号：右页往左翻是 -90，进入版就是 -6 的余量 */
+@keyframes read-spread-in-right  {
+  from { transform: translateX(24px) rotateY(-6deg); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes read-spread-in-left  {
+  from { transform: translateX(-24px) rotateY(6deg); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes read-turn-out-left  { to { transform: rotateY(-90deg); opacity: 0; } }
+@keyframes read-turn-out-right  { to { transform: rotateY(90deg); opacity: 0; } }
+@keyframes read-fade-out  { to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce)  {
+  .read-spread--enter,
+  .read-spread--leaving .read-page,
+  .read-spread--leaving .read-spine  { animation: none !important; }
+}
+
+/* ── 翻页页脚 ── */
+.read-book-footer  {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 8px 0 2px;
+}
+.read-page-indicator  {
+  font-size: 12px; color: var(--text-muted);
+  font-family: var(--font-mono);
+  min-width: 80px; text-align: center;
+  user-select: none;
+}
+.read-progress-dots  { display: flex; align-items: center; gap: 5px; }
+.read-progress-dot  {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border-default);
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+.read-progress-dot.active  {
+  background: var(--accent-primary);
+  transform: scale(1.3);
+}
+.read-progress-bar  {
+  width: 120px; height: 3px; border-radius: 2px;
+  background: var(--border-default);
+  overflow: hidden;
+}
+.read-progress-fill  {
+  display: block; height: 100%;
+  background: var(--accent-primary); border-radius: 2px;
+  transition: width var(--t-fast);
+}
+.read-tool-btn:disabled  {
+  opacity: .4; cursor: default;
+  border-color: var(--border-subtle);
+  color: var(--text-muted);
+}
+
+/* ── DESIGN.md §10.3：深色下 version 时间线不得亮蓝/白 ── */
+[data-theme="dark"] .version-bar.active .version-bar-body  {
+  border-color: var(--accent-primary);
+  background: var(--color-bg-secondary);
+}

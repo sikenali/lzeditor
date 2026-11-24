@@ -1,0 +1,11 @@
+{
+  "name": "lzeditor-server",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

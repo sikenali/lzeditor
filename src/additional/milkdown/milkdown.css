@@ -1,0 +1,95 @@
+/* Milkdown 7 WYSIWYG editor, scoped to .textus-editor-shell — the wrapper the
+   WYSIWYG actually renders (TextusPreview.tsx), which is also the scope the
+   vendored Textus editor CSS is scoped to.
+
+   This file supplies only the editor's *layout*: the shell sizing, the
+   document scroller, and the centered content column — the same
+   document-width/gutter vars as the CodeMirror shell in code-editor.css, so
+   both editor modes size the document the same. The document's own look
+   (fonts, colours, headings, code, links, tables) comes from the vendored
+   content-base.css / content-themes.css / milkdown-theme.css, which already
+   style .milkdown and its elements under this same scope; those live in a
+   cascade layer and stay authoritative, so nothing here re-colours the
+   document. */
+
+.textus-editor-shell {
+  height: 100%;
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
+  --document-gutter: 96px;
+  --document-width: 1024px;
+  /* 正文尺度跟随编辑设置；默认按 Textus 的阅读尺度（16px/1.8），
+     而不是把文档钉死在 14px——14px 在 690px 行宽下过小、标题也显得没层级。 */
+  --doc-font-size: var(--cm-font-size, 16px);
+  --doc-line-height: var(--cm-line-height, 1.8);
+}
+
+/* The Milkdown root (the document scroller): fills the shell and scrolls. */
+.textus-editor-shell [data-milkdown-root] {
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── WYSIWYG 行号栏（优化 #28）：挨着内容列左缘的源码行号 ──
+   内容列（.ProseMirror）居中 max-width:1024px + 左右 96px gutter；行号栏
+   定位到「内容文本左缘 - 34px 宽 - 7px 间隙」，与 CM6 gutter 对齐基线一致。 */
+.milkdown-line-gutter {
+  position: absolute;
+  /* 窄窗口/分屏时内容列小于 1024px，calc 会变成负数把行号整条推到视口外；
+     clamp 到 0 保证行号栏始终可见（内容列左侧 96px padding 内仍有空间）。 */
+  left: max(0px, calc(50% - var(--document-width) / 2 + var(--document-gutter) - 41px));
+  top: 0;
+  bottom: 0;
+  width: 34px;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.milkdown-line-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: right;
+  padding-right: 7px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  opacity: 0.72;
+}
+
+.textus-editor-shell .milkdown {
+  height: 100%;
+  overflow: auto;
+  background: var(--doc-bg);
+}
+
+/* The content column: mirrors .cm-content in code-editor.css — the same
+   max-width, gutter and centering. Font, size and colour inherit from the
+   vendored .milkdown rule (via the --doc-* tokens above). */
+.textus-editor-shell .milkdown .ProseMirror {
+  max-width: var(--document-width);
+  margin: 0 auto;
+  padding: 24px var(--document-gutter);
+  caret-color: var(--color-text-primary);
+  outline: none;
+  min-height: 100%;
+}
+
+/* Selected text: the vendored CSS doesn't set one, so use the app accent. */
+.textus-editor-shell .milkdown .ProseMirror ::selection,
+.textus-editor-shell .milkdown .ProseMirror .selection {
+  background: var(--color-primary-soft, var(--color-primary));
+}
+
+/* Placeholder (empty paragraph hint) */
+.textus-editor-shell .milkdown .ProseMirror p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

@@ -1,0 +1,240 @@
+export interface ApiKeyEntry {
+  id: string
+  provider: string
+  model: string
+  modelName: string
+  key: string
+  enabled: boolean
+  endpoint?: string
+  format?: 'openai' | 'anthropic'
+}
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+export type AIAction = 'rewrite' | 'polish' | 'continue' | 'summarize' | 'translate' | 'question' | null
+
+export interface ApplyRecord {
+  id: string
+  timestamp: number
+  action: AIAction
+  originalText: string
+  newText: string
+  position: { from: number; to: number }
+}
+
+/** 聊天式 AI 面板的四个模式。 */
+export type AIMode = 'write' | 'review' | 'create' | 'research'
+
+/** 聊天式 AI 面板中的一条消息。 */
+export interface ChatEntry {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  mode: AIMode
+  action?: AIAction
+  status?: 'streaming' | 'done' | 'error' | 'applied' | 'idle'
+  error?: string
+  applied?: boolean
+  applyRecord?: ApplyRecord
+}
+
+
+export interface DocVersion {
+  id: string
+  time: string
+  date: string
+  desc: string
+  changes: number
+  html: string
+  md: string
+  /** epoch ms：本地=快照时刻；git=commit 时间戳*1000。合并时间线按此倒序。 */
+  ts: number
+  /** 来源：本地编辑快照或 git 提交。 */
+  source: 'git' | 'local'
+  gitPath?: string
+  isFromGit?: boolean
+}
+
+export interface EditorStoreState {
+  docTitle: string
+  docPath: string
+  docHTML: string
+  wordCount: number
+  charCount: number
+  cursorPosition: { line: number; column: number }
+  isPreview: boolean
+  syncStatus: 'synced' | 'saving' | 'error'
+  openPanel: 'none' | 'library' | 'history' | 'settings' | 'export'
+  insertPanel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart'
+  panelOpen: boolean
+   showOutline: boolean
+   showPreview: boolean
+  showLibrary: boolean
+  showRightPanel: boolean
+  statusbarCollapsed: boolean
+   showSearch: boolean
+   searchFocus: 'query' | 'replace'
+  codeMode: boolean
+  appMode: 'edit' | 'code' | 'style' | 'history' | 'read'
+  codeModeCursor: number
+  docLibraries: Array<{ id: string; name: string }>
+  activeLibraryId: string
+  previewWidth: number
+  previewMode: 'render' | 'code'
+  mdContent: string
+  readLayout: 'narrow' | 'normal' | 'wide'
+  readFontSize: number
+  activeTocId: string
+  versionsByDoc: Record<string, DocVersion[]>
+  setTitle: (title: string) => void
+  setWordCount: (count: number) => void
+  setCharCount: (count: number) => void
+  setCursorPosition: (pos: { line: number; column: number }) => void
+  setDocHTML: (html: string) => void
+  setPreview: (isPreview: boolean) => void
+  setSyncStatus: (status: 'synced' | 'saving' | 'error') => void
+  setOpenPanel: (panel: 'none' | 'library' | 'history' | 'settings' | 'export') => void
+  setInsertPanel: (panel: 'none' | 'image' | 'link' | 'code' | 'formula' | 'table' | 'emoji' | 'chart') => void
+   setShowOutline: (showOutline: boolean) => void
+   setShowPreview: (showPreview: boolean) => void
+   setShowLibrary: (showLibrary: boolean) => void
+  setShowRightPanel: (showRightPanel: boolean) => void
+  setShowSearch: (showSearch: boolean) => void
+  setSearchFocus: (searchFocus: 'query' | 'replace') => void
+  setStatusbarCollapsed: (statusbarCollapsed: boolean) => void
+  setCodeMode: (codeMode: boolean) => void
+  setAppMode: (mode: 'edit' | 'code' | 'style' | 'history' | 'read') => void
+  createLibrary: (name: string) => string
+  setActiveLibrary: (id: string) => void
+  setPreviewWidth: (width: number) => void
+  setPreviewMode: (previewMode: "render" | "code") => void
+  togglePreviewMode: () => void
+  setMdContent: (md: string) => void
+  setReadLayout: (layout: 'narrow' | 'normal' | 'wide') => void
+  setReadFontSize: (fontSize: number) => void
+  setActiveTocId: (id: string) => void
+  setEditorRef: (ref: HTMLDivElement | null) => void
+  setEditorContentRef: (ref: HTMLDivElement | null) => void
+  editorRef: HTMLDivElement | null
+  editorContentRef: HTMLDivElement | null
+  addVersion: (docId: string, version: DocVersion) => void
+  /** 从 localStorage 播种某文档的本地快照（打开历史面板时调用）。 */
+  hydrateVersions: (docId: string) => void
+  /** 用后端返回的 Ctrl+S 保存历史覆写（时间升序、截断到上限）。 */
+  setDocVersions: (docId: string, versions: DocVersion[]) => void
+  lastEditTime: number
+  setLastEditTime: (time: number) => void
+  // 首次启动的欢迎页（每次浏览器会话只显示一次）
+  showWelcome: boolean
+  setShowWelcome: (showWelcome: boolean) => void
+  // multi-tab
+  docs: Array<{ id: string; title: string; path: string; libraryId?: string; diskPath?: string }>
+  activeDocId: string | null
+  createDoc: (title?: string, path?: string, libraryId?: string, diskPath?: string) => string
+  switchDoc: (id: string) => void
+  closeDoc: (id: string) => void
+  // 把内置文档（readme）还原成出厂内容：清掉本地覆盖，重读内置 md
+  resetDocContent: (id: string) => void
+  docsMd: Record<string, string>
+  setDocsMd: (mds: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void
+  updateDoc: (params: { md?: string; html?: string; docsMd?: Record<string, string> }) => void
+}
+
+export type SettingsGroup = 'theme' | 'ai' | 'profile' | 'about'
+
+export interface SettingsState {
+  temperature: number
+  maxTokens: number
+  apiKeys: ApiKeyEntry[]
+  selectedModelId: string
+  theme: 'parchment' | 'dark'
+  accentColor: string
+  activeGroup: SettingsGroup
+  subTab?: string
+  // ── Editor layout ──
+  editorFont?: string
+  defaultFontSize?: number
+  lineHeight?: '1.0' | '1.5' | '1.7' | '2.0'
+  contentWidth?: '760' | '960' | '1024' | '1200' | '1280'
+  typewriterMode?: boolean
+  focusMode?: boolean
+  previewModeEnabled?: boolean
+  // ── Navigation layout ──
+  navMode?: 'top' | 'left'
+  /** 代码模式分栏：左栏（源码）占整宽的比重，0..1 */
+  codeSplitRatio?: number
+  // ── Toolbar ──
+  quickFormatButtons?: boolean
+  showToolbarLabels?: boolean
+  // ── Startup / app behavior ──
+  enableTabs?: boolean
+  showTrayIcon?: boolean
+  reopenLastDoc?: boolean
+  openInNewWindow?: boolean
+  quitWhenAllWindowsClosed?: boolean
+  // ── Localization ──
+  enableSpellCheck?: boolean
+  spellCheckLang?: string
+  allowMarkdownSymbols?: boolean
+  autoCompleteMarkdownPairs?: boolean
+  smartQuotes?: boolean
+  autoSpaceCJK?: boolean
+  cornerQuotes?: boolean
+  fullwidthSymbols?: boolean
+  showLineNumbers?: boolean
+  // ── CodeMirror 6 settings ──
+  autoPair?: boolean
+  currentLine?: boolean
+  softWrap?: boolean
+  tabSize?: number
+  // ── AI Settings (bid-maker style) ──
+  customApiFormat?: 'openai' | 'anthropic'
+  customEndpoint?: string
+  customModelId?: string
+  selectedProvider?: string
+  selectedModelName?: string
+  /** 模型设置页当前停在「按服务商选」还是「填自定义地址」tab */
+  modelConfigTab?: 'provider' | 'custom'
+  // ── Typography & reading ──
+  textIndent?: boolean
+  textJustify?: boolean
+  // ── Export ──
+  exportFormat?: string
+  typographyTheme?: string
+  codeTheme?: string
+  macCodeBlock?: boolean
+  includeTOC?: boolean
+  includeLineNumbers?: boolean
+  includePageNumbers?: boolean
+  paperSize?: string
+  orientation?: string
+}
+
+
+export interface AIStoreState {
+  panelVisible: boolean
+  panelSelectedText: string
+  panelPosition: { x: number; y: number } | null
+  panelStatus: 'idle' | 'thinking' | 'result' | 'error' | 'applied'
+  panelInput: string
+  lastSelection: { text: string; from: number; to: number } | null
+  applyHistory: ApplyRecord[]
+  // ── 聊天式面板 ──
+  mode: AIMode
+  messages: ChatEntry[]
+  showPanel: (mode: AIMode, selectedText: string, position: { x: number; y: number }) => void
+  hidePanel: () => void
+  setPanelInput: (input: string) => void
+  setPanelStatus: (status: 'idle' | 'thinking' | 'result' | 'error' | 'applied') => void
+  setMode: (mode: AIMode) => void
+  setSelectedText: (text: string) => void
+  addMessage: (message: ChatEntry) => void
+  updateMessage: (id: string, patch: Partial<ChatEntry>) => void
+  appendStreamToMessage: (id: string, delta: string) => void
+  recordApply: (record: Omit<ApplyRecord, 'id' | 'timestamp'>) => void
+  undoLastApply: () => void
+  getUndoRecord: () => ApplyRecord | null
+}

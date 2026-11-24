@@ -1,0 +1,17 @@
+application:
+  subdomain: lzeditor
+  routes:
+    # exec://<端口>,<可执行命令>。只写端口会被 lzcinit 判为 invalid exec protocol args
+    - /api/=exec://3001,/lzcapp/pkg/content/scripts/start.sh
+    - /=file:///lzcapp/pkg/content/frontend
+  environment:
+    PORT: "3001"
+    DATA_DIR: /lzcapp/var/data
+    TZ: Asia/Shanghai
+    NODE_ENV: production
+  health_check:
+    test_url: http://127.0.0.1:3001/api/health
+    # 首启要先把 node.gz 解压出 127MB 二进制 + 校验 sha256 + tsx 冷启动，
+    # 慢盘上可能超过 30s。只在首次安装/升级那一次生效，之后走持久卷缓存。
+    start_period: 60s
+    timeout: 10s

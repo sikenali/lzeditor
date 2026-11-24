@@ -1,0 +1,48 @@
+# LZEditor 使用手册
+
+> 轻量文档 · Markdown 编辑 · AI 辅助写作 · 多端同步
+
+---
+
+欢迎使用 **LZEditor**！这是一款面向个人与团队的轻量级 Markdown 编辑器，支持 AI 辅助写作、多文档管理、本地持久化存储与跨平台桌面客户端。
+
+---
+
+## 快速开始
+
+1. **新建文档** — 点击右上角「新建」按钮，或使用快捷键 \`Ctrl + N\`
+2. **书写内容** — 直接在编辑区输入 Markdown 语法
+3. **体验 AI** — 选中文字后调用浮动工具栏，或输入 \`/\` 唤起斜杠命令
+4. **切换主题** — 点击右上角「样式」按钮，选择暗夜霓虹 / 经典白 / 纸张模式等
+5. **导出文档** — 点击右上角「导出」，选择 PDF / HTML / DOCX 等格式
+
+---
+
+## 常见问题
+
+**Q：数据存在哪里？**
+A：文档正文和目录存在浏览器 localStorage 本地，无需联网，数据完全由你掌控。
+注意 localStorage 配额通常只有 5–10 MB；版本历史只在当前会话内保留，刷新后清空。
+
+**Q：如何开启 AI 功能？**
+A：进入「设置 → AI」，填写 API Key 并选择 Provider（支持 Claude、GPT 等）。
+
+**Q：支持哪些 AI 模型？**
+A：Anthropic Claude 3、OpenAI GPT-4/GPT-3.5、Azure OpenAI，也可接入任意 OpenAI 兼容接口。
+
+**Q：可以离线使用吗？**
+A：可以。除了 AI 功能需要联网外，编辑、预览、导出全部离线可用。
+
+---
+
+## 关于 LZEditor
+
+LZEditor 是一款开源的 Markdown 编辑器，采用 React 19 + 自研 yeli 区块编辑器 + Zustand 技术栈构建，支持 Windows / macOS / Linux 桌面客户端。
+
+- **GitHub**：https://github.com/sikenali/lzeditor
+- **反馈与建议**：欢迎提交 Issue 或通过邮件联系
+
+感谢你使用 LZEditor！
+
+Jingle
+2026 年秋

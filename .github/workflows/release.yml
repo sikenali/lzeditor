@@ -1,0 +1,207 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'lzeditor-v*'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (如 0.9.0)'
+        required: true
+        default: '0.9.0'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      title: ${{ steps.version.outputs.title }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          RAW="${{ github.event.inputs.version || github.ref_name }}"
+          V="${RAW#lzeditor-v}"
+          V="${V#lzeditor v}"
+          V="${V#v}"
+          if ! printf '%s' "$V" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "无效版本号: $RAW" >&2
+            exit 1
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=lzeditor-v$V" >> "$GITHUB_OUTPUT"
+          echo "title=lzeditor v$V" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure published release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          TITLE: ${{ steps.version.outputs.title }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          NOTES=$(printf '## 更新内容\n\n- 版本 %s\n- Windows 便携版（双击运行，无需安装）\n- macOS / Linux 桌面版\n- 懒猫微服 LPK\n' "$VERSION")
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --draft=false --title "$TITLE" --notes "$NOTES"
+            echo "✅ 已更新发布：$TITLE"
+          else
+            gh release create "$TAG" --title "$TITLE" --target "$GITHUB_SHA" --notes "$NOTES" --latest
+            echo "✅ 已创建发布：$TITLE"
+          fi
+
+  build-electron-win:
+    name: Build (Windows portable)
+    needs: prepare-release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Compile Electron
+        run: npx tsc -p electron/tsconfig.json
+
+      - name: Build Windows portable
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: Upload Windows assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+        run: |
+          gh release upload "$TAG" release/*.exe --clobber
+          if [ -f release/latest.yml ]; then
+            gh release upload "$TAG" release/latest.yml --clobber
+          fi
+
+  build-electron-mac:
+    name: Build (macOS)
+    needs: prepare-release
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Compile Electron
+        run: npx tsc -p electron/tsconfig.json
+
+      - name: Build macOS
+        run: npx electron-builder --mac --x64 --arm64 --publish never
+
+      - name: Upload macOS assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+        run: |
+          gh release upload "$TAG" release/*.dmg release/*.zip release/*.blockmap --clobber
+          if [ -f release/latest-mac.yml ]; then
+            gh release upload "$TAG" release/latest-mac.yml --clobber
+          fi
+
+  build-electron-linux:
+    name: Build (Linux)
+    needs: prepare-release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Compile Electron
+        run: npx tsc -p electron/tsconfig.json
+
+      - name: Build Linux
+        run: npx electron-builder --linux --x64 --publish never
+
+      - name: Upload Linux assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+        run: |
+          gh release upload "$TAG" release/*.deb release/*.AppImage --clobber
+          if [ -f release/latest-linux.yml ]; then
+            gh release upload "$TAG" release/latest-linux.yml --clobber
+          fi
+
+  build-lpk:
+    name: Build LPK
+    needs: prepare-release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install lzc-cli
+        run: npm install -g @lazycatcloud/lzc-cli
+
+      - name: Build LPK
+        run: |
+          cd lzc
+          export LPK_VERSION="${{ needs.prepare-release.outputs.version }}"
+          bash package.sh
+
+      - name: Upload LPK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+        run: |
+          gh release upload "$TAG" lzc/*.lpk --clobber

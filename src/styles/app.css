@@ -1,0 +1,51 @@
+
+.app  {
+  display: flex;
+  height: 100vh;
+  /* 全屏铺满（2026-11-17）：去掉 1280px 限宽与水平居中，chrome（顶栏/侧栏/背景）铺满视口。
+     文档正文仍由 .cm-content 依据 --document-width 居中限宽（1280px），不受本规则影响。 */
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  font-family: var(--font-sans);
+}
+
+.app-main  {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── UI chrome 字体：与 lzc2vsdx 一致，导航/工具栏/菜单/设置/弹框等界面文字
+   使用 Space Grotesk（拉丁）+ 系统中文字体；正文/编辑区仍用 Inter/中文正文栈。 ── */
+.toolbar-label,
+.toolbar-submenu-item,
+.toolbar-dropdown-item,
+.rail-nav,
+.rail-label,
+.rail-version,
+.app-footer,
+.statusbar-item,
+.app-footer-brand,
+.app-footer-copy,
+.document-meta-bar,
+.ui-modal-title,
+.ui-modal-subtitle,
+.ui-btn,
+.ui-select-trigger,
+.ui-select-item,
+.settings-nav-row,
+.settings-section-title,
+.ud-chip,
+.ud-section-label,
+.page-reset-button,
+.btn-save,
+.history-main-panel,
+.style-panel,
+.read-mode-toolbar,
+.read-tool-btn  {
+  font-family: var(--font-display);
+}
+
