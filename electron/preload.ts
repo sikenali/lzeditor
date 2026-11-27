@@ -23,6 +23,7 @@ const api: ElectronAPI = {
     return () => ipcRenderer.removeListener('menu-open-file', wrapper)
   },
   readLocalFile: (filePath: string) => ipcRenderer.invoke('file:read', filePath),
+  saveFile: (payload: { path?: string | null; text: string; suggestedName: string }) => ipcRenderer.invoke('file:save', payload),
   gitHistory: (filePath: string) => ipcRenderer.invoke('git:history', filePath),
   gitShow: (filePath: string, oid: string) => ipcRenderer.invoke('git:show', filePath, oid),
   gitAuthorize: (filePath: string) => ipcRenderer.invoke('git:authorize', filePath),

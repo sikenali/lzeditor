@@ -460,6 +460,22 @@ function App() {
     if (!docId) return
     const md = es.mdContent || ''
     const html = es.docHTML || mdToHtml(md)
+    // Electron 桌面端：Ctrl+S 真正写磁盘；没有 diskPath 时弹「另存为」。
+    // 浏览器/LPK 没有 saveFile，保持原来的历史版本保存行为。
+    const api = window.electronAPI
+    if (api?.saveFile) {
+      const doc = es.docs.find((d: any) => d.id === docId) as any
+      const res = await api.saveFile({
+        path: doc?.diskPath || null,
+        text: md,
+        suggestedName: doc?.title || 'untitled.md',
+      })
+      if (!res.ok) {
+        if (!res.canceled) toast(`保存文件失败：${res.error || '未知错误'}`, { type: 'error', duration: 4000 })
+        return
+      }
+      if (res.path && doc && res.path !== doc.diskPath) es.setDocDiskPath(doc.id, res.path)
+    }
     const prev = es.versionsByDoc?.[docId]?.at(-1)?.md ?? ''
     const changes = countLineDiff(prev, md)
     const serverVersion = await recordVersion(docId, md, html, changes)

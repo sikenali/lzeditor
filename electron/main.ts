@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as url from 'url'
 import { getGitHistory, getGitShow } from './gitHistory'
+import { autoUpdater } from 'electron-updater'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -105,6 +106,16 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow()
+
+  // 自动更新：只在打包态运行；检查失败（离线/代理）不阻塞启动。
+  // latest*.yml 由 release 工作流生成，electron-updater 按平台渠道下载安装。
+  if (app.isPackaged) {
+    try {
+      autoUpdater.autoDownload = true
+      autoUpdater.autoInstallOnAppQuit = true
+      autoUpdater.checkForUpdatesAndNotify().catch(() => { /* 离线忽略 */ })
+    } catch { /* 更新器初始化失败不影响应用 */ }
+  }
 
   // 首启通过命令行参数带来的文件（Windows/Linux 双击关联），以及 macOS 在
   // ready 前排队等着的 open-file。
@@ -222,6 +233,30 @@ ipcMain.handle('file:read', async (_event, filePath: string) => {
     return { ok: true, text, name }
   } catch (err: any) {
     return { ok: false, error: err.message || 'read failed', name }
+  }
+})
+
+// 保存文档到磁盘：路径为空时弹系统「另存为」对话框。
+// 保存后的路径登记进 allowedPaths，后续 file:read / git:history 才能继续读。
+ipcMain.handle('file:save', async (_event, payload: { path?: string | null; text?: string; suggestedName?: string }) => {
+  let target = String(payload?.path || '')
+  if (!target) {
+    const r = await dialog.showSaveDialog(mainWindow!, {
+      defaultPath: String(payload?.suggestedName || 'untitled.md'),
+      filters: [
+        { name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd'] },
+        { name: '文本', extensions: ['txt'] },
+      ],
+    })
+    if (r.canceled || !r.filePath) return { ok: false, canceled: true }
+    target = r.filePath
+  }
+  try {
+    await fs.promises.writeFile(target, String(payload?.text || ''), 'utf8')
+    allowedPaths.add(path.resolve(target))
+    return { ok: true, path: target }
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'save failed' }
   }
 })
 

@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSettingsStore, saveSettingsToStorage, ACCENT_PRESETS, getAccentColor } from '../../store/settingsStore'
 import type { SettingsGroup } from '../../shared/types'
-import { UiModal } from '../../components/ui'
+import { UiModal, UiButton } from '../../components/ui'
 import { toast } from '../../utils/toast'
 import { EditorSettingsTab } from './settings/EditorSettingsTab'
 import { LayoutSettingsTab } from './settings/LayoutSettingsTab'
@@ -165,9 +165,11 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
   const navMode = s.navMode || 'top'
   // accentColor 存的是预设 id 或原始 16 进制色值，后者视为「自定义」
   const isCustomAccent = /^#[0-9a-fA-F]{6}$/.test(String(accent))
+  const [confirmReset, setConfirmReset] = useState(false)
 
   const resetAll = () => {
     useSettingsStore.getState().resetSettings()
+    setConfirmReset(false)
     toast('已恢复默认')
   }
 
@@ -197,7 +199,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
               <p>统一切换外观底色、强调色与导航布局模式，修改即时生效</p>
             </div>
           </div>
-          <button type="button" className="page-reset-button" onClick={resetAll}>
+          <button type="button" className="page-reset-button" onClick={() => setConfirmReset(true)}>
             <span className="remix ri-restart-line"></span>
             恢复默认
           </button>
@@ -213,7 +215,7 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
           <button
             type="button"
             className="page-reset-button"
-            onClick={resetAll}
+            onClick={() => setConfirmReset(true)}
             style={{ marginLeft: 'auto', height: 32, padding: '0 12px', fontSize: 12 }}
           >
             <span className="remix ri-restart-line"></span>
@@ -301,6 +303,24 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
           ))}
         </div>
       </div>
+
+      <UiModal
+        open={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        icon="ri-restart-line"
+        title="恢复默认设置"
+        width={460}
+        footer={
+          <>
+            <UiButton variant="ghost" onClick={() => setConfirmReset(false)}>取消</UiButton>
+            <UiButton onClick={resetAll}>恢复默认</UiButton>
+          </>
+        }
+      >
+        <p style={{ padding: '4px 0 12px', fontSize: 13, color: 'var(--color-text-body)' }}>
+          将重置主题、强调色、布局、编辑器与符号拼写等全部设置；API Key 与当前模型会保留。
+        </p>
+      </UiModal>
     </div>
   )
 }

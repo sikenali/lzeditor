@@ -36,6 +36,13 @@ export interface GitShowResult {
   error?: string
 }
 
+export interface SaveFileResult {
+  ok: boolean
+  canceled?: boolean
+  path?: string
+  error?: string
+}
+
 export interface ElectronAPI {
   // ── 无边框窗口的自绘标题栏用 ──
   minimize: () => void
@@ -53,6 +60,8 @@ export interface ElectronAPI {
   offMenuOpen: (callback: () => void) => void
   offMenuExport: (callback: () => void) => void
   readLocalFile: (filePath: string) => Promise<ReadLocalFileResult>
+  /** 保存文档到磁盘；path 为空时弹系统「另存为」对话框。 */
+  saveFile: (payload: { path?: string | null; text: string; suggestedName: string }) => Promise<SaveFileResult>
 
   // ── Git 历史（isomorphic-git，跑主进程；授权复用 file:read 的 isAllowedPath）──
   gitHistory: (filePath: string) => Promise<GitHistoryResult>

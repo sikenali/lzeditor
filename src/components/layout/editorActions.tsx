@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store/editorStore'
-import { pickFolderFiles, importFolderFiles } from '../../utils/docImport'
+import { pickFolderFiles, importFolderFiles, pickFile, importSingleFile } from '../../utils/docImport'
 import { getEditorFacade } from '../editor/facade/registry'
 
 export interface MenuItem {
@@ -16,6 +16,7 @@ type FormatCommand = string
 
 export const NEW_ITEMS: MenuItem[] = [
   { icon: 'ri-file-add-line', label: '新建文档', action: 'new' },
+  { icon: 'ri-file-text-line', label: '打开文件…', action: 'openFile' },
   { icon: 'ri-folder-line', label: '打开文件夹…', action: 'openFolder' },
 ]
 
@@ -339,7 +340,13 @@ export function useEditorActions() {
     if (files) await importFolderFiles(files)
   }, [])
 
-  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog }
+  /** 打开单个 Markdown 文件（快捷键 Ctrl/⌘+O）。 */
+  const openFileDialog = useCallback(async () => {
+    const file = await pickFile()
+    if (file) await importSingleFile(file)
+  }, [])
+
+  return { applyCmd, formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog, openFileDialog }
 }
 
 /** 飞出菜单。align='right' 贴触发器右侧（左侧 rail 用），'below' 贴下方（顶栏用）。 */

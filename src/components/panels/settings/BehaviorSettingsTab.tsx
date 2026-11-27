@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { UiSwitch, UDSettingRow } from '../../ui'
+import { toast } from '../../../utils/toast'
+import { downloadBackup, restoreBackup } from '../../../utils/backup'
 
 function renderAppSettings(s: any, u: any) {
 
@@ -33,5 +35,52 @@ function renderAppSettings(s: any, u: any) {
 
 }
 
-export const BehaviorSettingsTab: React.FC<{ s: any; u: any }> = ({ s, u }) =>
-  renderAppSettings(s, u)
+export const BehaviorSettingsTab: React.FC<{ s: any; u: any }> = ({ s, u }) => {
+  const backupInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExport = () => {
+    try {
+      const name = downloadBackup()
+      toast(`已导出 ${name}`, { type: 'success' })
+    } catch (e: any) {
+      toast(`备份失败：${e?.message || '未知错误'}`, { type: 'error' })
+    }
+  }
+
+  const handleRestoreFile = async (file: File) => {
+    try {
+      const text = await file.text()
+      const count = restoreBackup(text)
+      toast(`已恢复 ${count} 篇文档`, { type: 'success' })
+    } catch (e: any) {
+      toast(`恢复失败：${e?.message || '未知错误'}`, { type: 'error' })
+    }
+  }
+
+  return (
+    <>
+      {renderAppSettings(s, u)}
+      <div className="settings-section">
+        <div className="settings-section-title"><span>数据备份</span></div>
+        <UDSettingRow icon="ri-download-2-line" label="导出全部文档备份" desc="目录、正文与设置打包成 JSON 文件">
+          <button className="settings-save-btn" onClick={handleExport}>导出备份</button>
+        </UDSettingRow>
+        <div className="setting-divider" />
+        <UDSettingRow icon="ri-upload-2-line" label="从备份恢复" desc="覆盖当前文档库与设置（含 API Key）">
+          <button className="settings-save-btn" onClick={() => backupInputRef.current?.click()}>选择备份文件</button>
+          <input
+            ref={backupInputRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const f = e.target.files?.[0]
+              e.target.value = ''
+              if (f) void handleRestoreFile(f)
+            }}
+          />
+        </UDSettingRow>
+      </div>
+    </>
+  )
+}

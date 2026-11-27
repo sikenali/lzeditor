@@ -134,6 +134,8 @@ export interface EditorStoreState {
   docs: Array<{ id: string; title: string; path: string; libraryId?: string; diskPath?: string }>
   activeDocId: string | null
   createDoc: (title?: string, path?: string, libraryId?: string, diskPath?: string) => string
+  renameDoc: (id: string, title: string) => void
+  setDocDiskPath: (id: string, diskPath: string) => void
   switchDoc: (id: string) => void
   closeDoc: (id: string) => void
   // 把内置文档（readme）还原成出厂内容：清掉本地覆盖，重读内置 md

@@ -301,6 +301,23 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     try { localStorage.setItem('lzeditor-last-doc', id) } catch {}
     return id
   },
+   renameDoc: (id: string, title: string) => {
+    const name = (title || '').trim()
+    if (!name) return
+    const s = get()
+    if (!s.docs.some((d: any) => d.id === id)) return
+    set({
+      docs: s.docs.map((d: any) => d.id === id ? { ...d, title: name } : d),
+      ...(s.activeDocId === id ? { docTitle: name } : {}),
+    })
+    saveCatalog()
+  },
+   setDocDiskPath: (id: string, diskPath: string) => {
+    const s = get()
+    if (!s.docs.some((d: any) => d.id === id)) return
+    set({ docs: s.docs.map((d: any) => d.id === id ? { ...d, diskPath } : d) })
+    saveCatalog()
+  },
    switchDoc: (id: string) => {
     if (!silentSwitchDoc) markWelcomeSeen(set)
     const s = get()

@@ -27,7 +27,7 @@ export const LeftNav: React.FC = () => {
   const quickFormatButtons = useSettingsStore((s) => s.quickFormatButtons !== false)
 
   const flyout = useFlyout()
-  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog } = useEditorActions()
+  const { formatAction, insertAction, tableAction, modeAction, newDocument, openFolderDialog, openFileDialog } = useEditorActions()
   const tableActive = useTableActive()
 
   const newBtnRef = useRef<HTMLButtonElement>(null)
@@ -72,6 +72,7 @@ export const LeftNav: React.FC = () => {
     flyout.close()
     if (key === 'new') {
       if (action === 'new') newDocument()
+      else if (action === 'openFile') void openFileDialog()
       else if (action === 'openFolder') void openFolderDialog()
     }
     else if (key === 'format') formatAction(action)

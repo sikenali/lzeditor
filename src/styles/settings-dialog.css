@@ -1175,6 +1175,35 @@
 }
 .about-github .remix  { font-size: 34px; }
 .about-github:hover  { color: var(--color-primary); }
+.about-links  {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.about-link-btn  {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 0.6px solid var(--color-border);
+  background: var(--color-bg-white);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.about-link-btn:hover  {
+  background: var(--accent-a5);
+  border-color: var(--accent-border);
+  color: var(--accent-primary);
+}
+.about-link-btn .remix  { font-size: 14px; }
 .about-card .about-copy  {
   margin-top: 32px;
   margin-bottom: 0;
