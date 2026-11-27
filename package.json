@@ -137,15 +137,13 @@
           "target": "portable",
           "arch": [
             "x64"
-          ],
-          "artifactName": "${productName}-${version}-win-portable.${ext}"
+          ]
         },
         {
           "target": "nsis",
           "arch": [
             "x64"
-          ],
-          "artifactName": "${productName}-${version}-win-setup.${ext}"
+          ]
         }
       ],
       "icon": "public/icon.ico",
@@ -183,6 +181,12 @@
         "libatspi2.0-0",
         "libsecret-1-0"
       ]
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-win-portable.${ext}"
+    },
+    "nsis": {
+      "artifactName": "${productName}-${version}-win-setup.${ext}"
     }
   },
   "allowScripts": {},
