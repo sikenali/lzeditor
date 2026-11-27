@@ -29,11 +29,23 @@ export function applySourceCommand(
     if (!sel) return null;
     const src = facade.getText();
     const selected = src.slice(sel.from, sel.to);
+    // 空选区直接插一对空标签没有任何可见变化（用户会以为按钮坏了）。
+    // 插入可编辑的占位文字并选中它，继续输入即可替换。
+    const inner = selected || (tag === "sup" ? "上标" : "下标");
     const open = `<${tag}>`;
     const close = `</${tag}>`;
-    facade.replaceRange(sel.from, sel.to, open + selected + close);
-    // Keep the inner text selected (collapsed selection leaves the caret inside).
-    facade.setSelection(sel.from + open.length, sel.from + open.length + selected.length);
+    // HTML 标签只能在同一 textblock 内配对。跨段选区整体包一对标签时，
+    // 开标签和闭标签会落在不同段落，所见即所得把标签当源码显示出来。
+    // 按行分别包裹，保证每行都是完整的一对。
+    const wrapped = inner.includes("\n")
+      ? inner.split("\n").map(line => line.trim() ? `${open}${line}${close}` : line).join("\n")
+      : `${open}${inner}${close}`;
+    facade.replaceRange(sel.from, sel.to, wrapped);
+    if (wrapped !== `${open}${inner}${close}`) {
+      facade.setSelection(sel.from, sel.from + wrapped.length);
+    } else {
+      facade.setSelection(sel.from + open.length, sel.from + open.length + inner.length);
+    }
     return true;
   }
 
@@ -76,7 +88,14 @@ export function applySourceCommand(
     const no = max + 1;
     const ref = `[^${no}]`;
     const at = sel ? sel.to : src.length;
-    facade.insertText(`${ref}\n\n[^${no}]: 脚注内容\n`, { from: at, to: at });
+    // 引用留在光标处（行内），定义另起一块：中间空行保证 `[^1]: …` 是
+    // 独立 footnote_definition，而不是并进上一段变成普通文字。
+    const after = src.slice(at);
+    const suffix = after === "" || after.startsWith("\n") ? "" : "\n";
+    facade.insertText(`${ref}\n\n[^${no}]: 脚注内容${suffix}`, {
+      from: at,
+      to: at,
+    });
     // Select the reference so typing replaces the placeholder definition later.
     facade.setSelection(at, at + ref.length);
     return true;

@@ -35,6 +35,19 @@ export const STRIKETHROUGH: FormatSpec = { delim: "~", rung: 2 };
  *  italic: verbatim ones, with no formatting of their own to clash. */
 const WRAPPABLE = new Set(["md_code_span", "math_inline", LINK]);
 
+/** Whether `child` may go inside a new md_span of `spec`. A span of the same
+ *  style is already the target style (toggleOff handles it); a span of a
+ *  different style nests fine — `~~**text**~~` is valid Markdown. Before this,
+ *  applying strike to bold/italic text silently failed. */
+function canWrap(child: ProseNode, spec: FormatSpec): boolean {
+  if (child.isText || WRAPPABLE.has(child.type.name)) return true;
+  if (child.type.name !== "md_span") return false;
+  return !(
+    child.attrs.delim === spec.delim &&
+    (child.attrs.rung === spec.rung || child.attrs.rung === 3)
+  );
+}
+
 /**
  * The shortcut pressed again on its own formatting takes it off; a `***`
  * span keeps the other half. Null when the selection isn't in or on such a
@@ -156,7 +169,7 @@ function acrossBlocks(
     const fragment = state.doc.slice(range.from, range.to).content;
     for (let i = 0; i < fragment.childCount; i++) {
       const child = fragment.child(i);
-      if (!child.isText && !WRAPPABLE.has(child.type.name)) return null;
+      if (!canWrap(child, spec)) return null;
     }
     tr.replaceWith(
       range.from,
@@ -255,7 +268,7 @@ export function toggleFormat(view: EditorView, spec: FormatSpec): boolean {
   const fragment = parent.content.cut(from - $from.start(), to - $from.start());
   for (let i = 0; i < fragment.childCount; i++) {
     const child = fragment.child(i);
-    if (!child.isText && !WRAPPABLE.has(child.type.name)) return false;
+    if (!canWrap(child, spec)) return false;
   }
 
   const node = mdSpan.create({ delim: spec.delim, rung: spec.rung }, fragment);

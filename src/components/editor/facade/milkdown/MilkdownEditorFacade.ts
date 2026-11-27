@@ -115,6 +115,9 @@ function posToSourceOffset(ctx: Ctx, view: EditorView, pos: number): number {
     const childStart = childStartPos(doc, i);
     const childEnd = childStart + child.nodeSize;
     if (pos <= childEnd) {
+      // 光标在块尾（图片/表格/链接等原子节点会让 textBetween 少算源码长度，
+      // 直接按文字量算会落在块中间，插入操作随后会吃掉尾部源码）。
+      if (pos >= childEnd - 1) return acc + Math.max(0, lens[i] - 1);
       // 从块内容起点（childStart+1）量到光标：从块节点起点量会把整段文字
       // 多算一次（标题/段落的光标停在文字起点时列号会多出整段长度）。
       const textStart = Math.min(childStart + 1, childEnd);
@@ -147,6 +150,10 @@ function sourceOffsetToPos(ctx: Ctx, view: EditorView, offset: number): number {
     const child = doc.child(i);
     const nextAcc = acc + lens[i] + 1;
     if (offset < nextAcc) {
+      // 块尾（含图片等原子节点）直接落回块内容末尾，避免映射到原子节点之前。
+      if (offset >= acc + Math.max(0, lens[i] - 1)) {
+        return childStart + child.nodeSize - 1;
+      }
       const within = Math.max(0, offset - acc - prefixes[i]);
       // Map within-block text length → PM position (approximate, markers excluded).
       let best = childStart;
@@ -433,33 +440,90 @@ function toggleLink(view: EditorView, url: string): boolean {
   return toggleMark(mark, { href: url } as never)(view.state, view.dispatch);
 }
 
-/** Clears formatting: unwraps textus inline wrapper nodes, or removes the
- *  commonmark marks. Nothing selected → false. */
+/** Clears formatting: unwraps textus inline wrapper nodes, removes commonmark
+ *  marks, then resets the block itself (heading/list/quote/code → paragraph).
+ *  "清除格式" on an ordered list must produce body text, not just strip bold. */
 function clearFormatting(view: EditorView): boolean {
   const { state } = view;
   const { from, to, empty } = state.selection;
-  if (empty) return false;
-  if (state.schema.nodes.md_span) {
-    const wrappers = new Set(["md_span", "md_code_span", LINK]);
-    const targets: Array<{ node: ProseNode; pos: number }> = [];
-    state.doc.nodesBetween(from, to, (node, pos) => {
-      if (node.isInline && wrappers.has(node.type.name)) {
-        targets.push({ node, pos });
-        return false;
+  const wrappers = new Set(["md_span", "md_code_span", LINK]);
+  let did = false;
+
+  if (!empty) {
+    if (state.schema.nodes.md_span) {
+      const targets: Array<{ node: ProseNode; pos: number }> = [];
+      state.doc.nodesBetween(from, to, (node, pos) => {
+        if (node.isInline && wrappers.has(node.type.name)) {
+          targets.push({ node, pos });
+          return false;
+        }
+        return true;
+      });
+      if (targets.length) {
+        let tr = state.tr;
+        for (let i = targets.length - 1; i >= 0; i--) {
+          const { node, pos } = targets[i];
+          tr = tr.replaceWith(pos, pos + node.nodeSize, node.content);
+        }
+        view.dispatch(tr);
+        did = true;
       }
-      return true;
-    });
-    if (!targets.length) return false;
-    let tr = state.tr;
-    for (let i = targets.length - 1; i >= 0; i--) {
-      const { node, pos } = targets[i];
-      tr = tr.replaceWith(pos, pos + node.nodeSize, node.content);
+    } else {
+      view.dispatch(state.tr.removeMark(from, to));
+      did = true;
     }
-    view.dispatch(tr);
-    return true;
+  } else {
+    // Collapsed caret inside bold/italic/link/code: unwrap that wrapper.
+    const $from = state.selection.$from;
+    for (let d = $from.depth; d > 0; d--) {
+      const node = $from.node(d);
+      if (node.isInline && wrappers.has(node.type.name)) {
+        const start = $from.before(d);
+        view.dispatch(
+          state.tr.replaceWith(start, start + node.nodeSize, node.content),
+        );
+        did = true;
+        break;
+      }
+    }
   }
-  view.dispatch(state.tr.removeMark(from, to));
-  return true;
+
+  return resetBlock(view) || did;
+}
+
+/** Lifts the caret's block out of lists/quotes and converts it to a paragraph. */
+function resetBlock(view: EditorView): boolean {
+  const { schema } = view.state;
+  const paragraph = schema.nodes.paragraph;
+  const item = schema.nodes.list_item;
+  const quote = schema.nodes.blockquote;
+  if (!paragraph) return false;
+  let did = false;
+
+  // A list item must leave its list before it can become a paragraph.
+  for (let guard = 0; item && guard < 8; guard++) {
+    const { $from } = view.state.selection;
+    let inList = false;
+    for (let d = $from.depth; d > 0; d--) {
+      if ($from.node(d).type === item) { inList = true; break; }
+    }
+    if (!inList) break;
+    if (!liftListItem(item)(view.state, view.dispatch)) break;
+    did = true;
+  }
+  // Likewise a quote.
+  for (let guard = 0; quote && guard < 8; guard++) {
+    const { $from } = view.state.selection;
+    let inQuote = false;
+    for (let d = $from.depth; d > 0; d--) {
+      if ($from.node(d).type === quote) { inQuote = true; break; }
+    }
+    if (!inQuote) break;
+    if (!lift(view.state, view.dispatch)) break;
+    did = true;
+  }
+  if (setBlockType(paragraph)(view.state, view.dispatch)) did = true;
+  return did;
 }
 
 const MEETING_NOTES = [
@@ -600,6 +664,10 @@ export function createMilkdownEditorFacade(
         v.dispatch(
           v.state.tr.setSelection(TextSelection.create(v.state.doc, f, t)).scrollIntoView(),
         );
+        // ProseMirror 只在编辑器有焦点时绘制选区高亮。查找/替换、大纲跳转
+        // 都经这里设置选区；不 focus 的话选区确实移动了，但用户看不到，
+        // 看起来就是「查找没有反应」。
+        v.focus();
       });
     },
 
@@ -616,9 +684,13 @@ export function createMilkdownEditorFacade(
     getTableContext(): TableContext | null {
       const v = view();
       if (!v) return null;
-      if (!isInTable(v.state)) return null;
-      const rect = selectedRect(v.state);
-      return { rows: rect.table.childCount, cols: rect.map.width };
+      try {
+        if (!isInTable(v.state)) return null;
+        const rect = selectedRect(v.state);
+        return { rows: rect.table.childCount, cols: rect.map.width };
+      } catch {
+        return null;
+      }
     },
 
     setViewRoot(root: HTMLElement | null): void {
@@ -736,7 +808,10 @@ export function createMilkdownEditorFacade(
                 language: String(args?.language ?? args?.lang ?? ""),
               });
             case "insert.divider": {
-              const hr = schema.nodes.horizontal_rule;
+              // textus 的 commonmark schema 里分割线节点叫 `hr`（不是
+              // horizontal_rule）；名字写错时命令静默返回 false，看起来就是
+              // 点「插入分割线」没反应。
+              const hr = schema.nodes.hr ?? schema.nodes.horizontal_rule;
               return hr ? insertNode(v, hr.create()) : false;
             }
             case "insert.table": {

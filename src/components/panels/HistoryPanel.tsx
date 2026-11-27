@@ -119,13 +119,13 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
   const previewHtml = selected?.source === 'git' ? (gitPreviewHtml ?? '') : (selected?.html ?? '')
 
   // 回滚/重播：载入内容，不改仓库（版本仅由 Ctrl+S 创建，回滚不会落新快照）。
-  const loadVersion = async () => {
-    if (!selected) return
+  const loadVersionOf = async (v: typeof selected) => {
+    if (!v) return
     const docId = useEditorStore.getState().activeDocId
     try {
-      if (selected.source === 'git') {
+      if (v.source === 'git') {
         if (!diskPath) return
-        const res = await window.electronAPI?.gitShow?.(diskPath, selected.id)
+        const res = await window.electronAPI?.gitShow?.(diskPath, v.id)
         if (!res?.ok || res.text == null) return
         const html = mdToHtml(res.text)
         useEditorStore.getState().updateDoc({ md: res.text, html, docsMd: docId ? { [docId]: res.text } : undefined })
@@ -133,27 +133,57 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         setMdContent(res.text)
         getEditorFacade()?.setText(res.text)
       } else {
-        useEditorStore.getState().updateDoc({ md: selected.md, html: selected.html, docsMd: docId ? { [docId]: selected.md } : undefined })
-        setDocHTML(selected.html)
-        setMdContent(selected.md)
-        getEditorFacade()?.setText(selected.md)
+        useEditorStore.getState().updateDoc({ md: v.md, html: v.html, docsMd: docId ? { [docId]: v.md } : undefined })
+        setDocHTML(v.html)
+        setMdContent(v.md)
+        getEditorFacade()?.setText(v.md)
       }
     } catch {
       // 载入失败不阻塞面板
     }
   }
 
+  const loadVersion = async () => {
+    await loadVersionOf(selected)
+  }
+
+  // 重播：沿时间线从最近版本向更早版本逐条播放（柱体依次点亮，内容同步
+  // 载入）。此前只是载入当前选中项，选中项恰好就是预览里的内容时看起来
+  // 完全没反应。
+  const replayTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [replaying, setReplaying] = useState(false)
+
+  const stopReplay = () => {
+    if (replayTimer.current) { clearTimeout(replayTimer.current); replayTimer.current = null }
+    setReplaying(false)
+  }
+
   const handleRollback = () => {
     if (!selected) return
+    stopReplay()
     void loadVersion()
     onClose?.()
   }
 
-  // 重播：把选中版本载入编辑器，但不关闭面板，便于对照查看
   const handleReplay = () => {
-    if (!selected) return
-    void loadVersion()
+    if (replaying) { stopReplay(); return }
+    if (!merged.length) return
+    setReplaying(true)
+    let i = 0
+    const step = async () => {
+      const v = merged[i]
+      if (!v) { setReplaying(false); replayTimer.current = null; return }
+      setSelectedVersion(v.id)
+      await loadVersionOf(v)
+      i += 1
+      replayTimer.current = setTimeout(step, 700)
+    }
+    void step()
   }
+
+  useEffect(() => () => {
+    if (replayTimer.current) clearTimeout(replayTimer.current)
+  }, [])
 
   const handleBarClick = (id: string) => {
     setSelectedVersion(id)
@@ -207,9 +237,9 @@ export const HistoryPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
                   <span className="remix ri-arrow-go-back-line"></span>
                   <span>回滚</span>
                 </button>
-                <button className="history-action-btn" onClick={handleReplay} title="载入该版本内容，保持面板可继续对照">
-                  <span className="remix ri-restart-line"></span>
-                  <span>重播</span>
+                <button className="history-action-btn" onClick={handleReplay} title={replaying ? '停止重播' : '从最近版本向更早版本依次播放'}>
+                  <span className={`remix ${replaying ? 'ri-stop-circle-line' : 'ri-restart-line'}`}></span>
+                  <span>{replaying ? '停止' : '重播'}</span>
                 </button>
                 <button className="history-action-btn" onClick={onClose}>
                   <span className="remix ri-close-line"></span>

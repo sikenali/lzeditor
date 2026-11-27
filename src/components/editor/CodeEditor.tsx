@@ -8,6 +8,7 @@ import type { EditorFacade } from "./facade/EditorFacade";
 import { useEditorStore } from "../../store/editorStore";
 import { useSettingsStore } from "../../store/settingsStore";
 import { fontStackFor } from "../../hooks/useTypographyOverrides";
+import { lineContentOffset } from "../../utils/textStats";
 import "../../styles/code-editor.css";
 import { ScrollRail } from "../ui/ScrollRail";
 import { markersFromMarkdown } from "../../utils/railMarkers";
@@ -96,6 +97,14 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
       });
       handleRef.current = { facade, view, destroy };
       facade.setText(mdRef.current);
+      // 编辑/代码模式互切：沿用切换前的光标行（此前每次进代码模式都停在
+      // 第 1 行）。只在不是首行时恢复，避免首次打开文档无故滚动。
+      const cursor = useEditorStore.getState().cursorPosition
+      if (cursor?.line > 1) {
+        const off = lineContentOffset(mdRef.current, cursor.line)
+        facade.setSelection(off, off)
+        facade.focus()
+      }
       const unsubscribe = facade.onChange((markdown) => onChangeRef.current(markdown));
       // 光标位置跟踪 → cursorPosition：大纲当前节 / 状态栏行列跟随真实光标。
       // handleJump 的 setSelection 同样触发（update.selectionSet），故大纲点击切换会跟随。

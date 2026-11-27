@@ -81,10 +81,21 @@ export function parseMdOutline(md: string): MdOutlineItem[] {
   return items
 }
 
-/** 缩进式目录正文，供「插入目录」等 markdown 场景复用。 */
+/**
+ * 缩进式目录正文，供「插入目录」等 markdown 场景复用。
+ *
+ * 输出必须是「真嵌套列表」：CommonMark 只把缩进到父项内容列的列表项当作
+ * 子列表（`- ` 的内容列是 2 空格），所以层级缩进用 2×(level-1)。同时把
+ * 1 / 1.1 / 1.1.1 编号写进链接文字，预览里能直接看出 H1/H2/H3 的层级关系。
+ */
 export function outlineToMarkdownTree(items: MdOutlineItem[]): string {
   if (items.length === 0) return '暂无标题'
   return items
-    .map(it => `${'  '.repeat(it.level - 1)}- [${it.text}](#${it.id})`)
+    .map(it => {
+      const level = Math.max(1, Math.min(6, it.level))
+      const indent = '  '.repeat(level - 1)
+      const label = it.number ? `${it.number} ${it.text}` : it.text
+      return `${indent}- [${label}](#${it.id})`
+    })
     .join('\n')
 }

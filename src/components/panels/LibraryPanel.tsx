@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { openMarkdownDoc, importFolderFiles } from '../../utils/docImport'
 import { fetchMarkdownFromUrl } from '../../utils/importUrl'
 import { UiModal, UDSection } from '../ui'
 import { LibraryTree, buildTree } from './LibraryTree'
-import { ImportButtons, CATEGORIES } from './ImportButtons'
+import { ImportButtons, CATEGORIES, type ImportButtonsHandle } from './ImportButtons'
 
 export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; className?: string }> = ({ onClose, sidebar, className }) => {
   const setOpenPanel = useEditorStore((s: any) => s.setOpenPanel)
@@ -29,6 +29,8 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
     return init
   })
   const [searchText, setSearchText] = useState('')
+  /** 导入标签页的动作按钮在弹框右下角，由这里触发内容区的导入逻辑。 */
+  const importRef = useRef<ImportButtonsHandle>(null)
 
   const handleClose = () => {
     if (sidebar) setShowLibrary(false)
@@ -217,6 +219,7 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
         </UDSection>
       )}
       <ImportButtons
+        ref={importRef}
         category={category}
         onImportUrl={handleImportUrl}
         onImportLocal={handleImportLocal}
@@ -229,6 +232,12 @@ export const LibraryPanel: React.FC<{ onClose?: () => void; sidebar?: boolean; c
       <button className="ud-btn ud-btn--ghost" onClick={handleClose}>关闭</button>
       {category === 'docs' && (
         <button className="ud-btn ud-btn--primary" onClick={handlePrimaryAction}>新建文档库</button>
+      )}
+      {category === 'url' && (
+        <button className="ud-btn ud-btn--primary" onClick={() => importRef.current?.trigger()}>在线导入</button>
+      )}
+      {category === 'local' && (
+        <button className="ud-btn ud-btn--primary" onClick={() => importRef.current?.trigger()}>本地导入</button>
       )}
     </div>
   )

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { UiModal, UiInput, UiSelect, UiSwitch, UiButton } from '../ui'
 import { useEditorStore } from '../../store/editorStore'
 import { parseMdOutline } from '../../utils/mdOutline'
+import { getDocMd } from '../../utils/docSource'
 
 const UDSection: React.FC<{ label: string; desc?: string; children: React.ReactNode }> = ({ label, desc, children }) => (
   <div className="ud-section">
@@ -45,15 +46,22 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
   const docs = useEditorStore((s) => s.docs)
   const activeDocId = useEditorStore((s) => s.activeDocId)
   const docsMd = useEditorStore((s) => s.docsMd || {})
+  const mdContent = useEditorStore((s) => s.mdContent || '')
 
-  // 章节标题从 markdown 源解析：id 就是预览里生成的真实锚点，
-  // 围栏内的 # 不会被当成标题
+  // 章节标题从所选文档的 markdown 源解析：id 就是预览里生成的真实锚点，
+  // 围栏内的 # 不会被当成标题。
+  // 当前文档优先用编辑缓冲（docsMd 可能还没跟上输入），其它文档用存档/内置
+  // 源码兜底；之前只读 docsMd，没打开过的文档章节列表是空的/错的。
   const chapters = useMemo(() => {
     if (!docSource) return []
     const doc = docs.find((d: any) => d.id === docSource || d.title === docSource)
     if (!doc) return []
-    return parseMdOutline(docsMd[doc.id] || '').filter(h => h.text !== '(无标题)')
-  }, [docSource, docs, docsMd])
+    const isActive = doc.id === activeDocId
+    const source = isActive
+      ? (mdContent || docsMd[doc.id] || getDocMd(doc.id))
+      : (docsMd[doc.id] || getDocMd(doc.id))
+    return parseMdOutline(source || '').filter(h => h.text !== '(无标题)')
+  }, [docSource, docs, docsMd, activeDocId, mdContent])
 
   // 默认选择当前文档
   useEffect(() => {
@@ -68,7 +76,10 @@ export const LinkDialog: React.FC<Props> = ({ onClose, onInsert }) => {
     } else {
       if (!docSource) return
       const doc = docs.find((d: any) => d.id === docSource)
-      const linkText = text.trim() || doc?.title || docSource
+      const chapter = chapterRef ? chapters.find(c => c.id === chapterRef) : null
+      // 选了章节就默认用章节标题作为显示文字（此前一律用文档名，
+      // 插入后显示成 README.md，看起来不像章节引用）。
+      const linkText = text.trim() || chapter?.text || doc?.title || docSource
       // 跨文档：docId#章节锚点；同文档：#章节锚点
       const internalUrl = chapterRef
         ? `${docSource === (docs.find((d: any) => d.id === activeDocId)?.id || '') ? '' : docSource}#${chapterRef}`

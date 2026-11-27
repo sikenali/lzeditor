@@ -25,3 +25,23 @@ export function lineColFromSource(source: string, offset: number): { line: numbe
   const column = o - lastNl
   return { line, column }
 }
+
+/** 1-based 行号 → 该行首字符的源码偏移（越界行夹到首/末行）。 */
+export function lineStartOffset(source: string, line: number): number {
+  const lines = source.split('\n')
+  const l = Math.max(1, Math.min(Math.floor(line) || 1, lines.length))
+  let offset = 0
+  for (let i = 0; i < l - 1; i++) offset += lines[i].length + 1
+  return offset
+}
+
+/**
+ * 1-based 行号 → 该行正文（去掉块级标记后）的源码偏移。
+ * 编辑/代码模式互切时用它把光标落到正文，而不是停在 `# `/`- ` 标记前。
+ */
+export function lineContentOffset(source: string, line: number): number {
+  const start = lineStartOffset(source, line)
+  const rest = source.slice(start)
+  const marker = /^(?:#{1,6}\s+|>\s+|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+[.)]\s+|`{3,}[^\n]*\n)/.exec(rest)
+  return start + (marker ? marker[0].length : 0)
+}

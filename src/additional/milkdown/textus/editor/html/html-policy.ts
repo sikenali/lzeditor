@@ -173,6 +173,12 @@ const DECORATION_LINES = new Set([
   "line-through",
 ]);
 
+// 图片对齐要用 float / display / margin（`<img style="float:left">`、
+// 居中时的 `display:block;margin:0 auto`），原先的白名单没有这几项，
+// 所见即所得里对齐被静默剥掉，看起来就是「对齐按钮没反应」。
+const SIDE = "(?:0|auto|-?\\d{1,4}(?:\\.\\d{1,3})?(?:px|em|rem|%))";
+const SIDES_RE = new RegExp(`^${SIDE}(?:\\s+${SIDE}){0,3}$`);
+
 const STYLE_RULES: Record<string, (value: string) => boolean> = {
   color: (v) => COLOR_RE.test(v),
   "background-color": (v) => COLOR_RE.test(v),
@@ -184,6 +190,19 @@ const STYLE_RULES: Record<string, (value: string) => boolean> = {
     v.split(/\s+/).every((part) => DECORATION_LINES.has(part)),
   "text-decoration-line": (v) =>
     v.split(/\s+/).every((part) => DECORATION_LINES.has(part)),
+  float: (v) => /^(left|right|none)$/.test(v),
+  display: (v) => /^(block|inline|inline-block|flex|none)$/.test(v),
+  margin: (v) => SIDES_RE.test(v),
+  "margin-left": (v) => SIDES_RE.test(v),
+  "margin-right": (v) => SIDES_RE.test(v),
+  "margin-top": (v) => SIDES_RE.test(v),
+  "margin-bottom": (v) => SIDES_RE.test(v),
+  width: (v) => SIZE_RE.test(v),
+  "max-width": (v) => SIZE_RE.test(v),
+  height: (v) => SIZE_RE.test(v),
+  "object-fit": (v) => /^(contain|cover|fill|none|scale-down)$/.test(v),
+  "border-radius": (v) => SIZE_RE.test(v),
+  border: (v) => /^(none|0)$/.test(v),
 };
 
 /**

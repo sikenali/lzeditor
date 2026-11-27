@@ -239,6 +239,27 @@ function applyBlockCommand(
   return null;
 }
 
+/** 清除格式（源码模式）：去掉选中文字的内联记号，并把所在行/块的
+ *  `# `/`- `/`1. ` 等块级前缀一起清掉，变成正文段落。 */
+function clearSourceFormatting(facade: EditorFacade): boolean {
+  const src = facade.getText();
+  const sel = facade.getSelection();
+  const from = sel?.from ?? 0;
+  const to = Math.max(from, sel?.to ?? from);
+  const lineStart = src.lastIndexOf("\n", from - 1) + 1;
+  const nl = src.indexOf("\n", to);
+  const lineEnd = nl === -1 ? src.length : nl;
+  const stripBlock = (s: string) =>
+    s.split("\n").map((line) => line.replace(BLOCK_PREFIX_RE, "")).join("\n");
+  const before = stripBlock(src.slice(lineStart, from));
+  const selected = src.slice(from, to);
+  const clean = wrapSelection(selected, "selection.clear");
+  const after = stripBlock(src.slice(to, lineEnd));
+  if (before + clean + after === src.slice(lineStart, lineEnd)) return true;
+  facade.replaceRange(lineStart, lineEnd, before + clean + after);
+  return true;
+}
+
 /**
  * Dispatches a named command against the facade. Undo/redo are supported
  * directly; unknown ids throw (the app must not silently drop commands).
@@ -255,6 +276,8 @@ export function applyEditorCommand(
   // shared with the Milkdown facade (see source-commands).
   const sourceResult = applySourceCommand(facade, name);
   if (sourceResult !== null) return sourceResult;
+
+  if (name === "selection.clear") return clearSourceFormatting(facade);
 
   if (name.startsWith("selection.")) {
     const sel = facade.getSelection();

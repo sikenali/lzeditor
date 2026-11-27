@@ -134,6 +134,11 @@ export const StyleMainPanel: React.FC = () => {
   }, [activeStyle, renderedHtml])
 
   const activeStyleData = TYPOGRAPHY_THEMES.find(t => t.id === activeStyle) ?? TYPOGRAPHY_THEMES[0]
+  // 标签必须来自 ACKS 主题目录（activeStyle 是 ACKS id）。旧代码用
+  // TYPOGRAPHY_THEMES 的兜底项，遇到目录里没有的 id 时会一直显示第一项
+  // （金色 · 经典），看起来「不随选择变化」。
+  const activeAcks = getAcksTheme(activeStyle)
+  const activeStyleName = activeAcks?.name ?? activeStyleData?.name ?? activeStyle
 
   const pickStyle = (id: string) => { setActiveStyle(id); updateSetting('typographyTheme', id) }
 
@@ -155,32 +160,8 @@ export const StyleMainPanel: React.FC = () => {
         {/* ── Read content area ── */}
         <div ref={bodyRef} className="style-read-scroll">
           <div className="style-read-article">
-            <div className="main-read-header">
-              <div className="main-read-tags">
-                <span className="read-tag read-tag-tech">Markdown</span>
-                <button className="sidebar-wechat-btn" onClick={handleCopyWechat} title="一键复制为公众号可用富文本">
-                  <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
-                  {copied ? '已复制' : '公众号'}
-                </button>
-              </div>
-            </div>
             <div ref={articleBodyRef} className="style-read-acks" />
           </div>
-        </div>
-        {/* 浮导航：由「显示预览」控制（#25），默认隐藏、隐藏预览时不可见 */}
-        <div className={`main-nav-float${previewVisible ? '' : ' nav-hidden'}`}>
-          <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
-            <span className="remix ri-arrow-left-s-line"></span>
-          </button>
-          <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
-            <span className="remix ri-arrow-right-s-line"></span>
-          </button>
-          <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
-            <span className="remix ri-arrow-up-s-line"></span>
-          </button>
-          <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
-            <span className="remix ri-fullscreen-line"></span>
-          </button>
         </div>
         </div>
         <div className="style-panel">
@@ -191,7 +172,7 @@ export const StyleMainPanel: React.FC = () => {
                 <span className="style-label-text">文档样式:</span>
                 <div className="style-select-wrap">
                   <button className="style-select-btn" onClick={() => setStyleMenuOpen(v => !v)}>
-                    <span>{activeStyleData.name}</span>
+                    <span>{activeStyleName}</span>
                   </button>
                   {styleMenuOpen && (
                     <>
@@ -224,6 +205,27 @@ export const StyleMainPanel: React.FC = () => {
               <button className="style-action-btn" onClick={() => setAppMode('edit')} title="关闭">
                 <span className="remix ri-close-line"></span>
                 <span>关闭</span>
+              </button>
+              {/* 公众号复制按钮：按需求移到「关闭」右侧，不再单独占一行 */}
+              <button className="sidebar-wechat-btn" onClick={handleCopyWechat} title="一键复制为公众号可用富文本">
+                <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
+                {copied ? '已复制' : '公众号'}
+              </button>
+            </div>
+
+            {/* 浮导航：与 style-panel 同属一个组件，不再绝对悬浮遮挡正文 */}
+            <div className="main-nav-float">
+              <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
+                <span className="remix ri-arrow-left-s-line"></span>
+              </button>
+              <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
+                <span className="remix ri-arrow-right-s-line"></span>
+              </button>
+              <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
+                <span className="remix ri-arrow-up-s-line"></span>
+              </button>
+              <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
+                <span className="remix ri-fullscreen-line"></span>
               </button>
             </div>
 

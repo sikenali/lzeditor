@@ -81,6 +81,9 @@ export function createCM6EditorFacade(
     const f = Math.max(0, Math.min(from, len));
     const t = Math.max(f, Math.min(to, len));
     view.dispatch({ selection: EditorSelection.range(f, t), scrollIntoView: true });
+    // 查找/替换与大纲跳转都走这里：聚焦后选区才真正可见（并让键盘输入
+    // 继续落在编辑器上）。预览点击跳源码走 goToLine，不夺焦点。
+    view.focus();
   }
 
   const search = createSearchSession({

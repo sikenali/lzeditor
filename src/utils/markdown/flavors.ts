@@ -57,6 +57,9 @@ const S = {
   gfmStrike: /~~[^\s~][^~\n]*~~/,
   gfmTask: /^ {0,3}[-*+]\s+\[[ xX]\]/m,
   gfmAutolink: /^ {0,3}https?:\/\/[^\s)]+$/m,
+  // 脚注引用/定义只在 GFM 管线里启用 markdown-it-footnote；不参与检测时，
+  // 纯脚注文档会被判成 commonmark，`[^1]` 原样显示成普通文字。
+  footnote: /^ {0,3}\[\^[^\]\s]+\]:/m,
 }
 
 /** 按特征推断方言。没有特征时回退 commonmark，避免把普通文档渲染成带表格的 GFM。 */
@@ -70,7 +73,7 @@ export function detectFlavor(md: string): FlavorId {
   if (S.pandocDiv.test(src) || S.pandocCite.test(src) || S.pandocATex.test(src)) return 'pandoc'
   // {#id} 属性列表和块引用单独出现可能是代码里抄来的例子，只在前有 front matter 时判定为 pandoc
   if (S.frontMatter.test(md) && (S.pandocBlockCite.test(src) || S.pandocAttr.test(src))) return 'pandoc'
-  if (S.gfmTable.test(src) || S.gfmStrike.test(src) || S.gfmTask.test(src) || S.gfmAutolink.test(src)) return 'gfm'
+  if (S.gfmTable.test(src) || S.gfmStrike.test(src) || S.gfmTask.test(src) || S.gfmAutolink.test(src) || S.footnote.test(src)) return 'gfm'
 
   return 'commonmark'
 }

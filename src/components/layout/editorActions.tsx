@@ -98,31 +98,43 @@ export function useTableActive(): boolean {
 
   useEffect(() => {
     let alive = true
+    let bound: ReturnType<typeof getEditorFacade> = null
     let unbind: (() => void) | null = null
-    let tries = 0
+
     const tick = () => {
       try {
         const facade = getEditorFacade()
         if (!facade) { setActive(false); return }
-        // getTableContext() 在光标/活动单元格位于表格块内时返回上下文（A1），
-        // 否则 null → 置灰。DOM 单元格 + 源码偏移双路径，均不依赖行正则。
         setActive(facade.getTableContext() !== null)
       } catch { setActive(false) }
     }
-    // facade 在编辑器挂载时注册，第一次进工具栏时可能还没就绪，轮询几次再挂监听
-    const attach = () => {
-      if (!alive) return
+
+    // facade 随编辑/代码模式切换而更换；Toolbar 常驻挂载，effect 不会重跑。
+    // 每次 tick 检查实例是否变了，变了就重新订阅（此前切模式后一直绑在旧
+    // facade 上，表格菜单永远置灰）。
+    const ensure = () => {
       const facade = getEditorFacade()
-      if (!facade) {
-        if (tries++ > 25) return
-        setTimeout(attach, 200)
-        return
-      }
-      tick()
-      unbind = facade.onSelectionChange(tick)
+      if (facade === bound) return
+      unbind?.()
+      bound = facade
+      unbind = facade ? facade.onSelectionChange(tick) : null
     }
-    attach()
-    return () => { alive = false; unbind?.() }
+
+    const onAny = () => { if (!alive) return; ensure(); tick() }
+    document.addEventListener('selectionchange', onAny)
+    document.addEventListener('click', onAny, true)
+    document.addEventListener('keyup', onAny, true)
+    const timer = setInterval(onAny, 600)
+    onAny()
+
+    return () => {
+      alive = false
+      clearInterval(timer)
+      document.removeEventListener('selectionchange', onAny)
+      document.removeEventListener('click', onAny, true)
+      document.removeEventListener('keyup', onAny, true)
+      unbind?.()
+    }
   }, [])
   return active
 }

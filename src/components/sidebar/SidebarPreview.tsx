@@ -34,10 +34,10 @@ function mdToPreviewHtml(mdContent: string): string {
 
 export const SidebarPreview: React.FC = () => {
   const editorContentRef = useEditorStore((s) => s.editorContentRef)
-  const docHTML = useEditorStore((s) => s.docHTML || '')
   const mdContent = useEditorStore((s) => s.mdContent || '')
   const docsMd = useEditorStore((s) => s.docsMd || {})
   const activeDocId = useEditorStore((s) => s.activeDocId)
+  const activeTocId = useEditorStore((s) => s.activeTocId)
   const typographyTheme = useSettingsStore((s) => s.typographyTheme)
   const appTheme = useSettingsStore((s) => s.theme)
   const setShowPreview = useEditorStore((s) => s.setShowPreview)
@@ -50,10 +50,9 @@ export const SidebarPreview: React.FC = () => {
   const effectiveMd = useMemo(() => getEffectiveMd(activeDocId, mdContent, docsMd), [activeDocId, mdContent, docsMd])
 
   // ── Render Markdown via remark into the preview container
-  const previewHtml = useMemo(() => {
-    if (docHTML) return docHTML
-    return mdToPreviewHtml(effectiveMd)
-  }, [effectiveMd, docHTML])
+  // 始终用 mdToHtml({ lines: true })：docHTML 是防抖后的无行号版本，拿它渲染
+  // 会让滚动同步的 data-line 映射表为空。这里重渲一次，预览与源码行号一致。
+  const previewHtml = useMemo(() => mdToPreviewHtml(effectiveMd), [effectiveMd])
 
   useEffect(() => {
     const previewEl = previewElRef.current
@@ -84,7 +83,7 @@ export const SidebarPreview: React.FC = () => {
   }, [appTheme])
 
   // ── 滚动同步：按源码行号对位，不是按百分比 ──
-  useScrollSync({
+  const syncRef = useScrollSync({
     editorEl: editorContentRef,
     scroller: scrollContainerRef,
     article: previewElRef,
@@ -94,6 +93,21 @@ export const SidebarPreview: React.FC = () => {
       lineBridgeOf(editorContentRef)?.goToLine(line)
     },
   })
+
+  // 大纲点击（编辑模式）→ 右侧预览跟随到对应标题。ReadMode 的大纲走自己的
+  // 分页跳转，这里只处理编辑/代码模式的预览栏。
+  useEffect(() => {
+    if (!activeTocId) return
+    const previewEl = previewElRef.current
+    const scroller = scrollContainerRef.current
+    if (!previewEl || !scroller) return
+    const el = previewEl.querySelector<HTMLElement>(`#${CSS.escape(activeTocId)}`)
+    if (!el) return
+    const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop
+    // 这次跳转会让编辑器侧的行桥把预览又拉回去，先静音再滚。
+    syncRef.current?.mute(600)
+    scroller.scrollTo({ top: Math.max(0, top - 12), behavior: 'smooth' })
+  }, [activeTocId, syncRef])
 
   // ── Resize handle
   const handleMouseDown = (e: React.MouseEvent) => {

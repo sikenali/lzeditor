@@ -234,9 +234,14 @@ export const ReadMode: React.FC = () => {
   }
 
   // 翻页同步：当前页对首块所在章节写进 store，统一大纲面板据此高亮
-  // （block.line 是 0-based、toc.line 是 1-based，+1 对齐）
+  // （block.line 是 0-based、toc.line 是 1-based，+1 对齐）。
+  // 首页块可能是一条跨页续块（line 为 0），向后找第一个带真实行号的块。
   useEffect(() => {
-    const startLine = pages[spread * 2]?.blocks[0]?.line ?? pages[spread * 2 + 1]?.blocks[0]?.line
+    const blocks = [
+      ...(pages[spread * 2]?.blocks ?? []),
+      ...(pages[spread * 2 + 1]?.blocks ?? []),
+    ]
+    const startLine = blocks.find(b => b.line > 0)?.line
     if (startLine === undefined) {
       setActiveTocId('')
       return

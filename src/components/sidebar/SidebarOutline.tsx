@@ -38,7 +38,8 @@ function scrollHeadingToTop(el: HTMLElement): void {
 function headingByIndex(index: number): HTMLElement | null {
   const heads = Array.from(document.querySelectorAll<HTMLElement>(
     '.style-read-acks h1,.style-read-acks h2,.style-read-acks h3,.style-read-acks h4,.style-read-acks h5,.style-read-acks h6,' +
-    '.history-preview-doc h1,.history-preview-doc h2,.history-preview-doc h3,.history-preview-doc h4,.history-preview-doc h5,.history-preview-doc h6',
+    '.history-preview-doc h1,.history-preview-doc h2,.history-preview-doc h3,.history-preview-doc h4,.history-preview-doc h5,.history-preview-doc h6,' +
+    '.read-article-body h1,.read-article-body h2,.read-article-body h3,.read-article-body h4,.read-article-body h5,.read-article-body h6',
   ))
   return heads[index] ?? null
 }
@@ -93,7 +94,13 @@ export const SidebarOutline: React.FC = () => {
       const index = items.indexOf(item)
       if (appMode === 'read') {
         const jumper = getOutlineJumper()
-        if (jumper) { jumper(item.id, index); return }
+        if (jumper) {
+          jumper(item.id, index)
+          // 目标章节和当前页对在同一屏时 spread 不变，ReadMode 的翻页 effect
+          // 不会重算 activeTocId；点击后立即写一次，保证大纲高亮跟随。
+          useEditorStore.getState().setActiveTocId(item.id)
+          return
+        }
       }
       const target = (document.getElementById(item.id) as HTMLElement | null) || headingByIndex(index)
       if (!target) return
@@ -108,8 +115,10 @@ export const SidebarOutline: React.FC = () => {
     facade.setSelection(item.pos, item.pos + item.text.length)
     facade.focus()
     // 点击后同步当前节：Milkdown 不回报 cursorPosition，这里直接写 store，
-    // 大纲 active 高亮随点击立即切换（优化 #3）。
+    // 大纲 active 高亮随点击立即切换（优化 #3）。右侧预览栏订阅同一个
+    // activeTocId，会滚到对应标题（编辑模式大纲点击跟随）。
     useEditorStore.getState().setCursorPosition({ line: item.line, column: 1 })
+    useEditorStore.getState().setActiveTocId(item.id)
     // 点击后让该项滚入视口并保持 current 高亮：即使光标未跨节（shownIndex 不变，
     // 上面的 shownIndex effect 不触发），点击的项也要留在大纲视口内。
     const btns = listRef.current?.querySelectorAll<HTMLButtonElement>('.outline-jump-btn')

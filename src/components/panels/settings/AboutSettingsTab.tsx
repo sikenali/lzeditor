@@ -20,7 +20,7 @@ export const AboutSettingsTab: React.FC = () => {
         <div className="about-name">懒猫编辑器</div>
 
         {/* Slogan */}
-        <div className="about-slogan">AI Markdown 编辑器 · 轻文档写作与导出</div>
+        <div className="about-slogan">一款专门为懒猫微服打造的AI Markdown 编辑器</div>
 
         {/* 版本 */}
         <div className="about-version">版本：v{VERSION}</div>

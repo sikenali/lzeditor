@@ -500,6 +500,18 @@ export function createMarkdownIt(flavor: FlavorId): MarkdownItType {
     return `<sup class="citation">[${key}]</sup>`
   }
 
+  // 外部 http(s) 链接默认从新标签页打开（正文里不写 target，markdown 保持干净）。
+  // rel 同时挡住 window.opener 反向控制。
+  md.renderer.rules.link_open = (tokens, idx, options, _env, self) => {
+    const token = tokens[idx]
+    const href = String(token.attrGet('href') ?? '')
+    if (/^https?:\/\//i.test(href)) {
+      token.attrSet('target', '_blank')
+      token.attrSet('rel', 'noopener noreferrer')
+    }
+    return self.renderToken(tokens, idx, options as never)
+  }
+
   // 数学公式先出 slot，消毒之后再回填 KaTeX
   md.renderer.rules.math = (_tokens, idx, _options, env) => {
     const token = _tokens[idx] as MathToken

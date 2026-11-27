@@ -3326,3 +3326,117 @@ tr:nth-child(even) td  {
   border-color: var(--t-bd-3) !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════
+   预览 / 阅读 / 排版正文：列表 marker、表格、图片基础呈现。
+   preflight 把 ol/ul 的 list-style 清成 none，这些宿主没有像 ACKS
+   那样再声明 marker，导致有序/无序列表在预览里没有 1 2 3 和黑点。
+   ═══════════════════════════════════════════════════════════ */
+.preview-doc ul,
+.read-article-body ul,
+.md-doc ul,
+.ms-doc ul {
+  list-style: disc;
+}
+.preview-doc ol,
+.read-article-body ol,
+.md-doc ol,
+.ms-doc ol {
+  list-style: decimal;
+}
+.preview-doc li,
+.read-article-body li,
+.md-doc li,
+.ms-doc li {
+  display: list-item;
+}
+/* 任务列表由 checkbox 自己表意，不再画 marker */
+.preview-doc li.task-list-item,
+.read-article-body li.task-list-item,
+.md-doc li.task-list-item,
+.ms-doc li.task-list-item,
+.md-doc .md-task,
+.ms-doc .md-task {
+  list-style: none;
+}
+.preview-doc ul ul,
+.read-article-body ul ul {
+  list-style: circle;
+}
+.preview-doc ul ul ul,
+.read-article-body ul ul ul {
+  list-style: square;
+}
+/* marker 与正文之间留出正常间距（用户反馈黑点/序号贴文字太近） */
+.preview-doc li::marker,
+.read-article-body li::marker,
+.md-doc li::marker,
+.ms-doc li::marker {
+  padding-inline-end: 0.4em;
+}
+.preview-doc li,
+.read-article-body li {
+  padding-inline-start: 0.2em;
+}
+/* 阅读模式没有 ACKS 的 .md-doc 包裹，preflight 把 padding 清成 0，
+   marker 会被裁在正文外——补回列表缩进。 */
+.read-article-body ul {
+  padding-left: 1.8em;
+}
+.read-article-body ol {
+  padding-left: 2em;
+}
+
+/* 预览表格：与编辑/阅读一致的边框、表头与斑马纹 */
+.preview-doc table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+  border: 0.7px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.preview-doc th,
+.preview-doc td {
+  border: 0.7px solid var(--border-subtle);
+  padding: 8px 12px;
+  vertical-align: top;
+}
+.preview-doc th {
+  background: var(--bg-code);
+  font-weight: 600;
+  text-align: left;
+}
+.preview-doc tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--bg-code) 45%, transparent);
+}
+
+/* 图片：去掉黑边/阴影；独占一段的图片居中（居中插入用短 markdown 即可）。
+   左右浮动保留文字环绕，并留出环绕间距。 */
+.preview-doc img,
+.read-article-body img,
+.md-doc .md-img,
+.ms-doc img {
+  border: 0;
+  box-shadow: none;
+}
+.preview-doc p > img:only-child,
+.read-article-body p > img:only-child {
+  display: block;
+  margin: 16px auto;
+}
+.preview-doc img[style*="float:left"],
+.read-article-body img[style*="float:left"] {
+  margin: 4px 16px 8px 0;
+}
+.preview-doc img[style*="float:right"],
+.read-article-body img[style*="float:right"] {
+  margin: 4px 0 8px 16px;
+}
+
+/* 排版模式：不同 ACKS 主题的正文宽度必须一致。
+   旧主题（.md-doc）固定 375px，新主题（.ms-doc）是 100%，切到某个主题后
+   预览宽度突然变化。这里统一为容器全宽（内容列由外层 760px 限制）。 */
+.style-read-acks .md-doc {
+  max-width: 100%;
+}

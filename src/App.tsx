@@ -54,6 +54,8 @@ const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').
 const APP_SETTING_KEYS = ['showTrayIcon', 'openInNewWindow', 'quitWhenAllWindowsClosed'] as const
 
 const buildImageMd = (url: string, alt: string, align: 'top' | 'left' | 'right' | undefined) => {
+  // 左右浮动只能用 HTML（markdown 没有对齐语法）。居中用标准 markdown 图片：
+  // 预览/编辑器 CSS 会把「独占一段的图片」居中，源码比一行 HTML 短得多。
   if (align === 'left' || align === 'right') {
     return `\n\n<img src="${escAttr(url)}" alt="${escAttr(alt)}" style="float:${align}">\n\n`
   }
@@ -379,17 +381,15 @@ function App() {
     if (facade) facade.insertText(`\`\`\`${lang}\n${code}\n\`\`\``, facade.getSelection() ?? undefined)
     closeInsert()
   }
-  const insertLink = (text: string, url: string, newTab?: boolean) => {
+  const insertLink = (text: string, url: string) => {
     const facade = getEditorFacade()
     if (!facade) return
     const label = (text.trim() || url).replace(/\s+/g, ' ')
     const anchor = facade.getSelection() ?? undefined
-    if (newTab) {
-      // markdown 链接无法表达 target，落 HTML（消毒白名单放行 target 属性）
-      facade.insertText(`<a href="${escAttr(url)}" target="_blank" rel="noopener">${escAttr(label)}</a>`, anchor)
-    } else {
-      facade.insertText(`[${label}](${url})`, anchor)
-    }
+    // 一律用 markdown 链接：HTML `<a>` 在所见即所得里换行后容易被当成原始
+    // HTML 显示出来，而且源码更长。「新标签打开」由预览渲染器统一给
+    // http(s) 链接加 target/rel（见 utils/markdown/render.ts），不写进正文。
+    facade.insertText(`[${label}](${url})`, anchor)
     closeInsert()
   }
   const insertFormula = (formula: string) => {
