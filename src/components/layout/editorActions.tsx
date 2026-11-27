@@ -382,6 +382,7 @@ export const ActionMenu: React.FC<{
           : <button
               key={i}
               className={`toolbar-submenu-item${item.disabled ? ' disabled' : ''}`}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => { if (!item.disabled) onAction(item.action!) }}
             >
               {item.icon && <span className={`remix ${item.icon}`}></span>}

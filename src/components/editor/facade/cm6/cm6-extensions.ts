@@ -148,13 +148,15 @@ export function createCm6Settings() {
     build(settings: Cm6Settings): Extension[] {
       const o = one(settings);
       return [
+        // 输入变换必须先于 closeBrackets：后者会先把引号自动补成 ""，
+        // 抢走智能/直角引号的输入，设置看起来没生效。
+        inputTransform.of(o.inputTransform),
         softWrap.of(o.softWrap),
         currentLine.of(o.currentLine),
         autoPair.of(o.autoPair),
         tabSize.of(o.tabSize),
         lineNumbersExt.of(o.lineNumbers),
         spellcheck.of(o.spellcheck),
-        inputTransform.of(o.inputTransform),
       ];
     },
     reconfigure(view: EditorView, settings: Cm6Settings): void {

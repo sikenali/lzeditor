@@ -29,12 +29,7 @@ import type {
 } from "../EditorFacade";
 import type { EditorRunner } from "../../../../additional/milkdown/textus/editor/useEditorRunner";
 import { parseMarkdownSource } from "../../../../additional/milkdown/textus/editor/markdown/parse-markdown-source";
-import { toggleSpan } from "../../../../additional/milkdown/textus/editor/marks/span-commands";
-import {
-  toggleFormat,
-  toggleCodeSpan,
-  STRIKETHROUGH,
-} from "../../../../additional/milkdown/textus/editor/keys/format-shortcut-plugin";
+import { toggleFormat, toggleCodeSpan, STRIKETHROUGH } from "../../../../additional/milkdown/textus/editor/keys/format-shortcut-plugin";
 import { LINK } from "../../../../additional/milkdown/textus/editor/markdown/link-source";
 import { createSearchSession } from "../cm6/cm6-search";
 import { applySourceCommand } from "../source-commands";
@@ -353,18 +348,19 @@ function insertNode(view: EditorView, node: ProseNode): boolean {
  * (The browser smoke test is what exercises the textus path.)
  * ──────────────────────────────────────────────────────────────────────────── */
 
-/** Bold: md_span rung 2 (textus) or the strong mark (commonmark). */
+/** Bold: textus md_span (rung 2) via the same multi-block-aware toggle the
+ *  shortcuts use; falls back to the strong mark (commonmark). */
 function toggleBold(view: EditorView): boolean {
   const { schema } = view.state;
-  if (schema.nodes.md_span) return toggleSpan(view, 2);
+  if (schema.nodes.md_span) return toggleFormat(view, { delim: "*", rung: 2 });
   const mark = schema.marks.strong;
   return mark ? toggleMark(mark)(view.state, view.dispatch) : false;
 }
 
-/** Italic: md_span rung 1 (textus) or the emphasis mark (commonmark). */
+/** Italic: textus md_span (rung 1) via toggleFormat; emphasis mark fallback. */
 function toggleItalic(view: EditorView): boolean {
   const { schema } = view.state;
-  if (schema.nodes.md_span) return toggleSpan(view, 1);
+  if (schema.nodes.md_span) return toggleFormat(view, { delim: "*", rung: 1 });
   const mark = schema.marks.emphasis;
   return mark ? toggleMark(mark)(view.state, view.dispatch) : false;
 }
@@ -451,19 +447,34 @@ function clearFormatting(view: EditorView): boolean {
 
   if (!empty) {
     if (state.schema.nodes.md_span) {
-      const targets: Array<{ node: ProseNode; pos: number }> = [];
+      const targets = new Map<number, { node: ProseNode; pos: number }>();
+      // 选区在格式节点内部时，nodesBetween 只遍历子节点、拿不到外层包装。
+      // 从选区端点向上找「最外层」包装（depth 最小），只清这一层：
+      // 嵌套的粗+斜+删除线会随外层一起被替换成纯文本，避免先拆内层后
+      // 外层 nodeSize 失效、把后面内容多删掉。
+      const collectOutermost = ($pos: typeof state.selection.$from) => {
+        for (let d = 1; d <= $pos.depth; d++) {
+          const node = $pos.node(d);
+          if (node.isInline && wrappers.has(node.type.name)) {
+            targets.set($pos.before(d), { node, pos: $pos.before(d) });
+            break;
+          }
+        }
+      };
+      collectOutermost(state.selection.$from);
+      collectOutermost(state.selection.$to);
       state.doc.nodesBetween(from, to, (node, pos) => {
         if (node.isInline && wrappers.has(node.type.name)) {
-          targets.push({ node, pos });
+          targets.set(pos, { node, pos });
           return false;
         }
         return true;
       });
-      if (targets.length) {
+      const list = [...targets.values()].sort((a, b) => b.pos - a.pos);
+      if (list.length) {
         let tr = state.tr;
-        for (let i = targets.length - 1; i >= 0; i--) {
-          const { node, pos } = targets[i];
-          tr = tr.replaceWith(pos, pos + node.nodeSize, node.content);
+        for (const { node, pos } of list) {
+          tr = tr.replaceWith(pos, pos + node.nodeSize, state.schema.text(node.textContent));
         }
         view.dispatch(tr);
         did = true;

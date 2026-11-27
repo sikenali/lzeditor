@@ -15,6 +15,7 @@ import { markersFromPreviewDom } from '../../utils/railMarkers'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useEditorStore } from '../../store/editorStore'
 import { lineColFromSource, lineContentOffset } from '../../utils/textStats'
+import { fontStackFor } from '../../hooks/useTypographyOverrides'
 import '../../additional/milkdown/milkdown.css'
 import '@milkdown/kit/prose/view/style/prosemirror.css'
 import '../../additional/milkdown/textus/theme/content-base.css'
@@ -48,6 +49,11 @@ function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps
   const autoPair = useSettingsStore((s) => s.autoPair)
   const autoCompleteMarkdownPairs = useSettingsStore((s) => s.autoCompleteMarkdownPairs)
   const showLineNumbers = useSettingsStore((s) => s.showLineNumbers)
+  const smartQuotes = useSettingsStore((s) => s.smartQuotes)
+  const cornerQuotes = useSettingsStore((s) => s.cornerQuotes)
+  const autoSpaceCJK = useSettingsStore((s) => s.autoSpaceCJK)
+  const fullwidthSymbols = useSettingsStore((s) => s.fullwidthSymbols)
+  const allowMarkdownSymbols = useSettingsStore((s) => s.allowMarkdownSymbols)
   // 把设置中心里的自动配对/自动补全/代码行号接到 Textus 的 settings 上：
   // 这些插件通过 `() => settings.current.*` 实时读取，所以切换开关即时生效。
   const settingsRef = useLatest({
@@ -55,6 +61,11 @@ function EditableEditor({ md, onChange, onReady, shellRef }: MilkdownEditorProps
     autoCloseBrackets: autoPair !== false,
     autoCloseMarks: autoCompleteMarkdownPairs !== false,
     codeLineNumbers: showLineNumbers === true,
+    smartQuotes: smartQuotes !== false,
+    cornerQuotes: cornerQuotes === true,
+    autoSpaceCJK: autoSpaceCJK !== false,
+    fullwidthSymbols: fullwidthSymbols === true,
+    allowMarkdownSymbols: allowMarkdownSymbols !== false,
   })
   const docPathRef = useLatest<string | null>(null)
   const labelRef = useLatest(t.splitPreview)
@@ -121,6 +132,7 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
   const shellRef = useRef<HTMLDivElement | null>(null)
   const defaultFontSize = useSettingsStore((s) => s.defaultFontSize)
   const lineHeight = useSettingsStore((s) => s.lineHeight)
+  const editorFont = useSettingsStore((s) => s.editorFont)
   const contentWidth = useSettingsStore((s) => s.contentWidth)
   const enableSpellCheck = useSettingsStore((s) => s.enableSpellCheck)
   const spellCheckLang = useSettingsStore((s) => s.spellCheckLang)
@@ -175,7 +187,22 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
     if (!shell) return
     shell.style.setProperty('--cm-font-size', `${defaultFontSize}px`)
     shell.style.setProperty('--cm-line-height', lineHeight || '1.8')
-  }, [defaultFontSize, lineHeight])
+    // content-themes.css 为纸面主题写死了 --doc-line-height: 27.33px，
+    // 会压过 milkdown.css 的 var(--cm-line-height)。内联写 --doc-line-height
+    // 才能让「行高」设置真正作用于所见即所得正文。
+    shell.style.setProperty('--doc-line-height', lineHeight || '1.8')
+    // 字体族也要接进所见即所得。content-themes.css 为纸面主题写死了
+    // .milkdown 的 font-family，--doc-font 会被它压过；直接给 .milkdown
+    // 写内联字体（最高优先级），设置「默认字体」才能在编辑模式生效。
+    const applyFont = () => {
+      const md = shell.querySelector<HTMLElement>('.milkdown')
+      if (md) md.style.fontFamily = fontStackFor(editorFont)
+    }
+    applyFont()
+    const obs = new MutationObserver(applyFont)
+    obs.observe(shell, { childList: true, subtree: true })
+    return () => obs.disconnect()
+  }, [defaultFontSize, lineHeight, editorFont])
   // 拼写检查 / tab 宽度 / 软换行：Milkdown 的 ProseMirror DOM 挂载后才存在，
   // 用 MutationObserver 在出现时应用（与上面拿滚动容器的做法一致）。
   useEffect(() => {

@@ -206,7 +206,20 @@ function ThemeSettingsView({ s, u }: { s: any; u: any }) {
 
       {/* 外观主题 */}
       <div className="settings-section">
-        <div className="settings-section-title"><span>外观主题</span></div>
+        <div className="settings-section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>外观主题</span>
+          {/* 设置弹框里顶部 page-header-card 是隐藏的，恢复默认按钮也跟着看不见；
+              这里在可见区域补一个同功能入口。 */}
+          <button
+            type="button"
+            className="page-reset-button"
+            onClick={resetAll}
+            style={{ marginLeft: 'auto', height: 32, padding: '0 12px', fontSize: 12 }}
+          >
+            <span className="remix ri-restart-line"></span>
+            恢复默认
+          </button>
+        </div>
         <div className="theme-group">
           {THEME_OPTIONS.map(t => (
             <div

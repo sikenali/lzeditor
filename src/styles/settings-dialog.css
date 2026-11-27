@@ -1141,9 +1141,9 @@
      猫主体才能落在圆的正中。 */
   overflow: hidden;
 }
-/* 主体（猫头/身体）在 720 画布中的中心是 x≈296.5，画布中心 360：
-   放大到 132px 后右移 12px，主体中心正好落在 118px 圆徽标中心。 */
-.about-badge img  { display: block; width: 132px; max-width: none; flex: 0 0 auto; height: auto; transform: translateX(12px); }
+/* 羽毛笔主体在 768 画布中本身已居中；放大到 132px 即可与 118px 圆徽标
+   同心，不再需要按旧猫形 logo 做水平偏移。 */
+.about-badge img  { display: block; width: 132px; max-width: none; flex: 0 0 auto; height: auto; }
 .about-name  {
   margin-top: 32px;
   font-size: 24px;

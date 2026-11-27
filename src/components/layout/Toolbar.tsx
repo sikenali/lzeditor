@@ -101,7 +101,13 @@ export const Toolbar: React.FC = () => {
 
   return (
     <>
-      <div className={`navtop toolbar${showToolbarLabels ? '' : ' toolbar-icon-only toolbar-hover-labels'}`}>
+      <div className={`navtop toolbar${showToolbarLabels ? '' : ' toolbar-icon-only toolbar-hover-labels'}`}
+        onMouseDown={(e) => {
+          // 工具栏按钮不该抢走编辑器的焦点/选区：否则选中文字后点「粗体」
+          // 会把 ProseMirror 选区折叠，命令变成空操作。按钮的 click 仍然触发。
+          if ((e.target as HTMLElement).closest('button')) e.preventDefault()
+        }}
+      >
         {/* ── Left ── */}
         <div className="toolbar-group">
           <button className="toolbar-btn" aria-label="文档库" onClick={() => setShowLibrary(!showLibrary)}>

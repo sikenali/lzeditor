@@ -56,6 +56,7 @@ import { createMdSpanAutopairPlugin } from "./marks/md-span-autopair-plugin";
 import { createColorSwatchPlugin } from "./marks/color-swatch-plugin";
 import { emojiShortcodePlugin } from "./emoji/emoji-shortcode-plugin";
 import { createBracketAutopairPlugin } from "./keys/bracket-autopair-plugin";
+import { createTextInputTransformPlugin } from "./keys/text-input-transform-plugin";
 import { createWritingModePlugin } from "./modes/writing-mode-plugin";
 import { formatShortcutPlugin } from "./keys/format-shortcut-plugin";
 import { selectAllKeyPlugin } from "./keys/select-all";
@@ -317,6 +318,9 @@ export function withEditorCore(
       .use(mdSpanSchema)
       .use(mdCodeSpanSchema)
       .use(mdSpanClipboardPlugin)
+      .use(
+        createTextInputTransformPlugin(() => settings.current as never),
+      )
       .use(
         createMdSpanAutopairPlugin({
           autoClose: () => settings.current.autoCloseMarks,
