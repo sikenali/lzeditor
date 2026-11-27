@@ -1,6 +1,7 @@
 {
   "name": "lzeditor",
   "version": "0.9.0",
+  "description": "一款专门为懒猫微服打造的 AI Markdown 编辑器",
   "private": true,
   "scripts": {
     "dev": "concurrently npm:dev:web npm:dev:server",
