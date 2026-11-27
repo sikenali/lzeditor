@@ -1129,8 +1129,8 @@
   box-sizing: border-box;
 }
 .about-badge  {
-  width: 140px;
-  height: 140px;
+  width: 170px;
+  height: 170px;
   border-radius: 50%;
   border: 0.6px solid var(--color-border);
   display: flex;
@@ -1138,9 +1138,9 @@
   justify-content: center;
   flex-shrink: 0;
 }
-/* 圆形徽标内接正方形边长 = 直径 / √2。140px 圆最多容纳 99px 的方形图标，
-   取 96px 留一点余量：整只羽毛笔完整显示，不会被圆形边缘裁掉。 */
-.about-badge img  { display: block; width: 96px; max-width: none; flex: 0 0 auto; height: auto; }
+/* 圆形徽标内接正方形边长 = 直径 / √2。170px 圆最多容纳 120px 的方形图标，
+   取 118px 留一点余量：整只羽毛笔完整显示且足够清晰，不会被圆形边缘裁掉。 */
+.about-badge img  { display: block; width: 118px; max-width: none; flex: 0 0 auto; height: auto; }
 .about-name  {
   margin-top: 32px;
   font-size: 24px;
