@@ -1137,8 +1137,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  /* 圆形裁剪：logo 的尾巴本来伸到画布右缘，放进圆形头像时会被裁掉，
+     猫主体才能落在圆的正中。 */
+  overflow: hidden;
 }
-.about-badge img  { display: block; width: 100px; height: auto; }
+/* 主体（猫头/身体）在 720 画布中的中心是 x≈296.5，画布中心 360：
+   放大到 132px 后右移 12px，主体中心正好落在 118px 圆徽标中心。 */
+.about-badge img  { display: block; width: 132px; max-width: none; flex: 0 0 auto; height: auto; transform: translateX(12px); }
 .about-name  {
   margin-top: 32px;
   font-size: 24px;

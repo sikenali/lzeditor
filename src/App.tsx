@@ -427,11 +427,19 @@ function App() {
 
   // 打开/切换文档时也要统计：onChange 只在编辑后触发，首开 readme.md 等未编辑
   // 文档时页脚会一直显示 0 字/0 字符。这里随受控 md 变化同步统计。
+  // 欢迎页 / 没有打开的文档时不统计：默认主界面显示 0，只有真正打开 md 后
+  // 才按文档内容计算。
   useEffect(() => {
     const es = useEditorStore.getState()
+    if (showWelcome || !activeDocId) {
+      es.setWordCount(0)
+      es.setCharCount(0)
+      es.setCursorPosition({ line: 1, column: 1 })
+      return
+    }
     es.setWordCount(countWords(editorMd))
     es.setCharCount(countChars(editorMd))
-  }, [editorMd])
+  }, [editorMd, showWelcome, activeDocId])
 
   // 大文档输入性能：mdToHtml 在每键同步全量渲染（497KB → ~900ms/键）会卡输入。
   // 修复：md 立即保存（不丢内容），html 计算 + docHTML 更新 + localStorage 走
