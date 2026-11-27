@@ -296,6 +296,9 @@ export const useEditorStore = create<EditorStoreState>((set: any, get: any) => (
     })
     markWelcomeSeen(set)
     saveCatalog()
+    // 新建文档也要记录「最后编辑的文档」，否则重启后自动打开最后文档
+    // 只能还原用 switchDoc 打开过的文档，新建的永远打不开。
+    try { localStorage.setItem('lzeditor-last-doc', id) } catch {}
     return id
   },
    switchDoc: (id: string) => {

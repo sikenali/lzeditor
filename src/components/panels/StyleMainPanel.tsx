@@ -166,6 +166,24 @@ export const StyleMainPanel: React.FC = () => {
         </div>
         <div className="style-panel">
           <div className="style-panel-inner">
+            {/* 导航按钮：与工具栏互换位置，默认隐藏；点「显示」后才出现并居中 */}
+            {previewVisible && (
+              <div className="main-nav-float">
+                <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
+                  <span className="remix ri-arrow-left-s-line"></span>
+                </button>
+                <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
+                  <span className="remix ri-arrow-right-s-line"></span>
+                </button>
+                <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
+                  <span className="remix ri-arrow-up-s-line"></span>
+                </button>
+                <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
+                  <span className="remix ri-fullscreen-line"></span>
+                </button>
+              </div>
+            )}
+
             {/* Toolbar */}
             <div className="style-toolbar">
               <div className="style-label-group">
@@ -210,22 +228,6 @@ export const StyleMainPanel: React.FC = () => {
               <button className="sidebar-wechat-btn" onClick={handleCopyWechat} title="一键复制为公众号可用富文本">
                 <span className={`remix ${copied ? 'ri-check-line' : 'ri-wechat-fill'}`}></span>
                 {copied ? '已复制' : '公众号'}
-              </button>
-            </div>
-
-            {/* 浮导航：与 style-panel 同属一个组件，不再绝对悬浮遮挡正文 */}
-            <div className="main-nav-float">
-              <button className="nav-float-btn" title="上一章" onClick={handlePrevChapter}>
-                <span className="remix ri-arrow-left-s-line"></span>
-              </button>
-              <button className="nav-float-btn" title="下一章" onClick={handleNextChapter}>
-                <span className="remix ri-arrow-right-s-line"></span>
-              </button>
-              <button className="nav-float-btn" title="回到顶部" onClick={handleScrollTop}>
-                <span className="remix ri-arrow-up-s-line"></span>
-              </button>
-              <button className="nav-float-btn" title="全屏" onClick={handleFullscreen}>
-                <span className="remix ri-fullscreen-line"></span>
               </button>
             </div>
 

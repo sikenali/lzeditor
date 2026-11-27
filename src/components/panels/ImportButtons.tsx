@@ -71,9 +71,9 @@ export const ImportButtons = forwardRef<ImportButtonsHandle, ImportButtonsProps>
               onKeyDown={e => { if (e.key === 'Enter') handleUrlImport() }}
               disabled={loading}
             />
-            <div className="library-empty-desc" style={{ marginTop: 10 }}>
-              {loading ? '导入中…' : '点击右下角「在线导入」开始导入'}
-            </div>
+            {loading && (
+              <div className="library-empty-desc" style={{ marginTop: 10 }}>导入中…</div>
+            )}
           </div>
         </UDSection>
       )
@@ -85,10 +85,7 @@ export const ImportButtons = forwardRef<ImportButtonsHandle, ImportButtonsProps>
           <div className="library-empty-state">
             <span className="remix ri-upload-2-line library-empty-icon"></span>
             <div className="library-empty-title">本地导入</div>
-            <div className="library-empty-desc">从本地导入 Markdown 文件到文档库（支持多选）</div>
-            <div className="library-empty-desc" style={{ marginTop: 10 }}>
-              点击右下角「本地导入」选择文件
-            </div>
+            <div className="library-empty-desc">从本地导入 Markdown 文件到文档库</div>
           </div>
         </UDSection>
       )

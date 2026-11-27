@@ -27,10 +27,16 @@ export const Footer: React.FC = () => {
   return (
     <footer className="app-footer">
       <div className="app-footer-left">
-        <div className="app-footer-brand">
+        <button
+          type="button"
+          className="app-footer-brand"
+          onClick={() => useEditorStore.getState().setShowWelcome(true)}
+          title="返回初始化界面"
+          aria-label="返回初始化界面"
+        >
           <img className="app-footer-logo" src="/logo.svg" alt="懒猫编辑器" />
           <span>懒猫编辑器</span>
-        </div>
+        </button>
         <span className="app-footer-copy">© 2026 Powered by <a href="https://lazycat.cloud/" target="_blank" rel="noopener noreferrer" className="app-footer-link">LightOS</a></span>
       </div>
 

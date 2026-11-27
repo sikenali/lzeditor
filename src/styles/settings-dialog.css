@@ -1129,21 +1129,18 @@
   box-sizing: border-box;
 }
 .about-badge  {
-  width: 118px;
-  height: 118px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   border: 0.6px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  /* 圆形裁剪：logo 的尾巴本来伸到画布右缘，放进圆形头像时会被裁掉，
-     猫主体才能落在圆的正中。 */
-  overflow: hidden;
 }
-/* 羽毛笔主体在 768 画布中本身已居中；放大到 132px 即可与 118px 圆徽标
-   同心，不再需要按旧猫形 logo 做水平偏移。 */
-.about-badge img  { display: block; width: 132px; max-width: none; flex: 0 0 auto; height: auto; }
+/* 圆形徽标内接正方形边长 = 直径 / √2。140px 圆最多容纳 99px 的方形图标，
+   取 96px 留一点余量：整只羽毛笔完整显示，不会被圆形边缘裁掉。 */
+.about-badge img  { display: block; width: 96px; max-width: none; flex: 0 0 auto; height: auto; }
 .about-name  {
   margin-top: 32px;
   font-size: 24px;

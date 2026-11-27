@@ -65,8 +65,9 @@
   width: 48px;
   height: 48px;
   border-radius: var(--radius-full);
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+  /* 弹框左上角图标底色跟随当前强调色，而不是固定的主题色 soft token。 */
+  background: var(--accent-soft);
+  color: var(--accent-primary);
   display: flex;
   align-items: center;
   justify-content: center;

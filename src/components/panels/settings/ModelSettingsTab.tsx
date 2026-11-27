@@ -316,9 +316,6 @@ export const ModelSettingsTab: React.FC = () => {
       {/* 配置面板 */}
       <div className="settings-section model-card">
         <div className="settings-section-title"><span>API Key</span></div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, padding: '0 14px 12px' }}>
-          密钥只保存在本机浏览器；AI 请求由前端直连服务商，不经过任何中转服务。
-        </div>
 
         <div className="density-group">
           <UiSelectCard

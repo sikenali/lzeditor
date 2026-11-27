@@ -120,8 +120,13 @@ function App() {
       const last = localStorage.getItem('lzeditor-last-doc')
       if (!last) return
       const es = useEditorStore.getState()
-      // 静默切换：还原上次文档不该连带关掉欢迎页
-      if (es.docs.some((d: any) => d.id === last)) switchDocSilently(() => es.switchDoc(last))
+      // 静默切换：还原上次文档不该连带关掉欢迎页；但「自动打开最后文档」
+      // 本身要求直接进入文档，所以切换后必须把欢迎页收起，否则用户看到
+      // 的仍是欢迎页，功能看起来没生效。
+      if (es.docs.some((d: any) => d.id === last)) {
+        switchDocSilently(() => es.switchDoc(last))
+        es.setShowWelcome(false)
+      }
     } catch (e) { silentError('恢复上次打开的文档失败', e) }
   }, [])
 
