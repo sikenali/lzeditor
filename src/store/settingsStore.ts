@@ -5,36 +5,8 @@ import { DEFAULT_TYPOGRAPHY_THEME } from '../styles/acks-mapping'
 
 export { ACCENT_PRESETS } from '../styles/themes'
 
-export const DEFAULT_API_KEYS: ApiKeyEntry[] = [
-  {
-    id: 'anthropic-claude',
-    provider: 'Anthropic',
-    model: 'claude-3-5-sonnet-20241022',
-    modelName: 'Claude 3.5 Sonnet',
-    key: '',
-    enabled: false,
-    format: 'anthropic',
-  },
-  {
-    id: 'openai-gpt4o',
-    provider: 'OpenAI',
-    model: 'gpt-4o',
-    modelName: 'GPT-4o',
-    key: '',
-    enabled: false,
-    format: 'openai',
-  },
-  {
-    id: 'qwen-max',
-    provider: '通义千问',
-    model: 'qwen-max',
-    modelName: 'Qwen Max',
-    key: '',
-    enabled: false,
-    endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    format: 'openai',
-  },
-]
+export const DEFAULT_API_KEYS: ApiKeyEntry[] = []
+
 
 /** 老存档按 id 跟默认条目合并，补上后来新增的字段 */
 export function migrateApiKey(entry: ApiKeyEntry): ApiKeyEntry {
@@ -67,7 +39,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
   maxTokens: 1024,
   apiKeys: DEFAULT_API_KEYS,
-  selectedModelId: 'anthropic-claude',
+  selectedModelId: '',
   theme: 'parchment',
   accentColor: 'cyan',
   activeGroup: 'theme',
