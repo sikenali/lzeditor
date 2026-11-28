@@ -124,13 +124,13 @@
 .toolbar-btn.menu-open .toolbar-label  { color: var(--accent-primary); }
 
 /* ── 仅图标模式（默认） ── */
+/* 关闭「显示工具栏按钮标题」时：只隐藏标签并把图标居中，按钮尺寸、
+   间距、菜单点等其他视觉都不变（不再缩成 40×40 的图标按钮）。 */
 .toolbar-icon-only .toolbar-btn  {
-  width: 40px; height: 40px;
   justify-content: center; align-items: center;
   padding: 0; gap: 0;
   flex-direction: row;
 }
-.toolbar-icon-only .toolbar-icon  { font-size: 20px; }
 .toolbar-icon-only .toolbar-label  { display: none; }
 /* showToolbarLabels 开启（.toolbar-hover-labels）时：hover 在图标下方显示标题（绝对定位，不挤布局） */
 .toolbar-icon-only.toolbar-hover-labels .toolbar-btn:hover .toolbar-label,
@@ -151,7 +151,6 @@
   z-index: 200;
   pointer-events: none;
 }
-.toolbar-icon-only .toolbar-menu-dot  { display: none; }
 
 /* ── Toolbar button hover tooltip (below icon, no arrow) ── */
 .toolbar-icon-only .toolbar-btn[data-title]:hover::after  {

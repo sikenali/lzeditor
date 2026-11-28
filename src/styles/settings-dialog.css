@@ -66,10 +66,6 @@
 }
 .sync-provider-card.selected  { border-color: var(--accent-primary); background: var(--accent-a5); box-shadow: 0 0 0 1px var(--accent-a20); }
 .about-version  { font-size: 12px; color: var(--accent-primary); margin-bottom: 12px; }
-.about-links    { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
-.about-link     { font-size: 12px; color: var(--accent-primary); text-decoration: none; letter-spacing: -0.01em; }
-.about-link:hover  { text-decoration: underline; }
-.about-sep      { font-size: 14px; color: var(--text-muted); }
 .about-copy     { font-size: 14px; color: var(--text-muted); cursor: pointer; transition: color var(--t-fast); }
 .about-copy:hover  { color: var(--text-primary); }
 
@@ -1175,35 +1171,6 @@
 }
 .about-github .remix  { font-size: 34px; }
 .about-github:hover  { color: var(--color-primary); }
-.about-links  {
-  margin-top: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.about-link-btn  {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 0.6px solid var(--color-border);
-  background: var(--color-bg-white);
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-}
-.about-link-btn:hover  {
-  background: var(--accent-a5);
-  border-color: var(--accent-border);
-  color: var(--accent-primary);
-}
-.about-link-btn .remix  { font-size: 14px; }
 .about-card .about-copy  {
   margin-top: 32px;
   margin-bottom: 0;
